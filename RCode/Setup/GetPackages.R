@@ -29,6 +29,7 @@ LoadLibraries<-function(packred){
   library(ggplot2)
   library(sp)
   library(sf)
+  library(xml2)
   library(ggmap)
   library(geojsonR)
   library(countrycode)
@@ -55,7 +56,7 @@ LoadLibraries<-function(packred){
 GetPackages<-function(packred){
 
   list.of.packages <- c("dplyr", "ggplot2","sf","tidyverse","openxlsx","pracma",
-                        "geojsonR", "tiff", "gstat", "mvtnorm",
+                        "geojsonR", "tiff", "gstat", "mvtnorm","xml2","rgdal",
                         "RColorBrewer", "geosphere","GGally", "wbstats",
                         "countrycode","rworldmap","rworldxtra","chron","ncdf4",
                         "GADMTools","akima","adehabitatMA","flexsurv", "ExtDist", 
@@ -82,7 +83,7 @@ GetPackages<-function(packred){
   
 }
 
-GetPackages(packred)
+GetPackages(packred=T)
 
 # Check the structure of the repository
 filers<-c(paste0(dir,"Plots"))
