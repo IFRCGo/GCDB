@@ -127,11 +127,41 @@ ExtImpDev<-function(xmlly){
 
 LoveExceptions<-function(ADMout,regions){
   
-  if(length(ADMout)>1) {ADMout<-do.call(bind,ADMout)} else ADMout<-ADMout[[1]]
-  # Change for the merge
-  colnames(ADMout@data)<-c("ADMcode","regnamloc")
-  # Add all the rest of the polygon data into the polygon data frame
-  ADMout@data%<>%merge(regions)
+  chch<-sapply(seq_along(ADMout), function(j){
+    # First find the correct admin level
+    checker<-regions%>%group_by(ADMlevel)%>%summarise(innie=length(ADMlevel)==nrow(ADMout[[j]]@data),.groups="drop_last")
+    # Check that something was found
+    return(any(checker$innie))
+  })
+  
+  inds<-seq_along(ADMout)
+  if(sum(chch)==(length(chch)-1)) {
+    if(!chch[length(chch)]) {
+      inds<-seq_along(ADMout)[-length(ADMout)]  
+    } else stop()
+  } else stop()
+  
+  for(j in inds){
+    # First find the correct admin level
+    checker<-regions%>%group_by(ADMlevel)%>%summarise(innie=length(ADMlevel)==nrow(ADMout[[j]]@data),.groups="drop_last")
+    # Check that something was found
+    if(sum(checker$innie)==0) stop()
+    # Set the appropriate data frame
+    minireg<-regions%>%filter(ADMlevel==checker$ADMlevel[which(checker$innie)])
+    # Now find the appropriate data in the admin boundary file
+    codin<-sapply(1:ncol(ADMout[[j]]@data),
+                  function(i) sum(unique(minireg$ADMcode)%in%unique(ADMout[[j]]@data[,i]))/length(unique(minireg$ADMcode))>0.9,
+                  simplify = T)
+    # Check that some codes were found
+    if(all(!codin)) stop()
+    if(sum(codin)>1) warning("multiple columns containing matching code values")
+    # Else: crack on!
+    colnames(ADMout[[j]]@data)[which(codin)[1]]<-"ADMcode"
+    # Replace the modified names to the standardised ones
+    ADMout[[j]]@data<-minireg
+  }
+  
+  return(do.call(bind,ADMout))
   
 }
 
