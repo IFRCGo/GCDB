@@ -438,7 +438,7 @@ ReadDessie<-function(iso3){
   # Create a folder for the results
   dir.create(paste0("./CleanedData/MostlyImpactData/Desinventar/",iso3),showWarnings = F,recursive = T)
   # Save out to be read in later on
-  write_csv2(impacts,paste0("./CleanedData/MostlyImpactData/Desinventar/",iso3,"/",iso3,".csv"))
+  openxlsx::write.xlsx(impacts,paste0("./CleanedData/MostlyImpactData/Desinventar/",iso3,"/",iso3,".xlsx"))
   # Extract the admin boundary data
   ADMout<-ExtADMDev(xmlly,iso3)
   # Create a folder for the results
