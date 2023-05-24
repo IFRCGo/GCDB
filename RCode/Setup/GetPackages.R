@@ -85,8 +85,8 @@ GetPackages<-function(packred){
 
 GetPackages(packred=T)
 
-# Check the structure of the repository
-filers<-c(paste0(dir,"Plots"))
-# Make sure these files exist
-tmp<-vapply(filers, function(fff) dir.create(fff, showWarnings = FALSE),numeric(1)) ; rm(tmp)
+# # Check the structure of the repository
+# filers<-c(paste0(dir,"Plots"))
+# # Make sure these files exist
+# tmp<-vapply(filers, function(fff) dir.create(fff, showWarnings = FALSE),numeric(1)) ; rm(tmp)
 
