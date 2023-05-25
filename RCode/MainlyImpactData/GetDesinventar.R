@@ -1,5 +1,7 @@
 source("./RCode/Setup/GetPackages.R")
 
+dir.create("./RawData/tmp",showWarnings = F,recursive = T); dir.create("./CleanedData",showWarnings = F,recursive = T)
+
 DesIsos<-c("com", "dji", "eth", "brb", "gmb", "gin", "ken", "mdg", "mli", "mus",
            "moz", "mar", "nam", "ner", "sen", "sle",
            "syc", "tgo", "tun", "uga", "znz", "arg", "blz", "bol", "chl",
