@@ -8,8 +8,8 @@ AsYear<-function(date,red=F,limit=T){
   if(!red) year<-as.numeric(format(date,"%Y"))
   else year<-as.numeric(format(date,"%y"))
   
-  if(limit&any(year>as.numeric(format(Sys.Date(),"%Y")))) 
-    year[year>as.numeric(format(Sys.Date(),"%Y"))]<-AsYear(Sys.Date())
+  # if(limit&any(year>as.numeric(format(Sys.Date(),"%Y")))) 
+  #   year[year>as.numeric(format(Sys.Date(),"%Y"))]<-AsYear(Sys.Date())
   
   return(year)
 }

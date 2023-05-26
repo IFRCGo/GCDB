@@ -4,4 +4,6 @@ dir<-directory<- "/home/hamishwp/Documents/BEAST/Coding/IFRC/GCDB/"
 setwd(directory)
 # Do you want only the reduced packages or all? Choose via packred
 packred<-F
+# Google Earth Engine User Details
+gee_user<-'hamish.patten'
 
