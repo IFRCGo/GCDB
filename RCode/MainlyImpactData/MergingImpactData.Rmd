@@ -71,8 +71,6 @@ SimMerg$Year%<>%as.numeric()
 SimMerg$ISO%<>%stringr::str_to_upper()
 SimMerg%<>%filter(!is.na(SimMerg$Continent))
 
-saveRDS(SimMerg,"../../Results/Impact_Only/SimpleMerge.RData")
-
 p<-SimMerg%>%filter(Year<2023)%>%
   group_by(Year)%>%reframe(Count=length(Year))%>%
   ggplot(aes(Year,Count))+geom_point()+scale_y_log10()+
@@ -149,6 +147,8 @@ GetISObbox<-function(ISO3C){
 }
 
 bbies<-GetISObbox(SimMerg$ISO)
+
+saveRDS(list(SimMerg=SimMerg,bbies=bbies),"../../Results/Impact_Only/SimpleMerge.RData")
 
 out<-do.call(rbind,lapply(1:nrow(SimMerg),function(i) {
   tmp<-SearchUSGSbbox(bbies[i,],SimMerg$sdate[i],SimMerg$fdate[i],minmag=5)
