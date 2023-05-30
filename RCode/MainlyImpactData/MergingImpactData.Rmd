@@ -13,6 +13,30 @@ knitr::opts_chunk$set(echo = TRUE)
 filez<-list.files("../../CleanedData/MostlyImpactData/EMDAT/",include.dirs = T,all.files = T,recursive = T,ignore.case = T)
 EMDAT<-do.call(rbind,lapply(filez,function(fff) {openxlsx::read.xlsx(paste0("../../CleanedData/MostlyImpactData/EMDAT/",fff),startRow = 7)}))
 EMDAT[EMDAT=="Source:"]<-NA
+# Make sure the start date is 2 characters
+EMDAT$Start.Day[nchar(EMDAT$Start.Day)==1 & !is.na(EMDAT$Start.Day)]<-
+  paste0("0",EMDAT$Start.Day[nchar(EMDAT$Start.Day)==1 & !is.na(EMDAT$Start.Day)])
+# Make sure the start month is 2 characters
+EMDAT$Start.Month[nchar(EMDAT$Start.Month)==1 & !is.na(EMDAT$Start.Month)]<-
+  paste0("0",EMDAT$Start.Month[nchar(EMDAT$Start.Month)==1 & !is.na(EMDAT$Start.Month)])
+# Make sure the end date is 2 characters
+EMDAT$End.Day[nchar(EMDAT$End.Day)==1 & !is.na(EMDAT$End.Day)]<-
+  paste0("0",EMDAT$End.Day[nchar(EMDAT$End.Day)==1 & !is.na(EMDAT$End.Day)])
+# Make sure the end month is 2 characters
+EMDAT$End.Month[nchar(EMDAT$End.Month)==1 & !is.na(EMDAT$End.Month)]<-
+  paste0("0",EMDAT$End.Month[nchar(EMDAT$End.Month)==1 & !is.na(EMDAT$End.Month)])
+
+# Start date in one
+EMDAT$sdate<-sapply(1:nrow(EMDAT),function(i) paste0(c(EMDAT$Start.Year[i],
+                                               EMDAT$Start.Month[i],
+                                               EMDAT$Start.Day[i]),collapse = "-"),simplify = T)
+# End date in one
+EMDAT$fdate<-sapply(1:nrow(EMDAT),function(i) paste0(c(EMDAT$End.Year[i],
+                                               EMDAT$End.Month[i],
+                                               EMDAT$End.Day[i]),collapse = "-"),simplify = T)
+
+EMDAT%<>%dplyr::select(-c(Start.Day,Start.Month,Start.Year,End.Day,End.Month,End.Year))
+
 # Extract the Desinventar data
 isos<-list.files("../../CleanedData/MostlyImpactData/Desinventar/",include.dirs = T,all.files = T,recursive = T,ignore.case = T); isos<-isos[!grepl(".xlsx",isos)]
 Dessie<-do.call(rbind,lapply(isos,function(is) {
@@ -28,19 +52,26 @@ GIDD<-readxl::read_xlsx("../../CleanedData/MostlyImpactData/IDMC/GIDD-IDMC.xlsx"
 EMDAT%<>%filter(Disaster.Subtype=="Ground movement")
 # Filter Desinventar
 EQnams<-c("Sismo","Sis","EARTH TREMORS","TERREMOTO","Tremblement de terre","TREMBLEMENT DE TERRE","Earthquake","EARTHQUAKE","GROUND VIBRATIO")
-Dessie%<>%filter(event%in%EQnams)
+Dessie%<>%filter(event%in%EQnams)%>%mutate(sdate=date,fdate=sdate)%>%dplyr::select(-date)
 # Filter IDMC
-GIDD%<>%filter(`Hazard Sub Type`=="Earthquake")
+GIDD%<>%filter(`Hazard Sub Type`=="Earthquake")%>%mutate(sdate=`Date of Event (start)`)%>%dplyr::select(-`Date of Event (start)`)
 
-SimMerg<-EMDAT%>%dplyr::select(ISO,Continent,Year)
-SimMerg<-Dessie%>%dplyr::select(ISO3,date)%>%
-  transmute(ISO=ISO3,Continent=convIso3Continent(ISO3),Year=AsYear(date))%>%
+# Simple merge
+SimMerg<-EMDAT%>%dplyr::select(ISO,Continent,Year,sdate,fdate)
+SimMerg<-Dessie%>%dplyr::select(ISO3,sdate,fdate)%>%
+  transmute(ISO=ISO3,Continent=convIso3Continent(ISO3),Year=AsYear(sdate),
+            sdate=sdate,fdate=fdate)%>%
   rbind(SimMerg)
-SimMerg<-GIDD%>%dplyr::select(ISO3,Year)%>%
-  transmute(ISO=ISO3,Continent=convIso3Continent(ISO3),Year=Year)%>%
+SimMerg<-GIDD%>%dplyr::select(ISO3,Year,sdate)%>%
+  transmute(ISO=ISO3,Continent=convIso3Continent(ISO3),Year=Year,
+            sdate=as.character(sdate),fdate=as.character(sdate))%>%
   rbind(SimMerg)
 
 SimMerg$Year%<>%as.numeric()
+SimMerg$ISO%<>%stringr::str_to_upper()
+SimMerg%<>%filter(!is.na(SimMerg$Continent))
+
+saveRDS(SimMerg,"../../Results/Impact_Only/SimpleMerge.RData")
 
 p<-SimMerg%>%filter(Year<2023)%>%
   group_by(Year)%>%reframe(Count=length(Year))%>%
@@ -89,6 +120,41 @@ p<-rbind(adEMD,adDes,adIDMC)%>%reshape2::melt()%>%
   scale_y_log10()+xlab("Admin Boundary Level")+ylab("Number of Events")+ylim(c(0,7000))+
   theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Earthquakes Only");p
 ggsave("../../Plots/Impact_Only/EQs_ADMlevel.png",p,width = 7,height = 5)
+
+
+
+
+
+SearchUSGSbbox<-function(bbox,sdate,fdate=NULL,minmag=5){
+  
+  debut<-"https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson"
+  geojsonR::FROM_GeoJson(paste0(debut,"&starttime=",as.Date(sdate)-1,"&endtime=",as.Date(fdate),
+                      "&minlongitude=",bbox[1],"&minlatitude=",bbox[2],
+                      "&maxlongitude=",bbox[3],"&maxlatitude=",bbox[4],
+                      "&minmagnitude=",minmag,"&orderby=magnitude",
+                      "&producttype=shakemap"))%>%return
+  
+}
+
+GetISObbox<-function(ISO3C){
+  out<-do.call(rbind,lapply(1:length(ISO3C),function(is){
+    bboxs<-rjson::fromJSON(file="../../CleanedData/SocioPoliticalData/ISO_BBOX.json")
+    tmp<-tryCatch(unlist(bboxs[[is]])[c(2,1,4,3)],error=function(e) NA)
+    if(any(is.na(tmp))) return(data.frame(mnlo=0,mnla=0,mxlo=0,mxla=0))
+    names(tmp)<-c("mnlo","mnla","mxlo","mxla")
+    return(t(as.data.frame(tmp)))
+  }))
+  row.names(out)<-NULL
+  return(out)
+}
+
+bbies<-GetISObbox(SimMerg$ISO)
+
+out<-do.call(rbind,lapply(1:nrow(SimMerg),function(i) {
+  tmp<-SearchUSGSbbox(bbies[i,],SimMerg$sdate[i],SimMerg$fdate[i],minmag=5)
+  
+}))
+
 
 ```
 
