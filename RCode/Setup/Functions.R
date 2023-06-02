@@ -4,7 +4,7 @@ negexp <-function(x) -exp(x)
 logneg <-function(x) log(-x)
 
 AsYear<-function(date,red=F,limit=T){
-  date%<>%as.Date
+  date%<>%as.Date()
   if(!red) year<-as.numeric(format(date,"%Y"))
   else year<-as.numeric(format(date,"%y"))
   
@@ -14,8 +14,12 @@ AsYear<-function(date,red=F,limit=T){
   return(year)
 }
 AsMonth<-function(date){
-  return(as.numeric(format(date,"%m")))
+  return(as.numeric(format(as.Date(date),"%m")))
 }
+AsDay<-function(date){
+  return(as.numeric(format(as.Date(date),"%d")))
+}
+
 # Used to save output files by date and time for model validation comparison in time
 DateTimeString<-function(){
   return(gsub(gsub(Sys.time(),pattern = " ", replacement = "_"),pattern = ":",replacement = ""))
@@ -347,9 +351,10 @@ convIso3Country<-function(iso3){
 }
 
 convIso3Continent<-function(iso3){
-  continents<-countrycode::countrycode(sourcevar = iso3,
-                                       origin = "iso3c",
-                                       destination = "continent",warn = F)
+  # continents<-countrycode::countrycode(sourcevar = iso3,
+  #                                      origin = "iso3c",
+  #                                      destination = "continent",warn = F)
+  left_join(data.frame(ISO3=iso3),raster::ccodes()[,c("ISO3","continent")],by="ISO3")$continent
 }
 
 InterpDay<-function(ndata,day){

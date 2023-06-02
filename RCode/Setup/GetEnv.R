@@ -6,4 +6,5 @@ setwd(directory)
 packred<-F
 # Google Earth Engine User Details
 gee_user<-'hamish.patten'
-
+# Also, where is the GEE cloud runfile stored?
+gee_bin<-"/home/hamishwp/google-cloud-sdk/bin/"

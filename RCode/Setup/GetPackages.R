@@ -85,6 +85,12 @@ GetPackages<-function(packred){
 
 GetPackages(packred=T)
 
+# Delimiter used for GCDB objects, all CSV files, etc
+dely<-"!@!"
+
+# Retrieve the most up-to-date version of the hazard & impact taxonomies
+
+
 # # Check the structure of the repository
 # filers<-c(paste0(dir,"Plots"))
 # # Make sure these files exist

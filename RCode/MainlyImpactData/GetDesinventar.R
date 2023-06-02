@@ -466,14 +466,79 @@ WrangleDessie<-function(iso3){
   return(T)
 }
 
-chk<-sapply(DesIsos, function(is) tryCatch(GetDessie(is),error=function(e) NA),simplify = T)
+DesHazards<-function(Dessie,haz="EQ"){
+  if(haz=="EQ"){
+    haznams<-c("Sismo","Sis","EARTH TREMORS","TERREMOTO","Tremblement de terre","TREMBLEMENT DE TERRE","Earthquake","EARTHQUAKE","GROUND VIBRATIO")
+  } else if(haz=="FL"){
+    stop("This hazard isn't ready for Desinventar yet")
+  } else if(haz=="TC"){
+    stop("This hazard isn't ready for Desinventar yet")
+  } else if(haz=="ST"){
+    stop("This hazard isn't ready for Desinventar yet")
+  } else stop("Hazard not recognised for Desinventar data")
+  
+  Dessie%>%filter(event%in%haznams)
+}
 
-chk<-sapply(DesIsos, function(is) {
-  print(paste0("Trying for country: ",is))
-  out<-tryCatch(ReadDessie(is),error=function(e) NA)
-  if(is.na(out)) {print("FAIL")} else print("SUCCESS")
-  return(out)
-},simplify = T)
+Des2impGCDB<-function(Dessie,haz="EQ"){
+  # Extract only the relevant hazards
+  Dessie%<>%DesHazards(haz=haz)
+  # Modify date names
+  Dessie$imp_sdate<-Dessie$imp_fdate<-Dessie$ev_sdate<-Dessie$ev_fdate<-Dessie$date
+  Dessie$ev_name_orig<-Dessie$event; Dessie$event<-NULL
+  # Add the continent
+  Dessie%<>%mutate(Continent=convIso3Continent(ISO3))%>%
+    dplyr::select(-date)
+  # Pair each event with a geospatial region (polygon)
+  Dessie$GCDB_ID<-Dessie%>%GetGLIDEnum(haz=haz)
+  # Melt and translate impact columns according to impact taxonomy
+  Dessie$impsub_ID<-Dessie%>%dplyr::select(c(GCDB_ID,hazcluster,impsubcat,src_org))%>%
+    mutate(src_org=stringi::stri_extract(stringr::str_remove(stringi::stri_trans_totitle(src_org),pattern = " "), regex = "[:alpha:]+"))%>%
+    apply(1,function(x) paste0(x,collapse = "-"))
+  # 
+  
+  
+  impGCDB(impacts = Dessie)
+  
+}
+
+GetDesinventar<-function(haz="EQ"){
+  # Find the impact files
+  filez<-list.files("./CleanedData/MostlyImpactData/Desinventar/",
+                    pattern = ".xlsx",
+                    include.dirs = T,all.files = T,recursive = T,ignore.case = T)
+  # Find the Desinventar spatial files
+  spatf<-list.files("./CleanedData/SocioPoliticalData/Desinventar/",
+                    pattern = "ADM_",
+                    include.dirs = T,all.files = T,recursive = T,ignore.case = T)
+  # Extract data for all countries which have spatial data 
+  isos<-stringr::str_split(filez,"/",simplify = T)[,1]
+  # Which have data?
+  tISOS<-isos%in%stringr::str_split(spatf,"/",simplify = T)[,1]
+  # Get all countries data
+  Dessie<-do.call(rbind,lapply(which(tISOS),function(i){
+    # Extract impact data
+    out<-openxlsx::read.xlsx(paste0("./CleanedData/MostlyImpactData/Desinventar/",filez[i]))
+    # Add the country
+    out$ISO3<-stringr::str_to_upper(isos[i])
+    
+    return(out)
+  }))
+  # Get in impGCDB format
+  impies<-Des2impGCDB(Dessie,haz=haz)
+  # Form a GCDB impacts object from EMDAT data (if there is a problem, return an empty impGCDB object)
+  tryCatch(new("impGCDB",impies),error=function(e) new("impGCDB"))
+}
+
+
+# chk<-sapply(DesIsos, function(is) tryCatch(GetDessie(is),error=function(e) NA),simplify = T)
+# 
+# chk<-sapply(DesIsos, function(is) {
+#   print(paste0("Trying for country: ",is))
+#   out<-tryCatch(ReadDessie(is),error=function(e) NA)
+#   if(is.na(out)) {print("FAIL")} else print("SUCCESS")
+#   return(out)
+# },simplify = T)
 
 # chk<-sapply(DesIsos, function(is) WrangleDessie(is),simplify = T)
 
@@ -484,38 +549,38 @@ chk<-sapply(DesIsos, function(is) {
 #                   Status="Complete", RawData="Downloaded", 
 #                   ImpactData="Wrangled", ADMboundaries="Wrangled")
 # # write_csv2(fully,"./CleanedData/MostlyImpactData/Desinventar/CountryStatus_Full.csv")
-fully<-read_csv2("./CleanedData/MostlyImpactData/Desinventar/CountryStatus_Full.csv")
-
-Incomplete<-list.files("./CleanedData/MostlyImpactData/Desinventar/"); Incomplete<-Incomplete[!grepl(".csv",Incomplete)]
-Incomplete<-Incomplete[!Incomplete%in%fully$ISO3C]
-  
-Incomplete<-data.frame(CountryName=DesCountries[unlist(sapply(Incomplete, function(st) which(DesIsos==st),simplify = T))],
-                  ISO3C=Incomplete, Status="Incomplete",
-                  RawData="Downloaded", ImpactData="Wrangled",
-                  ADMboundaries="Incomplete")
-
-# Partially complete countries
-itmp<-Incomplete$ISO3C%in%list.files("./CleanedData/SocioPoliticalData/Desinventar/") &
-  !Incomplete$ISO3C%in%fully$ISO3C
-# Extract them
-ParComp<-Incomplete[itmp,]
-Incomplete<-Incomplete[!itmp,]
-
-# Modify the partially completed countries
-ParComp$Status<-"Complete"
-ParComp$ADMboundaries<-"Wrangled but with ADM level 2 bodging"
-
-CurStat<-rbind(fully, ParComp, Incomplete)
-
-write_csv2(CurStat,"./CleanedData/MostlyImpactData/Desinventar/CountryStatus_all.csv")
-
+# fully<-read_csv2("./CleanedData/MostlyImpactData/Desinventar/CountryStatus_Full.csv")
 # 
-chk<-sapply(Incomplete$ISO3C, function(is) {
-  print(paste0("Trying for country: ",is))
-  out<-tryCatch(ReadDessie(is),error=function(e) NA)
-  if(is.na(out)) {print("FAIL")} else print("SUCCESS")
-  return(out)
-},simplify = T)
+# Incomplete<-list.files("./CleanedData/MostlyImpactData/Desinventar/"); Incomplete<-Incomplete[!grepl(".csv",Incomplete)]
+# Incomplete<-Incomplete[!Incomplete%in%fully$ISO3C]
+#   
+# Incomplete<-data.frame(CountryName=DesCountries[unlist(sapply(Incomplete, function(st) which(DesIsos==st),simplify = T))],
+#                   ISO3C=Incomplete, Status="Incomplete",
+#                   RawData="Downloaded", ImpactData="Wrangled",
+#                   ADMboundaries="Incomplete")
+# 
+# # Partially complete countries
+# itmp<-Incomplete$ISO3C%in%list.files("./CleanedData/SocioPoliticalData/Desinventar/") &
+#   !Incomplete$ISO3C%in%fully$ISO3C
+# # Extract them
+# ParComp<-Incomplete[itmp,]
+# Incomplete<-Incomplete[!itmp,]
+# 
+# # Modify the partially completed countries
+# ParComp$Status<-"Complete"
+# ParComp$ADMboundaries<-"Wrangled but with ADM level 2 bodging"
+# 
+# CurStat<-rbind(fully, ParComp, Incomplete)
+# 
+# write_csv2(CurStat,"./CleanedData/MostlyImpactData/Desinventar/CountryStatus_all.csv")
+# 
+# # 
+# chk<-sapply(Incomplete$ISO3C, function(is) {
+#   print(paste0("Trying for country: ",is))
+#   out<-tryCatch(ReadDessie(is),error=function(e) NA)
+#   if(is.na(out)) {print("FAIL")} else print("SUCCESS")
+#   return(out)
+# },simplify = T)
 
 
 

@@ -9,33 +9,6 @@ output: pdf_document
 
 knitr::opts_chunk$set(echo = TRUE)
 
-# Get the EMDAT data
-filez<-list.files("../../CleanedData/MostlyImpactData/EMDAT/",include.dirs = T,all.files = T,recursive = T,ignore.case = T)
-EMDAT<-do.call(rbind,lapply(filez,function(fff) {openxlsx::read.xlsx(paste0("../../CleanedData/MostlyImpactData/EMDAT/",fff),startRow = 7)}))
-EMDAT[EMDAT=="Source:"]<-NA
-# Make sure the start date is 2 characters
-EMDAT$Start.Day[nchar(EMDAT$Start.Day)==1 & !is.na(EMDAT$Start.Day)]<-
-  paste0("0",EMDAT$Start.Day[nchar(EMDAT$Start.Day)==1 & !is.na(EMDAT$Start.Day)])
-# Make sure the start month is 2 characters
-EMDAT$Start.Month[nchar(EMDAT$Start.Month)==1 & !is.na(EMDAT$Start.Month)]<-
-  paste0("0",EMDAT$Start.Month[nchar(EMDAT$Start.Month)==1 & !is.na(EMDAT$Start.Month)])
-# Make sure the end date is 2 characters
-EMDAT$End.Day[nchar(EMDAT$End.Day)==1 & !is.na(EMDAT$End.Day)]<-
-  paste0("0",EMDAT$End.Day[nchar(EMDAT$End.Day)==1 & !is.na(EMDAT$End.Day)])
-# Make sure the end month is 2 characters
-EMDAT$End.Month[nchar(EMDAT$End.Month)==1 & !is.na(EMDAT$End.Month)]<-
-  paste0("0",EMDAT$End.Month[nchar(EMDAT$End.Month)==1 & !is.na(EMDAT$End.Month)])
-
-# Start date in one
-EMDAT$sdate<-sapply(1:nrow(EMDAT),function(i) paste0(c(EMDAT$Start.Year[i],
-                                               EMDAT$Start.Month[i],
-                                               EMDAT$Start.Day[i]),collapse = "-"),simplify = T)
-# End date in one
-EMDAT$fdate<-sapply(1:nrow(EMDAT),function(i) paste0(c(EMDAT$End.Year[i],
-                                               EMDAT$End.Month[i],
-                                               EMDAT$End.Day[i]),collapse = "-"),simplify = T)
-
-EMDAT%<>%dplyr::select(-c(Start.Day,Start.Month,Start.Year,End.Day,End.Month,End.Year))
 
 # Extract the Desinventar data
 isos<-list.files("../../CleanedData/MostlyImpactData/Desinventar/",include.dirs = T,all.files = T,recursive = T,ignore.case = T); isos<-isos[!grepl(".xlsx",isos)]
@@ -49,10 +22,9 @@ GIDD<-readxl::read_xlsx("../../CleanedData/MostlyImpactData/IDMC/GIDD-IDMC.xlsx"
 
 
 # Filter EMDAT
-EMDAT%<>%filter(Disaster.Subtype=="Ground movement")
+# EMDAT%<>%filter(Disaster.Subtype=="Ground movement")
 # Filter Desinventar
-EQnams<-c("Sismo","Sis","EARTH TREMORS","TERREMOTO","Tremblement de terre","TREMBLEMENT DE TERRE","Earthquake","EARTHQUAKE","GROUND VIBRATIO")
-Dessie%<>%filter(event%in%EQnams)%>%mutate(sdate=date,fdate=sdate)%>%dplyr::select(-date)
+
 # Filter IDMC
 GIDD%<>%filter(`Hazard Sub Type`=="Earthquake")%>%mutate(sdate=`Date of Event (start)`)%>%dplyr::select(-`Date of Event (start)`)
 
@@ -123,22 +95,52 @@ ggsave("../../Plots/Impact_Only/EQs_ADMlevel.png",p,width = 7,height = 5)
 
 
 
-SearchUSGSbbox<-function(bbox,sdate,fdate=NULL,minmag=5){
+SearchUSGSbbox<-function(bbox,sdate,fdate=NULL,minmag=5,exdays=c(2,2)){
   
   debut<-"https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson"
-  geojsonR::FROM_GeoJson(paste0(debut,"&starttime=",as.Date(sdate)-1,"&endtime=",as.Date(fdate),
-                      "&minlongitude=",bbox[1],"&minlatitude=",bbox[2],
-                      "&maxlongitude=",bbox[3],"&maxlatitude=",bbox[4],
+  geojsonR::FROM_GeoJson(paste0(debut,"&starttime=",as.Date(sdate)-exdays[1],"&endtime=",as.Date(fdate)+exdays[1],
+                      # "&minlongitude=",bbox[1],"&minlatitude=",bbox[2],
+                      # "&maxlongitude=",bbox[3],"&maxlatitude=",bbox[4],
                       "&minmagnitude=",minmag,"&orderby=magnitude",
                       "&producttype=shakemap"))%>%return
   
+}
+
+# WHY IS USGS SO DIFFICULT? GIVE ME A DATE!
+GetUSGSdatetime<-function(USGSid){
+  url<-paste0("https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=",USGSid,"&format=geojson")
+  tmp<-geojsonR::FROM_GeoJson(url)
+  eventtime <- tmp$properties$products$dyfi[[1]]$properties$eventtime
+  if(is.null(eventtime)){
+    eventtime <- tmp$properties$products$shakemap[[1]]$properties$eventtime
+  }
+  return(as.Date(eventtime))
+}
+
+metaUSGS<-function(featie){
+  
+  date<-tryCatch(GetUSGSdatetime(featie$id),error=function(e) NA_Date_)
+  
+  data.frame(USGSid=featie$id,
+             date=date,
+             PAGER=ifelse(is.null(featie$properties$alert),NA,featie$properties$alert),
+             dataURL=ifelse(is.null(featie$properties$detail),NA,featie$properties$detail),
+             visURL=ifelse(is.null(featie$properties$url),NA,featie$properties$url),
+             minDepth=ifelse(is.null(featie$properties$dmin),NA,featie$properties$dmin),
+             feltSc=ifelse(is.null(featie$properties$felt),NA,featie$properties$felt),
+             magnitude=ifelse(is.null(featie$properties$mag),NA,featie$properties$mag),
+             magunit=ifelse(is.null(featie$properties$magType),NA,featie$properties$magType),
+             intensity=ifelse(is.null(featie$properties$mmi),NA,featie$properties$mmi),
+             intunit="MMI",
+             centLon=ifelse(is.null(featie$geometry$coordinates[1]),NA,featie$geometry$coordinates[1]),
+             centLat=ifelse(is.null(featie$geometry$coordinates[2]),NA,featie$geometry$coordinates[2]))
 }
 
 GetISObbox<-function(ISO3C){
   out<-do.call(rbind,lapply(1:length(ISO3C),function(is){
     bboxs<-rjson::fromJSON(file="../../CleanedData/SocioPoliticalData/ISO_BBOX.json")
     tmp<-tryCatch(unlist(bboxs[[is]])[c(2,1,4,3)],error=function(e) NA)
-    if(any(is.na(tmp))) return(data.frame(mnlo=0,mnla=0,mxlo=0,mxla=0))
+    if(any(is.na(tmp))) return(data.frame(mnlo=NA,mnla=NA,mxlo=NA,mxla=NA))
     names(tmp)<-c("mnlo","mnla","mxlo","mxla")
     return(t(as.data.frame(tmp)))
   }))
@@ -150,12 +152,50 @@ bbies<-GetISObbox(SimMerg$ISO)
 
 saveRDS(list(SimMerg=SimMerg,bbies=bbies),"../../Results/Impact_Only/SimpleMerge.RData")
 
-out<-do.call(rbind,lapply(1:nrow(SimMerg),function(i) {
-  tmp<-SearchUSGSbbox(bbies[i,],SimMerg$sdate[i],SimMerg$fdate[i],minmag=5)
-  
+inpy<-readRDS("../../Results/Impact_Only/SimpleMerge.RData")
+SimMerg<-duplicated(inpy$SimMerg)
+bbies<-inpy$bbies
+
+skelly<-as.data.frame(matrix(NA,1,13))
+colnames(skelly)<-c("USGSid","date","PAGER","dataURL","visURL","minDepth","feltSc","magnitude","magunit","intensity","intunit","centLon","centLat")
+
+inds<-which(as.integer(SimMerg$Year)>2000 & !duplicated(SimMerg))
+
+out<-do.call(rbind,lapply(inds,function(i) {
+  print(unname(unlist(c(SimMerg[i,c(1,4)]))))
+  # Try to find the event using the USGS search function
+  tmp<-tryCatch(SearchUSGSbbox(bbies[i,],SimMerg$sdate[i],SimMerg$fdate[i],minmag=5,exdays = c(2,2)),
+                                                   error=function(e) NA)
+  # Check for fails
+  if(all(is.na(tmp))) return(cbind(skelly,SimMerg[i,],data.frame(i=i)))
+  if(length(tmp$features)==0) return(cbind(skelly,SimMerg[i,],data.frame(i=i)))
+  # Extract all the important detail that we need
+  usinf<-do.call(rbind,lapply(1:length(tmp$features),
+                              function(j) tryCatch(metaUSGS(tmp$features[[j]]),
+                                                   error=function(e) skelly)))
+  usinf$ISO<-SimMerg$ISO[i]; usinf$i<-i
+  print("success")
+  return(merge(usinf,SimMerg[i,],by="ISO"))
 }))
 
+out%<>%cbind(as.data.frame(GetISObbox(out$ISO)))
 
+out$inBBOX<-out$centLon>out$mnlo & out$centLon<out$mxlo &
+            out$centLat>out$mnla & out$centLat<out$mxla
+
+out$Dmnlo<-abs(out$mnlo-out$centLon)
+out$Dmxlo<-abs(out$mxlo-out$centLon)
+out$Dmnla<-abs(out$mnla-out$centLat)
+out$Dmxla<-abs(out$mxla-out$centLat)
+
+out$minDlon<-sapply(1:nrow(out),function(i) min(out$Dmnlo[i],out$Dmxlo[i]))
+out$minDlat<-sapply(1:nrow(out),function(i) min(out$Dmnla[i],out$Dmxla[i]))
+
+out$distance<-sqrt(out$minDlat^2+out$minDlon^2)
+
+out$Dmnlo<-out$Dmnla<-out$Dmxlo<-out$Dmxla<-NULL
+
+saveRDS(out,"./")
 ```
 
 ## Introduction
@@ -174,6 +214,64 @@ You can also embed plots, for example:
 
 ```{r pressure, echo=FALSE}
 plot(pressure)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
