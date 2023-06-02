@@ -132,6 +132,7 @@ metaUSGS<-function(featie){
              magunit=ifelse(is.null(featie$properties$magType),NA,featie$properties$magType),
              intensity=ifelse(is.null(featie$properties$mmi),NA,featie$properties$mmi),
              intunit="MMI",
+             tsunami=ifelse(is.null(featie$properties$tsunami),NA,featie$properties$tsunami),
              centLon=ifelse(is.null(featie$geometry$coordinates[1]),NA,featie$geometry$coordinates[1]),
              centLat=ifelse(is.null(featie$geometry$coordinates[2]),NA,featie$geometry$coordinates[2]))
 }
