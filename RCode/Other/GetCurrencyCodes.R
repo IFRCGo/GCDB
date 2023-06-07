@@ -58,11 +58,10 @@ print("Countries or entities with no ISO3 code:")
 print(curr$Country[is.na(curr$ISO3)])
 # Remove all rows with NAs as currency characher and number codes
 curr%<>%filter(!is.na(ISO4217C) & !is.na(ISO4217N))
-
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#
 #@@@@@@@@@@@@@@@@@@@@@ IIPS FORMAT @@@@@@@@@@@@@@@@@@@@#
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#
-curr%<>%mutate(list_name="currencytype")%>%
+curr%<>%mutate(list_name="currencytype",ISO4217C=paste0("ISO4217C-",ISO4217C))%>%
   dplyr::select(list_name,ISO4217C,Currency,ISO3,Country,
                 StartDate,WithdrawalDate,MinorUnit)
 # Save it out

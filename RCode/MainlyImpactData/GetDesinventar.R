@@ -480,28 +480,17 @@ DesHazards<-function(Dessie,haz="EQ"){
   Dessie%>%filter(event%in%haznams)
 }
 
-DesImpSubCats<-c("deaths"="imptypepopcnt",
-              "injured"="imptypepopcnt",
-              "missing"="imptypepopcnt",
-              "houses_destroyed"="impinftot",
-              "houses_damaged"="impinftot",
-              "directly_affected"="imptypepopcnt",
-              "indirectly_affected"="imptypepopcnt",
-              "relocated"="imptypepopcnt",
-              "evacuated"="imptypepopcnt",
-              "losses_in_dollar"="impecotot",
-              "losses_local_currency"="impecotot",
-              "education_centers"="impphyedu",
-              "hospitals"="impphyhealth",
-              "damages_in_crops_ha"="impinfarabl",
-              "lost_cattle"="impenvliv",
-              "damages_in_roads_mts"="impinfrds")
-
-DesImpMeasure<-c("")
-
-DesImpLabs<-function(Dessie){
-  
-  
+ImpLabs<-function(ImpDB,nomDB="Desinventar"){
+  # Open up the database impact taxonomy conversion file
+  imptax<-openxlsx::read.xlsx("/home/hamishwp/Documents/BEAST/Coding/IFRC/GCDB/RawData/MostlyImpactData/ConvertImpact_Taxonomy.xlsx")%>%
+    filter(src_db==nomDB)
+  # Find where the Desinventar data impact estimates stop 
+  vlim<-which(colnames(ImpDB)%in%imptax$VarName)
+  # For all columns that correspond to impact estimates, return the data
+  ImpDB%>%reshape2::melt(measure.vars=colnames(ImpDB)[vlim])%>%
+    mutate(VarName=as.character(variable),impvalue=value)%>%
+    dplyr::select(-c(variable,value))%>%
+    left_join(imptax,by="VarName")%>%dplyr::select(-VarName)
   
 }
 
@@ -511,20 +500,39 @@ Des2impGCDB<-function(Dessie,haz="EQ",spatf=NULL){
   # Modify date names
   Dessie$imp_sdate<-Dessie$imp_fdate<-Dessie$ev_sdate<-Dessie$ev_fdate<-Dessie$date
   Dessie$ev_name_orig<-Dessie$event; Dessie$event<-NULL
-  # Add the continent
+  # Add the continent, then remove the unnecesary layers
   Dessie%<>%mutate(Continent=convIso3Continent(ISO3))%>%
-    dplyr::select(-date)
-  # Pair each event with a geospatial region (polygon)
+    dplyr::select(-c(date,level0,name0))%>%filter(!is.na(Continent))
+  # Pair each event with a GLIDE number
   Dessie$GCDB_ID<-Dessie%>%GetGLIDEnum(haz=haz)
+  # Correct the labels of the impacts, melting by impact detail
+  Dessie%<>%ImpLabs(nomDB = "Desinventar")
+  # Create an event- and impact-specific ID
+  Dessie$impsub_ID<-Dessie%>%dplyr::select(c(GCDB_ID,hazcluster,impactdetails,src_org))%>%
+    mutate(src_org=stringr::str_remove(stringi::stri_trans_totitle(src_org),pattern = " "))%>%
+    apply(1,function(x) paste0(x,collapse = "-"))
+  # Now fix the spatial elements
+  
+  
+  # tmp<-googledrive::drive_download("https://docs.google.com/spreadsheets/d/1agqy6DV5VmJuaamVaXZE7jfkDOC5AOhM/edit?usp=sharing&ouid=109118346520870360454&rtpof=true&sd=true",overwrite = T)
+  # tmp<-openxlsx::read.xlsx(tmp$local_path)
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   # Melt and translate impact columns according to impact taxonomy
   Dessie$impsub_ID<-Dessie%>%dplyr::select(c(GCDB_ID,hazcluster,impsubcat,src_org))%>%
     mutate(src_org=stringr::str_remove(stringi::stri_trans_totitle(src_org),pattern = " "))%>%
     apply(1,function(x) paste0(x,collapse = "-"))
   # 
-  1:(which(colnames(Dessie)=="level0")-1)
-  # 
-  tmp<-googledrive::drive_download("https://docs.google.com/spreadsheets/d/1agqy6DV5VmJuaamVaXZE7jfkDOC5AOhM/edit?usp=sharing&ouid=109118346520870360454&rtpof=true&sd=true",overwrite = T)
-  tmp<-openxlsx::read.xlsx(tmp$local_path)
+  
   
   
   
