@@ -357,6 +357,12 @@ convIso3Continent<-function(iso3){
   left_join(data.frame(ISO3=iso3),raster::ccodes()[,c("ISO3","continent")],by="ISO3")$continent
 }
 
+convCountryIso3<-function(iso3){
+  countrycode::countrycode(sourcevar = iso3,
+                           origin = "country.name",
+                           destination = "iso3c",warn = F)
+}
+
 InterpDay<-function(ndata,day){
   val<-data.frame()
   for (iso3c in unique(ndata$iso3)){
