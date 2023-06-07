@@ -480,7 +480,32 @@ DesHazards<-function(Dessie,haz="EQ"){
   Dessie%>%filter(event%in%haznams)
 }
 
-Des2impGCDB<-function(Dessie,haz="EQ"){
+DesImpSubCats<-c("deaths"="imptypepopcnt",
+              "injured"="imptypepopcnt",
+              "missing"="imptypepopcnt",
+              "houses_destroyed"="impinftot",
+              "houses_damaged"="impinftot",
+              "directly_affected"="imptypepopcnt",
+              "indirectly_affected"="imptypepopcnt",
+              "relocated"="imptypepopcnt",
+              "evacuated"="imptypepopcnt",
+              "losses_in_dollar"="impecotot",
+              "losses_local_currency"="impecotot",
+              "education_centers"="impphyedu",
+              "hospitals"="impphyhealth",
+              "damages_in_crops_ha"="impinfarabl",
+              "lost_cattle"="impenvliv",
+              "damages_in_roads_mts"="impinfrds")
+
+DesImpMeasure<-c("")
+
+DesImpLabs<-function(Dessie){
+  
+  
+  
+}
+
+Des2impGCDB<-function(Dessie,haz="EQ",spatf=NULL){
   # Extract only the relevant hazards
   Dessie%<>%DesHazards(haz=haz)
   # Modify date names
@@ -493,18 +518,18 @@ Des2impGCDB<-function(Dessie,haz="EQ"){
   Dessie$GCDB_ID<-Dessie%>%GetGLIDEnum(haz=haz)
   # Melt and translate impact columns according to impact taxonomy
   Dessie$impsub_ID<-Dessie%>%dplyr::select(c(GCDB_ID,hazcluster,impsubcat,src_org))%>%
-    mutate(src_org=stringi::stri_extract(stringr::str_remove(stringi::stri_trans_totitle(src_org),pattern = " "), regex = "[:alpha:]+"))%>%
+    mutate(src_org=stringr::str_remove(stringi::stri_trans_totitle(src_org),pattern = " "))%>%
     apply(1,function(x) paste0(x,collapse = "-"))
   # 
+  1:(which(colnames(Dessie)=="level0")-1)
+  # 
+  tmp<-googledrive::drive_download("https://docs.google.com/spreadsheets/d/1agqy6DV5VmJuaamVaXZE7jfkDOC5AOhM/edit?usp=sharing&ouid=109118346520870360454&rtpof=true&sd=true",overwrite = T)
+  tmp<-openxlsx::read.xlsx(tmp$local_path)
   
   
   
   
-  
-  
-  
-  
-  
+  # Add the spatial polygon file associated to each one, and log it properly
   
   impGCDB(impacts = Dessie)
   
@@ -533,7 +558,7 @@ GetDesinventar<-function(haz="EQ"){
     return(out)
   }))
   # Get in impGCDB format
-  impies<-Des2impGCDB(Dessie,haz=haz)
+  impies<-Des2impGCDB(Dessie,haz=haz,spatf=spatf)
   # Form a GCDB impacts object from EMDAT data (if there is a problem, return an empty impGCDB object)
   tryCatch(new("impGCDB",impies),error=function(e) new("impGCDB"))
 }
