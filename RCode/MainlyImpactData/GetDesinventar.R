@@ -512,7 +512,7 @@ Des2impGCDB<-function(Dessie,haz="EQ",spatf=NULL){
     mutate(src_org=stringr::str_remove(stringi::stri_trans_totitle(src_org),pattern = " "))%>%
     apply(1,function(x) paste0(x,collapse = "-"))
   # Now fix the spatial elements
-  
+  spatf
   
   # tmp<-googledrive::drive_download("https://docs.google.com/spreadsheets/d/1agqy6DV5VmJuaamVaXZE7jfkDOC5AOhM/edit?usp=sharing&ouid=109118346520870360454&rtpof=true&sd=true",overwrite = T)
   # tmp<-openxlsx::read.xlsx(tmp$local_path)

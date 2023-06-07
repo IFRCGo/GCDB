@@ -10,10 +10,12 @@ GetSourceFiles<-function(packred){
     source('RCode/MainlyHazardData/GetGDACS.R')
     source('RCode/MainlyHazardData/GetUSGS.R')
     source('RCode/MainlyHazardData/GetDisaster.R')
+    source('RCode/MainlyHazardData/GetGLIDEnumber.R')
     # Impact related:
     source('RCode/MainlyImpactData/GetDisplacements.R')
     # Admin boundaries & Infrastructure related:
     source('RCode/Spatio-Infra-Political/GetOSM.R')
+    # Other:
     
   }
   
