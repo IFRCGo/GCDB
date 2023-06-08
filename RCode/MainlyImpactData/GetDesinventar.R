@@ -33,18 +33,19 @@ DesCountries = c("Comoros", "Djibouti", "Ethiopia", "Barbados", "Gambia", "Guine
                 "Trinidad and Tobago",
                 "Secretary of Pacific Community (23 countries)")
 
+# Link from Desinventar to extract the data
+desbaseurl<-"https://www.desinventar.net/DesInventar/download/DI_export_"
+
 GetDessie<-function(iso3,forcer=F){
   iso3%<>%str_to_lower()
   # Don't waste time if the file already exists
   if(file.exists(paste0("./RawData/MostlyImpactData/Desinventar/",iso3,"/DI_export_",iso3,".xml")) & !forcer) return(T)
-  # Link from Desinventar to extract the data
-  baseurl<-"https://www.desinventar.net/DesInventar/download/DI_export_"
   # Temporary location to store the zip file
   temp<-"./RawData/tmp/tmp.zip"
   # Set the maximum timeout limit
   options(timeout = max(500, getOption("timeout")))
   # Download the raster file to the location 'temp'
-  download.file(paste0(baseurl,iso3,".zip"),temp)
+  download.file(paste0(desbaseurl,iso3,".zip"),temp)
   # Output location: one folder per country, to house everything
   outloc<-paste0("./RawData/MostlyImpactData/Desinventar/",iso3)
   # Check the end location exists
@@ -468,7 +469,18 @@ WrangleDessie<-function(iso3){
 
 DesHazards<-function(Dessie,haz="EQ"){
   if(haz=="EQ"){
+    # Names in Desinventar specifically for this hazard type
     haznams<-c("Sismo","Sis","EARTH TREMORS","TERREMOTO","Tremblement de terre","TREMBLEMENT DE TERRE","Earthquake","EARTHQUAKE","GROUND VIBRATIO")
+    # Filter for only this hazard
+    Dessie%<>%filter(event%in%haznams)
+    # Add hazard taxonomy
+    Dessie$hazspec<-"GH0001,GH0002"
+    Dessie$haztype<-"haztypegeohaz"
+    Dessie$hazcluster<-"hazgeoseis"
+    Dessie$hazpotlink<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
+    
+    return(Dessie)
+    
   } else if(haz=="FL"){
     stop("This hazard isn't ready for Desinventar yet")
   } else if(haz=="TC"){
@@ -477,70 +489,49 @@ DesHazards<-function(Dessie,haz="EQ"){
     stop("This hazard isn't ready for Desinventar yet")
   } else stop("Hazard not recognised for Desinventar data")
   
-  Dessie%>%filter(event%in%haznams)
-}
-
-ImpLabs<-function(ImpDB,nomDB="Desinventar"){
-  # Open up the database impact taxonomy conversion file
-  imptax<-openxlsx::read.xlsx("/home/hamishwp/Documents/BEAST/Coding/IFRC/GCDB/RawData/MostlyImpactData/ConvertImpact_Taxonomy.xlsx")%>%
-    filter(src_db==nomDB)
-  # Find where the Desinventar data impact estimates stop 
-  vlim<-which(colnames(ImpDB)%in%imptax$VarName)
-  # For all columns that correspond to impact estimates, return the data
-  ImpDB%>%reshape2::melt(measure.vars=colnames(ImpDB)[vlim])%>%
-    mutate(VarName=as.character(variable),impvalue=value)%>%
-    dplyr::select(-c(variable,value))%>%
-    left_join(imptax,by="VarName")%>%dplyr::select(-VarName)
   
 }
 
-Des2impGCDB<-function(Dessie,haz="EQ",spatf=NULL){
+Des2impGCDB<-function(Dessie,haz="EQ"){
+  # Modify date names
+  Dessie$imp_sdate<-Dessie$imp_fdate<-Dessie$ev_sdate<-Dessie$ev_fdate<-Dessie$unitdate<-Dessie$date
+  # Any event without a date are automatically removed
+  Dessie%<>%filter(!is.na(imp_sdate))
   # Extract only the relevant hazards
   Dessie%<>%DesHazards(haz=haz)
-  # Modify date names
-  Dessie$imp_sdate<-Dessie$imp_fdate<-Dessie$ev_sdate<-Dessie$ev_fdate<-Dessie$date
-  Dessie$ev_name_orig<-Dessie$event; Dessie$event<-NULL
+  # Rename the event name
+  colnames(Dessie)[colnames(Dessie)=="event"]<-"ev_name_orig"
   # Add the continent, then remove the unnecesary layers
   Dessie%<>%mutate(Continent=convIso3Continent(ISO3))%>%
     dplyr::select(-c(date,level0,name0))%>%filter(!is.na(Continent))
-  # Pair each event with a GLIDE number
-  Dessie$GCDB_ID<-Dessie%>%GetGLIDEnum(haz=haz)
+  # Generate GCDB event ID
+  Dessie$GCDB_ID<-GetGCDB_ID(Dessie,haz=haz)
+  # Add some of the extra details that are Desinventar-specific
+  Dessie$est_type<-"Primary"
+  Dessie$src_URL<-paste0(desbaseurl,Dessie$ISO3,".zip")
+  Dessie$spat_srcorg<-Dessie$src_org<-"Local Government Estimate"
+  Dessie$src_db<-"Desinventar"
+  Dessie$src_orgtype<-"orgtypegov"
+  Dessie$spat_type<-"Polygon"
+  Dessie$spat_ID<-apply(Dessie[,c("level1","level2")],1,function(x) {
+    if(all(is.na(x))) return(NA_character_)
+    if(any(is.na(x))) return(x[!is.na(x)])
+    paste0(c(ifelse(is.na(x[1]),"",x[1]),
+           ifelse(is.na(x[2]),"",x[2])),
+           collapse = ",")
+    },simplify = T)
+  # Admin level resolution
+  Dessie$spat_res<-"ADM-0"; Dessie$spat_res[!is.na(Dessie$level1)]<-"ADM-1"; Dessie$spat_res[!is.na(Dessie$level2)]<-"ADM-2"
+  # Clean up!
+  Dessie%<>%dplyr::select(-c(level1,level2,name1,name2))
   # Correct the labels of the impacts, melting by impact detail
   Dessie%<>%ImpLabs(nomDB = "Desinventar")
-  # Create an event- and impact-specific ID
-  Dessie$impsub_ID<-Dessie%>%dplyr::select(c(GCDB_ID,hazcluster,impactdetails,src_org))%>%
-    mutate(src_org=stringr::str_remove(stringi::stri_trans_totitle(src_org),pattern = " "))%>%
+  # Create an impact-specific ID
+  Dessie$impsub_ID<-Dessie%>%dplyr::select(c(GCDB_ID,src_db,hazspec,impactdetails,spat_ID))%>%
+    mutate(src_db=stringr::str_remove(stringi::stri_trans_totitle(src_db),pattern = " "))%>%
     apply(1,function(x) paste0(x,collapse = "-"))
-  # Now fix the spatial elements
-  spatf
-  
-  # tmp<-googledrive::drive_download("https://docs.google.com/spreadsheets/d/1agqy6DV5VmJuaamVaXZE7jfkDOC5AOhM/edit?usp=sharing&ouid=109118346520870360454&rtpof=true&sd=true",overwrite = T)
-  # tmp<-openxlsx::read.xlsx(tmp$local_path)
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  # Melt and translate impact columns according to impact taxonomy
-  Dessie$impsub_ID<-Dessie%>%dplyr::select(c(GCDB_ID,hazcluster,impsubcat,src_org))%>%
-    mutate(src_org=stringr::str_remove(stringi::stri_trans_totitle(src_org),pattern = " "))%>%
-    apply(1,function(x) paste0(x,collapse = "-"))
-  # 
-  
-  
-  
-  
-  
-  # Add the spatial polygon file associated to each one, and log it properly
-  
-  impGCDB(impacts = Dessie)
-  
+  # Add missing columns & reorder the dataframe to fit imp_GCDB object
+  Dessie%>%AddEmptyColImp()
 }
 
 GetDesinventar<-function(haz="EQ"){
@@ -566,10 +557,16 @@ GetDesinventar<-function(haz="EQ"){
     return(out)
   }))
   # Get in impGCDB format
-  impies<-Des2impGCDB(Dessie,haz=haz,spatf=spatf)
+  impies<-Des2impGCDB(Dessie,haz=haz)
+  
+  return(impies)
   # Form a GCDB impacts object from EMDAT data (if there is a problem, return an empty impGCDB object)
-  tryCatch(new("impGCDB",impies),error=function(e) new("impGCDB"))
+  # tryCatch(new("impGCDB",impies),error=function(e) new("impGCDB"))
 }
+# tmp<-Dessie[nrow(Dessie):1,]%>%filter(impvalue>0)
+# inds<-tmp%>%dplyr::select(impsub_ID)%>%duplicated()
+# Dessie<-tmp[!inds,]
+# saveRDS(Dessie,"./CleanedData/MostlyImpactData/Desinventar/subDessie.RData")
 
 
 # chk<-sapply(DesIsos, function(is) tryCatch(GetDessie(is),error=function(e) NA),simplify = T)
@@ -635,8 +632,8 @@ GetDesinventar<-function(haz="EQ"){
 
 
 
-javascript:window.location='http://www.desinventar.net/DesInventar/stats_excel.jsp?bookmark=1&countrycode=alb&maxhits=100&lang=EN&logic=AND&sortby=0&frompage=/definestats.jsp&bSum=Y&_stat=fichas.fechano,,&nlevels=1&_variables=1,fichas.muertos,fichas.heridos,fichas.desaparece,fichas.vivdest,fichas.vivafec,fichas.damnificados,fichas.afectados,fichas.reubicados,fichas.evacuados,fichas.valorus,fichas.valorloc,fichas.nescuelas,fichas.nhospitales,fichas.nhectareas,fichas.cabezas,fichas.kmvias&rndp=13180'
-
-"https://www.desinventar.net/DesInventar/stats_spreadsheet.jsp?bookmark=1&countrycode=alb&maxhits=100&lang=EN&logic=AND&sortby=0&frompage=/definestats.jsp&bSum=Y&_stat=fichas.fechano,,&nlevels=1&_variables=1,fichas.muertos,fichas.heridos,fichas.desaparece,fichas.vivdest,fichas.vivafec,fichas.damnificados,fichas.afectados,fichas.reubicados,fichas.evacuados,fichas.valorus,fichas.valorloc,fichas.nescuelas,fichas.nhospitales,fichas.nhectareas,fichas.cabezas,fichas.kmvias&_eventos="
+# javascript:window.location='http://www.desinventar.net/DesInventar/stats_excel.jsp?bookmark=1&countrycode=alb&maxhits=100&lang=EN&logic=AND&sortby=0&frompage=/definestats.jsp&bSum=Y&_stat=fichas.fechano,,&nlevels=1&_variables=1,fichas.muertos,fichas.heridos,fichas.desaparece,fichas.vivdest,fichas.vivafec,fichas.damnificados,fichas.afectados,fichas.reubicados,fichas.evacuados,fichas.valorus,fichas.valorloc,fichas.nescuelas,fichas.nhospitales,fichas.nhectareas,fichas.cabezas,fichas.kmvias&rndp=13180'
+# 
+# "https://www.desinventar.net/DesInventar/stats_spreadsheet.jsp?bookmark=1&countrycode=alb&maxhits=100&lang=EN&logic=AND&sortby=0&frompage=/definestats.jsp&bSum=Y&_stat=fichas.fechano,,&nlevels=1&_variables=1,fichas.muertos,fichas.heridos,fichas.desaparece,fichas.vivdest,fichas.vivafec,fichas.damnificados,fichas.afectados,fichas.reubicados,fichas.evacuados,fichas.valorus,fichas.valorloc,fichas.nescuelas,fichas.nhospitales,fichas.nhectareas,fichas.cabezas,fichas.kmvias&_eventos="
 
 

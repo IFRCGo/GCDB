@@ -363,6 +363,21 @@ convCountryIso3<-function(iso3){
                            destination = "iso3c",warn = F)
 }
 
+GetISObbox<-function(ISO3C){
+  filez<-"./CleanedData/SocioPoliticalData/ISO_BBOX.json"
+  if(!file.exists(filez)) write(rjson::toJSON(rjson::fromJSON(file = "https://gist.github.com/botzill/fc2a1581873200739f6dc5c1daf85a7d/raw/002372a57a40f299a463122c039faf9f927b13fe/countries_bbox.json")),filez)
+  bboxs<-rjson::fromJSON(file=filez)
+  
+  out<-do.call(rbind,lapply(1:length(ISO3C),function(is){
+    tmp<-tryCatch(unlist(bboxs[[is]])[c(2,1,4,3)],error=function(e) NA)
+    if(any(is.na(tmp))) return(data.frame(mnlo=NA,mnla=NA,mxlo=NA,mxla=NA))
+    names(tmp)<-c("mnlo","mnla","mxlo","mxla")
+    return(t(as.data.frame(tmp)))
+  }))
+  row.names(out)<-NULL
+  return(out)
+}
+
 InterpDay<-function(ndata,day){
   val<-data.frame()
   for (iso3c in unique(ndata$iso3)){

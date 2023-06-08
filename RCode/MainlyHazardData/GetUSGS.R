@@ -37,16 +37,19 @@ ExtractUSGS<-function(url,namer,I0=NULL,plotty=F){
 }
 
 # Using an API call, search through USGS database for a specific EQ & pre/aftershocks
-SearchUSGSbbox<-function(bbox,sdate,fdate=NULL,minmag=5){
+SearchUSGSbbox<-function(bbox,sdate,fdate=NULL,minmag=5,exdays=c(2,2)){
   
   debut<-"https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson"
-  FROM_GeoJson(paste0(debut,"&starttime=",as.Date(sdate)-1,"&endtime=",as.Date(fdate),
-                      "&minlongitude=",bbox[1],"&minlatitude=",bbox[2],
-                      "&maxlongitude=",bbox[3],"&maxlatitude=",bbox[4],
-                      "&minmagnitude=",minmag,"&orderby=magnitude",
-                      "&producttype=shakemap"))%>%return
+  geojsonR::FROM_GeoJson(paste0(debut,"&starttime=",as.Date(sdate)-exdays[1],"&endtime=",as.Date(fdate)+exdays[1],
+                                # "&minlongitude=",bbox[1],"&minlatitude=",bbox[2],
+                                # "&maxlongitude=",bbox[3],"&maxlatitude=",bbox[4],
+                                "&minmagnitude=",minmag,"&orderby=magnitude",
+                                "&producttype=shakemap"))%>%return
   
 }
+
+USGSskelly<-as.data.frame(matrix(NA,1,14))
+colnames(USGSskelly)<-c("USGSid","date","PAGER","dataURL","visURL","minDepth","feltSc","magnitude","magunit","intensity","intunit","tsunami","centLon","centLat")
 
 # Make sure the USGS data wasn't empty or entirely outside of the specified boundary box
 check_hazsdf<-function(hazsdf=NULL,minmag,bbox=NULL){
@@ -103,7 +106,7 @@ GetUSGS_id<-function(USGSid,titlz="tmp",I0=4.5,minmag=5){
 # WHY IS USGS SO DIFFICULT? GIVE ME A DATE!
 GetUSGSdatetime<-function(USGSid){
   url<-paste0("https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=",USGSid,"&format=geojson")
-  tmp<-FROM_GeoJson(url)
+  tmp<-geojsonR::FROM_GeoJson(url)
   eventtime <- tmp$properties$products$dyfi[[1]]$properties$eventtime
   if(is.null(eventtime)){
     eventtime <- tmp$properties$products$shakemap[[1]]$properties$eventtime
@@ -111,6 +114,70 @@ GetUSGSdatetime<-function(USGSid){
   return(as.Date(eventtime))
 }
 
+metaUSGS<-function(featie){
+  
+  date<-tryCatch(GetUSGSdatetime(featie$id),error=function(e) NA_Date_)
+  
+  data.frame(USGSid=featie$id,
+             date=date,
+             PAGER=ifelse(is.null(featie$properties$alert),NA,featie$properties$alert),
+             dataURL=ifelse(is.null(featie$properties$detail),NA,featie$properties$detail),
+             visURL=ifelse(is.null(featie$properties$url),NA,featie$properties$url),
+             minDepth=ifelse(is.null(featie$properties$dmin),NA,featie$properties$dmin),
+             feltSc=ifelse(is.null(featie$properties$felt),NA,featie$properties$felt),
+             magnitude=ifelse(is.null(featie$properties$mag),NA,featie$properties$mag),
+             magunit=ifelse(is.null(featie$properties$magType),NA,featie$properties$magType),
+             intensity=ifelse(is.null(featie$properties$mmi),NA,featie$properties$mmi),
+             intunit="MMI",
+             tsunami=ifelse(is.null(featie$properties$tsunami),NA,featie$properties$tsunami),
+             centLon=ifelse(is.null(featie$geometry$coordinates[1]),NA,featie$geometry$coordinates[1]),
+             centLat=ifelse(is.null(featie$geometry$coordinates[2]),NA,featie$geometry$coordinates[2]))
+}
+
+MatchImpHaz<-function(SimMerg){
+  # No data before 2000
+  inds<-as.integer(AsYear(SimMerg$imp_sdate))>2000 & !duplicated(SimMerg); inds[is.na(inds)]<-F
+  # Bounding box
+  bbies<-GetISObbox(SimMerg$ISO3)
+  # Don't unecessarily spam USGS
+  indind<-!SimMerg%>%dplyr::select(GCDB_ID)%>%duplicated & inds
+  
+  out<-do.call(rbind,lapply(which(indind),function(i) {
+    print(SimMerg$GCDB_ID[i])
+    # Try to find the event using the USGS search function
+    tmp<-tryCatch(SearchUSGSbbox(bbies[i,],SimMerg$imp_sdate[i],SimMerg$imp_fdate[i],minmag=5,exdays = c(2,2)),
+                  error=function(e) NA)
+    # Check for fails
+    if(all(is.na(tmp))) return(cbind(USGSskelly,SimMerg[i,],data.frame(i=i)))
+    if(length(tmp$features)==0) return(cbind(USGSskelly,SimMerg[i,],data.frame(i=i)))
+    # Extract all the important detail that we need
+    usinf<-do.call(rbind,lapply(1:length(tmp$features),
+                                function(j) tryCatch(metaUSGS(tmp$features[[j]]),
+                                                     error=function(e) USGSskelly)))
+    usinf$ISO3<-SimMerg$ISO3[i]; usinf$i<-i
+    print("success")
+    return(merge(usinf,SimMerg[i,],by="ISO3"))
+  }))
+  
+  out%<>%cbind(as.data.frame(GetISObbox(out$ISO3)))
+  
+  out$inBBOX<-out$centLon>out$mnlo & out$centLon<out$mxlo &
+    out$centLat>out$mnla & out$centLat<out$mxla
+  
+  out$Dmnlo<-abs(out$mnlo-out$centLon)
+  out$Dmxlo<-abs(out$mxlo-out$centLon)
+  out$Dmnla<-abs(out$mnla-out$centLat)
+  out$Dmxla<-abs(out$mxla-out$centLat)
+  
+  out$minDlon<-sapply(1:nrow(out),function(i) min(out$Dmnlo[i],out$Dmxlo[i]))
+  out$minDlat<-sapply(1:nrow(out),function(i) min(out$Dmnla[i],out$Dmxla[i]))
+  
+  out$distance<-sqrt(out$minDlat^2+out$minDlon^2)
+  
+  out$Dmnlo<-out$Dmnla<-out$Dmxlo<-out$Dmxla<-NULL
+  
+  return(out)
+}
 # Extract EQ data from USGS for a specified event
 GetUSGS<-function(USGSid=NULL,bbox,sdate,fdate=NULL,titlz="tmp",I0=4.5,minmag=5){
   

@@ -17,7 +17,8 @@ add_impGCDBinfo<-function(){
        org_sec="Information Management - Geneva, CH")
 }
  
-col_impGCDB<-c("GCDB_ID"="character", # Overall event ID - aim is to be mostly GLIDE numbers
+col_impGCDB<-c("GCDB_ID"="character", # GCDB event ID
+               "GLIDE"="character", # GLIDE number of impacting-hazard (not necessarily the primary hazard)
                "impsub_ID"="character", # ID of each impact element in the overall event
                "imphaz_ID"="character", # ID of each hazard of each impact element in the overall event
                "ev_name_orig"="character", # Name of the event in original language
@@ -44,13 +45,53 @@ col_impGCDB<-c("GCDB_ID"="character", # Overall event ID - aim is to be mostly G
                "haztype"="character", # Impacting hazard type
                "hazcluster"="character", # Impacting hazard cluster
                "hazspec"="character", # Impacting specific hazard
+               "hazlink"="character", # Associated impactful-hazards to the specific hazard
+               "hazpotlink"="character", # Potential other impactful-hazards that may be associated to the specific hazard
                "spat_ID"="character", # ID of the spatial object
                "spat_type"="character", # Spatial object type
+               "spat_res"="character", # Spatial resolution of impact estimate
                "spat_srcorg"="character") # Source organisation from where the spatial object comes from
 
 oblig_impGCDB<-c("GCDB_ID","impsub_ID","ISO3","impcat","impsubcat","imp_units",
                  "imp_type","est_type","src_org","src_orgtype","src_URL",
                  "haztype","hazcluster")
+
+GetGCDB_ID<-function(DF,haz="EQ") {
+  namerz<-DF%>%
+    mutate(haz=haz)%>%
+    dplyr::select(haz,ev_sdate,ISO3)%>%
+    apply(1,function(x) paste0(x,collapse = "-"))
+  
+  paste0(namerz,"-GCDB")
+}
+
+AddEmptyColImp<-function(DF){
+  for(i in which(!names(col_impGCDB)%in%colnames(DF))){
+    tmp<-NA
+    class(tmp)<-col_impGCDB[i]
+    DF$tmp<-tmp
+    colnames(DF)[ncol(DF)]<-names(col_impGCDB)[i]
+  }
+  DF[,names(col_impGCDB)]
+}
+
+ImpLabs<-function(ImpDB,nomDB="Desinventar"){
+  # Open up the database impact taxonomy conversion file
+  imptax<-openxlsx::read.xlsx("/home/hamishwp/Documents/BEAST/Coding/IFRC/GCDB/RawData/MostlyImpactData/ConvertImpact_Taxonomy.xlsx")%>%
+    filter(src_db==nomDB)
+  # Find where the Desinventar data impact estimates stop 
+  vlim<-which(colnames(ImpDB)%in%imptax$VarName)
+  # For all columns that correspond to impact estimates, return the data
+  ImpDB%>%reshape2::melt(measure.vars=colnames(ImpDB)[vlim])%>%
+    mutate(VarName=as.character(variable),impvalue=as.numeric(value))%>%
+    dplyr::select(-c(variable,value))%>%
+    left_join(dplyr::select(imptax,-c("src_orgtype","src_org","src_db")),by="VarName")%>%
+    dplyr::select(-VarName)
+  
+}
+
+# tmp<-googledrive::drive_download("https://docs.google.com/spreadsheets/d/1agqy6DV5VmJuaamVaXZE7jfkDOC5AOhM/edit?usp=sharing&ouid=109118346520870360454&rtpof=true&sd=true",overwrite = T)
+# tmp<-openxlsx::read.xlsx(tmp$local_path)
 
 # impGCDB object skeleton
 imp_skel<-function(nr=0){
@@ -61,6 +102,15 @@ imp_skel<-function(nr=0){
   return(skelly)
 }
 
+impGCDB_ColClass<-function(DF){
+  for(i in 1:ncol(DF)){
+    j<-which(names(DF)[i]==names(col_impGCDB))
+    # Change the class to make sure this variable is compatible
+    class(DF[,i])<-col_impGCDB[j]
+  }
+  return(DF)
+}
+
 # The data.frame component of the impGCDB object
 impGCDB_data<-function(DF){
   # Check the column names are what we need and nothing more, nothing less
@@ -68,11 +118,7 @@ impGCDB_data<-function(DF){
   # Incase not all columns were provided
   modDF<-imp_skel(nrow(DF)); modDF[,colnames(DF)]<-DF
   # Check the data types of each column
-  for(i in 1:ncol(DF)){
-    j<-which(names(DF)[i]==names(col_impGCDB))
-    # Change the class to make sure this variable is compatible
-    class(DF[,i])<-col_impGCDB[j]
-  }
+  DF%<>%impGCDB_ColClass()
   # Re-order the object columns
   DF%<>%dplyr::select(names(col_impGCDB))
   
