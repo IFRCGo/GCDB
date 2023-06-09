@@ -5,7 +5,7 @@ formUSGSobject<-function(meanhaz,sdhaz,I0=NULL){
   sgdf <- as(meanhaz, 'SpatialPixelsDataFrame') ; rm(meanhaz)
   tmp<- as(sdhaz, 'SpatialPixelsDataFrame') ; rm(sdhaz)
   sgdf$mmi_std<-tmp$mmi_std ; rm(tmp)
-  proj4string(sgdf)<-"+proj=longlat +datum=WGS84 +ellps=WGS84"
+  projection(sgdf)<-"+proj=longlat +datum=WGS84 +ellps=WGS84"
   
   colnames(sgdf@coords)<-rownames(sgdf@bbox)<-c("Longitude","Latitude")
   
@@ -41,8 +41,8 @@ SearchUSGSbbox<-function(bbox,sdate,fdate=NULL,minmag=5,exdays=c(2,2)){
   
   debut<-"https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson"
   geojsonR::FROM_GeoJson(paste0(debut,"&starttime=",as.Date(sdate)-exdays[1],"&endtime=",as.Date(fdate)+exdays[1],
-                                # "&minlongitude=",bbox[1],"&minlatitude=",bbox[2],
-                                # "&maxlongitude=",bbox[3],"&maxlatitude=",bbox[4],
+                                # "&minlongitude=",bbox[1]-3,"&minlatitude=",bbox[2]-3,
+                                # "&maxlongitude=",bbox[3]+3,"&maxlatitude=",bbox[4]+3,
                                 "&minmagnitude=",minmag,"&orderby=magnitude",
                                 "&producttype=shakemap"))%>%return
   
@@ -66,12 +66,12 @@ check_hazsdf<-function(hazsdf=NULL,minmag,bbox=NULL){
   return(T)
 }
 
-GetUSGS_id<-function(USGSid,titlz="tmp",I0=4.5,minmag=5){
+GetUSGS_id<-function(USGSid,titlz="tmp",I0=4.5,minmag=5,earlysort=F){
   
   url<-paste0("https://earthquake.usgs.gov/fdsnws/event/1/query?eventid=",USGSid,"&format=geojson")
   tmp<-FROM_GeoJson(url)
   hazsdf<-tryCatch(ExtractUSGS(url = tmp$properties$products$shakemap[[1]]$contents$`download/raster.zip`$url,
-                               namer = paste0(directory,"Disaster_Data/USGS/",titlz,"1"),
+                               namer = paste0("./RawData/MostlyHazardData/EQ/",USGSid),
                                I0=I0),
                    error=function(e) NULL)
   if(is.null(hazsdf)) {
@@ -83,6 +83,7 @@ GetUSGS_id<-function(USGSid,titlz="tmp",I0=4.5,minmag=5){
     return(NULL)
   }
   
+  if(earlysort) return(hazsdf)
   # Extract the date of the event
   sdate<-as.Date(tmp$properties$products$dyfi[[1]]$properties$eventtime)
   
@@ -134,50 +135,85 @@ metaUSGS<-function(featie){
              centLat=ifelse(is.null(featie$geometry$coordinates[2]),NA,featie$geometry$coordinates[2]))
 }
 
-MatchImpHaz<-function(SimMerg){
+MatchUSGS<-function(impies){
   # No data before 2000
-  inds<-as.integer(AsYear(SimMerg$imp_sdate))>2000 & !duplicated(SimMerg); inds[is.na(inds)]<-F
+  inds<-!duplicated(impies); inds[is.na(inds)]<-F
   # Bounding box
-  bbies<-GetISObbox(SimMerg$ISO3)
+  bbies<-GetISObbox(impies$ISO3)
   # Don't unecessarily spam USGS
-  indind<-!SimMerg%>%dplyr::select(GCDB_ID)%>%duplicated & inds
+  indind<-!impies%>%dplyr::select(GCDB_ID)%>%duplicated & inds
   
   out<-do.call(rbind,lapply(which(indind),function(i) {
-    print(SimMerg$GCDB_ID[i])
+    print(impies$GCDB_ID[i])
     # Try to find the event using the USGS search function
-    tmp<-tryCatch(SearchUSGSbbox(bbies[i,],SimMerg$imp_sdate[i],SimMerg$imp_fdate[i],minmag=5,exdays = c(2,2)),
+    tmp<-tryCatch(SearchUSGSbbox(bbies[i,],impies$imp_sdate[i],impies$imp_fdate[i],minmag=5,exdays = c(2,2)),
                   error=function(e) NA)
     # Check for fails
-    if(all(is.na(tmp))) return(cbind(USGSskelly,SimMerg[i,],data.frame(i=i)))
-    if(length(tmp$features)==0) return(cbind(USGSskelly,SimMerg[i,],data.frame(i=i)))
+    if(all(is.na(tmp))) return(cbind(USGSskelly,impies[i,],data.frame(i=i)))
+    if(length(tmp$features)==0) return(cbind(USGSskelly,impies[i,],data.frame(i=i)))
     # Extract all the important detail that we need
     usinf<-do.call(rbind,lapply(1:length(tmp$features),
                                 function(j) tryCatch(metaUSGS(tmp$features[[j]]),
                                                      error=function(e) USGSskelly)))
-    usinf$ISO3<-SimMerg$ISO3[i]; usinf$i<-i
+    usinf$ISO3<-impies$ISO3[i]; usinf$i<-i
     print("success")
-    return(merge(usinf,SimMerg[i,],by="ISO3"))
+    return(merge(usinf,impies[i,],by="ISO3"))
   }))
-  
+  # Add the boundary box values
   out%<>%cbind(as.data.frame(GetISObbox(out$ISO3)))
   
-  out$inBBOX<-out$centLon>out$mnlo & out$centLon<out$mxlo &
-    out$centLat>out$mnla & out$centLat<out$mxla
+  out%<>%arrange(desc(impvalue))
   
-  out$Dmnlo<-abs(out$mnlo-out$centLon)
-  out$Dmxlo<-abs(out$mxlo-out$centLon)
-  out$Dmnla<-abs(out$mnla-out$centLat)
-  out$Dmxla<-abs(out$mxla-out$centLat)
+  saveRDS(out,"./RawData/MatchedEQ_hazimp_0D.RData")
   
-  out$minDlon<-sapply(1:nrow(out),function(i) min(out$Dmnlo[i],out$Dmxlo[i]))
-  out$minDlat<-sapply(1:nrow(out),function(i) min(out$Dmnla[i],out$Dmxla[i]))
+  out%<>%filter(intensity>4.5)
   
-  out$distance<-sqrt(out$minDlat^2+out$minDlon^2)
+  out$downloaded<-sapply(1:nrow(out),function(i){
+    print(out$GCDB_ID[i])
+    if(file.exists(paste0("./CleanedData/MostlyHazardData/EQ/",out$GCDB_ID[i],"_",out$USGSid[i],".RData"))){
+      print("Already there!")
+      return(T)
+    }
+    hazzy<-GetUSGS_id(out$USGSid[i],titlz=paste0("./RawData/MostlyHazardData/EQ/"),I0=4.5,minmag=5,earlysort=T)
+    if(is.null(hazzy)) return(F)
+    print("success")
+    saveRDS(hazzy,paste0("./CleanedData/MostlyHazardData/EQ/",out$GCDB_ID[i],"_",out$USGSid[i],".RData"))
+    return(T)
+  })
   
-  out$Dmnlo<-out$Dmnla<-out$Dmxlo<-out$Dmxla<-NULL
+  saveRDS(out,"./RawData/MatchedEQ_hazimp_2D.RData")
+  
+  out$overlap<-sapply(1:nrow(out),function(i){
+    print(out$GCDB_ID[i])
+    if(!file.exists(paste0("./CleanedData/MostlyHazardData/EQ/",out$GCDB_ID[i],"_",out$USGSid[i],".RData"))){
+      print("File not found")
+      return(F)
+    }
+    hazzy<-readRDS(paste0("./CleanedData/MostlyHazardData/EQ/",out$GCDB_ID[i],"_",out$USGSid[i],".RData"))
+    
+    return(bbox_overlap(hazzy@bbox,out[i,c("mnlo","mnla","mxlo","mxla")]))
+  })
+  
+  saveRDS(out,"./RawData/MatchedEQ_hazimp_2D_overlayed.RData")
   
   return(out)
 }
+
+# out$inBBOX<-out$centLon>out$mnlo & out$centLon<out$mxlo &
+#   out$centLat>out$mnla & out$centLat<out$mxla
+# 
+# out$Dmnlo<-abs(out$mnlo-out$centLon)
+# out$Dmxlo<-abs(out$mxlo-out$centLon)
+# out$Dmnla<-abs(out$mnla-out$centLat)
+# out$Dmxla<-abs(out$mxla-out$centLat)
+# 
+# out$minDlon<-sapply(1:nrow(out),function(i) min(out$Dmnlo[i],out$Dmxlo[i]))
+# out$minDlat<-sapply(1:nrow(out),function(i) min(out$Dmnla[i],out$Dmxla[i]))
+# 
+# out$distance<-sqrt(out$minDlat^2+out$minDlon^2)
+# 
+# out$Dmnlo<-out$Dmnla<-out$Dmxlo<-out$Dmxla<-NULL
+
 # Extract EQ data from USGS for a specified event
 GetUSGS<-function(USGSid=NULL,bbox,sdate,fdate=NULL,titlz="tmp",I0=4.5,minmag=5){
   

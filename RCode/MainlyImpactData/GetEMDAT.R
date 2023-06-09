@@ -68,7 +68,7 @@ EMDATHazards<-function(EMDAT,haz="EQ"){
       EMDAT$hazlink[ind]<-colConv$HIP_ID[i]
       # Secondary associated hazard
       ind<-!is.na(EMDAT$Associated.Dis2) & EMDAT$Associated.Dis2==colConv$Disaster.Subtype[i]
-      EMDAT$hazlink[ind]<-paste0(EMDAT$hazlink[ind],colConv$HIP_ID[i])
+      EMDAT$hazlink[ind]<-paste0(EMDAT$hazlink[ind],paste0(",",colConv$HIP_ID[i]))
     }
     # Potential linked hazards
     EMDAT$hazpotlink<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
@@ -164,15 +164,17 @@ CleanEMDAT<-function(EMDAT,haz="EQ"){
   EMDAT%>%AddEmptyColImp()
 }
 
-GetEMDAT<-function(impies,haz="EQ"){
+GetEMDAT<-function(haz="EQ"){
   # Extract the hazard-specific EMDAT data
   EMDAT<-openxlsx::read.xlsx(paste0("./RawData/MostlyImpactData/EMDAT/emdat_public_",haz,"_20230526.xlsx"),startRow = 7)
   # Clean it up and get it in the right format
   EMDAT%<>%CleanEMDAT(haz=haz)
   # Make sure that the spatial data required actually exists
-  EMDAT%<>%PairEMDATspatial(haz=haz)
+  # EMDAT%<>%PairEMDATspatial(haz=haz)
   # Form a GCDB impacts object from EMDAT data (if there is a problem, return an empty impGCDB object)
-  tryCatch(new("impGCDB",EMDAT,type="EMDAT",haz=haz),error=function(e) new("impGCDB"))
+  # tryCatch(new("impGCDB",EMDAT,type="EMDAT",haz=haz),error=function(e) new("impGCDB"))
+  
+  return(EMDAT)
 }
 
 # Get the EMDAT data

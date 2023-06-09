@@ -558,8 +558,12 @@ GetDesinventar<-function(haz="EQ"){
   }))
   # Get in impGCDB format
   impies<-Des2impGCDB(Dessie,haz=haz)
+  # The Desinventar database has many entries per single event, so we take the most recent estimate
+  impies<-impies[nrow(impies):1,]%>%filter(impvalue>0)
+  # Find the duplicated elements
+  inds<-impies%>%dplyr::select(impsub_ID)%>%duplicated()
   
-  return(impies)
+  return(impies[!inds,])
   # Form a GCDB impacts object from EMDAT data (if there is a problem, return an empty impGCDB object)
   # tryCatch(new("impGCDB",impies),error=function(e) new("impGCDB"))
 }

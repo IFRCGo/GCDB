@@ -12,7 +12,7 @@ SetupGEE<-function(){
     Sys.setenv("EARTHENGINE_GCLOUD" = gee_bin)
     py_install( "earthengine-api==0.1.277", "rgee")
     ee_check()
-    # rgee::ee_install_set_pyenv(py_path = "/usr/bin/python3", py_env="rgee")
+    rgee::ee_install_set_pyenv(py_path = "/usr/bin/python3", py_env="rgee")
     # reticulate::import("sklearn")
     
   } else { 

@@ -53,6 +53,22 @@ CheckBbox<-function(bbox,correct=TRUE){
   return(bbox)
 }
 
+
+inbbox<-function(bbox,point){
+  bbox[1]<point[1] &
+  bbox[2]<point[2] &
+  bbox[3]>point[1] &
+  bbox[4]>point[2]
+}
+
+bbox_overlap<-function(bbox1,bbox2){
+  bbox1%<>%c()%>%unname(); bbox2%<>%c()%>%unname()
+  inbbox(bbox1,bbox2[c(1,2)]) |
+  inbbox(bbox1,bbox2[c(1,4)]) |
+  inbbox(bbox1,bbox2[c(3,2)]) |
+  inbbox(bbox1,bbox2[c(3,4)])
+}
+
 CheckArgs<-function(args){
   # INDEX - TYPE - NAME - DESCRIPTION
   # 1:4 - numeric   - bbox[min lon, max lat, max lon, min lat] - region bounding box

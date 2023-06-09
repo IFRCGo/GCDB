@@ -1,20 +1,25 @@
+dir<-paste0(getwd(),"/")
 
 GetSourceFiles<-function(packred){
   
   #@@@@@ SOURCE FILES @@@@@#
   # Basic functions:
-  source('RCode/Setup/Functions.R')
+  source(paste0(dir,'RCode/Setup/Functions.R'))
+  # Objects
+  source(paste0(dir,'RCode/GCDB_Objects/Impacts.R'))
   
   if(!packred){
-    # Hazard related:
-    source('RCode/MainlyHazardData/GetGDACS.R')
-    source('RCode/MainlyHazardData/GetUSGS.R')
-    source('RCode/MainlyHazardData/GetDisaster.R')
-    source('RCode/MainlyHazardData/GetGLIDEnumber.R')
     # Impact related:
-    source('RCode/MainlyImpactData/GetDisplacements.R')
+    source(paste0(dir,'RCode/MainlyImpactData/GetDesinventar.R'))
+    source(paste0(dir,'RCode/MainlyImpactData/GetEMDAT.R'))
+    source(paste0(dir,'RCode/MainlyImpactData/GetGIDD.R'))
+    # Hazard related:
+    source(paste0(dir,'RCode/MainlyHazardData/GetGDACS.R'))
+    source(paste0(dir,'RCode/MainlyHazardData/GetUSGS.R'))
+    source(paste0(dir,'RCode/MainlyHazardData/GetDisaster.R'))
+    source(paste0(dir,'RCode/MainlyHazardData/GetGLIDEnumber.R'))
     # Admin boundaries & Infrastructure related:
-    source('RCode/Spatio-Infra-Political/GetOSM.R')
+    source(paste0(dir,'RCode/Spatio-Infra-Political/GetOSM.R'))
     # Other:
     
   }
@@ -78,6 +83,8 @@ GetPackages<-function(packred){
   if(length(new.packages)>0) install.packages(new.packages, repos='http://cran.us.r-project.org')
   
   if(length(list.of.packages[!("ggmap" %in% installed.packages()[,"Package"])])){devtools::install_github("dkahle/ggmap")}
+  if(length(list.of.packages[!("ggwordcloud" %in% installed.packages()[,"Package"])])){devtools::install_github("lepennec/ggwordcloud")}
+  
   # if(length(list.of.packages[!("countrycodes" %in% installed.packages()[,"Package"])])){devtools::install_github("vincentarelbundock/countrycode")}
   
   LoadLibraries(packred)
