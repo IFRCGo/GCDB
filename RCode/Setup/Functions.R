@@ -317,6 +317,13 @@ inPoly<-function(poly,pop,iii=1,sumFn="sum",reducer=NULL){
   return(list(vals=outer,indies=Ifin))
 }
 
+pval <- function(my_model) {
+  f <- summary(my_model)$fstatistic
+  p <- pf(f[1],f[2],f[3],lower.tail=F)
+  attributes(p) <- NULL
+  return(p)
+}
+
 # Assumes 9 income distribution percentiles
 SplitSamplePop<-function(Pop,n=1){
   k<-length(Pop)

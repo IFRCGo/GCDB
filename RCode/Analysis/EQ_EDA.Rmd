@@ -47,12 +47,27 @@ library(terra)
 # 
 # saveRDS(impies,"./CleanedData/MostlyImpactData/impies.RData")
 
-impies<-readRDS("../../CleanedData/MostlyImpactData/impies.RData")
+convIso3Continent<-function(iso3){
+  # continents<-countrycode::countrycode(sourcevar = iso3,
+  #                                      origin = "iso3c",
+  #                                      destination = "continent",warn = F)
+  left_join(data.frame(ISO3=iso3),raster::ccodes()[,c("ISO3","continent")],by="ISO3")$continent
+}
 
-out<-readRDS("../../RawData/tmp/haz_EQ_tmp.RData")%>%filter(intensity>5)%>%
-  mutate(PAGER=factor(PAGER,levels=c("green","yellow","orange","red")))
+pval <- function(my_model) {
+  f <- summary(my_model)$fstatistic
+  p <- pf(f[1],f[2],f[3],lower.tail=F)
+  attributes(p) <- NULL
+  return(p)
+}
 
-taxies<-openxlsx::read.xlsx("../ImpactInformationProfiles.xlsx")
+impies<-readRDS("../../CleanedData/MostlyImpactData/impies.RData")%>%mutate(Continent=convIso3Continent(ISO3))
+
+out<-readRDS("../../RawData/MatchedEQ_hazimp_0D.RData")%>%filter(intensity>5)%>%
+  mutate(PAGER=factor(PAGER,levels=c("green","yellow","orange","red")),
+         Continent=convIso3Continent(ISO3))
+
+taxies<-openxlsx::read.xlsx("../../ImpactInformationProfiles.xlsx")
 ```
 
 ## Initial Results
@@ -60,7 +75,7 @@ taxies<-openxlsx::read.xlsx("../ImpactInformationProfiles.xlsx")
 In this article, we include some preliminary plots to explore the impact data currently contained in the Global Crisis Data Bank. Considerable future modifications will be made, which will almost certainly result in different final results than what is shown here. Figure \@ref(fig:noConts) indicates the number of impact records per continent. Note that the continent definitions applied here split the North and South Americas, splitting the Central Americas into one of the two.
 
 ```{r noConts, fig.cap="Number of impact records per continent, for earthquakes in the GCDB database.",echo=F, results='hide', warning=F, message=F}
-p<-impies%>%ggplot()+geom_bar(aes(Continent,fill=Continent))+
+p<-impies%>%ggplot()+geom_bar(aes(Continent,fill=Continent),colour="black")+
   ylab("Number of Impact Recordings")+ggtitle("GCDB - Earthquakes")+
   theme(axis.text.x = element_text(angle = 45, hjust=1),
         plot.title = element_text(hjust = 0.5));p
@@ -71,7 +86,8 @@ We can also take the individual country ISO3C codes and make a wordcloud with th
 
 ```{r wordclISO, fig.cap="A wordcloud of the number of impact records per country (represented via the ISO3C code), for earthquakes in the GCDB database.",echo=F, results='hide', warning=F, message=F}
 library(ggwordcloud)
-wordc<-impies%>%group_by(ISO3)%>%reframe(freq=length(ISO3))%>%transmute(word=ISO3,freq=round(log(freq)))%>%
+wordc<-impies%>%group_by(ISO3)%>%summarise(freq=length(ISO3))%>%
+  transmute(word=ISO3,lfreq=round(log(freq)),freq=freq)%>%
   arrange(desc(freq))%>%#slice(1:50)%>%
   mutate(angle = 45 * sample(-2:2, n(), replace = TRUE, prob = c(1, 1, 4, 1, 1)))
   # wordcloud::wordcloud(wordc$word,wordc$freq,colors=RColorBrewer::brewer.pal(50,"Accent"))
@@ -84,14 +100,26 @@ ggplot(
   )
 ) +
   geom_text_wordcloud_area() +
+  scale_size_area(max_size = 30) +
+  theme_minimal();p
+
+p<-wordc%>%
+ggplot(
+  aes(
+    label = word, size = lfreq,
+    color = factor(sample.int(20, nrow(wordc), replace = TRUE)),
+    angle = angle
+  )
+) +
+  geom_text_wordcloud_area() +
   scale_size_area(max_size = 10) +
   theme_minimal();p
-ggsave("EQ_ISO3_Wordcloud.png",p,path="../../Plots/")  
+# ggsave("EQ_ISO3_Wordcloud.png",p,path="../../Plots/")  
 ```
 The number of impact records per year since 1900, on a log-scale, is shown in figure \@ref(fig:noYears). The number of earthquake impact records has increased exponentially since 1900. Such an exponential relationship is reflective of the start of journey of consistent and complete impact recording on a global level. In moving towards an ideal future, with a perfected impact recording process in place on a global level, we would see this exponential relationship tailing off to a stable value (to converge to an extreme value distribution).
 
 ```{r noYears, fig.cap="Number of impact records per year, for earthquakes in the GCDB database.",echo=F, results='hide', warning=F, message=F}
-p<-impies%>%ggplot()+geom_bar(aes(Year),colour="blue")+
+p<-impies%>%ggplot()+geom_bar(aes(Year),colour="black",fill="blue")+
   scale_y_log10()+xlim(c(1900,2023))+
   ylab("Number of Impact Recordings")+ggtitle("GCDB - Earthquakes")+
   theme(axis.text.x = element_text(angle = 45, hjust=1),
@@ -101,7 +129,7 @@ ggsave("EQ_Year_bar_1900onwards.png",p,path="../../Plots/")
 Each of the impact estimate databases that are currently included in the GCDB have different levels of spatial decomposition of each impact estimates. Figure \@ref(fig:noADM) reflects the number of impacts recorded per database, per spatial level disaggregation, for earthquakes in the GCDB. The majority of the impact records present in the GCDB come from the Desinventar database (UNDRR), the impact estimates from which are calculated and curated by local government organisations. More than half of the entries are disaggregated by admin level 2 for the Desinventar database, falling to roughly 40% for EM-DAT, and the GIDD database is shown to always aggregate to national level.
 
 ```{r noADM, fig.cap="Number of impact records per impact database, per spatial resolution (administrative level) for earthquakes in the GCDB database.",echo=F, results='hide', warning=F, message=F}
-p<-impies%>%ggplot()+geom_bar(aes(src_db,fill=spat_res))+
+p<-impies%>%ggplot()+geom_bar(aes(src_db,fill=spat_res),colour="black")+
   xlab("Source Database")+labs(fill="Administrative Boundary Level")+
   ylab("Number of Impact Recordings")+ggtitle("GCDB - Earthquakes")+
   theme(axis.text.x = element_text(angle = 45, hjust=1),
@@ -114,7 +142,7 @@ We can also break down the impact recordings according to the GCDB impact taxono
 minitax<-taxies%>%filter(list_name=="impactcats")%>%
   transmute(impactcats=name,label=label)
 
-p<-left_join(impies,minitax,by="impactcats")%>%ggplot()+geom_bar(aes(label,fill=label))+
+p<-left_join(impies,minitax,by="impactcats")%>%ggplot()+geom_bar(aes(label,fill=label),colour="black")+
   xlab("Impact Detail")+labs(fill="Impact Category")+
   ylab("Number of Impact Recordings")+ggtitle("GCDB - Earthquakes")+
   theme(axis.text.x = element_text(angle = 45, hjust=1),
@@ -123,38 +151,63 @@ p<-left_join(impies,minitax,by="impactcats")%>%ggplot()+geom_bar(aes(label,fill=
 ggsave("EQ_impcats_bar.png",p,path="../../Plots/")  
 ```
 
-Breaking down the impact estimate classification into further sub-categories, figure \@ref(fig:impsubcats) again shows that estimating impacts on the population has been a key priority of the databases brought into the GCDB. Following population estimates are building-related impacts and then those related to the direct cost of the earthquake.
+Breaking down the impact estimate classification into further sub-categories, then combining with the impact type, shown in figure \@ref(fig:impacts_unmat). This plot shows that, although estimating impacts on the population has been a key priority of the databases brought into the GCDB, the most prominent single impact was actually the aggregated number of buildings damaged.
 
-```{r impsubcats, fig.cap="Number of impact records per impact sub-category, for earthquakes in the GCDB database.",echo=F, results='hide', warning=F, message=F}
-minitax<-taxies%>%filter(list_name=="impactsubcats")%>%
+```{r impacts_unmat, fig.cap="Number of impact records per impact, for earthquakes in the GCDB database.",echo=F, results='hide', warning=F, message=F}
+# Combine both the impact subcategories and the actual impact type to get the overall impact
+minitax1<-taxies%>%filter(list_name=="impactsubcats")%>%
   transmute(impactsubcats=name,label=label)
-
-p<-left_join(impies,minitax,by="impactsubcats")%>%ggplot()+geom_bar(aes(label,fill=label))+
-  xlab("Impact Detail")+labs(fill="Impact Sub-Category")+
-  ylab("Number of Impact Recordings")+ggtitle("GCDB - Earthquakes")+
-  theme(axis.text.x = element_text(angle = 45, hjust=1),
-        plot.title = element_text(hjust = 0.5),
-        legend.position="none");p
-ggsave("EQ_impsubcats_bar.png",p,path="../../Plots/")  
-```
-
-For each impact category, the type of impact can vary. For example, a building can be damaged or destroyed, or transport infrastructure can be temporarily disrupted or entirely destroyed. A further breakdown of the impact records in the GCDB by impact type is presented in figure \@ref(fig:impdet). The impact type with the largest number of records is the term \`Damaged\', which is asset-specific. For person-specific impact types, the impact databases currently included in the GCDB are shown by figure \@ref(fig:impdet) to be \`Deaths\'.
-
-```{r impdet, fig.cap="Number of impact records per impact type, for earthquakes in the GCDB database.",echo=F, results='hide', warning=F, message=F}
-minitax<-taxies%>%filter(list_name=="impacttypes")%>%
+minitax2<-taxies%>%filter(list_name=="impacttypes")%>%
   transmute(imptype=name,label=label)
+tmp<-left_join(left_join(impies,minitax1,by="impactsubcats"),minitax2,by="imptype")
+tmp$label.y[tmp$label.y=="Internally Displaced Persons (IDPs)"]<-"Internally Displaced (IDPs)"
+tmp%<>%mutate(label=paste0(str_split(str_split(label.x," \\(",simplify = T)[,1]," – ",simplify = T)[,1],
+                           " ",label.y))
+# Group to show only the top-10 impacts
+toppies<-names(sort(table(tmp$label),decreasing = T)[1:10])
+tmp$label[!tmp$label%in%toppies]<-"Other"
 
-p<-left_join(impies,minitax,by="imptype")%>%ggplot()+geom_bar(aes(label,fill=label))+
-  xlab("Impact Type")+labs(fill="Impact Type")+
-  ylab("Number of Impact Recordings")+ggtitle("GCDB - Earthquakes")+
+tmp$label%<>%factor(levels=c(toppies,"Other"))
+
+out<-left_join(left_join(out,minitax1,by="impactsubcats"),minitax2,by="imptype")
+out$label.y[out$label.y=="Internally Displaced Persons (IDPs)"]<-"Internally Displaced (IDPs)"
+out%<>%mutate(label=paste0(str_split(str_split(label.x," \\(",simplify = T)[,1]," – ",simplify = T)[,1],
+                           " ",label.y))
+# Group to show only the top-10 impacts
+toppies<-names(sort(table(out$label),decreasing = T)[1:10])
+out$label[!out$label%in%toppies]<-"Other"
+
+out$label%<>%factor(levels=c(toppies,"Other"))
+
+out%<>%dplyr::select(-c(label.x,label.y))
+
+p<-tmp%>%ggplot()+geom_bar(aes(label,fill=label),colour="black")+
+  xlab("Impact")+labs(fill="Impact")+
+  ylab("Number of Unmatched Impact Recordings")+ggtitle("GCDB - Earthquakes")+
   theme(axis.text.x = element_text(angle = 45, hjust=1),
         plot.title = element_text(hjust = 0.5),
         legend.position="none");p
-ggsave("EQ_imptype_bar.png",p,path="../../Plots/")  
+ggsave("EQ_impacts-unmatched_bar.png",p,path="../../Plots/")  
+
+rm(tmp)
 ```
 
+Despite this, we can make the exact same plot but for only the impact data that was matched to a hazard footprint. Figure \@ref(fig:impacts_mat) shows the number of recorded events that have been matched with an associated hazard footprint. The number of earthquake events with matched hazard-impact data now reflects that deaths is the most preminent impact in th GCDB.
 
-```{r impdet, fig.cap="Number of impacts matched with earthquake shakemaps per PAGER alertscore, for earthquakes in the GCDB database.",echo=F, results='hide', warning=F, message=F}
+```{r impacts_mat, fig.cap="Number of impact records per impact, for earthquakes in the GCDB database.",echo=F, results='hide', warning=F, message=F}
+p<-out%>%ggplot()+geom_bar(aes(label,fill=label),colour="black")+
+  xlab("Impact")+labs(fill="Impact")+
+  ylab("Number of Matched Impact Recordings")+ggtitle("GCDB - Earthquakes")+
+  theme(axis.text.x = element_text(angle = 45, hjust=1),
+        plot.title = element_text(hjust = 0.5),
+        legend.position="none");p
+ggsave("EQ_impacts-matched_bar.png",p,path="../../Plots/")  
+
+```
+
+We can also visualise the matched earthquake events with respect to their alertscore as provided by USGS PAGER, in figure \@ref(fig:pager). As may be expected, the number of events in the GCDB decreases as the alertscore increases. Note that the alertscore severity may not actually correlated with the observed impact value, but just reflects that the parameterisation ensures that only a few events make it into the more severe categories such as red. 
+
+```{r pager, fig.cap="Number of impacts matched with earthquake shakemaps per PAGER alertscore, for earthquakes in the GCDB database.",echo=F, results='hide', warning=F, message=F}
 pal <- c(
   "green" = RColorBrewer::brewer.pal(n = 6, name = 'RdYlGn')[5],
   "yellow" = RColorBrewer::brewer.pal(n = 6, name = 'RdYlGn')[3],
@@ -163,7 +216,7 @@ pal <- c(
 )
 
 p<-out%>%filter(!is.na(PAGER))%>%
-  ggplot()+geom_bar(aes(PAGER,fill=PAGER))+
+  ggplot()+geom_bar(aes(PAGER,fill=PAGER),colour="black")+
   xlab("PAGER Alert")+
   ylab("Number of Impact Recordings")+ggtitle("GCDB - Matched Earthquakes")+
   # scale_colour_manual(values = c("green","yellow","orange","red"))+
@@ -173,10 +226,70 @@ p<-out%>%filter(!is.na(PAGER))%>%
         legend.position="none");p
 ggsave("EQ_PAGER_bar.png",p,path="../../Plots/")  
 ```
+To visualise what the correlation is between the PAGER alertscore and some of the observed impacts, we use box-and-whisker diagrams, see figure \@ref(fig:pagerbox). The alertscore seems to correlate well with the number of deaths, which is what the categorisation was built on, but for the other impacts the performance is relatively poor in separating impact severity.
 
-```{r impdet, fig.cap="Number of impacts matched with earthquake shakemaps per continent, for earthquakes in the GCDB database.",echo=F, results='hide', warning=F, message=F}
+
+```{r pagerbox, fig.cap="Box and whisker diagrams of the impact values against the assigned PAGER alertscore, for matched impact-hazard earthquake shakemaps in the GCDB database.",echo=F, results='hide', warning=F, message=F}
+pal <- c(
+  "green" = RColorBrewer::brewer.pal(n = 6, name = 'RdYlGn')[5],
+  "yellow" = RColorBrewer::brewer.pal(n = 6, name = 'RdYlGn')[3],
+  "orange" = RColorBrewer::brewer.pal(n = 6, name = 'RdYlGn')[2],
+  "red" = RColorBrewer::brewer.pal(n = 6, name = 'RdYlGn')[1]
+)
+
+implot<-c("Total Population Deaths","Total Population Injured",
+          "Total Population Internally Displaced (IDPs)","Other")
+
+p<-out%>%filter(!is.na(PAGER) & label%in%implot)%>%
+  group_by(GCDB_ID,label,PAGER)%>%
+  summarise(intensity=max(intensity),impvalue=max(impvalue))%>%
+  ggplot()+geom_boxplot(aes(PAGER,impvalue,fill=PAGER),colour="black")+
+  xlab("PAGER Alert")+scale_y_log10()+
+  ylab("Impact Value (log-scale)")+ggtitle("GCDB - Matched Earthquakes")+
+  # scale_colour_manual(values = c("green","yellow","orange","red"))+
+  scale_fill_manual(values = pal,limits = names(pal))+
+  theme(axis.text.x = element_text(angle = 45, hjust=1),
+        plot.title = element_text(hjust = 0.5),
+        legend.position="none")+
+    facet_wrap(~label,nrow = 2, scales = "free");p
+ggsave("EQ_PAGERdeaths_boxplot.png",p,path="../../Plots/")  
+```
+
+Not only do we have access to the PAGER alertscore, but also additional hazard-specific information such as the maximum hazard intensity (MMI). A plot of the number of events per maximum hazard intensity is shown in figure \@ref(fig:matchint), reflecting that the majority of the events in the database (the median) have a maximum earthquake intensity of around 7 MMI. Note that historical impacts before somewhere around 2000-2010 have the hazard intensity rounded to half-integer values.
+
+
+```{r matchint, fig.cap="Number of impacts matched with earthquake shakemaps per earthquake intensity, for earthquakes in the GCDB database.",echo=F, results='hide', warning=F, message=F}
+
+p<-out%>%filter(!is.na(intensity))%>%
+  ggplot()+geom_histogram(aes(intensity),fill="purple", colour="black",breaks = (10:18)/2)+
+  xlab("Earthquake Intensity [MMI]")+
+  ylab("Number of Impact Recordings")+ggtitle("GCDB - Earthquakes")+
+  # scale_colour_manual(values = c("green","yellow","orange","red"))+
+  theme(plot.title = element_text(hjust = 0.5));p
+ggsave("EQmatch_Intensity_hist.png",p,path="../../Plots/")   
+
+pvallie<-as.character(ifelse(pval(lm(intensity ~ magnitude + 0,out))==0,"< 2 x 10^(-16)",pval(lm(intensity ~ magnitude + 0,out))))
+radj<-summary(lm(intensity ~ magnitude + 0,out))$adj.r.squared
+
+```
+We can also compare the earthquake magnitude (on the Richter scale), to the earthquake intensity (MMI), see figure \@ref(fig:intmag). There is a strong correlation between the two values (p-value `r pvallie`).
+
+```{r intmag, fig.cap="Earthquake intensity against earthquake magnitude for the matched hazards",echo=F, results='hide', warning=F, message=F}
+
+p<-out%>%filter(!is.na(intensity))%>%
+  ggplot()+geom_point(aes(magnitude,intensity))+
+  xlab("Earthquake Magnitude [Richter]")+
+  ylab("Earthquake Intensity [MMI]")+ggtitle("GCDB - Earthquakes")+
+  # scale_colour_manual(values = c("green","yellow","orange","red"))+
+  theme(plot.title = element_text(hjust = 0.5));p
+ggsave("EQmatch_magIntensity.png",p,path="../../Plots/")   
+
+```
+
+
+```{r matchcont, fig.cap="Number of impacts matched with earthquake shakemaps per continent, for earthquakes in the GCDB database.",echo=F, results='hide', warning=F, message=F}
 p<-out%>%filter(!is.na(Continent))%>%
-  ggplot()+geom_bar(aes(Continent,fill=Continent))+
+  ggplot()+geom_bar(aes(Continent,fill=Continent),colour="black")+
   xlab("Continent")+
   ylab("Number of Impact Recordings")+ggtitle("GCDB - Matched Earthquakes")+
   # scale_colour_manual(values = c("green","yellow","orange","red"))+
@@ -186,15 +299,45 @@ ggsave("EQmatch_cont_bar.png",p,path="../../Plots/")
 ```
 
 
-```{r impdet, fig.cap="Number of impacts matched with earthquake shakemaps per PAGER alertscore, for earthquakes in the GCDB database.",echo=F, results='hide', warning=F, message=F}
+
+
+```{r hazlink, fig.cap="Frequency table of the number of linked secondary hazards, from both the impact and hazard data.",echo=F, results='hide', warning=F, message=F}
 
 p<-out%>%filter(!is.na(intensity))%>%
-  ggplot()+geom_histogram(aes(intensity),fill="red",breaks = (10:18)/2)+
-  xlab("Earthquake Intensity [MMI]")+
-  ylab("Number of Impact Recordings")+ggtitle("GCDB - Earthquakes")+
-  # scale_colour_manual(values = c("green","yellow","orange","red"))+
-  theme(plot.title = element_text(hjust = 0.5));p
-ggsave("EQmatch_Intensity_hist.png",p,path="../../Plots/")   
+    ggplot()+geom_bar(aes(hazlink,fill=as.factor(tsunami)),colour="black")+
+    xlab("Earthquake Intensity [MMI]")+scale_y_log10()+
+    ylab("Number of Impact Recordings")+ggtitle("GCDB - Earthquakes")+
+    # scale_colour_manual(values = c("green","yellow","orange","red"))+
+    theme(plot.title = element_text(hjust = 0.5),axis.text.x = element_text(angle = 45, hjust=1));p
+ggsave("EQmatch_hazlink_tsunami.png",p,path="../../Plots/")   
+
+```
+
+
+```{r intdeat, fig.cap="Number of deaths against earthquake intensity (MMI) for the matched hazards in the GCDB",echo=F, results='hide', warning=F, message=F}
+
+p<-out%>%group_by(GCDB_ID,impactdetails,imptype)%>%summarise(intensity=max(intensity),impvalue=max(impvalue))%>%
+    filter(impactdetails=="impdetallpeop" & imptype=="imptypdeat")%>%
+    ggplot()+geom_point(aes(intensity,impvalue))+
+    xlab("Earthquake Intensity [MMI]")+scale_y_log10()+
+    ylab("Deaths")+ggtitle("GCDB - Earthquakes")+
+    # scale_colour_manual(values = c("green","yellow","orange","red"))+
+    theme(plot.title = element_text(hjust = 0.5));p
+ggsave("EQmatch_magIntensity.png",p,path="../../Plots/")   
+
+```
+
+
+```{r intbuilddam, fig.cap="Disaster aid allocated against earthquake intensity (MMI) for the matched hazards in the GCDB",echo=F, results='hide', warning=F, message=F}
+
+p<-out%>%group_by(GCDB_ID,impactdetails,imptype)%>%summarise(intensity=max(intensity),impvalue=max(impvalue))%>%
+    filter(impactdetails=="impdetaidgen" & imptype=="imptypcost")%>%
+    ggplot()+geom_point(aes(intensity,impvalue))+
+    xlab("Earthquake Intensity [MMI]")+scale_y_log10()+
+    ylab("Disaster Aid [USD-2011]")+ggtitle("GCDB - Earthquakes")+
+    # scale_colour_manual(values = c("green","yellow","orange","red"))+
+    theme(plot.title = element_text(hjust = 0.5));p
+ggsave("EQmatch_magIntensity.png",p,path="../../Plots/")   
 
 ```
 
