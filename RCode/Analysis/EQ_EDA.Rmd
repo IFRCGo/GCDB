@@ -70,9 +70,13 @@ out<-readRDS("../../RawData/MatchedEQ_hazimp_0D.RData")%>%filter(intensity>5)%>%
 taxies<-openxlsx::read.xlsx("../../ImpactInformationProfiles.xlsx")
 ```
 
-## Initial Results
+# Initial Results
 
-In this article, we include some preliminary plots to explore the impact data currently contained in the Global Crisis Data Bank. Considerable future modifications will be made, which will almost certainly result in different final results than what is shown here. Figure \@ref(fig:noConts) indicates the number of impact records per continent. Note that the continent definitions applied here split the North and South Americas, splitting the Central Americas into one of the two.
+In this article, we include some preliminary plots to explore the impact data currently contained in the Global Crisis Data Bank. Considerable future modifications will be made, which will almost certainly result in different final results than what is shown here. 
+
+## Impact Data
+
+Figure \@ref(fig:noConts) indicates the number of impact records per continent. Note that the continent definitions applied here split the North and South Americas, splitting the Central Americas into one of the two.
 
 ```{r noConts, fig.cap="Number of impact records per continent, for earthquakes in the GCDB database.",echo=F, results='hide', warning=F, message=F}
 p<-impies%>%ggplot()+geom_bar(aes(Continent,fill=Continent),colour="black")+
@@ -190,9 +194,14 @@ p<-tmp%>%ggplot()+geom_bar(aes(label,fill=label),colour="black")+
 ggsave("EQ_impacts-unmatched_bar.png",p,path="../../Plots/")  
 
 rm(tmp)
+
+matchies<-signif(100*nrow(out)/nrow(impies))
+  
 ```
 
-Despite this, we can make the exact same plot but for only the impact data that was matched to a hazard footprint. Figure \@ref(fig:impacts_mat) shows the number of recorded events that have been matched with an associated hazard footprint. The number of earthquake events with matched hazard-impact data now reflects that deaths is the most preminent impact in th GCDB.
+## Matched Hazard-Impact Data
+
+By attempting to match each impact record with an associated hazard footprint from the USGS shakemap catalog, we find that a significant number (`r matchies`%) of impact recordings remain unmatched. Therefore, this has an impact on some of the summary statistics that we displayed above. For example, we can make the exact same plot as figure \@ref(fig:impacts_unmat) but for only the impact data that was matched to a hazard footprint. Figure \@ref(fig:impacts_mat) shows the number of recorded events that have been matched with an associated hazard footprint. The number of earthquake events with matched hazard-impact data now reflects that deaths is the most preminent impact in the GCDB.
 
 ```{r impacts_mat, fig.cap="Number of impact records per impact, for earthquakes in the GCDB database.",echo=F, results='hide', warning=F, message=F}
 p<-out%>%ggplot()+geom_bar(aes(label,fill=label),colour="black")+
@@ -268,11 +277,11 @@ p<-out%>%filter(!is.na(intensity))%>%
   theme(plot.title = element_text(hjust = 0.5));p
 ggsave("EQmatch_Intensity_hist.png",p,path="../../Plots/")   
 
-pvallie<-as.character(ifelse(pval(lm(intensity ~ magnitude + 0,out))==0,"< 2 x 10^(-16)",pval(lm(intensity ~ magnitude + 0,out))))
-radj<-summary(lm(intensity ~ magnitude + 0,out))$adj.r.squared
+pvallie<-as.character(ifelse(pval(lm(intensity ~ magnitude + 0,out))==0,"< 2 x 10^(-16)",signif(pval(lm(intensity ~ magnitude + 0,out)),2)))
+radj<-signif(summary(lm(intensity ~ magnitude + 0,out))$adj.r.squared,2)
 
 ```
-We can also compare the earthquake magnitude (on the Richter scale), to the earthquake intensity (MMI), see figure \@ref(fig:intmag). There is a strong correlation between the two values (p-value `r pvallie`).
+We can also compare the earthquake magnitude (on the Richter scale), to the earthquake intensity (MMI), see figure \@ref(fig:intmag). There is a strong correlation between the two values (adjusted R² value = `r radj` and p-value `r pvallie`).
 
 ```{r intmag, fig.cap="Earthquake intensity against earthquake magnitude for the matched hazards",echo=F, results='hide', warning=F, message=F}
 
@@ -285,7 +294,7 @@ p<-out%>%filter(!is.na(intensity))%>%
 ggsave("EQmatch_magIntensity.png",p,path="../../Plots/")   
 
 ```
-
+In terms of the matched hazard-impact data, we can see that events that occurred in Asia seem to have a more successful matching rate. 
 
 ```{r matchcont, fig.cap="Number of impacts matched with earthquake shakemaps per continent, for earthquakes in the GCDB database.",echo=F, results='hide', warning=F, message=F}
 p<-out%>%filter(!is.na(Continent))%>%
@@ -298,7 +307,7 @@ p<-out%>%filter(!is.na(Continent))%>%
 ggsave("EQmatch_cont_bar.png",p,path="../../Plots/")  
 ```
 
-
+For many of the matched hazard impact events, we have associated secondary or triggering hazards. Figure \@ref(fig:hazlink) shows the hazard code from the HIPS (UNDRR-ISC) taxonomy, and also disaggregates by whether the USGS hazard data announced a tsunami alert.
 
 
 ```{r hazlink, fig.cap="Frequency table of the number of linked secondary hazards, from both the impact and hazard data.",echo=F, results='hide', warning=F, message=F}
@@ -309,10 +318,14 @@ p<-out%>%filter(!is.na(intensity))%>%
     ylab("Number of Impact Recordings")+ggtitle("GCDB - Earthquakes")+
     # scale_colour_manual(values = c("green","yellow","orange","red"))+
     theme(plot.title = element_text(hjust = 0.5),axis.text.x = element_text(angle = 45, hjust=1));p
-ggsave("EQmatch_hazlink_tsunami.png",p,path="../../Plots/")   
+ggsave("EQmatch_hazlink_tsunami.png",p,path="../../Plots/")  
+
+tmp<-out%>%filter(label=="Total Population Deaths")%>%lm(formula = impvalue ~ intensity)
+radj<-summary(tmp)$adj.r.squared
+pvallie<-as.character(ifelse(pval(tmp)==0,"< 2 x 10^(-16)",signif(pval(tmp),2)))
 
 ```
-
+We are also interested in seeing whether the maximum earthquake hazard intensity correlates with the impact magnitude. Figure \@ref(fig:intdeat) shows the poor correlation between the number of deaths and the maximum hazard intensity for the matched earthquake events. There is no statistically significant evidence supporting a non-zero correlation (adjusted R² value = `r radj` and p-value `r pvallie`), reflecting the need to include more information, such as the exposed population or proxies for coping-capacity, before stronger correlation is expected.
 
 ```{r intdeat, fig.cap="Number of deaths against earthquake intensity (MMI) for the matched hazards in the GCDB",echo=F, results='hide', warning=F, message=F}
 
@@ -326,9 +339,9 @@ p<-out%>%group_by(GCDB_ID,impactdetails,imptype)%>%summarise(intensity=max(inten
 ggsave("EQmatch_magIntensity.png",p,path="../../Plots/")   
 
 ```
+However, to show one example where a correlation may be visible, figure \@ref(fig:intaid) shows the correlation between maximum hazard intensity and the cost of international aid allocated to the event.
 
-
-```{r intbuilddam, fig.cap="Disaster aid allocated against earthquake intensity (MMI) for the matched hazards in the GCDB",echo=F, results='hide', warning=F, message=F}
+```{r intaid, fig.cap="Disaster aid allocated against earthquake intensity (MMI) for the matched hazards in the GCDB",echo=F, results='hide', warning=F, message=F}
 
 p<-out%>%group_by(GCDB_ID,impactdetails,imptype)%>%summarise(intensity=max(intensity),impvalue=max(impvalue))%>%
     filter(impactdetails=="impdetaidgen" & imptype=="imptypcost")%>%
