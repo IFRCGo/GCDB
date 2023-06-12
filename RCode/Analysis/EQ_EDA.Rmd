@@ -354,5 +354,33 @@ ggsave("EQmatch_magIntensity.png",p,path="../../Plots/")
 
 ```
 
+## IFRC Appeal Data - Earthquake Only
+
+
+```{r ifrcapp, fig.cap="Disaster aid allocated against earthquake intensity (MMI) for the matched hazards in the GCDB",echo=F, results='hide', warning=F, message=F}
+
+appeal<-readRDS("../../RawData/MostlyImpactData/IFRC/appeal.Rdata")
+
+p<-out%>%group_by(GCDB_ID,impactdetails,imptype)%>%summarise(intensity=max(intensity),impvalue=max(impvalue))%>%
+    filter(impactdetails=="impdetaidgen" & imptype=="imptypcost")%>%
+    ggplot()+geom_point(aes(intensity,impvalue))+
+    xlab("Earthquake Intensity [MMI]")+scale_y_log10()+
+    ylab("Disaster Aid [USD-2011]")+ggtitle("GCDB - Earthquakes")+
+    # scale_colour_manual(values = c("green","yellow","orange","red"))+
+    theme(plot.title = element_text(hjust = 0.5));p
+ggsave("EQmatch_magIntensity.png",p,path="../../Plots/")   
+
+```
+
+
+
+
+
+
+
+
+
+
+
 
 

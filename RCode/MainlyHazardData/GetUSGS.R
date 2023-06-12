@@ -135,7 +135,7 @@ metaUSGS<-function(featie){
              centLat=ifelse(is.null(featie$geometry$coordinates[2]),NA,featie$geometry$coordinates[2]))
 }
 
-MatchUSGS<-function(impies){
+MatchUSGS<-function(impies,noextract=F){
   # No data before 2000
   inds<-!duplicated(impies); inds[is.na(inds)]<-F
   # Bounding box
@@ -165,6 +165,8 @@ MatchUSGS<-function(impies){
   out%<>%arrange(desc(impvalue))
   
   saveRDS(out,"./RawData/MatchedEQ_hazimp_0D.RData")
+  
+  if(noextract) return(out)
   
   out%<>%filter(intensity>4.5)
   
