@@ -62,17 +62,18 @@ LoadLibraries<-function(packred){
 
 GetPackages<-function(packred){
 
-  list.of.packages <- c("dplyr", "ggplot2","sf","tidyverse","openxlsx","pracma",
+  list.of.packages <- c("devtools","dplyr", "ggplot2","sf","tidyverse","openxlsx","pracma",
                         "geojsonR", "tiff", "gstat", "mvtnorm","xml2","rgdal",
-                        "RColorBrewer", "geosphere","GGally", "wbstats",
+                        "RColorBrewer", "geosphere","GGally", "wbstats","reshape2",
+                        "rjson",
                         "countrycode","rworldmap","rworldxtra","chron","ncdf4",
                         "GADMTools","akima","adehabitatMA","flexsurv", "ExtDist", 
                         'EnvStats', 'posterior', 'doParallel', 'VGAM', 'abind',
-                        'Rmpi', 'openxlsx', 'ecochange','googlesheets4')
+                        'Rmpi', 'openxlsx', 'ecochange','googlesheets4', 'bookdown')
   
   if(!packred) list.of.packages<-c(list.of.packages,
                                    "codetools","latex2exp",
-                                   "rJava","devtools","OpenStreetMap","osmdata",
+                                   "rJava","OpenStreetMap","osmdata",
                                    "tidyRSS","geojsonR", "tiff", "gstat",
                                    "FactoMineR","factoextra","xtable",
                                    "gsubfn","mapsapi","leaflet", "ssh","RPostgres",
