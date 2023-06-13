@@ -77,7 +77,7 @@ AddEmptyColImp<-function(DF){
 
 ImpLabs<-function(ImpDB,nomDB="Desinventar"){
   # Open up the database impact taxonomy conversion file
-  imptax<-openxlsx::read.xlsx("./RawData/MostlyImpactData/ConvertImpact_Taxonomy.xlsx")%>%
+  imptax<-openxlsx::read.xlsx("./RCode/MainlyImpactData/ConvertImpact_Taxonomy.xlsx")%>%
     filter(src_db==nomDB)
   # Find where the Desinventar data impact estimates stop 
   vlim<-which(colnames(ImpDB)%in%imptax$VarName)
