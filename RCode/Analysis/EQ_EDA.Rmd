@@ -47,6 +47,17 @@ library(terra)
 # 
 # saveRDS(impies,"./CleanedData/MostlyImpactData/impies.RData")
 
+AsYear<-function(date,red=F,limit=T){
+  date%<>%as.Date()
+  if(!red) year<-as.numeric(format(date,"%Y"))
+  else year<-as.numeric(format(date,"%y"))
+  
+  # if(limit&any(year>as.numeric(format(Sys.Date(),"%Y")))) 
+  #   year[year>as.numeric(format(Sys.Date(),"%Y"))]<-AsYear(Sys.Date())
+  
+  return(year)
+}
+
 convIso3Continent<-function(iso3){
   # continents<-countrycode::countrycode(sourcevar = iso3,
   #                                      origin = "iso3c",
@@ -155,9 +166,9 @@ p<-left_join(impies,minitax,by="impactcats")%>%ggplot()+geom_bar(aes(label,fill=
 ggsave("EQ_impcats_bar.png",p,path="../../Plots/")  
 ```
 
-Breaking down the impact estimate classification into further sub-categories, then combining with the impact type, shown in figure \@ref(fig:impacts_unmat). This plot shows that, although estimating impacts on the population has been a key priority of the databases brought into the GCDB, the most prominent single impact was actually the aggregated number of buildings damaged.
+Breaking down the impact estimate classification into further sub-categories, then combining with the impact type, shown in figure \@ref(fig:impactsunmat). This plot shows that, although estimating impacts on the population has been a key priority of the databases brought into the GCDB, the most prominent single impact was actually the aggregated number of buildings damaged.
 
-```{r impacts_unmat, fig.cap="Number of impact records per impact, for earthquakes in the GCDB database.",echo=F, results='hide', warning=F, message=F}
+```{r impactsunmat, fig.cap="Number of impact records per impact, for earthquakes in the GCDB database.",echo=F, results='hide', warning=F, message=F}
 # Combine both the impact subcategories and the actual impact type to get the overall impact
 minitax1<-taxies%>%filter(list_name=="impactsubcats")%>%
   transmute(impactsubcats=name,label=label)
@@ -201,9 +212,9 @@ matchies<-signif(100*nrow(out)/nrow(impies))
 
 ## Matched Hazard-Impact Data
 
-By attempting to match each impact record with an associated hazard footprint from the USGS shakemap catalog, we find that a significant number (`r matchies`%) of impact recordings remain unmatched. Therefore, this has an impact on some of the summary statistics that we displayed above. For example, we can make the exact same plot as figure \@ref(fig:impacts_unmat) but for only the impact data that was matched to a hazard footprint. Figure \@ref(fig:impacts_mat) shows the number of recorded events that have been matched with an associated hazard footprint. The number of earthquake events with matched hazard-impact data now reflects that deaths is the most preminent impact in the GCDB.
+By attempting to match each impact record with an associated hazard footprint from the USGS shakemap catalog, we find that a significant number (`r matchies`%) of impact recordings remain unmatched. Therefore, this has an impact on some of the summary statistics that we displayed above. For example, we can make the exact same plot as figure \@ref(fig:impacts_unmat) but for only the impact data that was matched to a hazard footprint. Figure \@ref(fig:impactsmat) shows the number of recorded events that have been matched with an associated hazard footprint. The number of earthquake events with matched hazard-impact data now reflects that deaths is the most preminent impact in the GCDB.
 
-```{r impacts_mat, fig.cap="Number of impact records per impact, for earthquakes in the GCDB database.",echo=F, results='hide', warning=F, message=F}
+```{r impactsmat, fig.cap="Number of impact records per impact, for earthquakes in the GCDB database.",echo=F, results='hide', warning=F, message=F}
 p<-out%>%ggplot()+geom_bar(aes(label,fill=label),colour="black")+
   xlab("Impact")+labs(fill="Impact")+
   ylab("Number of Matched Impact Recordings")+ggtitle("GCDB - Earthquakes")+
@@ -356,19 +367,48 @@ ggsave("EQmatch_magIntensity.png",p,path="../../Plots/")
 
 ## IFRC Appeal Data - Earthquake Only
 
-
-```{r ifrcapp, fig.cap="Disaster aid allocated against earthquake intensity (MMI) for the matched hazards in the GCDB",echo=F, results='hide', warning=F, message=F}
+```{r ifrccont,fig.cap="Number of impact records per continent, for earthquakes in the IFRC Emergency Appeal database.",echo=F, results='hide', warning=F, message=F}
 
 appeal<-readRDS("../../RawData/MostlyImpactData/IFRC/appeal.Rdata")
 
-p<-out%>%group_by(GCDB_ID,impactdetails,imptype)%>%summarise(intensity=max(intensity),impvalue=max(impvalue))%>%
-    filter(impactdetails=="impdetaidgen" & imptype=="imptypcost")%>%
-    ggplot()+geom_point(aes(intensity,impvalue))+
-    xlab("Earthquake Intensity [MMI]")+scale_y_log10()+
-    ylab("Disaster Aid [USD-2011]")+ggtitle("GCDB - Earthquakes")+
-    # scale_colour_manual(values = c("green","yellow","orange","red"))+
-    theme(plot.title = element_text(hjust = 0.5));p
-ggsave("EQmatch_magIntensity.png",p,path="../../Plots/")   
+ggplot(appeal)+geom_bar(aes(Continent,fill=Continent),colour="black")+
+xlab("Continent")+ylab("Number of Unmatched Impact Recordings")+ggtitle("IFRC-GO Emergency Appeals")+
+theme(axis.text.x = element_text(angle = 45, hjust=1))
+```
+
+```{r ifrcyear,fig.cap="Number of impact records per year, for earthquakes in the IFRC Emergency Appeal database.",echo=F, results='hide', warning=F, message=F}
+
+ggplot(appeal)+geom_bar(aes(AsYear(imp_sdate)),fill="blue",colour="black")+
+xlab("Year")+ylab("Number of Unmatched Impact Recordings")+ggtitle("IFRC-GO Emergency Appeals")+
+theme(plot.title = element_text(hjust = 0.5))
+```
+
+
+```{r ifrcappimp, fig.cap="Number of impact records per impact, for earthquakes in the IFRC Emergency Appeal database.",echo=F, results='hide', warning=F, message=F}
+
+
+
+minitax1<-taxies%>%filter(list_name=="impactsubcats")%>%
+  transmute(impactsubcats=name,label=label)
+minitax2<-taxies%>%filter(list_name=="impacttypes")%>%
+  transmute(imptype=name,label=label)
+
+tmp<-left_join(left_join(appeal,minitax1,by="impactsubcats"),minitax2,by="imptype")
+tmp$label.y[tmp$label.y=="Internally Displaced Persons (IDPs)"]<-"Internally Displaced (IDPs)"
+tmp%<>%mutate(label=paste0(str_split(str_split(label.x," \\(",simplify = T)[,1]," – ",simplify = T)[,1],
+                           " ",label.y))
+# Group to show only the top-10 impacts
+toppies<-names(sort(table(tmp$label),decreasing = T)[1:10])
+tmp$label[!tmp$label%in%toppies]<-"Other"
+
+tmp$label%<>%factor(levels=c(toppies,"Other"))
+
+p<-tmp%>%ggplot()+geom_bar(aes(label,fill=label),colour="black")+
+  xlab("Impact")+labs(fill="Impact")+
+  ylab("Number of Unmatched Impact Recordings")+ggtitle("IFRC-GO Appeals")+
+  theme(axis.text.x = element_text(angle = 45, hjust=1),
+        plot.title = element_text(hjust = 0.5),
+        legend.position="none");p
 
 ```
 
