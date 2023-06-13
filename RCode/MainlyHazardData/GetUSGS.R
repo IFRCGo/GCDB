@@ -24,9 +24,11 @@ ExtractUSGS<-function(url,namer,I0=NULL,plotty=F){
   # Unpack the files in the zip document
   unzip(paste0(temp),exdir = paste0(namer,"/"))
   # Extract the mean hazard intensity from raster
-  meanhaz<-raster(file.path(namer,"mmi_mean.flt"))
+  meanhaz<-tryCatch(raster(file.path(namer,"mmi_mean.flt")), error=function(e) NA)
+  if(is.na(meanhaz)) meanhaz<-raster(file.path(namer,"mi.fit"))
   # Extract the variance of the hazard intensity from raster
-  sdhaz<-raster(file.path(namer,"mmi_std.flt"))
+  sdhaz<-tryCatch(raster(file.path(namer,"mmi_std.flt")), error=function(e) NA)
+  if(is.na(sdhaz)) sdhaz<-raster(file.path(namer,"mi_std.fit"))
   unlink(temp)
   
   # Form a standard USGS object
@@ -174,7 +176,7 @@ MatchUSGS<-function(impies){
       print("Already there!")
       return(T)
     }
-    hazzy<-GetUSGS_id(out$USGSid[i],titlz=paste0("./RawData/MostlyHazardData/EQ/"),I0=4.5,minmag=5,earlysort=T)
+    hazzy<-tryCatch(GetUSGS_id(out$USGSid[i],titlz=paste0("./RawData/MostlyHazardData/EQ/"),I0=4.5,minmag=5,earlysort=T),error=function(e) NULL)
     if(is.null(hazzy)) return(F)
     print("success")
     saveRDS(hazzy,paste0("./CleanedData/MostlyHazardData/EQ/",out$GCDB_ID[i],"_",out$USGSid[i],".RData"))
