@@ -84,6 +84,7 @@ GetPackages<-function(packred){
   if(length(new.packages)>0) install.packages(new.packages, repos='http://cran.us.r-project.org')
   
   if(length(list.of.packages[!("ggmap" %in% installed.packages()[,"Package"])])){devtools::install_github("dkahle/ggmap")}
+  if(length(list.of.packages[!("ggmap" %in% installed.packages()[,"Package"])])){devtools::install_github("cran/GAMTools")}
   if(length(list.of.packages[!("ggwordcloud" %in% installed.packages()[,"Package"])])){devtools::install_github("lepennec/ggwordcloud")}
   
   # if(length(list.of.packages[!("countrycodes" %in% installed.packages()[,"Package"])])){devtools::install_github("vincentarelbundock/countrycode")}

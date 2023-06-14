@@ -215,7 +215,7 @@ MatchUSGS<-function(impies,noextract=F){
   # Don't unecessarily spam USGS
   indind<-!impies%>%dplyr::select(GCDB_ID)%>%duplicated & inds
   # Extract admin boundaries
-  
+  ADM<-
   #  Extract the ADM boundary file first (UN Clearmaps)
   
   # Per country, 

@@ -62,11 +62,96 @@ inbbox<-function(bbox,point){
 }
 
 bbox_overlap<-function(bbox1,bbox2){
-  bbox1%<>%c()%>%unname(); bbox2%<>%c()%>%unname()
-  inbbox(bbox1,bbox2[c(1,2)]) |
+  bbox1%<>%as.matrix()%>%c()%>%unname(); bbox2%<>%as.matrix()%>%c()%>%unname()
+  # Check if one bounding box lies inside the other
+  (inbbox(bbox1,bbox2[c(1,2)]) |
   inbbox(bbox1,bbox2[c(1,4)]) |
   inbbox(bbox1,bbox2[c(3,2)]) |
-  inbbox(bbox1,bbox2[c(3,4)])
+  inbbox(bbox1,bbox2[c(3,4)])) |
+    # Or the other way round!
+    (inbbox(bbox2,bbox1[c(1,2)]) |
+       inbbox(bbox2,bbox1[c(1,4)]) |
+       inbbox(bbox2,bbox1[c(3,2)]) |
+       inbbox(bbox2,bbox1[c(3,4)]))
+}
+
+bbox_inside<-function(bbox1,bbox2){
+  bbox1%<>%as.matrix()%>%c()%>%unname(); bbox2%<>%as.matrix()%>%c()%>%unname()
+  # Check if one bounding box lies inside the other
+  (inbbox(bbox1,bbox2[c(1,2)]) &
+      inbbox(bbox1,bbox2[c(1,4)]) &
+      inbbox(bbox1,bbox2[c(3,2)]) &
+      inbbox(bbox1,bbox2[c(3,4)])) |
+    # Or the other way round!
+    (inbbox(bbox2,bbox1[c(1,2)]) &
+       inbbox(bbox2,bbox1[c(1,4)]) &
+       inbbox(bbox2,bbox1[c(3,2)]) &
+       inbbox(bbox2,bbox1[c(3,4)]))
+}
+
+ExtractBboxPoly<-function(polygon){
+  c(min(polygon@coords[,1]),
+    min(polygon@coords[,2]),
+    max(polygon@coords[,1]),
+    max(polygon@coords[,2]))
+}
+
+BboxArea<-function(ADM) {
+  bbox<-c(apply(st_coordinates(st_as_sf(ADM)),2,min)[1:2],
+          apply(st_coordinates(st_as_sf(ADM)),2,max)[1:2])
+  geosphere::distHaversine(bbox[3:4],bbox[1:2])/1e3
+}
+
+BboxLengths<-function(ADM) {
+  bbox<-c(apply(st_coordinates(st_as_sf(ADM)),2,min)[1:2],
+          apply(st_coordinates(st_as_sf(ADM)),2,max)[1:2])
+  abs(c(diff(bbox[c(1,3)]),diff(bbox[c(2,4)])))/2
+}
+
+DistPoly<-function(ADM){
+  # Check for nothing weird... such as extra polygons popping out of nowhere
+  if(length(ADM@polygons[[1]])>1) stop("SPDF has length of 1st polygon layer more than one...")
+  # Go polygon by polygon
+  centies<-do.call(rbind,lapply(1:length(ADM@polygons[[1]]@Polygons),function(i){
+    ADM@polygons[[1]]@Polygons[[i]]@labpt
+  }))
+  # Now calculate the median distance of each polygon to all others
+  do.call(rbind,lapply(1:length(ADM@polygons[[1]]@Polygons),function(i) 
+    median(geosphere::distHaversine(ADM@polygons[[1]]@Polygons[[i]]@labpt,centies)/1e3)))
+}
+
+ExtractIndArea<-function(ADM){
+  # Check for nothing weird... such as extra polygons popping out of nowhere
+  if(length(ADM@polygons[[1]])>1) stop("SPDF has length of 1st polygon layer more than one...")
+  # Go polygon by polygon
+  sapply(1:length(ADM@polygons[[1]]@Polygons),function(i){
+    tADM<-ADM
+    tADM@polygons[[1]]@Polygons<-tADM@polygons[[1]]@Polygons[i]
+    as.numeric(st_area(st_as_sf(tADM))/1e6)
+  })
+}
+
+FindBigPolys<-function(ADM){
+  # Area of each polygon
+  areas<-ExtractIndArea(ADM)
+  # Which is the biggest element of the country?
+  maxxie<-which.max(areas)
+  # With which augmented bounding box?
+  bbies<-do.call(rbind,lapply(1:length(ADM@polygons[[1]]@Polygons),function(i){
+    as.data.frame(t(c(i,ExtractBboxPoly(ADM@polygons[[1]]@Polygons[[i]]))))
+  })); colnames(bbies)<-c("i","mnlo","mnla","mxlo","mxla"); rownames(bbies)<-NULL
+  # Bounding box output file
+  bigBBOX<-bbies[maxxie,]
+  # How many polygons lie entirely within the mainland?
+  totalin<-sapply(bbies$i[-maxxie],function(i) !bbox_inside(bbies[i,-1],bigBBOX[,-1]))
+  # Get rid of those that matched
+  bbies%<>%filter(totalin)
+  # 
+  partin<-sapply(bbies$i[-maxxie],function(i) !bbox_overlap(bbies[i,-1],bigBBOX[,-1]))
+  
+  while (remain>0){
+    
+  }
 }
 
 CheckArgs<-function(args){

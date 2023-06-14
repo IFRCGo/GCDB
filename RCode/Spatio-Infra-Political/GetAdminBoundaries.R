@@ -3,9 +3,9 @@
 #################################################################
 GetUNMaps<-function(ISO){
   # Extract boundaries file (1st admin level)
-  # ADM1<-as(sf::st_read("./Data/AdminBoundaries/UNmap0_shp/BNDA_A1.shp"),"Spatial")
+  # ADM1<-as(sf::st_read("./CleanedData/SocioPoliticalData/UN_Clearmaps/BNDA_A1.shp"),"Spatial")
   # ADM1 <- ADM1[ADM1@data$ISO3CD ==ISO, ]
-  ADM<-as(sf::st_read("./Data/AdminBoundaries/UNmap0_shp/BNDA_A2.shp"),"Spatial")
+  ADM<-as(sf::st_read("./CleanedData/SocioPoliticalData/UN_Clearmaps/BNDA_A2.shp"),"Spatial")
   projection(ADM)<-"+proj=longlat +datum=WGS84 +no_defs"
   ADM <- ADM[ADM@data$ISO3CD ==ISO, ]
   ADM@data%<>%dplyr::select(ISO3CD,ADM1NM,ADM2NM,ADM1CD,ADM2CD)
@@ -37,14 +37,14 @@ GetExtent<-function(ADM,expander=NULL){
 
 CheckLandLock<-function(ISO){
   # From Wikipedia page on landlocked countries, but I also added Sudan
-  landl<-xlsx::read.xlsx(paste0(dir,"/Data/AdminBoundaries/LandlockedCountries.xlsx"),
+  landl<-xlsx::read.xlsx(paste0(dir,"/CleanedData/SocioPoliticalData/LandlockedCountries.xlsx"),
                   sheetName = "Sheet1",as.data.frame = T)%>%filter(ISO3C==ISO)
   return(nrow(landl)>0)
 }
 
 # From Sub-national HDI at Global Data Lab
 GetSHDIadmin<-function(ISO){
-  ADM<-as(sf::st_read("./Data/AdminBoundaries/GDL_Shapefiles_V6/shdi2022_World_large.shp"),"Spatial")
+  ADM<-as(sf::st_read("./CleanedData/SocioPoliticalData/GDL_Shapefiles_V6/shdi2022_World_large.shp"),"Spatial")
   ADM <- ADM[!is.na(ADM@data$iso_code) & ADM@data$iso_code ==ISO, ]
   
   return(ADM)
@@ -52,18 +52,28 @@ GetSHDIadmin<-function(ISO){
 }
 
 # Load the administrative boundaries at level 2 from GADM
-GetGADM<-function(ISO){
-  ADM<-gadm_sp_loadCountries(
+GetGADM<-function(ISO,level=0){
+  ADM<-GADMTools::gadm_sp_loadCountries(
     unique(ISO),
-    level = 2,
-    basefile="./Data"
+    level = level,
+    basefile="./CleanedData/SocioPoliticalData/GADM/"
   )
   ADM<-ADM$spdf
-  ADM@data%<>%dplyr::select(GID_0,NAME_1,NAME_2,GID_1,GID_2)
-  names(ADM)<-c("ISO3CD","ADM1NM","ADM2NM","ADM1CD","ADM2CD")
+  
+  if(level==2) {
+    ADM@data%<>%dplyr::select(GID_0,NAME_1,NAME_2,GID_1,GID_2)
+    names(ADM)<-c("ISO3CD","ADM1NM","ADM2NM","ADM1CD","ADM2CD")
+  } else if(level==1) {
+    ADM@data%<>%dplyr::select(GID_0,NAME_1,GID_1)
+    names(ADM)<-c("ISO3CD","ADM1NM","ADM1CD")
+  } else {
+    ADM@data%<>%dplyr::select(GID_0)
+    names(ADM)<-c("ISO3CD")
+  }
+  
   # Calculate the area (in kilometres squared) of each admin boundary region
   ADM$AREA_km2<-as.numeric(st_area(st_as_sf(ADM))/1e6)
-  centroids<-st_coordinates(st_centroid(st_as_sf(ADM)))
+  centroids<-suppressWarnings(st_coordinates(st_centroid(st_as_sf(ADM))))
   ADM$LONGITUDE<-centroids[,1]
   ADM$LATITUDE<-centroids[,2]
   ADM@bbox[]<-c(min(ADM$LONGITUDE),
