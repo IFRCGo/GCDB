@@ -1,10 +1,10 @@
 
 token <- paste("Token", go_token)
 
-getGOurl<-function(db="GO-Appeal",token=NULL){
+getGOurl<-function(db="GO-App",token=NULL){
   
-  if(db=="GO-Appeal") {db_code<-"appeal"
-  } else if(db=="GO-Field Reports") {db_code<-"field_report"
+  if(db=="GO-App") {db_code<-"appeal"
+  } else if(db=="GO-FR") {db_code<-"field_report"
   } else if(db=="GO-DREF") {db_code<-"dref"
   } else stop("this IFRC-GO database does not exist")
   
@@ -21,8 +21,8 @@ getGOurl<-function(db="GO-Appeal",token=NULL){
   } else return(jsonlite::fromJSON(url)$results)
 }
 
-ExtractGOdata<-function(haz="EQ",db="GO-Appeal", token = NULL){
-  options(timeout = max(1000, getOption("timeout")))
+ExtractGOdata<-function(haz="EQ",db="GO-App", token = NULL){
+  options(timeout = max(10000, getOption("timeout")))
   getGOurl(db=db,token)
 }
 
@@ -44,7 +44,7 @@ GOHazards<-function(impies,haz="EQ"){
   
 }
 
-CleanGO_app<-function(impies,db="GO-Appeal",haz="EQ"){
+CleanGO_app<-function(impies,db="GO-App",haz="EQ"){
   
   impies%<>%GOHazards(haz = haz); impies$dtype<-NULL
   
@@ -60,11 +60,11 @@ CleanGO_app<-function(impies,db="GO-Appeal",haz="EQ"){
                    unitdate=as.character(as.Date(modified_at)),
                    est_type="Primary",
                    src_URL="https://goadmin.ifrc.org/api/v2/appeal",
-                   spat_srcorg=NA_character_,
                    src_org="International Federation of Red Cross and Red Crescent Societies (IFRC)",
                    src_db=db,
                    src_orgtype="orgtypengo",
                    spat_type="Polygon",
+                   spat_srcorg="IFRC",
                    spat_ID=NA_character_,
                    spat_res="ADM-0")
   
@@ -127,13 +127,17 @@ CleanGO_field<-function(impies,haz="EQ"){
                    unitdate=as.character(as.Date(report_date)),
                    est_type="Primary",
                    src_URL="https://goadmin.ifrc.org/api/v2/field_reports",
-                   spat_srcorg=NA_character_,
                    src_org="International Federation of Red Cross and Red Crescent Societies (IFRC)",
-                   src_db="GO-Field Reports",
+                   src_db="GO-FR",
                    src_orgtype="orgtypengo",
                    spat_type="Polygon",
+                   spat_srcorg="IFRC",
                    spat_ID=NA_character_,
                    spat_res="ADM-0")
+  
+  districts<-do.call(rbind,lapply(impies$districts,function(x) paste0(x,collapse = ",")))
+  impies$spat_ID[districts!=""]<-districts[districts!=""]
+  impies$spat_res[districts!=""]<-"ADM-1"
   
   impies$GCDB_ID<-GetGCDB_ID(impies)
   impies$hazspec<-"GH0001,GH0002"
@@ -144,7 +148,7 @@ CleanGO_field<-function(impies,haz="EQ"){
   
   impies$countries<-impies$event<-impies$actions_taken<-impies$districts<-impies$regions<-impies$external_partners<-impies$supported_activities<-NULL
   
-  impies%<>%ImpLabs(nomDB = "GO-Field Reports", dropName = F)
+  impies%<>%ImpLabs(nomDB = "GO-FR", dropName = F)
   # Correct for some entries being government or 'other' estimates
   # Make sure that government estimates are saved separately
   inds<-grepl(impies$VarName,pattern = "gov_num")
@@ -171,11 +175,11 @@ CleanGO_field<-function(impies,haz="EQ"){
 
 GetGO<-function(haz="EQ", token=NULL){
   # Get the Emergency Appeal data from GO
-  appeal<-ExtractGOdata(haz = haz,db = "GO-Appeal", token = token)
+  appeal<-ExtractGOdata(haz = haz,db = "GO-App", token = token)
   # Clean it up!
   appeal%<>%CleanGO_app(haz = haz)
   # Get the Field Reports data from GO
-  fieldr<-ExtractGOdata(haz = "EQ",db = "GO-Field Reports") #, token = token)
+  fieldr<-ExtractGOdata(haz = "EQ",db = "GO-FR") #, token = token)
   # Clean it up!
   fieldr%<>%CleanGO_field(haz = haz)
   # Combine both datasets and output
@@ -184,15 +188,24 @@ GetGO<-function(haz="EQ", token=NULL){
 
 # ifrcgo<-GetGO(haz="EQ")
 # 
-# fieldr<-getGOurl(db="GO-Field Reports")
-# fieldr<-getGOurl(db="GO-Field Reports",token)
+# fieldr<-getGOurl(db="GO-FR")
+# fieldr<-getGOurl(db="GO-FR",token)
 # 
 # dref<-getGOurl(db="GO-DREF",token)
+dref$dtype<-dref$disaster_type_details$id
+dref$dtype_disp<-dref$disaster_type_details$name
+dref$disaster_type_details<-NULL
 
+tmp<-dref%>%dplyr::select(-c(national_society_actions,needs_identified,
+                         modified_by_details,event_map_file,
+                         images_file,created_by_details,users_details,
+                         budget_file_details,cover_image_file,
+                         operational_update_details,country_details,
+                         dref_final_report_details))
 
+tmp%<>%dplyr::select(-c(planned_interventions))
 
-
-
+colnames(tmp)
 
 
 

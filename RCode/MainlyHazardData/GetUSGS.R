@@ -218,7 +218,9 @@ MatchUSGS<-function(impies,noextract=F){
   for(iso in unique(impies$ISO3[indind])){
   # Extract admin boundaries
   ADM<-GetGADM(ISO,level=0)
-  #  Extract the ADM boundary file first (UN Clearmaps)
+  # Swallow up all polygons that lie within the biggest polygon bounding boxes
+  ADM%<>%FindBigPolys(expPartin=T,reducer=T)
+  
   
   # Per country, 
   #     per polygon in admin boundaries, 
