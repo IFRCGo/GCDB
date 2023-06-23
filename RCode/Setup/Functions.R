@@ -131,23 +131,39 @@ ExtractIndArea<-function(ADM){
   })
 }
 
-FindBigPolys<-function(ADM){
+ExtractBBOXpoly<-function(ADM){
+  out<-do.call(rbind,lapply(1:length(ADM@polygons[[1]]@Polygons),function(i){
+    as.data.frame(t(c(i,ExtractBboxPoly(ADM@polygons[[1]]@Polygons[[i]]))))
+  }))
+  colnames(out)<-c("i","mnlo","mnla","mxlo","mxla")
+  rownames(out)<-NULL
+  return(out)
+}
+
+FindBigPolys<-function(ADM,expPartin=F){
   # Area of each polygon
   areas<-ExtractIndArea(ADM)
   # Which is the biggest element of the country?
   maxxie<-which.max(areas)
   # With which augmented bounding box?
-  bbies<-do.call(rbind,lapply(1:length(ADM@polygons[[1]]@Polygons),function(i){
-    as.data.frame(t(c(i,ExtractBboxPoly(ADM@polygons[[1]]@Polygons[[i]]))))
-  })); colnames(bbies)<-c("i","mnlo","mnla","mxlo","mxla"); rownames(bbies)<-NULL
+  bbies<-ExtractBBOXpoly(ADM)
   # Bounding box output file
   bigBBOX<-bbies[maxxie,]
   # How many polygons lie entirely within the mainland?
-  totalin<-sapply(bbies$i[-maxxie],function(i) !bbox_inside(bbies[i,-1],bigBBOX[,-1]))
+  allin<-sapply(bbies$i[-maxxie],function(i) bbox_inside(bbies[i,-1],bigBBOX[,-1]))
+  if(expPartin){
+    # Find those polygons that part lie within the largest-polygon bounding box
+    partin<-sapply(bbies$i,function(i) bbox_overlap(bbies[i,-1],bigBBOX[,-1]))
+    # Expand the bbox to be at the edge of all the polygons that were partially contained within main-polygon bbox 
+    # But first, make sure the principal bounding box is present!
+    partin[maxxie]<-T
+    bigBBOX[,2:5]<-c(bbies%>%filter(partin)%>%dplyr::select(mnlo,mnla)%>%apply(2,min),
+               bbies%>%filter(partin)%>%dplyr::select(mxlo,mxla)%>%apply(2,max))
+    # Add the partin polygons to filter out later
+    allin<-allin | partin
+  }
   # Get rid of those that matched
-  bbies%<>%filter(totalin)
-  # 
-  partin<-sapply(bbies$i[-maxxie],function(i) !bbox_overlap(bbies[i,-1],bigBBOX[,-1]))
+  bbies%<>%filter(allin)
   
   while (remain>0){
     

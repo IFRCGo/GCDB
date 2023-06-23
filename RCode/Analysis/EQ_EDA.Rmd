@@ -118,17 +118,6 @@ ggplot(
   scale_size_area(max_size = 30) +
   theme_minimal();p
 
-p<-wordc%>%
-ggplot(
-  aes(
-    label = word, size = lfreq,
-    color = factor(sample.int(20, nrow(wordc), replace = TRUE)),
-    angle = angle
-  )
-) +
-  geom_text_wordcloud_area() +
-  scale_size_area(max_size = 10) +
-  theme_minimal();p
 # ggsave("EQ_ISO3_Wordcloud.png",p,path="../../Plots/")  
 ```
 The number of impact records per year since 1900, on a log-scale, is shown in figure \@ref(fig:noYears). The number of earthquake impact records has increased exponentially since 1900. Such an exponential relationship is reflective of the start of journey of consistent and complete impact recording on a global level. In moving towards an ideal future, with a perfected impact recording process in place on a global level, we would see this exponential relationship tailing off to a stable value (to converge to an extreme value distribution).
@@ -365,26 +354,27 @@ ggsave("EQmatch_magIntensity.png",p,path="../../Plots/")
 
 ```
 
-## IFRC Appeal Data - Earthquake Only
+## IFRC Appeal & Field Report Data - Earthquake Only
 
-```{r ifrccont,fig.cap="Number of impact records per continent, for earthquakes in the IFRC Emergency Appeal database.",echo=F, results='hide', warning=F, message=F}
+```{r ifrccont,fig.cap="Number of impact records per continent, for earthquakes in the IFRC Appeals and Field Reports database.",echo=F, results='hide', warning=F, message=F}
 
-appeal<-readRDS("../../RawData/MostlyImpactData/IFRC/appeal.Rdata")
+appeal<-impies%>%filter(src_db%in%c("GO-Appeal","GO-Field Reports"))
 
 ggplot(appeal)+geom_bar(aes(Continent,fill=Continent),colour="black")+
-xlab("Continent")+ylab("Number of Unmatched Impact Recordings")+ggtitle("IFRC-GO Emergency Appeals")+
+xlab("Continent")+ylab("Number of Unmatched Impact Recordings")+ggtitle("IFRC-GO Appeals and Field Reports")+
 theme(axis.text.x = element_text(angle = 45, hjust=1))
 ```
 
-```{r ifrcyear,fig.cap="Number of impact records per year, for earthquakes in the IFRC Emergency Appeal database.",echo=F, results='hide', warning=F, message=F}
+<!-- ```{r ifrcyear,fig.cap="Number of impact records per year, for earthquakes in the IFRC Appeals and Field Reports database.",echo=F, results='hide', warning=F, message=F} -->
 
-ggplot(appeal)+geom_bar(aes(AsYear(imp_sdate)),fill="blue",colour="black")+
-xlab("Year")+ylab("Number of Unmatched Impact Recordings")+ggtitle("IFRC-GO Emergency Appeals")+
-theme(plot.title = element_text(hjust = 0.5))
-```
+<!-- impies%>%filter(src_db=="GO-Appeal")%>% -->
+<!-- ggplot()+geom_bar(aes(Year),fill="blue",colour="black")+ -->
+<!-- xlab("Year")+ylab("Number of Unmatched Impact Recordings")+ggtitle("IFRC-GO Appeals and Field Reports")+ -->
+<!-- theme(plot.title = element_text(hjust = 0.5)) -->
+<!-- ``` -->
 
 
-```{r ifrcappimp, fig.cap="Number of impact records per impact, for earthquakes in the IFRC Emergency Appeal database.",echo=F, results='hide', warning=F, message=F}
+```{r ifrcappimp, fig.cap="Number of impact records per impact, for earthquakes in the IFRC Appeals and Field Reports database.",echo=F, results='hide', warning=F, message=F}
 
 
 
@@ -413,10 +403,50 @@ p<-tmp%>%ggplot()+geom_bar(aes(label,fill=label),colour="black")+
 ```
 
 
+## IFRC Field Reports Only Data - Earthquakes
 
 
+```{r ifrcfr, fig.cap="Number of field report entries per event, for earthquakes, disaggregated by impact type.",echo=F, results='hide', warning=F, message=F}
+
+fieldr<-impies%>%filter(src_db=="GO-Field Reports")
+
+minitax<-taxies%>%filter(list_name=="impacttypes")%>%
+  transmute(imptype=name,imptype_detail=label)
+minitax$imptype_detail<-str_split(minitax$imptype_detail," \\(",simplify = T)[,1]
+
+fieldr%<>%left_join(minitax,by="imptype")
+
+fieldr%<>%filter(src_db=="GO-Field Reports")%>%
+  arrange(imp_fdate)%>%
+  group_by(GCDB_ID,impactdetails,imptype)%>%
+  mutate(Count=length(fieldr$GCDB_ID[fieldr$GCDB_ID==unique(GCDB_ID) &
+                                      fieldr$impactdetails==unique(impactdetails) &
+                                      fieldr$imptype==unique(imptype)]),
+         whichmax=which.max(fieldr$impvalue[fieldr$GCDB_ID==unique(GCDB_ID) &
+                                                 fieldr$impactdetails==unique(impactdetails) &
+                                                 fieldr$imptype==unique(imptype)]))
+
+fieldr%>%group_by(Count,imptype_detail)%>%
+  reframe(lennie=length(Count))%>%
+  # group_by(imptype_detail)%>%mutate(lennie=lennie/length(imptype_detail))%>%
+  ggplot()+geom_bar(aes(as.factor(Count),lennie,fill=as.factor(imptype_detail)),
+                    colour="black",stat="identity")+
+  xlab("Number of Entries")+ylab("Count")+
+  labs(fill="Impact Type")
+
+```
 
 
+```{r}
+
+fieldr%>%group_by(imptype_detail,whichmax)%>%
+  reframe(meanmax=100*sum(whichmax==Count)/length(whichmax))%>%
+  rbind(data.frame(imptype_detail="Deaths",whichmax=4,meanmax=0))%>%
+  ggplot()+geom_bar(aes(whichmax,meanmax/length(unique(fieldr$imptype_detail)),fill=as.factor(imptype_detail)),
+                    colour="black",stat="identity")+
+  xlab("Entry Order (wrt Date)")+ylab("% of Entries with Max Impact")+
+  labs(fill="Impact Type")
+```
 
 
 

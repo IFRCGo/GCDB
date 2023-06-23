@@ -214,8 +214,10 @@ MatchUSGS<-function(impies,noextract=F){
   inds<-!duplicated(impies); inds[is.na(inds)]<-F
   # Don't unecessarily spam USGS
   indind<-!impies%>%dplyr::select(GCDB_ID)%>%duplicated & inds
+  
+  for(iso in unique(impies$ISO3[indind])){
   # Extract admin boundaries
-  ADM<-
+  ADM<-GetGADM(ISO,level=0)
   #  Extract the ADM boundary file first (UN Clearmaps)
   
   # Per country, 
@@ -230,7 +232,7 @@ MatchUSGS<-function(impies,noextract=F){
   #     per event
   #         extract earthquakes by previously detected USGSids
   #         layover admin polygon to check for earthquake as primary hazard
-  
+  }
   
    
   

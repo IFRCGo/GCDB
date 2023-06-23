@@ -75,18 +75,19 @@ AddEmptyColImp<-function(DF){
   DF[,names(col_impGCDB)]
 }
 
-ImpLabs<-function(ImpDB,nomDB="Desinventar"){
+ImpLabs<-function(ImpDB,nomDB="Desinventar",dropName=T){
   # Open up the database impact taxonomy conversion file
   imptax<-openxlsx::read.xlsx("./RCode/MainlyImpactData/ConvertImpact_Taxonomy.xlsx")%>%
     filter(src_db==nomDB)
   # Find where the Desinventar data impact estimates stop 
   vlim<-which(colnames(ImpDB)%in%imptax$VarName)
   # For all columns that correspond to impact estimates, return the data
-  ImpDB%>%reshape2::melt(measure.vars=colnames(ImpDB)[vlim])%>%
+  ImpDB%<>%reshape2::melt(measure.vars=colnames(ImpDB)[vlim])%>%
     mutate(VarName=as.character(variable),impvalue=as.numeric(value))%>%
     dplyr::select(-c(variable,value))%>%
-    left_join(dplyr::select(imptax,-c("src_orgtype","src_org","src_db")),by="VarName")%>%
-    dplyr::select(-VarName)
+    left_join(dplyr::select(imptax,-c("src_orgtype","src_org","src_db")),by="VarName")
+  # Spit it out!
+  if(dropName) return(ImpDB) else return(dplyr::select(ImpDB,-VarName))
   
 }
 

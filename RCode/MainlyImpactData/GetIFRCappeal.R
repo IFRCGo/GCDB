@@ -22,6 +22,7 @@ getGOurl<-function(db="GO-Appeal",token=NULL){
 }
 
 ExtractGOdata<-function(haz="EQ",db="GO-Appeal", token = NULL){
+  options(timeout = max(1000, getOption("timeout")))
   getGOurl(db=db,token)
 }
 
@@ -43,24 +44,22 @@ GOHazards<-function(impies,haz="EQ"){
   
 }
 
-CleanGO_appfield<-function(impies,db="GO-Appeal",haz="EQ"){
+CleanGO_app<-function(impies,db="GO-Appeal",haz="EQ"){
   
-  impies%<>%GOHazards(haz = haz)
-  
-  impies$dtype<-NULL
+  impies%<>%GOHazards(haz = haz); impies$dtype<-NULL
   
   impies$ISO3<-impies$country$iso3
-  impies$Continent<-convIso3Continent(impies$country$iso3)
-  
+  impies$Continent<-convIso3Continent(impies$ISO3)
+
   impies$country<-impies$region<-NULL
   
   impies%<>%mutate(ISO3=ISO3,Continent=Continent,
                    ev_name_en=name,location=name,
-                   imp_sdate=as.Date(created_at),imp_fdate=as.Date(modified_at),
-                   ev_sdate=as.Date(start_date),ev_fdate=as.Date(end_date),
-                   unitdate=as.Date(modified_at),
+                   imp_sdate=as.character(as.Date(created_at)),imp_fdate=as.character(as.Date(modified_at)),
+                   ev_sdate=as.character(as.Date(start_date)),ev_fdate=as.character(as.Date(end_date)),
+                   unitdate=as.character(as.Date(modified_at)),
                    est_type="Primary",
-                   src_URL=paste0("https://goadmin.ifrc.org/api/v2/",ifelse(db=="GO-Appeal","appeal","field_reports")),
+                   src_URL="https://goadmin.ifrc.org/api/v2/appeal",
                    spat_srcorg=NA_character_,
                    src_org="International Federation of Red Cross and Red Crescent Societies (IFRC)",
                    src_db=db,
@@ -76,7 +75,7 @@ CleanGO_appfield<-function(impies,db="GO-Appeal",haz="EQ"){
   impies$hazpotlink<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
   impies$hazlink<-NA_character_
   
-  impies%<>%ImpLabs(nomDB = db)
+  impies%<>%ImpLabs(nomDB = db, dropName = T)
   
   # Create an impact-specific ID
   impies$impsub_ID<-impies%>%dplyr::select(c(GCDB_ID,src_db,hazspec,impactdetails))%>%
@@ -91,28 +90,104 @@ CleanGO_appfield<-function(impies,db="GO-Appeal",haz="EQ"){
   
 }
 
+CleanGO_field<-function(impies,haz="EQ"){
+  
+  impies%<>%GOHazards(haz = haz); impies$dtype<-NULL
+  
+  impies$num_affected<-sapply(1:nrow(impies), function(i){
+    ifelse(is.na(impies$num_affected[i]) & !is.na(impies$num_potentially_affected[i]),
+           impies$num_potentially_affected[i],
+           impies$num_affected[i])
+  },simplify = T)
+  
+  impies$gov_num_affected<-sapply(1:nrow(impies), function(i){
+    ifelse(is.na(impies$gov_num_affected[i]) & !is.na(impies$gov_num_potentially_affected[i]),
+           impies$gov_num_potentially_affected[i],
+           impies$gov_num_affected[i])
+  },simplify = T)
+  
+  impies$other_num_affected<-sapply(1:nrow(impies), function(i){
+    ifelse(is.na(impies$other_num_affected[i]) & !is.na(impies$other_num_potentially_affected[i]),
+           impies$other_num_potentially_affected[i],
+           impies$other_num_affected[i])
+  },simplify = T)
+  
+  impies$ISO3<-sapply(1:length(impies$countries), function(i) paste0(impies$countries[[i]]$iso3,collapse = ","), simplify = T)
+  impies%<>%filter(ISO3!="")
+  impies$Continent<-sapply(1:length(impies$countries), function(i) median(convIso3Continent(impies$countries[[i]]$iso3)), simplify = T)
+  
+  impies$ev_name_en<-impies$location<-
+    sapply(1:length(impies$countries), function(i) paste0(impies$countries[[i]]$name,collapse = ","), simplify = T)
+  
+  impies$country<-impies$region<-NULL
+  
+  impies%<>%mutate(ISO3=ISO3,Continent=Continent,
+                   imp_sdate=as.character(as.Date(created_at)),imp_fdate=as.character(as.Date(updated_at)),
+                   ev_sdate=as.character(as.Date(start_date)),ev_fdate=as.character(as.Date(report_date)),
+                   unitdate=as.character(as.Date(report_date)),
+                   est_type="Primary",
+                   src_URL="https://goadmin.ifrc.org/api/v2/field_reports",
+                   spat_srcorg=NA_character_,
+                   src_org="International Federation of Red Cross and Red Crescent Societies (IFRC)",
+                   src_db="GO-Field Reports",
+                   src_orgtype="orgtypengo",
+                   spat_type="Polygon",
+                   spat_ID=NA_character_,
+                   spat_res="ADM-0")
+  
+  impies$GCDB_ID<-GetGCDB_ID(impies)
+  impies$hazspec<-"GH0001,GH0002"
+  impies$haztype<-"haztypegeohaz"
+  impies$hazcluster<-"hazgeoseis"
+  impies$hazpotlink<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
+  impies$hazlink<-NA_character_
+  
+  impies$countries<-impies$event<-impies$actions_taken<-impies$districts<-impies$regions<-impies$external_partners<-impies$supported_activities<-NULL
+  
+  impies%<>%ImpLabs(nomDB = "GO-Field Reports", dropName = F)
+  # Correct for some entries being government or 'other' estimates
+  # Make sure that government estimates are saved separately
+  inds<-grepl(impies$VarName,pattern = "gov_num")
+  impies$src_orgtype[inds]<-"orgtypegov"
+  impies$src_org[inds]<-"IFRC-Curated Government"
+  # And the 'other' column of estimates
+  inds<-grepl(impies$VarName,pattern = "other_num")
+  impies$src_orgtype[inds]<-"orgtypeun,orgtyperio,orgtypengo,orgtypeacad,orgtypepriv,orgtypenews,orgtypeother"
+  impies$src_org[inds]<-"IFRC-Curated Other"
+  
+  # Create an impact-specific ID
+  impies$impsub_ID<-impies%>%dplyr::select(c(GCDB_ID,src_db,hazspec,impactdetails))%>%
+    mutate(src_db=stringr::str_remove(stringi::stri_trans_totitle(src_db),pattern = " "))%>%
+    apply(1,function(x) paste0(x,collapse = "-"))
+  # Add missing columns & reorder the dataframe to fit imp_GCDB object
+  impies%<>%AddEmptyColImp()
+  
+  impies%<>%filter(!is.na(impvalue))
+  # impies$GLIDE<-GetGLIDEnum(impies)
+  
+  return(impies)
+  
+}
 
 GetGO<-function(haz="EQ", token=NULL){
   # Get the Emergency Appeal data from GO
   appeal<-ExtractGOdata(haz = haz,db = "GO-Appeal", token = token)
   # Clean it up!
-  appeal%<>%CleanGO_appfield(db="GO-Appeal", haz = haz)
+  appeal%<>%CleanGO_app(haz = haz)
   # Get the Field Reports data from GO
-  fieldr<-ExtractGOdata(haz = "EQ",db = "GO-Field Reports", token = token)
+  fieldr<-ExtractGOdata(haz = "EQ",db = "GO-Field Reports") #, token = token)
   # Clean it up!
-  fieldr%<>%CleanGO_appfield(db="GO-Field Reports", haz = haz)
+  fieldr%<>%CleanGO_field(haz = haz)
   # Combine both datasets and output
   rbind(appeal,fieldr)
 }
 
-ifrcgo<-GetGO(haz="EQ")
-
-
-
-fieldr<-getGOurl(db="GO-Field Reports")
-fieldr<-getGOurl(db="GO-Field Reports",token)
-
-dref<-getGOurl(db="dref",token)
+# ifrcgo<-GetGO(haz="EQ")
+# 
+# fieldr<-getGOurl(db="GO-Field Reports")
+# fieldr<-getGOurl(db="GO-Field Reports",token)
+# 
+# dref<-getGOurl(db="GO-DREF",token)
 
 
 
