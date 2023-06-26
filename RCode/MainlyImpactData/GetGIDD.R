@@ -82,14 +82,14 @@ GetGIDD<-function(haz="EQ"){
 # 
 # out%<>%arrange(desc(impvalue))
 # 
-checker<-sapply(1:nrow(out),function(i){
-  print(out$GCDB_ID[i])
-  hazzy<-GetUSGS_id(out$USGSid[i],titlz=paste0("./RawData/MostlyHazardData/EQ/"),I0=4.5,minmag=5,earlysort=T)
-  if(is.null(hazzy)) return(F)
-  print("success")
-  saveRDS(hazzy,paste0("./CleanedData/MostlyHazardData/EQ/",out$GCDB_ID[i],"_",out$USGSid[i],".RData"))
-  return(T)
-})
+# checker<-sapply(1:nrow(out),function(i){
+#   print(out$GCDB_ID[i])
+#   hazzy<-GetUSGS_id(out$USGSid[i],titlz=paste0("./RawData/MostlyHazardData/EQ/"),I0=4.5,minmag=5,earlysort=T)
+#   if(is.null(hazzy)) return(F)
+#   print("success")
+#   saveRDS(hazzy,paste0("./CleanedData/MostlyHazardData/EQ/",out$GCDB_ID[i],"_",out$USGSid[i],".RData"))
+#   return(T)
+# })
 # # 
 
 

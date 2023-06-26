@@ -210,6 +210,10 @@ MatchUSGS<-function(impies,noextract=F){
 
 
 MatchUSGS<-function(impies,noextract=F){
+  # Do you simply do the bounding box expansion and then store them out
+  # grabbing them only when you need?
+  
+  
   # Check for duplicated entries
   inds<-!duplicated(impies); inds[is.na(inds)]<-F
   # Don't unecessarily spam USGS

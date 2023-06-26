@@ -1,4 +1,6 @@
 dir<-paste0(getwd(),"/")
+# Prep work
+dir.create("./RawData/tmp",showWarnings = F,recursive = T); dir.create("./CleanedData",showWarnings = F,recursive = T)
 
 GetSourceFiles<-function(packred){
   
@@ -8,23 +10,19 @@ GetSourceFiles<-function(packred){
   # Objects
   source(paste0(dir,'RCode/GCDB_Objects/Impacts.R'))
   source(paste0(dir,'RCode/Setup/GetEnv.R'))
-  
-  if(!packred){
-    # Impact related:
-    source(paste0(dir,'RCode/MainlyImpactData/GetDesinventar.R'))
-    source(paste0(dir,'RCode/MainlyImpactData/GetEMDAT.R'))
-    source(paste0(dir,'RCode/MainlyImpactData/GetGIDD.R'))
-    # Hazard related:
-    source(paste0(dir,'RCode/MainlyHazardData/GetGDACS.R'))
-    source(paste0(dir,'RCode/MainlyHazardData/GetUSGS.R'))
-    source(paste0(dir,'RCode/MainlyHazardData/GetDisaster.R'))
-    source(paste0(dir,'RCode/MainlyHazardData/GetGLIDEnumber.R'))
-    # Admin boundaries & Infrastructure related:
-    source(paste0(dir,'RCode/Spatio-Infra-Political/GetOSM.R'))
-    source(paste0(dir,'RCode/Spatio-Infra-Political/GetAdminBoundaries.R'))
-    # Other:
-    
-  }
+  # Impact related:
+  source(paste0(dir,'RCode/MainlyImpactData/GetDesinventar.R'))
+  source(paste0(dir,'RCode/MainlyImpactData/GetEMDAT.R'))
+  source(paste0(dir,'RCode/MainlyImpactData/GetGIDD.R'))
+  # Hazard related:
+  source(paste0(dir,'RCode/MainlyHazardData/GetGDACS.R'))
+  source(paste0(dir,'RCode/MainlyHazardData/GetUSGS.R'))
+  # source(paste0(dir,'RCode/MainlyHazardData/GetDisaster.R'))
+  source(paste0(dir,'RCode/MainlyHazardData/GetGLIDEnumber.R'))
+  # Admin boundaries & Infrastructure related:
+  source(paste0(dir,'RCode/Spatio-Infra-Political/GetOSM.R'))
+  source(paste0(dir,'RCode/Spatio-Infra-Political/GetAdminBoundaries.R'))
+  # Other:
   
 }
 
@@ -67,7 +65,7 @@ GetPackages<-function(packred){
   list.of.packages <- c("devtools","dplyr", "ggplot2","sf","tidyverse","openxlsx","pracma",
                         "geojsonR", "tiff", "gstat", "mvtnorm","xml2","rgdal",
                         "RColorBrewer", "geosphere","GGally", "wbstats","reshape2",
-                        "rjson",
+                        "rjson","geodist",
                         "countrycode","rworldmap","rworldxtra","chron","ncdf4",
                         "GADMTools","akima","adehabitatMA","flexsurv", "ExtDist", 
                         'EnvStats', 'posterior', 'doParallel', 'VGAM', 'abind',

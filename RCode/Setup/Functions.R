@@ -120,6 +120,42 @@ DistPoly<-function(ADM){
     median(geosphere::distHaversine(ADM@polygons[[1]]@Polygons[[i]]@labpt,centies)/1e3)))
 }
 
+DistMatPoly<-function(ADM, indie=T){
+  # Number of polygons to work over
+  n<-length(ADM@polygons[[1]]@Polygons)
+  # Find the bounding boxes
+  bbies<-ExtractBBOXpoly(ADM)[,c(2:5)]
+  # Bullshit because rbind requires colnames... damn this ugly!
+  tmp1<-bbies[,c(1,2)]; colnames(tmp1)<-c("x","y")
+  tmp2<-bbies[,c(1,4)]; colnames(tmp2)<-c("x","y")
+  tmp3<-bbies[,c(3,2)]; colnames(tmp3)<-c("x","y")
+  tmp4<-bbies[,c(3,4)]; colnames(tmp4)<-c("x","y")
+  # Calculate the Haversine distance between the different bounding box corners 
+  distmat<-geodist::geodist(rbind(tmp1,tmp2,tmp3,tmp4), 
+                            measure = "haversine")/1e3; rm(tmp1,tmp2,tmp3,tmp4)
+  # Send out the minimum distance 
+  if(!indie){
+    return(sapply(1:n, function(nnn){
+      min(c(min(distmat[-(nnn+n*(0:3)),nnn+n*0]),
+            min(distmat[-(nnn+n*(0:3)),nnn+n*1]),
+            min(distmat[-(nnn+n*(0:3)),nnn+n*2]),
+            min(distmat[-(nnn+n*(0:3)),nnn+n*3])))
+    },simplify = T))
+  } else {
+    return(sapply(1:n, function(nnn){
+      iii<-which.min(c(min(distmat[-(nnn+n*(0:3)),nnn+n*0]),
+            min(distmat[-(nnn+n*(0:3)),nnn+n*1]),
+            min(distmat[-(nnn+n*(0:3)),nnn+n*2]),
+            min(distmat[-(nnn+n*(0:3)),nnn+n*3])))
+      # For the minimum, extract the data
+      tmp<-distmat[,nnn+n*(iii-1)]; tmp[c(nnn+n*(0:3))]<-NA
+      # Output the index of the minimum value
+      which.min(tmp)/(which.min(tmp)%/%4)
+    },simplify = T))
+  }
+
+}
+
 ExtractIndArea<-function(ADM){
   # Check for nothing weird... such as extra polygons popping out of nowhere
   if(length(ADM@polygons[[1]])>1) stop("SPDF has length of 1st polygon layer more than one...")
@@ -140,7 +176,7 @@ ExtractBBOXpoly<-function(ADM){
   return(out)
 }
 
-FindBigPolys<-function(ADM,expPartin=T,reducer=F){
+FindBigPolys<-function(ADM,expPartin=T,reducer=T){
   # Area of each polygon
   areas<-ExtractIndArea(ADM)
   # Finding bounding box of all ADM polygons
@@ -181,12 +217,39 @@ FindBigPolys<-function(ADM,expPartin=T,reducer=F){
   # Neaten me up!
   row.names(bbout)<-NULL
   # For large countries, remove the polygons less than a certain size
-  if(max(areas)>300) bbout%<>%filter(areas[bbout$i]>10)
+  if(reducer) {if(max(areas)>300) bbout%<>%filter(areas[bbout$i]>10)}
   # Filter out the ADM boundary file to leave only the important polygons
   ADM@polygons[[1]]@Polygons<-ADM@polygons[[1]]@Polygons[bbout$i]
   ADM@polygons[[1]]@plotOrder<-ADM@polygons[[1]]@plotOrder[bbout$i]
   
   return(ADM)
+}
+
+ExpandBigBBOX<-function(ADM,Nout=5,merger=1){
+  # Do this by the number of polygons out
+  # or by a total merge distance
+  # or both?
+  disties<-DistMatPoly(ADM)
+  # Ok, both
+  
+  # So...
+  # Start by measuring the min lat and long distance between all the bounding boxes
+  # Then, for any below 'merger', merge
+  # Then put it through FindBigPolys again?
+  # Then recalculate the distances, then merge the smallest distances until you have a total number of Nout
+  # Repeat until done
+  
+  
+  
+  
+  # What should I told to him about=
+  # 1) I really like the team, and don't want to go back to UNDRR
+  # 2) I believe that I have the technical competencies and strong future-vision
+  #    to really build the GCDB to become a really impressive platform
+  #    including the analysis and building DRM capacity in an open way
+  # 3) More than the GCDB: I believe that I could be an asset to the team.
+  #    Paola and I have very different knowledge bases, that I believe are really complementary
+  
 }
 
 CheckArgs<-function(args){
