@@ -61,7 +61,7 @@ inbbox<-function(bbox,point){
   bbox[4]>point[2]
 }
 
-bbox_overlap<-function(bbox1,bbox2){
+bbox_overlap<-function(bbox1,bbox2,buffer=0){
   bbox1%<>%as.matrix()%>%c()%>%unname(); bbox2%<>%as.matrix()%>%c()%>%unname()
   # Check if one bounding box lies inside the other
   (inbbox(bbox1,bbox2[c(1,2)]) |
@@ -75,7 +75,7 @@ bbox_overlap<-function(bbox1,bbox2){
        inbbox(bbox2,bbox1[c(3,4)]))
 }
 
-bbox_inside<-function(bbox1,bbox2){
+bbox_inside<-function(bbox1,bbox2,buffer=0){
   bbox1%<>%as.matrix()%>%c()%>%unname(); bbox2%<>%as.matrix()%>%c()%>%unname()
   # Check if one bounding box lies inside the other
   (inbbox(bbox1,bbox2[c(1,2)]) &
@@ -133,28 +133,22 @@ DistMatPoly<-function(ADM, indie=T){
   # Calculate the Haversine distance between the different bounding box corners 
   distmat<-geodist::geodist(rbind(tmp1,tmp2,tmp3,tmp4), 
                             measure = "haversine")/1e3; rm(tmp1,tmp2,tmp3,tmp4)
-  # Send out the minimum distance 
-  if(!indie){
-    return(sapply(1:n, function(nnn){
-      min(c(min(distmat[-(nnn+n*(0:3)),nnn+n*0]),
-            min(distmat[-(nnn+n*(0:3)),nnn+n*1]),
-            min(distmat[-(nnn+n*(0:3)),nnn+n*2]),
-            min(distmat[-(nnn+n*(0:3)),nnn+n*3])))
-    },simplify = T))
-  } else {
-    return(sapply(1:n, function(nnn){
-      iii<-which.min(c(min(distmat[-(nnn+n*(0:3)),nnn+n*0]),
-            min(distmat[-(nnn+n*(0:3)),nnn+n*1]),
-            min(distmat[-(nnn+n*(0:3)),nnn+n*2]),
-            min(distmat[-(nnn+n*(0:3)),nnn+n*3])))
-      # For the minimum, extract the data
-      tmp<-distmat[,nnn+n*(iii-1)]; tmp[c(nnn+n*(0:3))]<-NA
-      # Output the index of the minimum value
-      out<-which.min(tmp)-(which.min(tmp)%/%n)*n
-      ifelse(out==0,n,out)
-    },simplify = T))
-  }
-
+  # Calculate the distances between bounding box edges
+  do.call(rbind,lapply(1:n,function(nnn){
+    # Which polygon had the smallest distance to all of the individual edges?
+    dissie<-apply(cbind(distmat[,nnn+n*0],
+                        distmat[,nnn+n*1],
+                        distmat[,nnn+n*2],
+                        distmat[,nnn+n*3]),
+                  1,min,na.rm=T)
+    # Remove distances between bounding box with itself
+    dissie[(nnn+n*(0:3))]<-NA
+    # Find the corresponding closest polygon (considering that the vector length is 3*n)
+    indie<-which.min(dissie)-(which.min(dissie)%/%n)*n
+    
+    return(data.frame(min=min(dissie,na.rm=T),
+                      ind=ifelse(indie==0,n,indie)))
+  }))
 }
 
 ExtractIndArea<-function(ADM){
@@ -177,7 +171,80 @@ ExtractBBOXpoly<-function(ADM){
   return(out)
 }
 
-FindBigPolys<-function(ADM,expPartin=T,reducer=T){
+longDists<-function(bbox){
+  suppressMessages(c(geodist::geodist(matrix(bbox[c(1,2)],nrow = 1,dimnames = list(c("z"),c("x","y"))),
+                                      matrix(bbox[c(3,2)],nrow = 1,dimnames = list(c("z"),c("x","y"))),
+                     measure = "haversine")/1e3,
+    geodist::geodist(matrix(bbox[c(1,4)],nrow = 1,dimnames = list(c("z"),c("x","y"))),
+                     matrix(bbox[c(3,4)],nrow = 1,dimnames = list(c("z"),c("x","y"))),
+                     measure = "haversine")/1e3))
+}
+
+expBBOX_const<-function(bbox,factie,limmie=1000){
+  # Check the value isn't outside the limit
+  latval<-min(c(limmie/111,factie))
+  # Latitude is easy-peasy!
+  bbox[2]<-bbox[2]-latval
+  bbox[4]<-bbox[4]+latval
+  # For longitude values, we expand it by factie*111km, which is what the latitude uses
+  distie<-longDists(bbox)
+  # Cost function
+  fncy<-function(li){
+    # Temporary bounding box - modify directly
+    btmp<-bbox; btmp[1]<-btmp[1]-li; btmp[3]<-btmp[3]+li
+    # Take the difference to find the factor
+    diffie<-longDists(btmp)-distie
+    # put an upper limit on the difference possible
+    if(any(diffie>limmie)) return(20^(1+sqrt(li)))
+    # 111 km is one latitude degree, so make the longitude distance difference a function of that
+    sqrt((max(diffie) - latval*111)^2)
+  }
+  # Optimise to find the ideal longitude shift
+  lonval<-optimize(fncy,interval = c(0.01,latval*5),tol = 0.001)$minimum
+  # Modify then output!
+  bbox[1]<-bbox[1]-lonval/2
+  bbox[3]<-bbox[3]+lonval/2
+  
+  return(bbox)
+}
+
+expBBOX_warp<-function(bbox,factie,limmie=1000){
+  # Check the value isn't outside the limit
+  latval<-min(c(limmie/111,factie))
+  # Latitude is easy-peasy!
+  bbox[2]<-bbox[2]-latval
+  bbox[4]<-bbox[4]+latval
+  # For longitude values, we expand it by factie*111km, which is what the latitude uses
+  distie<-longDists(bbox)
+  # Estimate distance from using latval directly
+  btmp<-bbox; btmp[1]<-btmp[1]-latval; btmp[3]<-btmp[3]+latval
+  # Take the difference to find the factor
+  diffie<-longDists(btmp)-distie
+  # put an upper limit on the difference possible
+  if(!any(diffie>limmie)) return(btmp)
+  # If the longitude distance with latval is more than limmie
+  # Optimise over lonval until you reach limmie, increasing lenval in range (0.1,latval)
+  # Cost function
+  fncy<-function(li){
+    # Temporary bounding box - modify directly
+    btmp<-bbox; btmp[1]<-btmp[1]-li; btmp[3]<-btmp[3]+li
+    # Take the difference to find the factor
+    diffie<-longDists(btmp)-distie
+    # put an upper limit on the difference possible
+    if(any(diffie>limmie)) return(20^(1+sqrt(li)))
+    # 111 km is one latitude degree, so make the longitude distance difference a function of that
+    1/(1+li)
+  }
+  # Optimise to find the ideal longitude shift
+  lonval<-optimize(fncy,interval = c(0.01,latval),tol = 0.001)$minimum
+  # Modify then output!
+  bbox[1]<-bbox[1]-lonval
+  bbox[3]<-bbox[3]+lonval
+  
+  return(bbox)
+}
+
+FindBigPolys<-function(ADM,expPartin=T,reducer=T,expFact=5){
   # Area of each polygon
   areas<-ExtractIndArea(ADM)
   # Finding bounding box of all ADM polygons
@@ -191,6 +258,8 @@ FindBigPolys<-function(ADM,expPartin=T,reducer=T){
     maxxie<-which.max(areas[bbies$i])
     # Which is the biggest element of the country?
     bigBBOX<-bbies[maxxie,]
+    # Expand it by a few extra long-lat values
+    bigBBOX[,-1]<-expBBOX_warp(bigBBOX[,-1],factie=expFact); bbies[maxxie,]<-bigBBOX
     # Find and swallow up the polygons that lie within, or partly within and expand the bbox
     # Do until the number of polygons unmatched is zero
     remain<-T
@@ -220,37 +289,47 @@ FindBigPolys<-function(ADM,expPartin=T,reducer=T){
   # For large countries, remove the polygons less than a certain size
   if(reducer) {if(max(areas)>300) bbout%<>%filter(areas[bbout$i]>10)}
   # Filter out the ADM boundary file to leave only the important polygons
-  ADM@polygons[[1]]@Polygons<-ADM@polygons[[1]]@Polygons[bbout$i]
-  ADM@polygons[[1]]@plotOrder<-ADM@polygons[[1]]@plotOrder[bbout$i]
+  # ADM@polygons[[1]]@Polygons<-ADM@polygons[[1]]@Polygons[bbout$i]
+  # ADM@polygons[[1]]@plotOrder<-ADM@polygons[[1]]@plotOrder[bbout$i]
   
-  return(ADM)
+  return(bbout)
 }
 
-ExpandBigBBOX<-function(ADM,Nout=5,merger=1){
-  # Do this by the number of polygons out
-  # or by a total merge distance
-  # or both?
-  disties<-DistMatPoly(ADM)
-  # Ok, both
+GenerateExpBBOX<-function(isos,expPartin=T,reducer=T,expFact=5){
+  # Just in case we already did it
+  if(file.exists("./CleanedData/SocioPoliticalData/ExpandBBOX.xlsx")){
+    bbies<-openxlsx::read.xlsx("./CleanedData/SocioPoliticalData/ExpandBBOX.xlsx")
+    # Get the remaining countries to expand
+    isy<-isos[!isos%in%bbies$ISO3CD]
+    # if we all good, spit it out!
+    if(length(isy)==0 & nrow(bbies)>0) bbies%>%filter(ISO3CD%in%isos)%>%return()
+  } else bbies<-data.frame()
+  # Bounding box expansion, per country
+  bbies%<>%rbind(do.call(rbind,lapply(isy,function(is){
+    # Get the admin boundaries for the country
+    ADM<-tryCatch(GetGADM(is,level=0),error=function(e) NULL)
+    # Check nothing went wrong
+    if(is.null(ADM)) return(data.frame())
+    # Expand out the bounding boxes
+    out<-FindBigPolys(ADM,expPartin,reducer,expFact)
+    # Add the country element to store out
+    out$ISO3CD<-is
+
+    return(out)
+  })))
+  # Save it out!
+  openxlsx::write.xlsx(bbies,"./CleanedData/SocioPoliticalData/ExpandBBOX.xlsx")
   
-  # So...
-  # Start by measuring the min lat and long distance between all the bounding boxes
-  # Then, for any below 'merger', merge
-  # Then put it through FindBigPolys again?
-  # Then recalculate the distances, then merge the smallest distances until you have a total number of Nout
-  # Repeat until done
-  
-  
-  
-  
-  # What should I told to him about=
-  # 1) I really like the team, and don't want to go back to UNDRR
-  # 2) I believe that I have the technical competencies and strong future-vision
-  #    to really build the GCDB to become a really impressive platform
-  #    including the analysis and building DRM capacity in an open way
-  # 3) More than the GCDB: I believe that I could be an asset to the team.
-  #    Paola and I have very different knowledge bases, that I believe are really complementary
-  
+  bbies%>%filter(ISO3CD%in%isos)%>%return()
+}
+
+GetExpandBBOX<-function(ADM,expPartin=T,reducer=T,expFact=5){
+  if(file.exists("./CleanedData/SocioPoliticalData/ExpandBBOX.xlsx")){
+    bbies<-openxlsx::read.xlsx("./CleanedData/SocioPoliticalData/ExpandBBOX.xlsx")%>%
+      filter(ISO3CD%in%unique(ADM@data$ISO3CD))%>%dplyr::select(-ISO3CD)
+    if(nrow(bbies)>0) return(bbies)
+  }
+  FindBigPolys(ADM,expPartin,reducer,expFact)
 }
 
 CheckArgs<-function(args){

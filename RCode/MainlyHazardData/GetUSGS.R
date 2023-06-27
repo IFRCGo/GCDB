@@ -39,12 +39,12 @@ ExtractUSGS<-function(url,namer,I0=NULL,plotty=F){
 }
 
 # Using an API call, search through USGS database for a specific EQ & pre/aftershocks
-SearchUSGSbbox<-function(bbox,sdate,fdate=NULL,minmag=5,exdays=c(2,2)){
+SearchUSGSbbox<-function(bbox,sdate,fdate=NULL,minmag=5,exdays=c(5,14)){
   
   debut<-"https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson"
   geojsonR::FROM_GeoJson(paste0(debut,"&starttime=",as.Date(sdate)-exdays[1],"&endtime=",as.Date(fdate)+exdays[1],
-                                "&minlongitude=",bbox[1]-3,"&minlatitude=",bbox[2]-3,
-                                "&maxlongitude=",bbox[3]+3,"&maxlatitude=",bbox[4]+3,
+                                "&minlongitude=",bbox[1],"&minlatitude=",bbox[2],
+                                "&maxlongitude=",bbox[3],"&maxlatitude=",bbox[4],
                                 "&minmagnitude=",minmag,"&orderby=magnitude",
                                 "&producttype=shakemap"))%>%return
   
@@ -210,20 +210,8 @@ MatchUSGS<-function(impies,noextract=F){
 
 
 MatchUSGS<-function(impies,noextract=F){
-  # Do you simply do the bounding box expansion and then store them out
-  # grabbing them only when you need?
+  # For each country, get the expansion bounding boxes
   
-  
-  # Check for duplicated entries
-  inds<-!duplicated(impies); inds[is.na(inds)]<-F
-  # Don't unecessarily spam USGS
-  indind<-!impies%>%dplyr::select(GCDB_ID)%>%duplicated & inds
-  
-  for(iso in unique(impies$ISO3[indind])){
-  # Extract admin boundaries
-  ADM<-GetGADM(ISO,level=0)
-  # Swallow up all polygons that lie within the biggest polygon bounding boxes
-  ADM%<>%FindBigPolys(expPartin=T,reducer=T)
   
   
   # Per country, 
@@ -238,15 +226,27 @@ MatchUSGS<-function(impies,noextract=F){
   #     per event
   #         extract earthquakes by previously detected USGSids
   #         layover admin polygon to check for earthquake as primary hazard
-  }
   
-   
   
+  # DONT FORGET TO ADD ON +/-5 LONG-LAT POINTS TO USGS_SEARCH
+  
+  
+  
+  # Check for duplicated entries
+  inds<-!duplicated(impies); inds[is.na(inds)]<-F
+  # Don't unecessarily spam USGS
+  indind<-!impies%>%dplyr::select(GCDB_ID)%>%duplicated & inds
+  
+  bbies<-GenerateExpBBOX(unique(impies$ISO3[indind]),
+                         expPartin=T,reducer=T,expFact=5)
   
   out<-do.call(rbind,mclapply(which(indind),function(i) {
     print(impies$GCDB_ID[i])
+    subbb<-bbies%>%filter(ISO3CD==impies$ISO3[i])%>%dplyr::select(-ISO3CD)
+    
+    do.call(rbind,lapply(1:nrow(subbb),function(j){
     # Try to find the event using the USGS search function
-    tmp<-tryCatch(SearchUSGSbbox(bbies[i,],impies$imp_sdate[i],impies$imp_fdate[i],minmag=5,exdays = c(2,2)),
+    tmp<-tryCatch(SearchUSGSbbox(subbb[j,],impies$imp_sdate[i],impies$imp_fdate[i],minmag=5,exdays = c(2,2)),
                   error=function(e) NA)
     # Check for fails
     if(all(is.na(tmp))) return(cbind(USGSskelly,impies[i,],data.frame(i=i)))
@@ -258,7 +258,14 @@ MatchUSGS<-function(impies,noextract=F){
     usinf$ISO3<-impies$ISO3[i]; usinf$i<-i
     print("success")
     return(merge(usinf,impies[i,],by="ISO3"))
+    }))
   },mc.cores = ceiling(parallel::detectCores()/2)))
+  
+  
+  
+  
+  
+  
   # Add the boundary box values
   out%<>%cbind(GetISObbox(out$ISO3))
   
@@ -284,6 +291,12 @@ MatchUSGS<-function(impies,noextract=F){
   })
   
   saveRDS(out,"./RawData/MatchedEQ_hazimp_2D.RData")
+  
+  
+  
+  
+  
+  
   
   out$overlap<-parallel::mclapply((1:nrow(out))[out$downloaded],function(i){
     print(out$GCDB_ID[i])
