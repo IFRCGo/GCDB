@@ -150,7 +150,8 @@ DistMatPoly<-function(ADM, indie=T){
       # For the minimum, extract the data
       tmp<-distmat[,nnn+n*(iii-1)]; tmp[c(nnn+n*(0:3))]<-NA
       # Output the index of the minimum value
-      which.min(tmp)/(which.min(tmp)%/%4)
+      out<-which.min(tmp)-(which.min(tmp)%/%n)*n
+      ifelse(out==0,n,out)
     },simplify = T))
   }
 
