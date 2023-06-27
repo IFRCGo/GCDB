@@ -448,7 +448,7 @@ fieldr%>%group_by(imptype_detail,whichmax)%>%
   labs(fill="Impact Type")
 ```
 
-
+Per database, what percentage of the impact data had a matching hazard?
 
 
 

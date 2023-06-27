@@ -323,13 +323,8 @@ GenerateExpBBOX<-function(isos,expPartin=T,reducer=T,expFact=5){
   bbies%>%filter(ISO3CD%in%isos)%>%return()
 }
 
-GetExpandBBOX<-function(ADM,expPartin=T,reducer=T,expFact=5){
-  if(file.exists("./CleanedData/SocioPoliticalData/ExpandBBOX.xlsx")){
-    bbies<-openxlsx::read.xlsx("./CleanedData/SocioPoliticalData/ExpandBBOX.xlsx")%>%
-      filter(ISO3CD%in%unique(ADM@data$ISO3CD))%>%dplyr::select(-ISO3CD)
-    if(nrow(bbies)>0) return(bbies)
-  }
-  FindBigPolys(ADM,expPartin,reducer,expFact)
+FullPolyOverlap<-function(ADM,poly){
+  
 }
 
 CheckArgs<-function(args){

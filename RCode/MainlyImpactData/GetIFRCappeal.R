@@ -179,7 +179,7 @@ GetGO<-function(haz="EQ", token=NULL){
   # Clean it up!
   appeal%<>%CleanGO_app(haz = haz)
   # Get the Field Reports data from GO
-  fieldr<-ExtractGOdata(haz = "EQ",db = "GO-FR") #, token = token)
+  fieldr<-ExtractGOdata(haz = "EQ",db = "GO-FR", token = token)
   # Clean it up!
   fieldr%<>%CleanGO_field(haz = haz)
   # Combine both datasets and output
@@ -192,20 +192,20 @@ GetGO<-function(haz="EQ", token=NULL){
 # fieldr<-getGOurl(db="GO-FR",token)
 # 
 # dref<-getGOurl(db="GO-DREF",token)
-dref$dtype<-dref$disaster_type_details$id
-dref$dtype_disp<-dref$disaster_type_details$name
-dref$disaster_type_details<-NULL
-
-tmp<-dref%>%dplyr::select(-c(national_society_actions,needs_identified,
-                         modified_by_details,event_map_file,
-                         images_file,created_by_details,users_details,
-                         budget_file_details,cover_image_file,
-                         operational_update_details,country_details,
-                         dref_final_report_details))
-
-tmp%<>%dplyr::select(-c(planned_interventions))
-
-colnames(tmp)
+# dref$dtype<-dref$disaster_type_details$id
+# dref$dtype_disp<-dref$disaster_type_details$name
+# dref$disaster_type_details<-NULL
+# 
+# tmp<-dref%>%dplyr::select(-c(national_society_actions,needs_identified,
+#                          modified_by_details,event_map_file,
+#                          images_file,created_by_details,users_details,
+#                          budget_file_details,cover_image_file,
+#                          operational_update_details,country_details,
+#                          dref_final_report_details))
+# 
+# tmp%<>%dplyr::select(-c(planned_interventions))
+# 
+# colnames(tmp)
 
 
 

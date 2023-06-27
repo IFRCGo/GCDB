@@ -20,7 +20,7 @@ arCH<-do.call(rbind,lapply(isos,function(iso){
              more100=sum(areas>100),
              more50=sum(areas>50),
              more10=sum(areas>10),
-             Ptop3=sum(areas>500)
+             Ptop3=sum(areas>500),
              Ptop5=ifelse(length(areas)>4,100*sort(areas,T)[5]/max(areas),NA),
              Ptop10=ifelse(length(areas)>9,100*sort(areas,T)[10]/max(areas),NA),
              Ptop20=ifelse(length(areas)>19,100*sort(areas,T)[20]/max(areas),NA),

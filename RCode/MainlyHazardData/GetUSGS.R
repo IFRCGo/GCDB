@@ -138,145 +138,55 @@ metaUSGS<-function(featie){
 }
 
 MatchUSGS<-function(impies,noextract=F){
-  # No data before 2000
-  inds<-!duplicated(impies); inds[is.na(inds)]<-F
-  # Bounding box
-  bbies<-GetISObbox(impies$ISO3)
-  # Don't unecessarily spam USGS
-  indind<-!impies%>%dplyr::select(GCDB_ID)%>%duplicated & inds
-  
-  out<-do.call(rbind,lapply(which(indind),function(i) {
-    print(impies$GCDB_ID[i])
-    # Try to find the event using the USGS search function
-    tmp<-tryCatch(SearchUSGSbbox(bbies[i,],impies$imp_sdate[i],impies$imp_fdate[i],minmag=5,exdays = c(2,2)),
-                  error=function(e) NA)
-    # Check for fails
-    if(all(is.na(tmp))) return(cbind(USGSskelly,impies[i,],data.frame(i=i)))
-    if(length(tmp$features)==0) return(cbind(USGSskelly,impies[i,],data.frame(i=i)))
-    # Extract all the important detail that we need
-    usinf<-do.call(rbind,lapply(1:length(tmp$features),
-                                function(j) tryCatch(metaUSGS(tmp$features[[j]]),
-                                                     error=function(e) USGSskelly)))
-    usinf$ISO3<-impies$ISO3[i]; usinf$i<-i
-    print("success")
-    return(merge(usinf,impies[i,],by="ISO3"))
-  }))
-  # Add the boundary box values
-  out%<>%cbind(GetISObbox(out$ISO3))
-  
-  out%<>%arrange(desc(impvalue))
-  
-  saveRDS(out,"./RawData/MatchedEQ_hazimp_0D.RData")
-  
-  if(noextract) return(out)
-  
-  out%<>%filter(intensity>4.5)
-  
-  out$downloaded<-sapply(1:nrow(out),function(i){
-    print(out$GCDB_ID[i])
-    if(file.exists(paste0("./CleanedData/MostlyHazardData/EQ/",out$GCDB_ID[i],"_",out$USGSid[i],".RData"))){
-      print("Already there!")
-      return(T)
-    }
-    hazzy<-tryCatch(GetUSGS_id(out$USGSid[i],titlz=paste0("./RawData/MostlyHazardData/EQ/"),I0=4.5,minmag=5,earlysort=T),error=function(e) NULL)
-    if(is.null(hazzy)) return(F)
-    print("success")
-    saveRDS(hazzy,paste0("./CleanedData/MostlyHazardData/EQ/",out$GCDB_ID[i],"_",out$USGSid[i],".RData"))
-    return(T)
-  })
-  
-  saveRDS(out,"./RawData/MatchedEQ_hazimp_2D.RData")
-  
-  out$overlap<-parallel::mclapply((1:nrow(out))[out$downloaded],function(i){
-    print(out$GCDB_ID[i])
-    if(!file.exists(paste0("./CleanedData/MostlyHazardData/EQ/",out$GCDB_ID[i],"_",out$USGSid[i],".RData"))){
-      print("File not found")
-      return(F)
-    }
-    hazzy<-readRDS(paste0("./CleanedData/MostlyHazardData/EQ/",out$GCDB_ID[i],"_",out$USGSid[i],".RData"))
-    bbox<-hazzy@bbox; bbox[]
-    return(bbox_overlap(bbox,out[i,c("mnlo","mnla","mxlo","mxla")]))
-  },mc.cores = ceiling(parallel::detectCores()/2))
-  
-  saveRDS(out,"./RawData/MatchedEQ_hazimp_2D_overlayed.RData")
-  
-  return(out)
-}
-
-
-
-
-
-
-
-MatchUSGS<-function(impies,noextract=F){
-  # For each country, get the expansion bounding boxes
-  
-  
-  
-  # Per country, 
-  #     per polygon in admin boundaries, 
-  #         if the size of the box is over a certain size, print out for checks
-  #         per event
-  #             search for all events that occurred within bbox +/- 2 long and lat
-  #             then take all the unique USGSids over all polygons 
-  
-  
-  # Per country, 
-  #     per event
-  #         extract earthquakes by previously detected USGSids
-  #         layover admin polygon to check for earthquake as primary hazard
-  
-  
-  # DONT FORGET TO ADD ON +/-5 LONG-LAT POINTS TO USGS_SEARCH
-  
-  
-  
   # Check for duplicated entries
   inds<-!duplicated(impies); inds[is.na(inds)]<-F
   # Don't unecessarily spam USGS
   indind<-!impies%>%dplyr::select(GCDB_ID)%>%duplicated & inds
-  
+  # Extended boundary boxes of countries
   bbies<-GenerateExpBBOX(unique(impies$ISO3[indind]),
                          expPartin=T,reducer=T,expFact=5)
-  
-  out<-do.call(rbind,mclapply(which(indind),function(i) {
+  # Extract the boundary
+  out<-do.call(rbind,lapply(which(indind),function(i) {
     print(impies$GCDB_ID[i])
-    subbb<-bbies%>%filter(ISO3CD==impies$ISO3[i])%>%dplyr::select(-ISO3CD)
+    subbb<-bbies%>%filter(ISO3CD==impies$ISO3[i])%>%dplyr::select(-c(ISO3CD,i))
     
-    do.call(rbind,lapply(1:nrow(subbb),function(j){
-    # Try to find the event using the USGS search function
-    tmp<-tryCatch(SearchUSGSbbox(subbb[j,],impies$imp_sdate[i],impies$imp_fdate[i],minmag=5,exdays = c(2,2)),
-                  error=function(e) NA)
-    # Check for fails
-    if(all(is.na(tmp))) return(cbind(USGSskelly,impies[i,],data.frame(i=i)))
-    if(length(tmp$features)==0) return(cbind(USGSskelly,impies[i,],data.frame(i=i)))
-    # Extract all the important detail that we need
-    usinf<-do.call(rbind,lapply(1:length(tmp$features),
-                                function(j) tryCatch(metaUSGS(tmp$features[[j]]),
-                                                     error=function(e) USGSskelly)))
-    usinf$ISO3<-impies$ISO3[i]; usinf$i<-i
-    print("success")
-    return(merge(usinf,impies[i,],by="ISO3"))
+    outin<-do.call(rbind,lapply(1:nrow(subbb),function(j){
+      # Try to find the event using the USGS search function
+      tmp<-tryCatch(SearchUSGSbbox(subbb[j,],impies$imp_sdate[i],impies$imp_fdate[i],minmag=5,exdays = c(2,2)),
+                    error=function(e) NA)
+      # Check for fails
+      if(all(is.na(tmp))) return(cbind(USGSskelly,impies[i,],data.frame(i=i)))
+      if(length(tmp$features)==0) return(cbind(USGSskelly,impies[i,],data.frame(i=i)))
+      # Extract all the important detail that we need
+      usinf<-do.call(rbind,lapply(1:length(tmp$features),
+                                  function(j) tryCatch(metaUSGS(tmp$features[[j]]),
+                                                       error=function(e) USGSskelly)))
+      usinf$ISO3<-impies$ISO3[i]; usinf$i<-i
+      usinf$mnlo<-subbb$mnlo[j]; usinf$mnla<-subbb$mnla[j]; usinf$mxlo<-subbb$mxlo[j]; usinf$mxla<-subbb$mxla[j]
+      
+      return(merge(usinf,impies[i,],by="ISO3"))
     }))
-  },mc.cores = ceiling(parallel::detectCores()/2)))
-  
-  
-  
-  
-  
-  
-  # Add the boundary box values
-  out%<>%cbind(GetISObbox(out$ISO3))
-  
+    
+    if(sum(!is.na(outin$USGSid))>0) print("success")
+    # outin%>%distinct()%>%filter(!is.na(USGSid))
+    outin
+    
+  }))
+  # Prioritise extracting the events with the largest impact first
   out%<>%arrange(desc(impvalue))
   
-  saveRDS(out,"./RawData/MatchedEQ_hazimp_0D.RData")
   
+  # outin%>%distinct()%>%filter(!is.na(USGSid))
+  
+  
+  
+  # Save out, just in case!
+  saveRDS(out,"./RawData/MatchedEQ_hazimp_0D_20230627.RData")
+  # If this was all you needed...
   if(noextract) return(out)
-  
-  out%<>%filter(intensity>4.5)
-  
+  # Make sure to get rid of anything that was likely to have a small impact
+  out%<>%filter(intensity>5 & !is.na(USGSid))
+  # Now download the hell out of everythiiiiing! Thanks USGS, spam away!
   out$downloaded<-sapply(1:nrow(out),function(i){
     print(out$GCDB_ID[i])
     if(file.exists(paste0("./CleanedData/MostlyHazardData/EQ/",out$GCDB_ID[i],"_",out$USGSid[i],".RData"))){
@@ -289,27 +199,27 @@ MatchUSGS<-function(impies,noextract=F){
     saveRDS(hazzy,paste0("./CleanedData/MostlyHazardData/EQ/",out$GCDB_ID[i],"_",out$USGSid[i],".RData"))
     return(T)
   })
-  
-  saveRDS(out,"./RawData/MatchedEQ_hazimp_2D.RData")
-  
-  
+  # Save out, just in case!
+  saveRDS(out,"./RawData/MatchedEQ_hazimp_2D_20230627.RData")
   
   
   
   
   
-  out$overlap<-parallel::mclapply((1:nrow(out))[out$downloaded],function(i){
-    print(out$GCDB_ID[i])
-    if(!file.exists(paste0("./CleanedData/MostlyHazardData/EQ/",out$GCDB_ID[i],"_",out$USGSid[i],".RData"))){
-      print("File not found")
-      return(F)
-    }
-    hazzy<-readRDS(paste0("./CleanedData/MostlyHazardData/EQ/",out$GCDB_ID[i],"_",out$USGSid[i],".RData"))
-    bbox<-hazzy@bbox; bbox[]
-    return(bbox_overlap(bbox,out[i,c("mnlo","mnla","mxlo","mxla")]))
-  },mc.cores = ceiling(parallel::detectCores()/2))
   
-  saveRDS(out,"./RawData/MatchedEQ_hazimp_2D_overlayed.RData")
+  
+  # out$overlap<-parallel::mclapply((1:nrow(out))[out$downloaded],function(i){
+  #   print(out$GCDB_ID[i])
+  #   if(!file.exists(paste0("./CleanedData/MostlyHazardData/EQ/",out$GCDB_ID[i],"_",out$USGSid[i],".RData"))){
+  #     print("File not found")
+  #     return(F)
+  #   }
+  #   hazzy<-readRDS(paste0("./CleanedData/MostlyHazardData/EQ/",out$GCDB_ID[i],"_",out$USGSid[i],".RData"))
+  #   bbox<-hazzy@bbox; bbox[]
+  #   return(bbox_overlap(bbox,out[i,c("mnlo","mnla","mxlo","mxla")]))
+  # },mc.cores = ceiling(parallel::detectCores()/2))
+  # 
+  # saveRDS(out,"./RawData/MatchedEQ_hazimp_2D_overlayed.RData")
   
   return(out)
 }

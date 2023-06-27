@@ -9,6 +9,8 @@ GetImpacts<-function(haz="EQ"){
   impies%<>%rbind(GetEMDAT(haz=haz))
   # GIDD (IDMC)
   impies%<>%rbind(GetGIDD(haz=haz))
+  # IFRC GO
+  impies%<>%rbind(GetGO(haz=haz,token=token))
   
   return(impies)
 }
@@ -81,14 +83,24 @@ GO_GCDB<-function(lhaz,cores=1){
 }
 
 # Which hazards do we want to extract?
-lhaz<-c("EQ") # c("EQ","FL","TC","ST")
-# Level of parallelisation (modify accordingly)
-cores<-max(c(round(parallel::detectCores()/2),1))
-print(paste0("Number of cores to be used by GCDB = ",cores))
-# Extract the data!
-checker<-GO_GCDB(lhaz,cores=cores)
+# lhaz<-c("EQ") # c("EQ","FL","TC","ST")
+# # Level of parallelisation (modify accordingly)
+# cores<-max(c(round(parallel::detectCores()/2),1))
+# print(paste0("Number of cores to be used by GCDB = ",cores))
+# # Extract the data!
+# checker<-GO_GCDB(lhaz,cores=cores)
 
 
+
+# 1) Wrangle in the IFRC ADM files
+# 2) Match earthquakes and impacts
+# 3) Download hazard data
+# 4) Make the spatial impact maps of ADM-0 global comparison (doesn't need the impact polygon data)
+# 5) Extract the impact polygons
+# 6) Make the spatial impact maps country-wise ADM-1, adding all ADM0 events as a start
+# 7) Make individual GCDB objects and save out
+# 8) Extract all hazard data, per country, and overlay it all (how to deal with the grid mis-match?)
+# 9) Per country, plot spatial impact maps over the top of the hazard data to see where the reporting bias might be...
 
 
 
