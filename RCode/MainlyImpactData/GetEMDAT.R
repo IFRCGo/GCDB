@@ -46,29 +46,65 @@ PairEMDATspatial<-function(EMDAT,haz="EQ",GAULexist=F){
   
 }
 
+PostModEMDAT<-function(colConv){
+  # hazard Types
+  colConv$haztype[colConv$hazEM%in%c("FL","ST","TC","DR","ET","SN")]<-"haztypehydromet"
+  colConv$haztype[colConv$hazEM%in%c("EQ","LS","TS","VO","AV")]<-"haztypegeohaz"
+  colConv$haztype[colConv$hazEM=="WF"]<-"haztypeenviron"
+  colConv$haztype[colConv$hazEM=="EP"]<-"haztypebio"
+  colConv$haztype[grepl("cyclone & flood",colConv$Disaster.Subtype,ignore.case = T)]<-"haztypehydromet"
+  
+  # Hazard clusters
+  colConv$hazcluster[colConv$hazEM=="FL"]<-"hazhmflood"
+  colConv$hazcluster[colConv$hazEM=="ST"]<-"hazhmflood"
+  colConv$hazcluster[grepl("rain",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmprecip"
+  colConv$hazcluster[grepl("wind",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmwind,hazhmpress"
+  colConv$hazcluster[grepl("lightning",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmconv"
+  colConv$hazcluster[colConv$hazEM=="ET"]<-"hazhmtemp"
+  colConv$hazcluster[colConv$hazEM=="TC"]<-"hazhmwind,hazhmpress,hazhmconv,hazhmflood"
+  colConv$hazcluster[grepl("tidal",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmmarine,hazhmflood,hazhmwind"
+  colConv$hazcluster[grepl("surge",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmmarine,hazhmflood,hazhmwind"
+  colConv$hazcluster[colConv$hazEM=="TS"]<-"hazgeoother"
+  colConv$hazcluster[colConv$hazEM=="EQ"]<-"hazgeoseis"
+  colConv$hazcluster[colConv$hazEM=="VO"]<-"hazgeovolc"
+  colConv$hazcluster[colConv$hazEM=="WF"]<-"hazenvenvdeg"
+  colConv$hazcluster[grepl("hail",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmprecip"
+  colConv$hazcluster[colConv$hazEM=="LS"]<-"hazgeoseis,hazenvenvdeg,hazgeovolc,hazgeoother"
+  colConv$hazcluster[grepl("rock",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmterr"
+  colConv$hazcluster[grepl("mud",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmterr"
+  colConv$hazcluster[grepl("liquefaction",colConv$Disaster.Subtype,ignore.case = T)]<-"hazgeoseis,hazgeoother"
+  colConv$hazcluster[colConv$hazEM=="AV"]<-"hazhmterr"
+  
+  # Specific Hazards
+  colConv$hazspec[colConv$hazEM=="EQ"]<-"GH0001,GH0002"
+  colConv$hazpotlink[colConv$hazEM=="EQ"]<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
+  
+  # Save it out
+  openxlsx::write.xlsx(colConv,"./RawData/MostlyImpactData/EMDAT/EMDAT_HIP.xlsx")
+  
+  return(colConv)
+}
 
 EMDATHazards<-function(EMDAT,haz="EQ"){
+  EMDAT$Disaster.Subtype%<>%str_to_lower()
   # Read in the EMDAT-HIPS taxonomy conversion dataframe
-  colConv<-openxlsx::read.xlsx("./CleanedData/MostlyImpactData/EMDAT/EMDAT_HIP.xlsx")
+  colConv<-openxlsx::read.xlsx("./RawData/MostlyImpactData/EMDAT/EMDAT_HIP.xlsx")%>%
+    filter(hazEM==haz)
+  colConv$Disaster.Subtype%<>%str_to_lower()
+  # Reduce the translated vector and merge
+  EMDAT%<>%left_join(colConv%>%dplyr::select(-c(hazEM)),by = "Disaster.Subtype")
   # Convert EMDAT hazard categorisation to the HIPS!
   if(haz=="EQ"){
-    # Filter for only this hazard
-    EMDAT%<>%filter(Disaster.Type=="Earthquake")
-    # Add hazard taxonomy
-    EMDAT$haztype<-"haztypegeohaz"
-    EMDAT$hazcluster<-"hazgeoseis"
-    EMDAT$hazspec<-"GH0001,GH0002"
-    EMDAT$hazspec[EMDAT$Disaster.Subtype=="Tsunami"]<-"GH0006"
     # Actual linked hazards
     EMDAT$hazlink<-NA_character_
     # Modify EMDAT dataframe, line by line
     for(i in 1:nrow(colConv)){
       # Primary associated hazard
       ind<-!is.na(EMDAT$Associated.Dis) & EMDAT$Associated.Dis==colConv$Disaster.Subtype[i]
-      EMDAT$hazlink[ind]<-colConv$HIP_ID[i]
+      EMDAT$hazlink[ind]<-colConv$hazspec[i]
       # Secondary associated hazard
       ind<-!is.na(EMDAT$Associated.Dis2) & EMDAT$Associated.Dis2==colConv$Disaster.Subtype[i]
-      EMDAT$hazlink[ind]<-paste0(EMDAT$hazlink[ind],paste0(",",colConv$HIP_ID[i]))
+      EMDAT$hazlink[ind]<-paste0(EMDAT$hazlink[ind],paste0(",",colConv$hazspec[i]))
     }
     # Potential linked hazards
     EMDAT$hazpotlink<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
@@ -81,14 +117,15 @@ EMDATHazards<-function(EMDAT,haz="EQ"){
     return(EMDAT)
     
   } else if(haz=="FL"){
-    stop("This hazard isn't ready for Desinventar yet")
+    
   } else if(haz=="TC"){
-    stop("This hazard isn't ready for Desinventar yet")
+    
   } else if(haz=="ST"){
-    stop("This hazard isn't ready for Desinventar yet")
+    
   } else stop("Hazard not recognised for Desinventar data")
   
-  
+  # Now remove all non-relevant hazards
+  EMDAT%>%filter(!is.na(EMDAT$haztype))
 }
 
 CleanEMDAT<-function(EMDAT,haz="EQ"){

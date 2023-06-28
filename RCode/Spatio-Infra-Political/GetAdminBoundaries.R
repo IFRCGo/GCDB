@@ -195,6 +195,29 @@ GetGAUL<-function(ISO3C,lADM=2){
   }))
   
 }
+
+GetIFRCADM<-function(ISO,level=0){
+  ADM<-as(sf::st_read(paste0("./CleanedData/SocioPoliticalData/IFRC/GO-admin1-shp/",ISO,"-admin1/",ISO,"-admin1.shp")),"Spatial")
+  projection(ADM)<-"+proj=longlat +datum=WGS84 +no_defs"
+  if(level==0){
+    ADM%<>%transmute(ISO3CD=iso3)
+    
+    # MERGE ALL ADM POLYGONS!
+    
+  } else if(level==1){
+    ADM%<>%transmute(ISO3CD=iso3,ADM1NM=name,ADM1CD=district_i)
+  }
+  ADM$AREA_km2<-as.numeric(st_area(st_as_sf(ADM))/1e6)
+  centroids<-suppressWarnings(st_coordinates(st_centroid(st_as_sf(ADM))))
+  ADM$LONGITUDE<-centroids[,1]
+  ADM$LATITUDE<-centroids[,2]
+  ADM@bbox[]<-c(min(ADM$LONGITUDE),
+                min(ADM$LATITUDE),
+                max(ADM$LONGITUDE),
+                max(ADM$LATITUDE))
+  return(ADM)
+}
+
 # task_vector <- ee_table_to_drive(folder = "./CleanedData/SocioPoliticalData/EMDAT/",
 #                                  collection = ADM$filter(ee$Filter$eq('ADM0_NAME', 'France')),
 #                                  fileFormat = "GEO_JSON",

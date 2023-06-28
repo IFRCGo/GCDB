@@ -465,28 +465,123 @@ WrangleDessie<-function(iso3){
 }
 
 DesHazards<-function(Dessie,haz="EQ"){
-  if(haz=="EQ"){
-    # Names in Desinventar specifically for this hazard type
-    haznams<-c("Sismo","Sis","EARTH TREMORS","TERREMOTO","Tremblement de terre","TREMBLEMENT DE TERRE","Earthquake","EARTHQUAKE","GROUND VIBRATIO")
-    # Filter for only this hazard
-    Dessie%<>%filter(event%in%haznams)
-    # Add hazard taxonomy
-    Dessie$hazspec<-"GH0001,GH0002"
-    Dessie$haztype<-"haztypegeohaz"
-    Dessie$hazcluster<-"hazgeoseis"
-    Dessie$hazpotlink<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
-    
-    return(Dessie)
-    
-  } else if(haz=="FL"){
-    stop("This hazard isn't ready for Desinventar yet")
-  } else if(haz=="TC"){
-    stop("This hazard isn't ready for Desinventar yet")
-  } else if(haz=="ST"){
-    stop("This hazard isn't ready for Desinventar yet")
-  } else stop("Hazard not recognised for Desinventar data")
+  # Extract the list of translated Desinventar hazards
+  colConv<-openxlsx::read.xlsx("./RawData/MostlyImpactData/Desinventar/translate_disaster_names.xlsx")
+  # Make sure to avoid missing out!
+  colConv$event%<>%str_to_lower()
+  # Also check for duplicates
+  colConv%<>%dplyr::select(-ISO3)%>%distinct()
+  # Extract the names of the disasters
+  haznams<-colConv$event[!is.na(colConv$haz) & colConv$haz==haz]
+  # Now remove all non-relevant hazards
+  Dessie%<>%mutate(event=str_to_lower(event))%>%filter(event%in%haznams)
+  # Reduce the translated vector and merge
+  Dessie%<>%left_join(colConv%>%dplyr::select(-c(event_en,haz)),by = "event")
+  # Remove all irrelevant hazards
+  Dessie%<>%filter(!is.na(haztype))
   
+  return(Dessie)
+}
+
+# Function to produce the Excel spreadsheet that can be used to translate the hazards
+SpitDesTrans<-function(Dessie){
+  out<-Dessie%>%group_by(ISO3)%>%reframe(event=unique(event))
+  out$event%<>%str_to_lower()
+  out%<>%filter(!duplicated(out$event))
+  # Try to automatically translate them using DeepL
+  # Find out which languages are available
+  deep_langs<-deeplr::available_languages2(auth_key = deepl_token)
+  # Translate it!
+  colConv<-do.call(rbind,lapply(1:nrow(out),function(i){
+    trtr<-tryCatch(deeplr::translate2(out$event[i],auth_key = deepl_token,get_detect = T),error=function(e) NULL)
+    if(is.null(trtr)) return(data.frame(ISO3=out$ISO3[i],event=out$event[i],event_en=NA,src_lang=NA))
+    # Output the expected language from DeepL
+    src_lang<-deep_langs$name[deep_langs$language==trtr$source_lang]
+    # Output it
+    data.frame(ISO3=out$ISO3[i],event=out$event[i],event_en=trtr$translation,src_lang=src_lang)
+  }))
+  # Save it out
+  openxlsx::write.xlsx(colConv,"./RawData/MostlyImpactData/Desinventar/translate_disaster_names.xlsx")
   
+  return(colConv)
+}
+
+PostModTransies<-function(colConv){
+  # General Hazard Definitions 
+  colConv$haz[grepl("earthquake",colConv$event_en,ignore.case = T)]<-"EQ"
+  colConv$haz[grepl("flood",colConv$event_en,ignore.case = T)]<-"FL"
+  colConv$haz[grepl("inundation",colConv$event_en,ignore.case = T)]<-"FL"
+  colConv$haz[grepl("tsunami",colConv$event_en,ignore.case = T)]<-"TS"
+  colConv$haz[grepl("tidal wave",colConv$event_en,ignore.case = T)]<-"TS"
+  colConv$haz[grepl("rain",colConv$event_en,ignore.case = T)]<-"ST"
+  colConv$haz[grepl("storm",colConv$event_en,ignore.case = T)]<-"ST"
+  colConv$haz[grepl("wind",colConv$event_en,ignore.case = T)]<-"ST"
+  colConv$haz[grepl("lightning",colConv$event_en,ignore.case = T)]<-"ST"
+  colConv$haz[grepl("surge",colConv$event_en,ignore.case = T)]<-"FL"
+  colConv$haz[grepl("torrent",colConv$event_en,ignore.case = T)]<-"FL"
+  colConv$haz[grepl("cyclone",colConv$event_en,ignore.case = T)]<-"TC"
+  colConv$haz[grepl("hurricane",colConv$event_en,ignore.case = T)]<-"TC"
+  colConv$haz[grepl("tornado",colConv$event_en,ignore.case = T)]<-"TC"
+  colConv$haz[grepl("typhoon",colConv$event_en,ignore.case = T)]<-"TC"
+  colConv$haz[grepl("heat",colConv$event_en,ignore.case = T)]<-"ET"
+  colConv$haz[grepl("cold",colConv$event_en,ignore.case = T)]<-"ET"
+  colConv$haz[grepl("frost",colConv$event_en,ignore.case = T)]<-"ET"
+  colConv$haz[grepl("ice ",colConv$event_en,ignore.case = T)]<-"ET"
+  colConv$haz[grepl("fire",colConv$event_en,ignore.case = T)]<-"WF"
+  colConv$haz[grepl("eruption",colConv$event_en,ignore.case = T)]<-"VO"
+  colConv$haz[grepl("volcan",colConv$event_en,ignore.case = T)]<-"VO"
+  colConv$haz[grepl("lava",colConv$event_en,ignore.case = T)]<-"VO"
+  colConv$haz[grepl("landslide",colConv$event_en,ignore.case = T)]<-"LS"
+  colConv$haz[grepl("liquefaction",colConv$event_en,ignore.case = T)]<-"LS"
+  colConv$haz[grepl("mudflow",colConv$event_en,ignore.case = T)]<-"LS"
+  colConv$haz[grepl("mud flow",colConv$event_en,ignore.case = T)]<-"LS"
+  colConv$haz[grepl("land slide",colConv$event_en,ignore.case = T)]<-"LS"
+  colConv$haz[grepl("debris flow",colConv$event_en,ignore.case = T)]<-"LS"
+  colConv$haz[grepl("rock",colConv$event_en,ignore.case = T)]<-"LS"
+  colConv$haz[grepl("avalanche",colConv$event_en,ignore.case = T)]<-"AV"
+  colConv$haz[grepl("drought",colConv$event_en,ignore.case = T)]<-"DR"
+  colConv$haz[grepl("hail",colConv$event_en,ignore.case = T)]<-"ST"
+  colConv$haz[grepl("snow",colConv$event_en,ignore.case = T)]<-"SN"
+  colConv$haz[grepl("epidemic",colConv$event_en,ignore.case = T)]<-"EP"
+  colConv$haz[grepl("biolog",colConv$event_en,ignore.case = T)]<-"EP"
+  colConv$haz[grepl("cyclone & flood",colConv$event_en,ignore.case = T)]<-"TC,FL"
+  
+  # hazard Types
+  colConv$haztype[colConv$haz%in%c("FL","ST","TC","DR","ET","SN")]<-"haztypehydromet"
+  colConv$haztype[colConv$haz%in%c("EQ","LS","TS","VO","AV")]<-"haztypegeohaz"
+  colConv$haztype[colConv$haz=="WF"]<-"haztypeenviron"
+  colConv$haztype[colConv$haz=="EP"]<-"haztypebio"
+  colConv$haztype[grepl("cyclone & flood",colConv$event_en,ignore.case = T)]<-"haztypehydromet"
+  
+  # Hazard clusters
+  colConv$hazcluster[colConv$haz=="FL"]<-"hazhmflood"
+  colConv$hazcluster[colConv$haz=="ST"]<-"hazhmflood"
+  colConv$hazcluster[grepl("rain",colConv$event_en,ignore.case = T)]<-"hazhmprecip"
+  colConv$hazcluster[grepl("wind",colConv$event_en,ignore.case = T)]<-"hazhmwind,hazhmpress"
+  colConv$hazcluster[grepl("lightning",colConv$event_en,ignore.case = T)]<-"hazhmconv"
+  colConv$hazcluster[colConv$haz=="ET"]<-"hazhmtemp"
+  colConv$hazcluster[colConv$haz=="TC"]<-"hazhmwind,hazhmpress,hazhmconv,hazhmflood"
+  colConv$hazcluster[grepl("tidal",colConv$event_en,ignore.case = T)]<-"hazhmmarine,hazhmflood,hazhmwind"
+  colConv$hazcluster[grepl("surge",colConv$event_en,ignore.case = T)]<-"hazhmmarine,hazhmflood,hazhmwind"
+  colConv$hazcluster[colConv$haz=="TS"]<-"hazgeoother"
+  colConv$hazcluster[colConv$haz=="EQ"]<-"hazgeoseis"
+  colConv$hazcluster[colConv$haz=="VO"]<-"hazgeovolc"
+  colConv$hazcluster[colConv$haz=="WF"]<-"hazenvenvdeg"
+  colConv$hazcluster[grepl("hail",colConv$event_en,ignore.case = T)]<-"hazhmprecip"
+  colConv$hazcluster[colConv$haz=="LS"]<-"hazgeoseis,hazenvenvdeg,hazgeovolc,hazgeoother"
+  colConv$hazcluster[grepl("rock",colConv$event_en,ignore.case = T)]<-"hazhmterr"
+  colConv$hazcluster[grepl("mud",colConv$event_en,ignore.case = T)]<-"hazhmterr"
+  colConv$hazcluster[grepl("liquefaction",colConv$event_en,ignore.case = T)]<-"hazgeoseis,hazgeoother"
+  colConv$hazcluster[colConv$haz=="AV"]<-"hazhmterr"
+  
+  # Specific Hazards
+  colConv$hazspec[colConv$haz=="EQ"]<-"GH0001,GH0002"
+  colConv$hazpotlink[colConv$haz=="EQ"]<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
+  
+  # Save it out
+  openxlsx::write.xlsx(colConv,"./RawData/MostlyImpactData/Desinventar/translate_disaster_names.xlsx")
+  
+  return(colConv)
 }
 
 Des2impGCDB<-function(Dessie,haz="EQ"){
@@ -494,6 +589,8 @@ Des2impGCDB<-function(Dessie,haz="EQ"){
   Dessie$imp_sdate<-Dessie$imp_fdate<-Dessie$ev_sdate<-Dessie$ev_fdate<-Dessie$unitdate<-Dessie$date
   # Any event without a date are automatically removed
   Dessie%<>%filter(!is.na(imp_sdate))
+  # Make sure we can properly match them both
+  Dessie$event%<>%str_to_lower()
   # Extract only the relevant hazards
   Dessie%<>%DesHazards(haz=haz)
   # Rename the event name

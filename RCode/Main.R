@@ -82,6 +82,14 @@ GO_GCDB<-function(lhaz,cores=1){
   
 }
 
+lhaz<-c("EQ","FL","TC","TS","VO","DR","ET","LS","ST","WF")
+
+GatherAllImps<-function(lhaz){
+  do.call(rbind,mclapply(lhaz,function(haz) GetImpacts(haz=haz),mc.cores = length(lhaz)))
+}
+
+# impies<-GatherAllImps(lhaz)
+
 # Which hazards do we want to extract?
 # lhaz<-c("EQ") # c("EQ","FL","TC","ST")
 # # Level of parallelisation (modify accordingly)
@@ -92,15 +100,22 @@ GO_GCDB<-function(lhaz,cores=1){
 
 
 
-# 1) Wrangle in the IFRC ADM files
-# 2) Match earthquakes and impacts
-# 3) Download hazard data
-# 4) Make the spatial impact maps of ADM-0 global comparison (doesn't need the impact polygon data)
-# 5) Extract the impact polygons
-# 6) Make the spatial impact maps country-wise ADM-1, adding all ADM0 events as a start
-# 7) Make individual GCDB objects and save out
-# 8) Extract all hazard data, per country, and overlay it all (how to deal with the grid mis-match?)
-# 9) Per country, plot spatial impact maps over the top of the hazard data to see where the reporting bias might be...
+
+
+# Juicy juicy:
+# Map between appeal and field reports via the hazard data
+# Number of associated aftershocks & preshocks per matched event
+
+    # 1) Wrangle in the IFRC ADM files
+    # 2) Match earthquakes and impacts
+    # 3) Download hazard data
+# 4) Translate and wrangle all key hazards from all databases
+# 5) Make the spatial impact maps of ADM-0 global comparison (doesn't need the impact polygon data) USING GADM NOT IFRC ADM
+# 6) Extract the impact polygons
+# 7) Make the spatial impact maps country-wise ADM-1, adding all ADM0 events as a start
+# 8) Make individual GCDB objects and save out
+# 9) Extract all hazard data, per country, and overlay it all (how to deal with the grid mis-match?)
+# 10) Per country, plot spatial impact maps over the top of the hazard data to see where the reporting bias might be...
 
 
 

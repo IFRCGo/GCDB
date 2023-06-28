@@ -24,11 +24,11 @@ ExtractUSGS<-function(url,namer,I0=NULL,plotty=F){
   # Unpack the files in the zip document
   unzip(paste0(temp),exdir = paste0(namer,"/"))
   # Extract the mean hazard intensity from raster
-  meanhaz<-tryCatch(raster(file.path(namer,"mmi_mean.flt")), error=function(e) NA)
-  if(is.na(meanhaz)) meanhaz<-raster(file.path(namer,"mi.fit"))
+  meanhaz<-tryCatch(raster(file.path(namer,"mmi_mean.flt")), error=function(e) NULL)
+  if(is.null(meanhaz)) meanhaz<-raster(file.path(namer,"mi.fit"))
   # Extract the variance of the hazard intensity from raster
-  sdhaz<-tryCatch(raster(file.path(namer,"mmi_std.flt")), error=function(e) NA)
-  if(is.na(sdhaz)) sdhaz<-raster(file.path(namer,"mi_std.fit"))
+  sdhaz<-tryCatch(raster(file.path(namer,"mmi_std.flt")), error=function(e) NULL)
+  if(is.null(sdhaz)) sdhaz<-raster(file.path(namer,"mi_std.fit"))
   unlink(temp)
   
   # Form a standard USGS object
@@ -145,6 +145,8 @@ MatchUSGS<-function(impies,noextract=F){
   # Extended boundary boxes of countries
   bbies<-GenerateExpBBOX(unique(impies$ISO3[indind]),
                          expPartin=T,reducer=T,expFact=5)
+  # Filter out the countries that don't have boundary boxes
+  impies%<>%filter(ISO3%in%bbies$ISO3CD)
   # Extract the boundary
   out<-do.call(rbind,lapply(which(indind),function(i) {
     print(impies$GCDB_ID[i])
@@ -152,11 +154,21 @@ MatchUSGS<-function(impies,noextract=F){
     
     outin<-do.call(rbind,lapply(1:nrow(subbb),function(j){
       # Try to find the event using the USGS search function
-      tmp<-tryCatch(SearchUSGSbbox(subbb[j,],impies$imp_sdate[i],impies$imp_fdate[i],minmag=5,exdays = c(2,2)),
+      tmp<-tryCatch(SearchUSGSbbox(subbb[j,],impies$ev_sdate[i],impies$ev_fdate[i],minmag=5,exdays = c(2,2)),
                     error=function(e) NA)
       # Check for fails
-      if(all(is.na(tmp))) return(cbind(USGSskelly,impies[i,],data.frame(i=i)))
-      if(length(tmp$features)==0) return(cbind(USGSskelly,impies[i,],data.frame(i=i)))
+      if(all(is.na(tmp))) return(cbind(USGSskelly,impies[i,],
+                                       data.frame(i=i,
+                                                  mnlo=subbb$mnlo[j], 
+                                                  mnla=subbb$mnla[j], 
+                                                  mxlo=subbb$mxlo[j], 
+                                                  mxla=subbb$mxla[j])))
+      if(length(tmp$features)==0) return(cbind(USGSskelly,impies[i,],
+                                               data.frame(i=i,
+                                                          mnlo=subbb$mnlo[j], 
+                                                          mnla=subbb$mnla[j], 
+                                                          mxlo=subbb$mxlo[j], 
+                                                          mxla=subbb$mxla[j])))
       # Extract all the important detail that we need
       usinf<-do.call(rbind,lapply(1:length(tmp$features),
                                   function(j) tryCatch(metaUSGS(tmp$features[[j]]),
@@ -174,18 +186,12 @@ MatchUSGS<-function(impies,noextract=F){
   }))
   # Prioritise extracting the events with the largest impact first
   out%<>%arrange(desc(impvalue))
-  
-  
-  # outin%>%distinct()%>%filter(!is.na(USGSid))
-  
-  
-  
   # Save out, just in case!
   saveRDS(out,"./RawData/MatchedEQ_hazimp_0D_20230627.RData")
   # If this was all you needed...
   if(noextract) return(out)
   # Make sure to get rid of anything that was likely to have a small impact
-  out%<>%filter(intensity>5 & !is.na(USGSid))
+  out%<>%filter(intensity>4.5 & !is.na(USGSid))
   # Now download the hell out of everythiiiiing! Thanks USGS, spam away!
   out$downloaded<-sapply(1:nrow(out),function(i){
     print(out$GCDB_ID[i])
@@ -201,13 +207,6 @@ MatchUSGS<-function(impies,noextract=F){
   })
   # Save out, just in case!
   saveRDS(out,"./RawData/MatchedEQ_hazimp_2D_20230627.RData")
-  
-  
-  
-  
-  
-  
-  
   # out$overlap<-parallel::mclapply((1:nrow(out))[out$downloaded],function(i){
   #   print(out$GCDB_ID[i])
   #   if(!file.exists(paste0("./CleanedData/MostlyHazardData/EQ/",out$GCDB_ID[i],"_",out$USGSid[i],".RData"))){

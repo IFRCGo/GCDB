@@ -9,26 +9,60 @@ ExtractGIDD<-function(){
   return(T)
 }
 
-GIDDHazards<-function(GIDD,haz="EQ"){
-  if(haz=="EQ"){
-    # Filter for only this hazard
-    GIDD%<>%filter(HazardSubType=="Earthquake")
-    # Add hazard taxonomy
-    GIDD$hazspec<-"GH0001,GH0002"
-    GIDD$haztype<-"haztypegeohaz"
-    GIDD$hazcluster<-"hazgeoseis"
-    GIDD$hazpotlink<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
-    
-    GIDD%>%dplyr::select(-c(HazardCategory,HazardType,HazardSubType))%>%return()
-    
-  } else if(haz=="FL"){
-    stop("This hazard isn't ready for Desinventar yet")
-  } else if(haz=="TC"){
-    stop("This hazard isn't ready for Desinventar yet")
-  } else if(haz=="ST"){
-    stop("This hazard isn't ready for Desinventar yet")
-  } else stop("Hazard not recognised for Desinventar data")
+
+PostModGIDD<-function(colConv){
+  # hazard Types
+  colConv$haztype[colConv$hazG%in%c("FL","ST","TC","DR","ET","SN")]<-"haztypehydromet"
+  colConv$haztype[colConv$hazG%in%c("EQ","LS","TS","VO","AV")]<-"haztypegeohaz"
+  colConv$haztype[colConv$hazG=="WF"]<-"haztypeenviron"
+  colConv$haztype[colConv$hazG=="EP"]<-"haztypebio"
   
+  # Hazard clusters
+  colConv$hazcluster[colConv$hazG=="FL"]<-"hazhmflood"
+  colConv$hazcluster[colConv$hazG=="ST"]<-"hazhmflood"
+  colConv$hazcluster[grepl("rain",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmprecip"
+  colConv$hazcluster[grepl("wind",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmwind,hazhmpress"
+  colConv$hazcluster[grepl("lightning",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmconv"
+  colConv$hazcluster[colConv$hazG=="ET"]<-"hazhmtemp"
+  colConv$hazcluster[colConv$hazG=="TC"]<-"hazhmwind,hazhmpress,hazhmconv,hazhmflood"
+  colConv$hazcluster[grepl("tidal",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmmarine,hazhmflood,hazhmwind"
+  colConv$hazcluster[grepl("surge",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmmarine,hazhmflood,hazhmwind"
+  colConv$hazcluster[colConv$hazG=="TS"]<-"hazgeoother"
+  colConv$hazcluster[colConv$hazG=="EQ"]<-"hazgeoseis"
+  colConv$hazcluster[colConv$hazG=="VO"]<-"hazgeovolc"
+  colConv$hazcluster[colConv$hazG=="WF"]<-"hazenvenvdeg"
+  colConv$hazcluster[grepl("hail",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmprecip"
+  colConv$hazcluster[colConv$hazG=="LS"]<-"hazgeoseis,hazenvenvdeg,hazgeovolc,hazgeoother"
+  colConv$hazcluster[grepl("rock",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmterr"
+  colConv$hazcluster[grepl("mud",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmterr"
+  colConv$hazcluster[grepl("liquefaction",colConv$Disaster.Subtype,ignore.case = T)]<-"hazgeoseis,hazgeoother"
+  colConv$hazcluster[colConv$hazG=="AV"]<-"hazhmterr"
+  
+  # Specific Hazards
+  colConv$hazspec[colConv$hazG=="EQ"]<-"GH0001,GH0002"
+  colConv$hazpotlink[colConv$hazG=="EQ"]<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
+  
+  # Save it out
+  openxlsx::write.xlsx(colConv,"./RawData/MostlyImpactData/GIDD/GIDD_HIP.xlsx")
+  
+  return(colConv)
+}
+
+GIDDHazards<-function(GIDD,haz="EQ"){
+  GIDD$HazardSubType%<>%str_to_lower()
+  # Read in the EMDAT-HIPS taxonomy conversion dataframe
+  colConv<-openxlsx::read.xlsx("./RawData/MostlyImpactData/GIDD/GIDD_HIP.xlsx")%>%
+    filter(hazG==haz)
+  colConv$HazardSubType%<>%str_to_lower()
+  # Reduce the translated vector and merge
+  GIDD%<>%left_join(colConv%>%dplyr::select(-c(hazG)),by = "HazardSubType")%>%
+    filter(!is.na(haztype))
+  
+  if(haz=="EQ"){
+    GIDD$hazpotlink<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
+  } 
+  
+  return(GIDD)
 }
 
 

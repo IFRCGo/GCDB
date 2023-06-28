@@ -307,7 +307,7 @@ GenerateExpBBOX<-function(isos,expPartin=T,reducer=T,expFact=5){
   # Bounding box expansion, per country
   bbies%<>%rbind(do.call(rbind,lapply(isy,function(is){
     # Get the admin boundaries for the country
-    ADM<-tryCatch(GetGADM(is,level=0),error=function(e) NULL)
+    ADM<-tryCatch(GetIFRCADM(is,level=1),error=function(e) NULL)
     # Check nothing went wrong
     if(is.null(ADM)) return(data.frame())
     # Expand out the bounding boxes

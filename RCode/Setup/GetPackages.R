@@ -1,4 +1,4 @@
-dir<-paste0(getwd(),"/")
+dir<-directory<-paste0(getwd(),"/")
 # Prep work
 dir.create("./RawData/tmp",showWarnings = F,recursive = T); dir.create("./CleanedData",showWarnings = F,recursive = T)
 
@@ -87,6 +87,7 @@ GetPackages<-function(packred){
   if(length(list.of.packages[!("ggmap" %in% installed.packages()[,"Package"])])){devtools::install_github("dkahle/ggmap")}
   if(length(list.of.packages[!("GADMTools" %in% installed.packages()[,"Package"])])){devtools::install_github("cran/GADMTools")}
   if(length(list.of.packages[!("ggwordcloud" %in% installed.packages()[,"Package"])])){devtools::install_github("lepennec/ggwordcloud")}
+  if(length(list.of.packages[!("deeplr" %in% installed.packages()[,"Package"])])){devtools::install_github("zumbov2/deeplr")}
   
   # if(length(list.of.packages[!("countrycodes" %in% installed.packages()[,"Package"])])){devtools::install_github("vincentarelbundock/countrycode")}
   

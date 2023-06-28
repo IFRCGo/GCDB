@@ -10,3 +10,5 @@ gee_user<-'hamish.patten'
 gee_bin<-"/home/hamishwp/google-cloud-sdk/bin/"
 # GO token
 go_token<-"ec07bcaf0a66eac9902709682777f970156c9769"
+# DEEPL token
+deepl_token<-"3cb021c1-47fe-0eb3-28e4-cd63625670c4:fx"

@@ -26,102 +26,149 @@ ExtractGOdata<-function(haz="EQ",db="GO-App", token = NULL){
   getGOurl(db=db,token)
 }
 
+PostModGO<-function(colConv){
+  # hazard Types
+  colConv$haztype[colConv$hazG%in%c("FL","ST","TC","DR","ET","SN")]<-"haztypehydromet"
+  colConv$haztype[colConv$hazG%in%c("EQ","LS","TS","VO","AV")]<-"haztypegeohaz"
+  colConv$haztype[colConv$hazG=="WF"]<-"haztypeenviron"
+  colConv$haztype[colConv$hazG=="EP"]<-"haztypebio"
+  
+  # Hazard clusters
+  colConv$hazcluster[colConv$hazG=="FL"]<-"hazhmflood"
+  colConv$hazcluster[colConv$hazG=="ST"]<-"hazhmflood"
+  colConv$hazcluster[grepl("rain",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmprecip"
+  colConv$hazcluster[grepl("wind",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmwind,hazhmpress"
+  colConv$hazcluster[grepl("lightning",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmconv"
+  colConv$hazcluster[colConv$hazG=="ET"]<-"hazhmtemp"
+  colConv$hazcluster[colConv$hazG=="TC"]<-"hazhmwind,hazhmpress,hazhmconv,hazhmflood"
+  colConv$hazcluster[grepl("tidal",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmmarine,hazhmflood,hazhmwind"
+  colConv$hazcluster[grepl("surge",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmmarine,hazhmflood,hazhmwind"
+  colConv$hazcluster[colConv$hazG=="TS"]<-"hazgeoother"
+  colConv$hazcluster[colConv$hazG=="EQ"]<-"hazgeoseis"
+  colConv$hazcluster[colConv$hazG=="VO"]<-"hazgeovolc"
+  colConv$hazcluster[colConv$hazG=="WF"]<-"hazenvenvdeg"
+  colConv$hazcluster[grepl("hail",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmprecip"
+  colConv$hazcluster[colConv$hazG=="LS"]<-"hazgeoseis,hazenvenvdeg,hazgeovolc,hazgeoother"
+  colConv$hazcluster[grepl("rock",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmterr"
+  colConv$hazcluster[grepl("mud",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmterr"
+  colConv$hazcluster[grepl("liquefaction",colConv$Disaster.Subtype,ignore.case = T)]<-"hazgeoseis,hazgeoother"
+  colConv$hazcluster[colConv$hazG=="AV"]<-"hazhmterr"
+  
+  # Specific Hazards
+  colConv$hazspec[colConv$hazG=="EQ"]<-"GH0001,GH0002"
+  colConv$hazpotlink[colConv$hazG=="EQ"]<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
+  
+  # Save it out
+  openxlsx::write.xlsx(colConv,"./RawData/MostlyImpactData/IFRC/IFRC_HIP.xlsx")
+  
+  return(colConv)
+}
+
 GOHazards<-function(impies,haz="EQ"){
-  # Convert impies hazard categorisation to the HIPS!
+  
+  # Read in the EMDAT-HIPS taxonomy conversion dataframe
+  colConv<-openxlsx::read.xlsx("./RawData/MostlyImpactData/IFRC/IFRC_HIP.xlsx")%>%
+    filter(hazG==haz)
+  colConv$dtype%<>%str_to_lower()
+  # Reduce the translated vector and merge
+  impies%<>%left_join(colConv%>%dplyr::select(-c(hazG)),by = "dtype")
+  
   if(haz=="EQ"){
-    # Filter for only this hazard
-    impies%<>%filter(dtype$name=="Earthquake")
-    
-    return(impies)
-    
-  } else if(haz=="FL"){
-    stop("This hazard isn't ready for Desinventar yet")
-  } else if(haz=="TC"){
-    stop("This hazard isn't ready for Desinventar yet")
-  } else if(haz=="ST"){
-    stop("This hazard isn't ready for Desinventar yet")
-  } else stop("Hazard not recognised for Desinventar data")
+    impies$hazpotlink<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
+  } 
+  
+  return(impies)
   
 }
 
-CleanGO_app<-function(impies,db="GO-App",haz="EQ"){
+CleanGO_app<-function(appeal,haz="EQ"){
   
-  impies%<>%GOHazards(haz = haz); impies$dtype<-NULL
+  appeal$dtype<-appeal$dtype$name
   
-  impies$ISO3<-impies$country$iso3
-  impies$Continent<-convIso3Continent(impies$ISO3)
+  appeal%<>%GOHazards(haz = haz); appeal$dtype<-NULL
+  
+  appeal$ISO3<-appeal$country$iso3
+  appeal$Continent<-convIso3Continent(appeal$ISO3)
 
-  impies$country<-impies$region<-NULL
+  appeal$country<-appeal$region<-NULL
   
-  impies%<>%mutate(ISO3=ISO3,Continent=Continent,
+  appeal$created_at<-str_split(appeal$created_at," ",simplify = T)[,1]
+  appeal$modified_at<-str_split(appeal$modified_at," ",simplify = T)[,1]
+  appeal$start_date<-str_split(appeal$start_date,"T",simplify = T)[,1]
+  appeal$end_date<-str_split(appeal$end_date,"T",simplify = T)[,1]
+  
+  appeal%<>%mutate(ISO3=ISO3,Continent=Continent,
                    ev_name_en=name,location=name,
                    imp_sdate=as.character(as.Date(created_at)),imp_fdate=as.character(as.Date(modified_at)),
                    ev_sdate=as.character(as.Date(start_date)),ev_fdate=as.character(as.Date(end_date)),
+                   # ev_sdate=as.character(as.Date(created_at)),ev_fdate=as.character(as.Date(created_at)),
                    unitdate=as.character(as.Date(modified_at)),
                    est_type="Primary",
                    src_URL="https://goadmin.ifrc.org/api/v2/appeal",
                    src_org="International Federation of Red Cross and Red Crescent Societies (IFRC)",
-                   src_db=db,
+                   src_db="GO-App",
                    src_orgtype="orgtypengo",
                    spat_type="Polygon",
                    spat_srcorg="IFRC",
                    spat_ID=NA_character_,
                    spat_res="ADM-0")
   
-  impies$GCDB_ID<-GetGCDB_ID(impies)
-  impies$hazspec<-"GH0001,GH0002"
-  impies$haztype<-"haztypegeohaz"
-  impies$hazcluster<-"hazgeoseis"
-  impies$hazpotlink<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
-  impies$hazlink<-NA_character_
+  appeal$GCDB_ID<-GetGCDB_ID(appeal)
+  appeal$hazspec<-"GH0001,GH0002"
+  appeal$haztype<-"haztypegeohaz"
+  appeal$hazcluster<-"hazgeoseis"
+  appeal$hazpotlink<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
+  appeal$hazlink<-NA_character_
   
-  impies%<>%ImpLabs(nomDB = db, dropName = T)
+  appeal%<>%ImpLabs(nomDB = "GO-App", dropName = T)
   
   # Create an impact-specific ID
-  impies$impsub_ID<-impies%>%dplyr::select(c(GCDB_ID,src_db,hazspec,impactdetails))%>%
+  appeal$impsub_ID<-appeal%>%dplyr::select(c(GCDB_ID,src_db,hazspec,impactdetails))%>%
     mutate(src_db=stringr::str_remove(stringi::stri_trans_totitle(src_db),pattern = " "))%>%
     apply(1,function(x) paste0(x,collapse = "-"))
   # Add missing columns & reorder the dataframe to fit imp_GCDB object
-  impies%<>%AddEmptyColImp()
+  appeal%<>%AddEmptyColImp()
   
-  # impies$GLIDE<-GetGLIDEnum(impies)
+  # appeal$GLIDE<-GetGLIDEnum(appeal)
   
-  return(impies)
+  return(appeal)
   
 }
 
-CleanGO_field<-function(impies,haz="EQ"){
+CleanGO_field<-function(fieldr,haz="EQ"){
   
-  impies%<>%GOHazards(haz = haz); impies$dtype<-NULL
+  fieldr$dtype<-fieldr$dtype$name
   
-  impies$num_affected<-sapply(1:nrow(impies), function(i){
-    ifelse(is.na(impies$num_affected[i]) & !is.na(impies$num_potentially_affected[i]),
-           impies$num_potentially_affected[i],
-           impies$num_affected[i])
+  fieldr%<>%GOHazards(haz = haz); fieldr$dtype<-NULL
+  
+  fieldr$num_affected<-sapply(1:nrow(fieldr), function(i){
+    ifelse(is.na(fieldr$num_affected[i]) & !is.na(fieldr$num_potentially_affected[i]),
+           fieldr$num_potentially_affected[i],
+           fieldr$num_affected[i])
   },simplify = T)
   
-  impies$gov_num_affected<-sapply(1:nrow(impies), function(i){
-    ifelse(is.na(impies$gov_num_affected[i]) & !is.na(impies$gov_num_potentially_affected[i]),
-           impies$gov_num_potentially_affected[i],
-           impies$gov_num_affected[i])
+  fieldr$gov_num_affected<-sapply(1:nrow(fieldr), function(i){
+    ifelse(is.na(fieldr$gov_num_affected[i]) & !is.na(fieldr$gov_num_potentially_affected[i]),
+           fieldr$gov_num_potentially_affected[i],
+           fieldr$gov_num_affected[i])
   },simplify = T)
   
-  impies$other_num_affected<-sapply(1:nrow(impies), function(i){
-    ifelse(is.na(impies$other_num_affected[i]) & !is.na(impies$other_num_potentially_affected[i]),
-           impies$other_num_potentially_affected[i],
-           impies$other_num_affected[i])
+  fieldr$other_num_affected<-sapply(1:nrow(fieldr), function(i){
+    ifelse(is.na(fieldr$other_num_affected[i]) & !is.na(fieldr$other_num_potentially_affected[i]),
+           fieldr$other_num_potentially_affected[i],
+           fieldr$other_num_affected[i])
   },simplify = T)
   
-  impies$ISO3<-sapply(1:length(impies$countries), function(i) paste0(impies$countries[[i]]$iso3,collapse = ","), simplify = T)
-  impies%<>%filter(ISO3!="")
-  impies$Continent<-sapply(1:length(impies$countries), function(i) median(convIso3Continent(impies$countries[[i]]$iso3)), simplify = T)
+  fieldr$ISO3<-sapply(1:length(fieldr$countries), function(i) paste0(fieldr$countries[[i]]$iso3,collapse = ","), simplify = T)
+  fieldr%<>%filter(ISO3!="")
+  fieldr$Continent<-sapply(1:length(fieldr$countries), function(i) median(convIso3Continent(fieldr$countries[[i]]$iso3)), simplify = T)
   
-  impies$ev_name_en<-impies$location<-
-    sapply(1:length(impies$countries), function(i) paste0(impies$countries[[i]]$name,collapse = ","), simplify = T)
+  fieldr$ev_name_en<-fieldr$location<-
+    sapply(1:length(fieldr$countries), function(i) paste0(fieldr$countries[[i]]$name,collapse = ","), simplify = T)
   
-  impies$country<-impies$region<-NULL
+  fieldr$country<-fieldr$region<-NULL
   
-  impies%<>%mutate(ISO3=ISO3,Continent=Continent,
+  fieldr%<>%mutate(ISO3=ISO3,Continent=Continent,
                    imp_sdate=as.character(as.Date(created_at)),imp_fdate=as.character(as.Date(updated_at)),
                    ev_sdate=as.character(as.Date(start_date)),ev_fdate=as.character(as.Date(report_date)),
                    unitdate=as.character(as.Date(report_date)),
@@ -135,41 +182,41 @@ CleanGO_field<-function(impies,haz="EQ"){
                    spat_ID=NA_character_,
                    spat_res="ADM-0")
   
-  districts<-do.call(rbind,lapply(impies$districts,function(x) paste0(x,collapse = ",")))
-  impies$spat_ID[districts!=""]<-districts[districts!=""]
-  impies$spat_res[districts!=""]<-"ADM-1"
+  districts<-do.call(rbind,lapply(fieldr$districts,function(x) paste0(x,collapse = ",")))
+  fieldr$spat_ID[districts!=""]<-districts[districts!=""]
+  fieldr$spat_res[districts!=""]<-"ADM-1"
   
-  impies$GCDB_ID<-GetGCDB_ID(impies)
-  impies$hazspec<-"GH0001,GH0002"
-  impies$haztype<-"haztypegeohaz"
-  impies$hazcluster<-"hazgeoseis"
-  impies$hazpotlink<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
-  impies$hazlink<-NA_character_
+  fieldr$GCDB_ID<-GetGCDB_ID(fieldr)
+  fieldr$hazspec<-"GH0001,GH0002"
+  fieldr$haztype<-"haztypegeohaz"
+  fieldr$hazcluster<-"hazgeoseis"
+  fieldr$hazpotlink<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
+  fieldr$hazlink<-NA_character_
   
-  impies$countries<-impies$event<-impies$actions_taken<-impies$districts<-impies$regions<-impies$external_partners<-impies$supported_activities<-NULL
+  fieldr$countries<-fieldr$event<-fieldr$actions_taken<-fieldr$districts<-fieldr$regions<-fieldr$external_partners<-fieldr$supported_activities<-NULL
   
-  impies%<>%ImpLabs(nomDB = "GO-FR", dropName = F)
+  fieldr%<>%ImpLabs(nomDB = "GO-FR", dropName = F)
   # Correct for some entries being government or 'other' estimates
   # Make sure that government estimates are saved separately
-  inds<-grepl(impies$VarName,pattern = "gov_num")
-  impies$src_orgtype[inds]<-"orgtypegov"
-  impies$src_org[inds]<-"IFRC-Curated Government"
+  inds<-grepl(fieldr$VarName,pattern = "gov_num")
+  fieldr$src_orgtype[inds]<-"orgtypegov"
+  fieldr$src_org[inds]<-"IFRC-Curated Government"
   # And the 'other' column of estimates
-  inds<-grepl(impies$VarName,pattern = "other_num")
-  impies$src_orgtype[inds]<-"orgtypeun,orgtyperio,orgtypengo,orgtypeacad,orgtypepriv,orgtypenews,orgtypeother"
-  impies$src_org[inds]<-"IFRC-Curated Other"
+  inds<-grepl(fieldr$VarName,pattern = "other_num")
+  fieldr$src_orgtype[inds]<-"orgtypeun,orgtyperio,orgtypengo,orgtypeacad,orgtypepriv,orgtypenews,orgtypeother"
+  fieldr$src_org[inds]<-"IFRC-Curated Other"
   
   # Create an impact-specific ID
-  impies$impsub_ID<-impies%>%dplyr::select(c(GCDB_ID,src_db,hazspec,impactdetails))%>%
+  fieldr$impsub_ID<-fieldr%>%dplyr::select(c(GCDB_ID,src_db,hazspec,impactdetails))%>%
     mutate(src_db=stringr::str_remove(stringi::stri_trans_totitle(src_db),pattern = " "))%>%
     apply(1,function(x) paste0(x,collapse = "-"))
   # Add missing columns & reorder the dataframe to fit imp_GCDB object
-  impies%<>%AddEmptyColImp()
+  fieldr%<>%AddEmptyColImp()
   
-  impies%<>%filter(!is.na(impvalue))
-  # impies$GLIDE<-GetGLIDEnum(impies)
+  fieldr%<>%filter(!is.na(impvalue))
+  # fieldr$GLIDE<-GetGLIDEnum(fieldr)
   
-  return(impies)
+  return(fieldr)
   
 }
 
@@ -179,7 +226,7 @@ GetGO<-function(haz="EQ", token=NULL){
   # Clean it up!
   appeal%<>%CleanGO_app(haz = haz)
   # Get the Field Reports data from GO
-  fieldr<-ExtractGOdata(haz = "EQ",db = "GO-FR", token = token)
+  fieldr<-ExtractGOdata(haz = "EQ",db = "GO-FR") #, token = token)
   # Clean it up!
   fieldr%<>%CleanGO_field(haz = haz)
   # Combine both datasets and output
