@@ -22,11 +22,11 @@ p<-impies%>%group_by(hazAb)%>%reframe(Count=length(unique(GCDB_ID)))%>%arrange(d
   scale_fill_manual("Hazard",values = pal,limits = names(pal));p
 ggsave("AllHazards_bar.png",p,path="./Plots/",width = 10,height = 8)  
 
-p<-impies%>%
-  ggplot()+geom_bar(aes(x=src_db,fill=spat_res),colour="black")+
+p<-impies%>%group_by(src_db,spat_res)%>%reframe(Count=length(unique(GCDB_ID)))%>%
+  ggplot()+geom_bar(aes(x=src_db,y=Count,fill=spat_res),colour="black",stat="identity")+
   xlab("Impact Database")+ylab("Number of Impact Records")+
   labs(fill="Spatial Resolution");p
-ggsave("AllHazards_src_db_bar.png",p,path="./Plots/",width = 9,height = 8)  
+ggsave("AllHazards_src_db_ADM_bar.png",p,path="./Plots/",width = 9,height = 8)  
 
 
 p<-impies%>%filter(impactdetails=="impdetallpeop" & imptype=="imptypdeat")%>%
