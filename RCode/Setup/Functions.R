@@ -836,6 +836,63 @@ ExtractPolyCoords<-function(polys){
   
 }
 
+ImpactAggADM0<-function(impies, haz="EQ"){
+  # Extract Global ADM
+  ADM <- rworldmap::getMap(resolution='high')
+  ADM@data%<>%transmute(ISO3=ISO_A3,Population=POP_EST,GDP=GDP_MD_EST)
+  
+  impies%<>%filter(!(is.na(impactdetails) | is.na(imptype))) 
+  
+  impies$impact<-sapply(1:nrow(impies),function(i) paste0(impies$impactsubcats[i],"-",impies$imptype[i]),simplify = T)
+  
+  ADM@data$N<-sapply(ADM@data$ISO3, function(is){
+    length(unique(impies$GCDB_ID[impies$ISO3==is]))
+  },simplify = T)
+  
+  for(imp in unique(impies$impact)){
+    # Aggregated per country
+    ADM@data$tmp<-sapply(ADM@data$ISO3, function(is){
+      sum(impies$impvalue[impies$ISO3==is & impies$impact==imp])
+    },simplify = T)
+    # Remove all zero counts
+    ADM@data$tmp[ADM@data$tmp==0]<-NA
+    # Set the column name
+    colnames(ADM@data)[ncol(ADM@data)]<-imp
+  }
+  
+  return(ADM)
+}
+
+PlotImpAgg<-function(ADM,impact="imptypepopcnt-imptypdeat",loggie=T,bks=NULL,lbs=NULL,guidie="colourbar"){
+  # Filter only the data we need
+  ADM@data$tmp<-ADM@data[,impact]
+  # Exception if we're interested in plotting only the number of impact records
+  if(impact=="N"){
+    # Keep as is
+    labeller<-"No. Events"
+  } else {
+    # Extract the correct label for the legend
+    taxies<-openxlsx::read.xlsx("./ImpactInformationProfiles.xlsx")
+    # 
+    labeller<-paste0(taxies%>%filter(list_name=="impactsubcats" &
+                                       name==str_split(impact,"-",simplify = T)[1])%>%
+                       pull(label)," ",
+                     taxies%>%filter(list_name=="impacttypes" &
+                                       name==str_split(impact,"-",simplify = T)[2])%>%
+                       pull(label))  
+  }
+  # Plot it out!
+  q<-ggplot()+geom_sf(data=st_as_sf(ADM),aes(fill=tmp))
+  # Specific the fill style of the plot
+  if(loggie){
+    q+scale_fill_gradient(name = labeller, trans = "log", guide = guidie,
+                          breaks=bks,labels=lbs)
+  } else {
+    q
+  }
+  
+}
+
 # # 2D DENSITY PLOT WITH MODIFIED COLOUR AXIS
 # ggplot(as.data.frame(buildings),aes(Longitude,Latitude))+
 #   stat_density_2d(aes(fill = ..level..),breaks=c(0,0.5,1,3,5,10,30,50,100,300), 

@@ -82,10 +82,15 @@ GO_GCDB<-function(lhaz,cores=1){
   
 }
 
-lhaz<-c("EQ","FL","TC","TS","VO","DR","ET","LS","ST","WF")
+lhaz<-c("EQ","FL","TC","VO","DR","ET","LS","ST","WF")
 
 GatherAllImps<-function(lhaz){
-  do.call(rbind,mclapply(lhaz,function(haz) GetImpacts(haz=haz),mc.cores = length(lhaz)))
+  do.call(rbind,lapply(lhaz,function(haz) {
+    print(haz)
+    impies<-GetImpacts(haz=haz)
+    impies$hazAb<-haz
+    return(impies)
+  }))
 }
 
 # impies<-GatherAllImps(lhaz)

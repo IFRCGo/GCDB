@@ -55,16 +55,15 @@ PostModEMDAT<-function(colConv){
   colConv$haztype[grepl("cyclone & flood",colConv$Disaster.Subtype,ignore.case = T)]<-"haztypehydromet"
   
   # Hazard clusters
+  colConv$hazcluster[colConv$hazEM=="DR"]<-"hazhmprecip,hazhmtemp"
   colConv$hazcluster[colConv$hazEM=="FL"]<-"hazhmflood"
-  colConv$hazcluster[colConv$hazEM=="ST"]<-"hazhmflood"
+  colConv$hazcluster[colConv$hazEM=="ST"]<-"hazhmconv,hazhmwind,hazhmpress,hazhmflood"
   colConv$hazcluster[grepl("rain",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmprecip"
   colConv$hazcluster[grepl("wind",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmwind,hazhmpress"
   colConv$hazcluster[grepl("lightning",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmconv"
   colConv$hazcluster[colConv$hazEM=="ET"]<-"hazhmtemp"
   colConv$hazcluster[colConv$hazEM=="TC"]<-"hazhmwind,hazhmpress,hazhmconv,hazhmflood"
-  colConv$hazcluster[grepl("tidal",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmmarine,hazhmflood,hazhmwind"
-  colConv$hazcluster[grepl("surge",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmmarine,hazhmflood,hazhmwind"
-  colConv$hazcluster[colConv$hazEM=="TS"]<-"hazgeoother"
+  colConv$hazcluster[colConv$hazEM=="TS"]<-"hazgeoother,hazhmmarine,hazhmflood"
   colConv$hazcluster[colConv$hazEM=="EQ"]<-"hazgeoseis"
   colConv$hazcluster[colConv$hazEM=="VO"]<-"hazgeovolc"
   colConv$hazcluster[colConv$hazEM=="WF"]<-"hazenvenvdeg"
@@ -74,6 +73,13 @@ PostModEMDAT<-function(colConv){
   colConv$hazcluster[grepl("mud",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmterr"
   colConv$hazcluster[grepl("liquefaction",colConv$Disaster.Subtype,ignore.case = T)]<-"hazgeoseis,hazgeoother"
   colConv$hazcluster[colConv$hazEM=="AV"]<-"hazhmterr"
+  colConv$hazcluster[grepl("tidal",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmmarine,hazhmflood"
+  colConv$hazcluster[grepl("wave",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmmarine,hazhmflood"
+  colConv$hazcluster[grepl("coastal flood",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmflood,hazhmmarine"
+  colConv$hazcluster[grepl("surge",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmmarine,hazhmflood,hazhmwind"
+  colConv$hazcluster[grepl("hail",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmprecip"
+  colConv$hazcluster[grepl("tropical storm",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmwind"
+  colConv$hazcluster[grepl("convective storm",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmconv"
   
   # Specific Hazards
   colConv$hazspec[colConv$hazEM=="EQ"]<-"GH0001,GH0002"
@@ -114,15 +120,7 @@ EMDATHazards<-function(EMDAT,haz="EQ"){
                               Disaster.Subgroup,Disaster.Type,Disaster.Group,
                               Associated.Dis,Associated.Dis2))
     
-    return(EMDAT)
-    
-  } else if(haz=="FL"){
-    
-  } else if(haz=="TC"){
-    
-  } else if(haz=="ST"){
-    
-  } else stop("Hazard not recognised for Desinventar data")
+  } 
   
   # Now remove all non-relevant hazards
   EMDAT%>%filter(!is.na(EMDAT$haztype))
@@ -181,6 +179,8 @@ CleanEMDAT<-function(EMDAT,haz="EQ"){
   EMDAT$spat_res<-"ADM-0"; EMDAT$spat_res[!is.na(EMDAT$Admin1.Code)]<-"ADM-1"; EMDAT$spat_res[!is.na(EMDAT$Admin2.Code)]<-"ADM-2"
   # Link to the hazard taxonomy from HIPS
   EMDAT%<>%EMDATHazards(haz=haz)
+  
+  if(nrow(EMDAT)==0) return(EMDAT)
   # Some GLIDE numbers don't have an associated hazard...
   EMDAT$Glide[!is.na(EMDAT$Glide) & nchar(EMDAT$Glide)==11]<-paste0(haz,"-",EMDAT$Glide[!is.na(EMDAT$Glide) & nchar(EMDAT$Glide)==11])
   # Ensure column name aligns with imp_GCDB object
@@ -202,8 +202,12 @@ CleanEMDAT<-function(EMDAT,haz="EQ"){
 }
 
 GetEMDAT<-function(haz="EQ"){
+  # EMDAT file
+  filez<-paste0("./RawData/MostlyImpactData/EMDAT/emdat_public_",haz,"_20230526.xlsx")
+  # If nothing found
+  if(!file.exists(filez)) return(data.frame())
   # Extract the hazard-specific EMDAT data
-  EMDAT<-openxlsx::read.xlsx(paste0("./RawData/MostlyImpactData/EMDAT/emdat_public_",haz,"_20230526.xlsx"),startRow = 7)
+  EMDAT<-openxlsx::read.xlsx(filez,startRow = 7)
   # Clean it up and get it in the right format
   EMDAT%<>%CleanEMDAT(haz=haz)
   # Make sure that the spatial data required actually exists

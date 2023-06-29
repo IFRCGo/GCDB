@@ -210,7 +210,7 @@ minitax<-taxies%>%filter(list_name=="impactcats")%>%
   transmute(impactcats=name,label=label)
 
 p<-left_join(impies,minitax,by="impactcats")%>%ggplot()+geom_bar(aes(label,fill=label),colour="black")+
-  xlab("Impact Detail")+labs(fill="Impact Category")+
+  xlab("Impact Category")+labs(fill="Impact Category")+
   ylab("Number of Impact Recordings")+ggtitle("GCDB - Earthquakes")+
   theme(axis.text.x = element_text(angle = 45, hjust=1),
         plot.title = element_text(hjust = 0.5),
