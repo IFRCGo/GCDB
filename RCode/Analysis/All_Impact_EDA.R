@@ -83,7 +83,7 @@ ggsave("AllHazards_impacts_bar.png",p,path="./Plots/")
 
 p<-PlotImpAgg(ADM,"N",F)+
   scale_fill_gradient(name = "No. Events",guide="legend", trans = "log",
-                      low="moccasin",high="green4",
+                      high="chartreuse",low="chartreuse4",
                       breaks=rev(c(10,100, 1000, 10000, 100000, 1000000, 10000000)),
                       labels=rev(c("10^1","10^2","10^3","10^4","10^5","10^6","10^7")));p
 ggsave("AllHazards_spatial.png",p,path="./Plots/",width = 13,height = 7)  
@@ -127,23 +127,16 @@ EQ<-impies%>%filter(hazAb=="EQ")%>%ImpactAggADM0()
 p<-PlotImpAgg(FL,loggie = F)+
   scale_fill_gradient(name = "Total Deaths",guide="legend", trans = "log",
                       # low="moccasin",high="green4",
-                      breaks=rev(c(10,100, 1000, 10000, 100000, 1000000, 10000000)),
-                      labels=rev(c("10^1","10^2","10^3","10^4","10^5","10^6","10^7")));p
-ggsave("FL_spatial_deaths.png",p,path="./Plots/",width = 13,height = 7)
-
-
-p<-PlotImpAgg(FL,loggie = F)+
-  scale_fill_gradient(name = "Total Deaths",guide="legend", trans = "log",
-                      # low="moccasin",high="green4",
-                      breaks=rev(c(10,100, 1000, 10000, 100000, 1000000, 10000000)),
-                      labels=rev(c("10^1","10^2","10^3","10^4","10^5","10^6","10^7")));p
+                      breaks=c(10,100, 1000, 10000, 100000, 1000000, 10000000),
+                      labels=c("10^1","10^2","10^3","10^4","10^5","10^6","10^7"))+
+  guides(fill = guide_legend(reverse=TRUE));p
 ggsave("FL_spatial_deaths.png",p,path="./Plots/",width = 13,height = 7)
 
 p<-PlotImpAgg(EQ,loggie = F)+
   scale_fill_gradient(name = "Total Deaths",guide="legend", trans = "log",
                       low="moccasin",high="magenta",
-                      breaks=rev(c(10,100, 1000, 10000, 100000, 1000000, 10000000)),
-                      labels=rev(c("10^1","10^2","10^3","10^4","10^5","10^6","10^7")));p
+                      breaks=c(10,100, 1000, 10000, 100000, 1000000, 10000000),
+                      labels=c("10^1","10^2","10^3","10^4","10^5","10^6","10^7"));p
 ggsave("EQ_spatial_deaths.png",p,path="./Plots/",width = 13,height = 7)
 
 
