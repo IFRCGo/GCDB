@@ -11,6 +11,8 @@ GetImpacts<-function(haz="EQ"){
   impies%<>%rbind(GetGIDD(haz=haz))
   # IFRC GO
   impies%<>%rbind(GetGO(haz=haz,token=token))
+  # GLIDE
+  # impies$GLIDE[is.na(impies$GLIDE)]<-GetGLIDEnum(impies[is.na(impies$GLIDE)],"EQ",numonly=T)
   
   return(impies)
 }
