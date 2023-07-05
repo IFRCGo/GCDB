@@ -85,14 +85,14 @@ SortGDACSiso<-function(country){
              "Minahassa Peninsula, Sulawesi","Andreanof Islands, Aleutian Is.",
              "Fox Islands, Aleutian Islands","Admiralty Islands Region, P.N.G.",
              "Santiago Del Estero Prov., Arg.","Miscellaneous (French) Indian Ocean Islands",
-             "Rat Islands, Aleutian Islands")
+             "Rat Islands, Aleutian Islands", "Netherlands Antilles","Türkiye","Kosovo")
   
   rexcept<-c(NA,NA,NA,NA,NA, "New Zealand","New Zealand",
              "Micronesia, Federated States of","Micronesia, Federated States of",
              "Indonesia", "United States of America","United States of America",
-             "Papa New Guinea","Argentina","France","United States of America")
+             "Papa New Guinea","Argentina","France","United States of America",NA,NA,NA)
   
-  iexcept<-c("KOR","PRK","PRK","VIR","VGB","NZL","NZL","FSM","FSM","IDN","USA","USA","PNG","ARG","FRA","USA")
+  iexcept<-c("KOR","PRK","PRK","VIR","VGB","NZL","NZL","FSM","FSM","IDN","USA","USA","PNG","ARG","FRA","USA","ANT","TUR","XXK")
   
   for (i in 1:length(cexcept)){
     if (any(grepl(cexcept[i],country,fixed = TRUE))){
@@ -166,9 +166,14 @@ SortGDACSiso<-function(country){
 
 severitysplitter<-function(haz,txt){
   if(haz=="EQ") {
-    sev<-as.numeric(gsub("[^0-9.]", "",  strsplit(txt,split = ",")[[1]]))
-    return(list(Magnitude=sev[1],Depth=sev[2],unit1="M",unit2="km"))
-  }
+    sev<-as.numeric(gsub("[^0-9.]", "",  strsplit(txt$severitytext,split = ",")[[1]]))
+    return(list(haz_sev=sev[1],haz_sev_add=sev[2],haz_unit="M",haz_add_unit="km"))
+  } 
+  
+  # if(!is.null(txt$severity) & str_remove(txt$severity," ")!="" & 
+  #    !is.null(txt$severityunit) & str_remove(txt$severityunit," ")!="") 
+    return(list(haz_sev=txt$severity,haz_sev_add=NA_character_,
+                haz_unit=txt$severityunit,haz_add_unit=NA_character_))
 }
 
 GetIntMap<-function(hazard="EQ"){
@@ -194,29 +199,41 @@ FilterGDACS<-function(haz=NULL,syear=2016L,fyear=2020L,list_GDACS=NULL,red=F){
       dfct<-data.frame(country=rep(NA,length(tmp$properties$iso3)),iso3=tmp$properties$iso3)
     } else {
       dfct<-SortGDACSiso(tmp$properties$country)
+      if (!is.null(tmp$properties$iso3) & !all(tmp$properties$iso3%in%dfct$iso3))
+        print(paste0("Diff ISOs: ",
+                     paste0(tmp$properties$iso3,collapse = ","),
+                     "!=",paste0(dfct$iso3,collapse = ",")))
+      if (!is.null(tmp$properties$iso3) & !all(is.na(dfct$iso3))) dfct$iso3<-tmp$properties$iso3
     }
     
     len<-length(dfct$country)
-    txt<-severitysplitter(tmp$properties$eventtype,tmp$properties$severitydata$severitytext)
+    txt<-severitysplitter(tmp$properties$eventtype,tmp$properties$severitydata)
+    
+    tmp$properties$glide<-ifelse(str_remove_all(tmp$properties$glide," ")=="",NA_character_,tmp$properties$glide)
+    
+    if(len>1 & !is.na(tmp$properties$glide) & str_remove_all(tmp$properties$glide," ")!="" &
+       nchar(tmp$properties$glide)!=18) print(paste0("Check the GLIDE: ",tmp$properties$glide))
     
     for (j in 1:length(tmp$properties$episodealertlevel)){
       
       dfGDACS<-rbind(dfGDACS,data.frame(alert=rep(trimws(tolower(tmp$properties$episodealertlevel[j]), "b"),len),
                                         alertscore=rep(tmp$properties$episodealertscore[j],len),
                                         eventid=rep(tmp$properties$eventid,len),
+                                        eventname=rep(tmp$properties$eventname,len),
                                         episodeid=rep(tmp$properties$episodeid,len),
                                         link=rep(tmp$properties$url$details,len),
                                         iso3=dfct$iso3,
                                         country=dfct$country,
                                         sdate=rep(as.Date(as.POSIXct(tmp$properties$fromdate),format = "%Y%m%d"),len),
                                         fdate=rep(as.Date(as.POSIXct(tmp$properties$todate),format = "%Y%m%d"),len),
-                                        hazard_type=rep(tmp$properties$eventtype,len),
+                                        hazAb=rep(tmp$properties$eventtype,len),
                                         hazard_severity=rep(tmp$properties$severitydata$severity,len),
                                         txt,
+                                        GLIDE=rep(tmp$properties$glide,len),
                                         geom_type=rep(tmp$geometry$type,len),
                                         long=rep(tmp$geometry$coordinates[1],len),
                                         lat=rep(tmp$geometry$coordinates[2],len),
-                                        geom_link=rep(tmp$properties$url$geometry),len))
+                                        geom_link=rep(tmp$properties$url$geometry,len)))
     }
     
   }  
@@ -319,7 +336,7 @@ GetShakeGDACS_ev<-function(GDB){
                            date=rep(GDB$sdate[1],ll),
                            id=rep(qq,ll)))
     
-    if(GDB$hazard_type[1]=="EQ"){
+    if(GDB$hazAb[1]=="EQ"){
       poly%<>%filter(Intensity<GDB$hazard_severity[1])%>%
         rbind(data.frame(eventid=GDB$eventid[1],Intensity=GDB$hazard_severity[1],
                          Longitude=GDB$long[1],Latitude=GDB$lat[1],ncontour=0,
@@ -349,7 +366,7 @@ GetShakeGDACS_ev<-function(GDB){
                    date=rep(GDB$sdate[i],ll),
                    id=rep(qq,ll))
       
-      if(GDB$hazard_type[i]=="EQ"){
+      if(GDB$hazAb[i]=="EQ"){
         poly%<>%rbind(tpoly%>%
                         rbind(data.frame(eventid=GDB$eventid[i],Intensity=GDB$hazard_severity[i],
                                          Longitude=GDB$long[i],Latitude=GDB$lat[i],ncontour=0,
@@ -393,104 +410,12 @@ ModOmori<-function(M0){
   return(min(c(mxlim,max(c(mnlim,(10^(a+b*(M0-Mth))/R)^(1/p))))))
 }
 
-Match_HelixGDACS<-function(directory,helixDB,hazard="EQ",dfGDACS=NULL){
-  library(geosphere)
-  
-  #dfGDACS<-FilterGDACS(directory,haz=hazard,syear = syear,fyear = max(as.integer(format(helixDB$sdate,"%Y"))))
-  if(is.null(dfGDACS)) {
-    syear<-min(AsYear(helixDB$sdate),na.rm = T)
-    fyear<-max(AsYear(helixDB$sdate),na.rm = T)
-    dfGDACS<-FilterGDACS(directory=directory,haz=hazard,syear=syear,fyear=fyear)
-  }
-  # Minimum alertscore to access shakemap
-  mnalert<-0.8
-  
-  # Days before and after the Helix start date to seach through GDACS data
-  if(hazard=="EQ"){
-    mnhaz<-4.5
-  #   mndate<-50
-  #   mxdate<-50
-  } else {mnhaz<-0}
-  
-  polymap<-data.frame()
-  
-  for (event in unique(helixDB$eventid)){
-    
-    tmp<-helixDB%>%filter(eventid==event)
-    
-    iso<-unique(tmp$iso3)
-    if(length(iso)>1) {print(paste0("WARNING: MULTIPLE COUNTRIES INVOLVED IN HELIX EVENT - ",event));next}
-    
-    Hsdate<-min(unique(tmp$sdate),na.rm = T)
-    
-    for (dd in c(3,7)){
-      GDB<-dfGDACS%>%filter(iso3==iso & sdate>Hsdate-dd  & fdate<Hsdate+dd & alertscore>mnalert & hazard_severity>mnhaz)
-      if(length(GDB$alertscore)!=0) break 
-      GDB<-dfGDACS%>%filter(iso3==iso & sdate>Hsdate-dd  & fdate<Hsdate+dd & hazard_severity>mnhaz)
-      if(length(GDB$alertscore)!=0) break
-    }
-    if(length(GDB$alertscore)==0) {print(paste0("NO DATA FOUND IN GDACS FOR HELIX EVENT - ",event)) ;next} else if (dd==7) {print(paste0("CHECK ME : ",event," - dd = ",10))}
-    
-    GDB%<>%arrange(desc(alertscore))
-    for (i in 1:min(3,dim(GDB)[1])){
-      tmp<-GDB[i,]
-      # if(abs(as.numeric(tmp$sdate-GDB$sdate[1]))>7) next
-      
-      if(hazard=="EQ"){  
-        # Filter points near spatially (within 100km) and temporally (via Reasenberg equation) to primary earthquake
-        aftershocks<-dfGDACS%>%filter(iso3==iso & sdate>tmp$sdate-7  & fdate<tmp$sdate+ceiling(abs(ModOmori(tmp$hazard_severity))) &
-                                        alertscore>=mnalert & distHaversine(cbind(long,lat),c(tmp$long,tmp$lat)) < 150000)%>%arrange(desc(alertscore))
-        if(dim(aftershocks)[1]>0L){
-          if(max(aftershocks$alertscore)>tmp$alertscore) {
-            repdate<-min(aftershocks$sdate[aftershocks$alertscore>tmp$alertscore])
-            if(repdate>tmp$sdate){
-              print(paste0("REPLACING AFTERSHOCK - Event_id: ",event, ", ",tmp$hazard_severity,"repdate ",repdate-tmp$sdate))
-              aftershocks%<>%filter(sdate<repdate)
-            }
-          }
-          tmp%<>%rbind(aftershocks)
-        }
-      }  else{
-        stop("No other hazards are setup in IIDIPUS yet")
-      }
-      
-      tpoly<-GetShakeGDACS_ev(tmp)
-      if(!is.null(tpoly)) break
-    }
-    
-    if(is.null(tpoly)){
-      print(paste0("NO SHAKEMAP FOUND IN GDACS FOR HELIX EVENT - ",event))
-      
-      polymap<-rbind(polymap,
-                     data.frame(eventid=GDB$eventid, Intensity=GDB$hazard_severity,ncontour=0,Longitude=GDB$long,Latitude=GDB$lat,
-                                alertscore=GDB$alertscore,date=GDB$sdate,id=1,helix_id=event))
-      
-      next
-    }
-    
-    if(max(tpoly$Intensity,na.rm = T)+0.5<GDB$hazard_severity[i]) print(paste0("WARNING: Intensity mismatch for event ",event," Intensities: ",max(tpoly$Intensity,na.rm = T)," ",GDB$hazard_severity[i]))
-    
-    if(i>1) {
-      print(paste0("Event_id: ",event, ", dt = ",Hsdate-GDB$sdate[1],"-",Hsdate-GDB$sdate[i],
-                   ", order - ",i,", sevs : ",GDB$hazard_severity[1],"-",GDB$hazard_severity[i],
-            ", alerts : ",GDB$alertscore[1],"-",GDB$alertscore[i]))
-    } else {
-      print(paste0("Event_id: ",event, ", ",GDB$hazard_severity[i],"M, dt = ",Hsdate-GDB$sdate[i]))
-    }
-    polymap<-rbind(polymap,cbind(tpoly,helix_id=rep(event,length(tpoly$date))))
-    
-  }
-  
-  return(polymap)
-  
-}
-
 GetShakeGDACS<-function(dfGDACS,hazard="EQ",directory,plotty=FALSE){
   
   # url<-"https://www.gdacs.org/gdacsapi/api/shakemap/getdetails?id=9187"
   # url taken from dfGDACS$link
   
-  dfGDACS%<>%filter(hazard_type==hazard)%>%arrange(desc(hazard_severity))
+  dfGDACS%<>%filter(hazAb==hazard)%>%arrange(desc(hazard_severity))
   
   # Remove earthquakes that are unlikely to cause damage - they probably won't be in Helix
   if(hazard=="EQ") {
@@ -810,7 +735,7 @@ PolyIntegrateData_old<-function(data,poly,Ldist=FALSE,av=FALSE){
 #      7.0    122006.5   349463808
 
   # Helix Names : 
-  # unique(helix$hazard_type)
+  # unique(helix$hazAb)
   # [1] "Flood"               "Storm"               NA                   
   # [4] "Wildfire"            "Earthquake"         "Extreme temperature"
   # [7] "Volcanic eruption"   "Drought"            "Mass movement"  

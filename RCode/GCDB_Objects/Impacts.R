@@ -42,6 +42,7 @@ col_impGCDB<-c("GCDB_ID"="character", # GCDB event ID
                "src_org"="character", # Source organisation of impact estimate or the curated estimate
                "src_orgtype"="character", # Source organisation type
                "src_URL"="character", # URL of the impact estimate
+               "hazAb"="character", # Abbreviated, simplified name of the hazard
                "haztype"="character", # Impacting hazard type
                "hazcluster"="character", # Impacting hazard cluster
                "hazspec"="character", # Impacting specific hazard
@@ -54,7 +55,7 @@ col_impGCDB<-c("GCDB_ID"="character", # GCDB event ID
 
 oblig_impGCDB<-c("GCDB_ID","impsub_ID","ISO3","impcat","impsubcat","imp_units",
                  "imp_type","est_type","src_org","src_orgtype","src_URL",
-                 "haztype","hazcluster")
+                 "hazAb","haztype","hazcluster")
 
 GetGCDB_ID<-function(DF,haz="EQ") {
   namerz<-DF%>%
