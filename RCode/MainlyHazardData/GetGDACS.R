@@ -32,7 +32,7 @@ GetGDACS_API<-function(haz=NULL,syear=2016,fyear=2020,alertlist=NULL){
   
   loc<-"https://www.gdacs.org/gdacsapi/api/events/geteventlist/SEARCH?eventlist="
   
-  if(is.null(haz)) haz<-c("DR","TC","VW","FL","VO","EQ")
+  if(is.null(haz)) haz<-c("DR","TC","TS","FL","VO","EQ")
   if(is.null(alertlist)) alertlist<-c("red","orange","green")
   
   GDACS_yrs<-syear:fyear
@@ -70,7 +70,7 @@ SortGDACSiso<-function(country){
   
   country<-trimws(country, "b")
   country<-str_squish(country)
-  if(country=="") return(data.frame(country=NA,iso3=NA))
+  if(country=="") return(data.frame(country=NA,ISO3=NA))
   
   #@@@ EXCEPTIONS @@@#
   tdf<-data.frame()
@@ -97,9 +97,9 @@ SortGDACSiso<-function(country){
   for (i in 1:length(cexcept)){
     if (any(grepl(cexcept[i],country,fixed = TRUE))){
       if(is.na(rexcept[i])) {
-        tdf<-rbind(tdf,data.frame(country=cexcept[i],iso3=iexcept[i]))
+        tdf<-rbind(tdf,data.frame(country=cexcept[i],ISO3=iexcept[i]))
       } else {
-        tdf<-rbind(tdf,data.frame(country=rexcept[i],iso3=iexcept[i]))
+        tdf<-rbind(tdf,data.frame(country=rexcept[i],ISO3=iexcept[i]))
       }
       country<-gsub(cexcept[i],"",country,fixed = TRUE)
     }
@@ -122,7 +122,7 @@ SortGDACSiso<-function(country){
     # no checks are possible if country string doesn't split up, rely on countrycode to find value.
     if(length(ct)==1){
       ttt<-countrycode(ct, origin ='country.name', destination ='iso3c',warn = FALSE)
-      return(rbind(tdf,data.frame(country=country,iso3=ttt)))
+      return(rbind(tdf,data.frame(country=country,ISO3=ttt)))
     }
     
     # If it splits by ',' make checks
@@ -131,24 +131,24 @@ SortGDACSiso<-function(country){
     if (length(ttt[!is.na(ttt)])<=1){
       # Check that the comma wasn't for another country, e.g. Congo, Democratic Republic of
       ttt2<-countrycode(country, origin ='country.name', destination ='iso3c',warn = FALSE)
-      if(!is.na(ttt2)) {return(rbind(tdf,data.frame(country=country,iso3=ttt2)))}
+      if(!is.na(ttt2)) {return(rbind(tdf,data.frame(country=country,ISO3=ttt2)))}
       
       # Checks are over
       print(paste0("Warning: GDACS country name ",country," might not be translated properly to iso3"))
-      return(rbind(tdf,data.frame(country=ct,iso3=ttt)))      
+      return(rbind(tdf,data.frame(country=ct,ISO3=ttt)))      
     }
     
     # Check for duplicated values 
     ct<-ct[!duplicated(ttt)]
     ttt<-ttt[!duplicated(ttt)]
     
-    if (!anyNA(ttt)) {return(rbind(tdf,data.frame(country=ct,iso3=ttt)))}
+    if (!anyNA(ttt)) {return(rbind(tdf,data.frame(country=ct,ISO3=ttt)))}
     
     # last resort: cancel splitting for ','
     print(paste0("Warning: GDACS country name ",country," might not be properly translated to iso3"))
     print(ct)
     print(ttt)
-    return(rbind(tdf,data.frame(country=ct,iso3=ttt)))
+    return(rbind(tdf,data.frame(country=ct,ISO3=ttt)))
     
   }
   
@@ -160,7 +160,7 @@ SortGDACSiso<-function(country){
     print(paste0("Warning: iso not found for country: "))
     print(cbind(ct[is.na(ttt)],ttt[is.na(ttt)]))
   }
-  return(rbind(tdf,data.frame(country=ct,iso3=ttt)))
+  return(rbind(tdf,data.frame(country=ct,ISO3=ttt)))
   
 }
 
@@ -182,7 +182,7 @@ GetIntMap<-function(hazard="EQ"){
   } else stop("IIDIPUS NOT READY FOR ALTERNATIVE HAZARDS THAN EARTHQUAKE")
 }
 
-FilterGDACS<-function(haz=NULL,syear=2016L,fyear=2020L,list_GDACS=NULL,red=F){
+FilterGDACS<-function(haz=NULL,syear=2016L,fyear=AsYear(Sys.Date()),list_GDACS=NULL,red=F){
   
   if(is.null(list_GDACS)) list_GDACS<-GetGDACS_API(haz,syear,fyear)
   
@@ -196,14 +196,14 @@ FilterGDACS<-function(haz=NULL,syear=2016L,fyear=2020L,list_GDACS=NULL,red=F){
     if (is.na(tmp$properties$country)|is.null(tmp$properties$country)|tmp$properties$country %in% c(""," ","  ")){
       # use NA and iso3 values if country is empty:
       if (is.null(tmp$properties$iso3)) tmp$properties$iso3<-NA
-      dfct<-data.frame(country=rep(NA,length(tmp$properties$iso3)),iso3=tmp$properties$iso3)
+      dfct<-data.frame(country=rep(NA,length(tmp$properties$iso3)),ISO3=tmp$properties$iso3)
     } else {
       dfct<-SortGDACSiso(tmp$properties$country)
-      if (!is.null(tmp$properties$iso3) & !all(tmp$properties$iso3%in%dfct$iso3))
+      if (!is.null(tmp$properties$iso3) & !all(tmp$properties$iso3%in%dfct$ISO3))
         print(paste0("Diff ISOs: ",
                      paste0(tmp$properties$iso3,collapse = ","),
-                     "!=",paste0(dfct$iso3,collapse = ",")))
-      if (!is.null(tmp$properties$iso3) & !all(is.na(dfct$iso3))) dfct$iso3<-tmp$properties$iso3
+                     "!=",paste0(dfct$ISO3,collapse = ",")))
+      if (!is.null(tmp$properties$iso3) & !all(is.na(dfct$ISO3))) dfct$ISO3<-tmp$properties$iso3
     }
     
     len<-length(dfct$country)
@@ -219,29 +219,31 @@ FilterGDACS<-function(haz=NULL,syear=2016L,fyear=2020L,list_GDACS=NULL,red=F){
       dfGDACS<-rbind(dfGDACS,data.frame(alert=rep(trimws(tolower(tmp$properties$episodealertlevel[j]), "b"),len),
                                         alertscore=rep(tmp$properties$episodealertscore[j],len),
                                         eventid=rep(tmp$properties$eventid,len),
-                                        eventname=rep(tmp$properties$eventname,len),
+                                        ev_name_orig=rep(tmp$properties$eventname,len),
                                         episodeid=rep(tmp$properties$episodeid,len),
                                         link=rep(tmp$properties$url$details,len),
-                                        iso3=dfct$iso3,
+                                        ISO3=dfct$ISO3,
                                         country=dfct$country,
-                                        sdate=rep(as.Date(as.POSIXct(tmp$properties$fromdate),format = "%Y%m%d"),len),
-                                        fdate=rep(as.Date(as.POSIXct(tmp$properties$todate),format = "%Y%m%d"),len),
+                                        ev_sdate=rep(as.Date(as.POSIXct(tmp$properties$fromdate),format = "%Y%m%d"),len),
+                                        ev_fdate=rep(as.Date(as.POSIXct(tmp$properties$todate),format = "%Y%m%d"),len),
                                         hazAb=rep(tmp$properties$eventtype,len),
                                         hazard_severity=rep(tmp$properties$severitydata$severity,len),
                                         txt,
                                         GLIDE=rep(tmp$properties$glide,len),
                                         geom_type=rep(tmp$geometry$type,len),
-                                        long=rep(tmp$geometry$coordinates[1],len),
-                                        lat=rep(tmp$geometry$coordinates[2],len),
-                                        geom_link=rep(tmp$properties$url$geometry,len)))
+                                        cent_lon=rep(tmp$geometry$coordinates[1],len),
+                                        cent_lat=rep(tmp$geometry$coordinates[2],len),
+                                        src_URL=rep(tmp$properties$url$geometry,len)))
     }
     
   }  
   
   dfGDACS$alertscore[dfGDACS$alertscore<0]<-0
   
-  if(red) dfGDACS%>%dplyr::select(c(alertscore,hazard_severity,iso3,sdate,fdate,long,lat))%>%return
-
+  if(red) dfGDACS%>%dplyr::select(c(alertscore,hazard_severity,ISO3,sdate,fdate,long,lat))%>%return
+  
+  dfGDACS$GCDB_ID<-GetGCDB_ID(dfGDACS)
+  
   return(dfGDACS)
   
 }
@@ -260,10 +262,86 @@ GetGDACSalertscore<-function(dfGDACS=NULL,haz,bbox,sdater,fdater=NULL,isos=NULL)
   dfGDACS%>%filter(sdate>=sdater & fdate<=fdater & 
            long>=bbox[1] & long<=bbox[3] & lat>=bbox[2] & lat<=bbox[4])%>%
     arrange(desc(alertscore))
-  if(!is.null(isos)) dfGDACS%<>%filter(iso3 %in% isos)
+  if(!is.null(isos)) dfGDACS%<>%filter(ISO3 %in% isos)
   
   dfGDACS%>%arrange(desc(alertscore))%>%pull(alertscore)%>%return
   
+}
+
+poly_ccodes<-c("eventid","episodeid","polygonlabel","Class","forecast","fromdate","todate","geometry")
+
+GetGDACSPoly<-function(GDACS){
+  
+  BigPoly<-data.frame()
+  for(ev in unique(GDACS$eventid)){
+    # Find the appropriate elements of the GDACS database
+    ind<-GDACS$eventid==ev
+    # Get the shapefile
+    poly<-suppressWarnings(geojsonsf::geojson_sf(unique(GDACS$geom_link[ind])))
+    # Modify per hazard
+    if(unique(GDACS$hazAb[ind])=="TC"){
+      # Take only the three-level wind-speed risk boundaries
+      poly%<>%filter(Class%in%c("Poly_Red","Poly_Orange","Poly_Green"))%>%
+        dplyr::select(any_of(poly_ccodes))
+    } else if(unique(GDACS$hazAb[ind])=="EQ"){
+      # Check to see that there is some actual shakemap data contained in the polygon
+      if(!any(grepl("intensity",colnames(poly)))) next
+      # Take all the shakemap intensity boundaries available, except those below 4.5
+      poly%<>%filter(grepl("Poly_SMP",Class) & intensity>=4.5)%>%
+        mutate(polygonlabel=paste0("Intensity-",intensity),forecast=NA)%>%
+        dplyr::select(any_of(poly_ccodes))
+    } else if(unique(GDACS$hazAb[ind])=="FL"){
+      # Take the 'affected' area... I have absolutely no idea what the definition is, nor the difference with 'global area'
+      poly%<>%filter(Class%in%c("Poly_Affected"))%>%
+        dplyr::select(any_of(poly_ccodes))%>%
+        mutate(forecast=NA)
+    } else if(unique(GDACS$hazAb[ind])=="DR"){
+      # Take the 'affected' area to the drought, whatever that means
+      poly%<>%filter(Class%in%c("Poly_area"))%>%
+        dplyr::select(any_of(poly_ccodes))%>%
+        mutate(forecast=NA)
+    } else if(unique(GDACS$hazAb[ind])=="VO"){
+      # Take both the forecast ("FCST") and observed ("OBS") cones
+      poly%<>%filter(grepl("Poly_Cones_",Class) | grepl("Poly_Circle",Class))%>%
+        dplyr::select(any_of(poly_ccodes))%>%
+        mutate(forecast=NA)
+    } else stop("Hazard not recognised in GDACS available hazards")
+    
+    
+    
+    
+    BigPoly$hazsub_ID<-BigPoly$spat_ID<-paste0(unique())
+    
+    
+    GetGCDB_ID(Dessie,haz=unique(GDACS$hazAb[ind]))
+    
+    
+    
+    
+    
+    # Join to the big motherbase
+    BigPoly%<>%rbind(poly)
+  }
+  # Make sure to set the forecast variable as logical
+  ind<-is.na(BigPoly$forecast)
+  BigPoly$forecast[ind]<-F; BigPoly$forecast[!ind]<-T
+  # Create a unique ID per shapefile
+  BigPoly$hazsub_ID<-
+  # convert to sp spatial class
+  BigPoly%<>%as("Spatial")
+  
+  
+  
+  BigPoly@crs<-
+    
+    
+    
+    
+    
+  # Now left-join to the full GDACS database by 
+  GDACS%<>%left_join(poly@data,by = "eventid")
+  
+  return(list(GDACS=GDACS,poly=BigPoly))
 }
 
 ShakeURL2Poly<-function(eventid,sid=1L,sil=T){

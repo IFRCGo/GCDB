@@ -39,6 +39,7 @@ col_hazGCDB<-c("GCDB_ID"="character", # GCDB event ID
                "haz_sev_type"="character", # Type of hazard severity, (intensity or magnitude)
                "haz_unit"="character", # What is the principal hazard unit (e.g. Richter scale)
                "haz_add_unit"="character", # What is the secondary hazard unit (e.g. meters in depth)
+               "alertscore"="character", # In case the hazard data comes with either a numeric or categorical alert (e.g. PAGER)
                "forecast"="logical", # Is this hazard information a forecast or of the actual occurred hazard?
                "est_type"="character", # Estimate type: primary, secondary, modelled
                "src_db"="character", # Source database name of hazard data
@@ -48,16 +49,20 @@ col_hazGCDB<-c("GCDB_ID"="character", # GCDB event ID
                "spat_ID"="character", # ID of the spatial object
                "spat_type"="character", # Spatial object type
                "spat_res"="character", # Spatial resolution of hazard data
-               "spat_srcorg"="character") # Source organisation from where the spatial object comes from
+               "spat_srcorg"="character",
+               "cent_lon"="numeric",
+               "cent_lat"="numeric") # Source organisation from where the spatial object comes from
 
 oblig_hazGCDB<-c("GCDB_ID","hazsub_ID","ISO3",
                  "est_type","src_org","src_orgtype","src_URL",
                  "haz_sev","haz_unit","hazAb","haztype","hazcluster")
 
-GetGCDB_ID<-function(DF,haz="EQ") {
+GetGCDB_ID<-function(DF,haz=NULL) {
+  # In case a specific hazard is fed in
+  if(!is.null(haz)) DF%<>%mutate(hazAb=haz)
+  # Generate the names from the dataframe
   namerz<-DF%>%
-    mutate(haz=haz)%>%
-    dplyr::select(haz,ev_sdate,ISO3)%>%
+    dplyr::select(hazAb,ev_sdate,ISO3)%>%
     apply(1,function(x) paste0(x,collapse = "-"))
   
   paste0(namerz,"-GCDB")

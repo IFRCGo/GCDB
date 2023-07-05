@@ -9,6 +9,7 @@ GetSourceFiles<-function(packred){
   source(paste0(dir,'RCode/Setup/Functions.R'))
   # Objects
   source(paste0(dir,'RCode/GCDB_Objects/Impacts.R'))
+  source(paste0(dir,'RCode/GCDB_Objects/Hazards.R'))
   source(paste0(dir,'RCode/Setup/GetEnv.R'))
   # Impact related:
   source(paste0(dir,'RCode/MainlyImpactData/GetDesinventar.R'))

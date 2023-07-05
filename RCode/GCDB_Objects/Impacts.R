@@ -57,15 +57,6 @@ oblig_impGCDB<-c("GCDB_ID","impsub_ID","ISO3","impcat","impsubcat","imp_units",
                  "imp_type","est_type","src_org","src_orgtype","src_URL",
                  "hazAb","haztype","hazcluster")
 
-GetGCDB_ID<-function(DF,haz="EQ") {
-  namerz<-DF%>%
-    mutate(haz=haz)%>%
-    dplyr::select(haz,ev_sdate,ISO3)%>%
-    apply(1,function(x) paste0(x,collapse = "-"))
-  
-  paste0(namerz,"-GCDB")
-}
-
 AddEmptyColImp<-function(DF){
   for(i in which(!names(col_impGCDB)%in%colnames(DF))){
     tmp<-NA
