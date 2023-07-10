@@ -28,7 +28,7 @@ ExtractGOdata<-function(haz="EQ",db="GO-App", token = NULL){
 
 PostModGO<-function(colConv){
   # hazard Types
-  colConv$haztype[colConv$hazG%in%c("FL","ST","TC","DR","ET","SN")]<-"haztypehydromet"
+  colConv$haztype[colConv$hazG%in%c("FL","ST","TC","DR","ET","SN","CW","HW","SS")]<-"haztypehydromet"
   colConv$haztype[colConv$hazG%in%c("EQ","LS","TS","VO","AV")]<-"haztypegeohaz"
   colConv$haztype[colConv$hazG=="WF"]<-"haztypeenviron"
   colConv$haztype[colConv$hazG=="EP"]<-"haztypebio"
@@ -59,13 +59,14 @@ PostModGO<-function(colConv){
   colConv$hazcluster[grepl("hail",colConv$dtype,ignore.case = T)]<-"hazhmprecip"
   colConv$hazcluster[grepl("tropical storm",colConv$dtype,ignore.case = T)]<-"hazhmwind"
   colConv$hazcluster[grepl("convective storm",colConv$dtype,ignore.case = T)]<-"hazhmconv"
+  colConv$hazcluster[grepl("cold wave",colConv$dtype,ignore.case = T)]<-"hazhmtemp"
   
   # Specific Hazards
   colConv$hazspec[colConv$hazG=="EQ"]<-"GH0001,GH0002"
   colConv$hazpotlink[colConv$hazG=="EQ"]<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
   
   # Save it out
-  openxlsx::write.xlsx(colConv,"./RawData/MostlyImpactData/IFRC/IFRC_HIP.xlsx")
+  openxlsx::write.xlsx(colConv,"./Taxonomies/MostlyImpactData/IFRC_HIP.xlsx")
   
   return(colConv)
 }
@@ -73,7 +74,7 @@ PostModGO<-function(colConv){
 GOHazards<-function(impies,haz="EQ"){
   
   # Read in the EMDAT-HIPS taxonomy conversion dataframe
-  colConv<-openxlsx::read.xlsx("./RawData/MostlyImpactData/IFRC/IFRC_HIP.xlsx")%>%
+  colConv<-openxlsx::read.xlsx("./Taxonomies/MostlyImpactData/IFRC_HIP.xlsx")%>%
     filter(hazG==haz)
   colConv$dtype%<>%str_to_lower()
   # Reduce the translated vector and merge

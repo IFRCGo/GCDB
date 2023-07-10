@@ -466,7 +466,7 @@ WrangleDessie<-function(iso3){
 
 DesHazards<-function(Dessie,haz="EQ"){
   # Extract the list of translated Desinventar hazards
-  colConv<-openxlsx::read.xlsx("./RawData/MostlyImpactData/Desinventar/translate_disaster_names.xlsx")
+  colConv<-openxlsx::read.xlsx("./Taxonomies/MostlyImpactData/Desinventar_HIP.xlsx")
   # Make sure to avoid missing out!
   colConv$event%<>%str_to_lower()
   # Also check for duplicates
@@ -501,7 +501,7 @@ SpitDesTrans<-function(Dessie){
     data.frame(ISO3=out$ISO3[i],event=out$event[i],event_en=trtr$translation,src_lang=src_lang)
   }))
   # Save it out
-  openxlsx::write.xlsx(colConv,"./RawData/MostlyImpactData/Desinventar/translate_disaster_names.xlsx")
+  openxlsx::write.xlsx(colConv,"./Taxonomies/MostlyImpactData/Desinventar_HIP.xlsx")
   
   return(colConv)
 }
@@ -515,16 +515,16 @@ PostModTransies<-function(colConv){
   colConv$haz[grepl("tidal wave",colConv$event_en,ignore.case = T)]<-"TS"
   colConv$haz[grepl("rain",colConv$event_en,ignore.case = T)]<-"ST"
   colConv$haz[grepl("storm",colConv$event_en,ignore.case = T)]<-"ST"
-  colConv$haz[grepl("wind",colConv$event_en,ignore.case = T)]<-"ST"
+  colConv$haz[grepl("wind",colConv$event_en,ignore.case = T)]<-"VW"
   colConv$haz[grepl("lightning",colConv$event_en,ignore.case = T)]<-"ST"
-  colConv$haz[grepl("surge",colConv$event_en,ignore.case = T)]<-"FL"
+  colConv$haz[grepl("surge",colConv$event_en,ignore.case = T)]<-"SS"
   colConv$haz[grepl("torrent",colConv$event_en,ignore.case = T)]<-"FL"
   colConv$haz[grepl("cyclone",colConv$event_en,ignore.case = T)]<-"TC"
   colConv$haz[grepl("hurricane",colConv$event_en,ignore.case = T)]<-"TC"
   colConv$haz[grepl("tornado",colConv$event_en,ignore.case = T)]<-"TC"
   colConv$haz[grepl("typhoon",colConv$event_en,ignore.case = T)]<-"TC"
-  colConv$haz[grepl("heat",colConv$event_en,ignore.case = T)]<-"ET"
-  colConv$haz[grepl("cold",colConv$event_en,ignore.case = T)]<-"ET"
+  colConv$haz[grepl("heat",colConv$event_en,ignore.case = T)]<-"HW"
+  colConv$haz[grepl("cold",colConv$event_en,ignore.case = T)]<-"CW"
   colConv$haz[grepl("frost",colConv$event_en,ignore.case = T)]<-"ET"
   colConv$haz[grepl("ice ",colConv$event_en,ignore.case = T)]<-"ET"
   colConv$haz[grepl("fire",colConv$event_en,ignore.case = T)]<-"WF"
@@ -533,8 +533,8 @@ PostModTransies<-function(colConv){
   colConv$haz[grepl("lava",colConv$event_en,ignore.case = T)]<-"VO"
   colConv$haz[grepl("landslide",colConv$event_en,ignore.case = T)]<-"LS"
   colConv$haz[grepl("liquefaction",colConv$event_en,ignore.case = T)]<-"LS"
-  colConv$haz[grepl("mudflow",colConv$event_en,ignore.case = T)]<-"LS"
-  colConv$haz[grepl("mud flow",colConv$event_en,ignore.case = T)]<-"LS"
+  colConv$haz[grepl("mudflow",colConv$event_en,ignore.case = T)]<-"MS"
+  colConv$haz[grepl("mud flow",colConv$event_en,ignore.case = T)]<-"MS"
   colConv$haz[grepl("land slide",colConv$event_en,ignore.case = T)]<-"LS"
   colConv$haz[grepl("debris flow",colConv$event_en,ignore.case = T)]<-"LS"
   colConv$haz[grepl("rock",colConv$event_en,ignore.case = T)]<-"LS"
@@ -547,7 +547,7 @@ PostModTransies<-function(colConv){
   colConv$haz[grepl("cyclone & flood",colConv$event_en,ignore.case = T)]<-"TC,FL"
   
   # hazard Types
-  colConv$haztype[colConv$haz%in%c("FL","ST","TC","DR","ET","SN")]<-"haztypehydromet"
+  colConv$haztype[colConv$haz%in%c("FL","ST","TC","DR","ET","SN","CW","HW","SS")]<-"haztypehydromet"
   colConv$haztype[colConv$haz%in%c("EQ","LS","TS","VO","AV")]<-"haztypegeohaz"
   colConv$haztype[colConv$haz=="WF"]<-"haztypeenviron"
   colConv$haztype[colConv$haz=="EP"]<-"haztypebio"
@@ -580,13 +580,14 @@ PostModTransies<-function(colConv){
   colConv$hazcluster[grepl("tropical storm",colConv$event_en,ignore.case = T)]<-"hazhmwind"
   colConv$hazcluster[grepl("convective storm",colConv$event_en,ignore.case = T)]<-"hazhmconv"
   colConv$hazcluster[grepl("electric",colConv$event_en,ignore.case = T)]<-"hazhmconv"
+  colConv$hazcluster[grepl("cold wave",colConv$event_en,ignore.case = T)]<-"hazhmtemp"
   
   # Specific Hazards
   colConv$hazspec[colConv$haz=="EQ"]<-"GH0001,GH0002"
   colConv$hazpotlink[colConv$haz=="EQ"]<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
   
   # Save it out
-  openxlsx::write.xlsx(colConv,"./RawData/MostlyImpactData/Desinventar/translate_disaster_names.xlsx")
+  openxlsx::write.xlsx(colConv,"./Taxonomies/MostlyImpactData/Desinventar_HIP.xlsx")
   
   return(colConv)
 }

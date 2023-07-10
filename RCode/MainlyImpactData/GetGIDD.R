@@ -12,7 +12,7 @@ ExtractGIDD<-function(){
 
 PostModGIDD<-function(colConv){
   # hazard Types
-  colConv$haztype[colConv$hazG%in%c("FL","ST","TC","DR","ET","SN")]<-"haztypehydromet"
+  colConv$haztype[colConv$hazG%in%c("FL","ST","TC","DR","ET","SN","CW","HW","SS")]<-"haztypehydromet"
   colConv$haztype[colConv$hazG%in%c("EQ","LS","TS","VO","AV")]<-"haztypegeohaz"
   colConv$haztype[colConv$hazG=="WF"]<-"haztypeenviron"
   colConv$haztype[colConv$hazG=="EP"]<-"haztypebio"
@@ -43,13 +43,14 @@ PostModGIDD<-function(colConv){
   colConv$hazcluster[grepl("hail",colConv$HazardSubType,ignore.case = T)]<-"hazhmprecip"
   colConv$hazcluster[grepl("tropical storm",colConv$HazardSubType,ignore.case = T)]<-"hazhmwind"
   colConv$hazcluster[grepl("convective storm",colConv$HazardSubType,ignore.case = T)]<-"hazhmconv"
+  colConv$hazcluster[grepl("cold wave",colConv$HazardSubType,ignore.case = T)]<-"hazhmtemp"
   
   # Specific Hazards
   colConv$hazspec[colConv$hazG=="EQ"]<-"GH0001,GH0002"
   colConv$hazpotlink[colConv$hazG=="EQ"]<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
   
   # Save it out
-  openxlsx::write.xlsx(colConv,"./RawData/MostlyImpactData/GIDD/GIDD_HIP.xlsx")
+  openxlsx::write.xlsx(colConv,"./Taxonomies/MostlyImpactData/GIDD-HIP.xlsx")
   
   return(colConv)
 }
@@ -57,7 +58,7 @@ PostModGIDD<-function(colConv){
 GIDDHazards<-function(GIDD,haz="EQ"){
   GIDD$HazardSubType%<>%str_to_lower()
   # Read in the EMDAT-HIPS taxonomy conversion dataframe
-  colConv<-openxlsx::read.xlsx("./RawData/MostlyImpactData/GIDD/GIDD_HIP.xlsx")%>%
+  colConv<-openxlsx::read.xlsx("./Taxonomies/MostlyImpactData/GIDD-HIP.xlsx")%>%
     filter(hazG==haz)
   colConv$HazardSubType%<>%str_to_lower()
   # Reduce the translated vector and merge

@@ -48,7 +48,7 @@ PairEMDATspatial<-function(EMDAT,haz="EQ",GAULexist=F){
 
 PostModEMDAT<-function(colConv){
   # hazard Types
-  colConv$haztype[colConv$hazEM%in%c("FL","ST","TC","DR","ET","SN")]<-"haztypehydromet"
+  colConv$haztype[colConv$hazEM%in%c("FL","ST","TC","DR","ET","SN","CW","HW","SS")]<-"haztypehydromet"
   colConv$haztype[colConv$hazEM%in%c("EQ","LS","TS","VO","AV")]<-"haztypegeohaz"
   colConv$haztype[colConv$hazEM=="WF"]<-"haztypeenviron"
   colConv$haztype[colConv$hazEM=="EP"]<-"haztypebio"
@@ -80,13 +80,14 @@ PostModEMDAT<-function(colConv){
   colConv$hazcluster[grepl("hail",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmprecip"
   colConv$hazcluster[grepl("tropical storm",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmwind"
   colConv$hazcluster[grepl("convective storm",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmconv"
+  colConv$hazcluster[grepl("cold wave",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmtemp"
   
   # Specific Hazards
   colConv$hazspec[colConv$hazEM=="EQ"]<-"GH0001,GH0002"
   colConv$hazpotlink[colConv$hazEM=="EQ"]<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
   
   # Save it out
-  openxlsx::write.xlsx(colConv,"./RawData/MostlyImpactData/EMDAT/EMDAT_HIP.xlsx")
+  openxlsx::write.xlsx(colConv,"./Taxonomies/MostlyImpactData/EMDAT_HIP.xlsx")
   
   return(colConv)
 }
@@ -94,7 +95,7 @@ PostModEMDAT<-function(colConv){
 EMDATHazards<-function(EMDAT,haz="EQ"){
   EMDAT$Disaster.Subtype%<>%str_to_lower()
   # Read in the EMDAT-HIPS taxonomy conversion dataframe
-  colConv<-openxlsx::read.xlsx("./RawData/MostlyImpactData/EMDAT/EMDAT_HIP.xlsx")%>%
+  colConv<-openxlsx::read.xlsx("./Taxonomies/MostlyImpactData/EMDAT_HIP.xlsx")%>%
     filter(hazEM==haz)
   colConv$Disaster.Subtype%<>%str_to_lower()
   # Reduce the translated vector and merge
