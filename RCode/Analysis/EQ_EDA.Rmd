@@ -74,7 +74,7 @@ pval <- function(my_model) {
 
 ImpactAggADM0<-function(impies, haz="EQ"){
   # Extract Global ADM
-  ADM <- rworldmap::getMap(resolution='high')
+  ADM <- rworldmap::getMap(resolution='low')
   ADM@data%<>%transmute(ISO3=ISO_A3,Population=POP_EST,GDP=GDP_MD_EST)
   
   impies%<>%filter(!(is.na(impactdetails) | is.na(imptype))) 
@@ -117,11 +117,41 @@ PlotImpAgg<-function(ADM,impact="imptypepopcnt-imptypdeat",loggie=T,bks=NULL,lbs
                                        name==str_split(impact,"-",simplify = T)[2])%>%
                        pull(label))  
   }
+  # Change the projection
+  crs_mappy <- "+proj=wintri +x_0=-74 +y_0=0 +datum=WGS84 +no_defs +over" # TRIPEL PROJECTION
+  # crs_mappy <- "+proj=laea +x_0=0 +y_0=0 +lon_0=-74 +lat_0=0" # Lambert azimuthal equal-area projection
+  projdat <- lwgeom::st_transform_proj(st_as_sf(ADM), crs = crs_mappy)
+  # Add the grid layout to the plot (graticule)
+  grat_wintri <- st_graticule(lat = c(-89.9, seq(-80, 80, 20), 89.9)) %>%
+  lwgeom::st_transform_proj(crs = crs_mappy)
+  # To add the blue background to the map
+  lats <- c(90:-90, -90:90, 90)
+  # longs <- c(rep(c(180-74, -180-74), each = 181), 180-74)
+  longs <- c(rep(c(180, -180), each = 181), 180)
+  # turn into correctly projected sf collection
+  wintri_outline <- 
+    list(cbind(longs, lats)) %>%
+    st_polygon() %>%
+    st_sfc( # create sf geometry list column
+      crs = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
+    ) %>% 
+    st_sf() %>%
+    lwgeom::st_transform_proj(crs = crs_mappy)
+  
   # Plot it out!
-  q<-ggplot()+geom_sf(data=st_as_sf(ADM),aes(fill=tmp), inherit.aes = FALSE)
+  q<-ggplot()+
+    geom_sf(data = wintri_outline, fill = "#56B4E950", color = "black", alpha=0.5) +
+    geom_sf(data = grat_wintri, color = "gray30", linewidth = 0.05, alpha=0.1) +
+    geom_sf(data=projdat,aes(fill=tmp), color = "grey30", linewidth=0.1) + #, inherit.aes = FALSE) +
+    coord_sf(datum = NULL) + #ylim(c(-80,80)) +
+    # coord_sf(datum = crs_mappy, xlim = c(-100,-40), ylim=c(-30,30), expand = FALSE) + #ylim(c(-80,80)) + 
+    ggthemes::theme_map() +
+    theme(legend.background = element_rect(fill="white",
+                                  linetype="solid", 
+                                  colour ="black"))
   # Specific the fill style of the plot
   if(loggie){
-    q+scale_fill_gradient(name = labeller, trans = "log", guide = guidie,
+    q+scale_fill_gradient(low="pink", high="#ee3224", name = labeller, trans = "log", guide = guidie,
                           breaks=bks,labels=lbs)
   } else {
     q

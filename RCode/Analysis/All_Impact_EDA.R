@@ -1,4 +1,8 @@
+source("./RCode/Analysis/SpatialAnalysis.R")
+
 impies<-readRDS("./CleanedData/MostlyImpactData/AllHaz_impies.RData")
+impies$Year<-AsYear(impies$ev_sdate)
+EMDAT<-impies%>%filter(src_db=="EM-DAT" & ev_sdate>as.Date("2000-01-01"))
 taxies<-openxlsx::read.xlsx("./ImpactInformationProfiles.xlsx")
 ADM<-ImpactAggADM0(impies)
 
@@ -35,7 +39,8 @@ p<-impies%>%filter(impactdetails=="impdetallpeop" & imptype=="imptypdeat")%>%
   labs(fill="Spatial Resolution");p
 ggsave("AllHazards_src_db_bar.png",p,path="./Plots/",width = 9,height = 8)  
 
-p<-impies%>%filter(impactdetails=="impdetallpeop" & imptype=="imptypdeat" & src_db!="GO-FR")%>%
+p<-impies%>%filter(impactdetails=="impdetallpeop" & imptype=="imptypdeat" & 
+                     src_db!="GO-FR" &  ev_sdate>as.Date("2000-01-01"))%>%
   group_by(hazAb)%>%reframe(Deaths=sum(impvalue))%>%arrange(desc(Deaths))%>%
   ggplot()+geom_bar(aes(x=hazAb,y=Deaths,fill=hazAb),colour="black",stat = "identity")+
   xlab("Hazard")+ylab("Total Deaths")+
@@ -138,6 +143,142 @@ p<-PlotImpAgg(EQ,loggie = F)+
                       breaks=c(10,100, 1000, 10000, 100000, 1000000, 10000000),
                       labels=c("10^1","10^2","10^3","10^4","10^5","10^6","10^7"));p
 ggsave("EQ_spatial_deaths.png",p,path="./Plots/",width = 13,height = 7)
+
+p<-impies%>%filter(Year>1950 & Year<2024 & hazAb!="LS")%>%
+  group_by(Year,src_db)%>%reframe(Count=length(unique(GCDB_ID)))%>%
+  filter(Count>0)%>%
+  ggplot()+geom_point(aes(Year,Count,colour=src_db))+
+  scale_y_log10(n.breaks=5)+scale_x_continuous(n.breaks=15)+
+  ylab("Number of Impact Records")+
+  labs(colour="Database");p
+ggsave("Alldatabases_temporal.png",p,path="./Plots/",width = 13,height = 7)  
+
+
+
+
+
+
+
+
+
+
+
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% GCDB WORKSHOP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+
+# Create a variable to separate what is and isn't RC data 
+impies%<>%mutate(RCnot="Not RC",RCnot=replace(RCnot, grepl("GO-",src_db), "RC"))
+
+p<-EMDAT%>%filter(impactdetails=="impdetallpeop" & imptype=="imptypdeat" & 
+                  ev_sdate>as.Date("2000-01-01"))%>%
+  group_by(hazAb)%>%reframe(Deaths=sum(impvalue))%>%arrange(desc(Deaths))%>%
+  ggplot()+geom_bar(aes(x=hazAb,y=Deaths,fill=hazAb),colour="black",stat = "identity")+
+  xlab("Hazard")+ylab("Total Deaths")+
+  scale_fill_manual("Hazard",values = pal,limits = names(pal));p
+ggsave("AllHazards_deaths_bar.png",p,path="./Plots/GCDB_Workshop/",width = 10,height = 8)  
+
+p<-EMDAT%>%filter(impactdetails=="impdetallpeop" & imptype=="imptypdeat" & 
+                    ev_sdate>as.Date("2000-01-01"))%>%
+  ImpactAggADM0()%>%
+  PlotImpAgg(loggie = F) +
+  scale_fill_gradient(name = "Total Deaths",guide="legend", trans = "log",
+                      low="moccasin",high="magenta",
+                      breaks=c(10000000,1000000,100000,10000,1000,100,10),
+                      labels=c("10^7","10^6","10^5","10^4","10^3","10^2","10^1"));p
+ggsave("allhaz_spatial_deaths.png",p,path="./Plots/GCDB_Workshop/",width = 10)
+
+p<-impies%>%filter(ev_sdate>as.Date("2000-01-01"))%>%
+  ImpactAggADM0()%>%
+  PlotImpAgg(impact = "N",loggie = F) +
+  scale_fill_gradient(name = "No. Impact Records",guide="legend", trans = "log",
+                      high="chartreuse",low="chartreuse4",
+                      breaks=c(10000000,1000000,100000,10000,1000,100,10),
+                      labels=c("10^7","10^6","10^5","10^4","10^3","10^2","10^1"));p
+ggsave("allhaz_spatial_records.png",p,path="./Plots/GCDB_Workshop/",width = 10)
+
+p<-impies%>%
+  group_by(hazAb)%>%reframe(Records=length(impvalue))%>%arrange(desc(Records))%>%
+  ggplot()+geom_bar(aes(x=hazAb,y=Records,fill=hazAb),colour="black",stat = "identity")+
+  xlab("Hazard")+ylab("Total No. Impact Records")+
+  scale_fill_manual("Hazard",values = pal,limits = names(pal));p
+ggsave("AllHazards_records_bar.png",p,path="./Plots/GCDB_Workshop/",width = 10,height = 8)  
+
+p<-impies%>%filter(Year>1950 & Year<2024 & hazAb!="LS")%>%
+  group_by(Year,hazAb)%>%reframe(Count=length(unique(GCDB_ID)))%>%
+  filter(Count>0)%>%
+  ggplot()+geom_point(aes(Year,Count,colour=hazAb))+
+  scale_y_log10(n.breaks=5)+scale_x_continuous(n.breaks=15)+
+  ylab("Number of Impact Records")+
+  scale_colour_manual("Hazard",values = pal,limits = names(pal));p
+ggsave("AllHazards_temporal.png",p,path="./Plots/",width = 13,height = 7)  
+
+p<-impies%>%filter(impactdetails%in%c("impdetinfloccur","impdetaidgen") &
+                     imptype%in%c("imptypaidreqifrc","imptypcost") &
+                     ev_sdate>as.Date("2000-01-01") &
+                     src_db!="GO-FR")%>%
+  group_by(hazAb,RCnot)%>%reframe(Cost=sum(impvalue))%>%
+  ggplot()+geom_bar(aes(x=hazAb,y = Cost,fill=RCnot),colour="black",stat = "identity")+
+  xlab("Impact Database")+ylab("Number of Impact Records")+scale_y_log10()+
+  labs(fill="Data Source");p
+ggsave("AllHazards_src_db_bar.png",p,path="./Plots/",width = 9,height = 8)  
+
+tmp<-impies%>%filter(imptype%in%c("imptypaidallifrc","imptypcost") &
+                     ev_sdate>as.Date("2000-01-01") &
+                     src_db=="GO-App")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -75,7 +75,7 @@
 
 \title{Global Crisis Data Bank - Earthquake Impacts}
 \author{Hamish Patten and Justin Ginnetti}
-\date{2023-06-28}
+\date{2023-08-21}
 
 \begin{document}
 \maketitle
@@ -125,16 +125,16 @@ We can also break down the impact recordings according to the GCDB impact taxono
 Breaking down the impact estimate classification into further sub-categories, then combining with the impact type, shown in figure \ref{fig:impactsunmat}. This plot shows that, although estimating impacts on the population has been a key priority of the databases brought into the GCDB, the most prominent single impact was actually the aggregated number of buildings damaged.
 
 \begin{figure}
-\includegraphics{EQ_EDA_files/figure-latex/impactsunmat-1} \caption[Number of impact records per impact, for earthquakes in the GCDB database]{Number of impact records per impact, for earthquakes in the GCDB database.}\label{fig:impactsunmat}
+\includegraphics{EQ_EDA_files/figure-latex/impactsunmat-1} \caption[Number of unmatched impact records per impact, for earthquakes in the GCDB database]{Number of unmatched impact records per impact, for earthquakes in the GCDB database.}\label{fig:impactsunmat}
 \end{figure}
 
 \hypertarget{matched-hazard-impact-data}{%
 \subsection{Matched Hazard-Impact Data}\label{matched-hazard-impact-data}}
 
-By attempting to match each impact record with an associated hazard footprint from the USGS shakemap catalog, we find that a significant number (3.15424\%) of impact recordings remain unmatched. Therefore, this has an impact on some of the summary statistics that we displayed above. For example, we can make the exact same plot as figure @ref(fig:impacts\_unmat) but for only the impact data that was matched to a hazard footprint. Figure \ref{fig:impactsmat} shows the number of recorded events that have been matched with an associated hazard footprint. The number of earthquake events with matched hazard-impact data now reflects that deaths is the most preminent impact in the GCDB.
+By attempting to match each impact record with an associated hazard footprint from the USGS shakemap catalog, we find that a significant number (18.0594\%) of impact recordings remain unmatched. Therefore, this has an impact on some of the summary statistics that we displayed above. For example, we can make the exact same plot as figure @ref(fig:impacts\_unmat) but for only the impact data that was matched to a hazard footprint. Figure \ref{fig:impactsmat} shows the number of recorded events that have been matched with an associated hazard footprint. The number of earthquake events with matched hazard-impact data now reflects that deaths is the most preminent impact in the GCDB.
 
 \begin{figure}
-\includegraphics{EQ_EDA_files/figure-latex/impactsmat-1} \caption[Number of impact records per impact, for earthquakes in the GCDB database]{Number of impact records per impact, for earthquakes in the GCDB database.}\label{fig:impactsmat}
+\includegraphics{EQ_EDA_files/figure-latex/impactsmat-1} \caption[Number of matched impact records per impact, for earthquakes in the GCDB database]{Number of matched impact records per impact, for earthquakes in the GCDB database.}\label{fig:impactsmat}
 \end{figure}
 
 We can also visualise the matched earthquake events with respect to their alertscore as provided by USGS PAGER, in figure \ref{fig:pager}. As may be expected, the number of events in the GCDB decreases as the alertscore increases. Note that the alertscore severity may not actually correlated with the observed impact value, but just reflects that the parameterisation ensures that only a few events make it into the more severe categories such as red.

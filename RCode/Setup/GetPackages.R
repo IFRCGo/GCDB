@@ -7,6 +7,7 @@ GetSourceFiles<-function(packred){
   #@@@@@ SOURCE FILES @@@@@#
   # Basic functions:
   source(paste0(dir,'RCode/Setup/Functions.R'))
+  source(paste0(dir,'RCode/Other/GetGoogleEarthEngineData.R'))
   # Objects
   source(paste0(dir,'RCode/GCDB_Objects/Impacts.R'))
   source(paste0(dir,'RCode/GCDB_Objects/Hazards.R'))
@@ -52,6 +53,7 @@ LoadLibraries<-function(packred){
   library(raster)
   library(geosphere)
   library(terra)
+  # library(lwgeom)
   
   if(!packred) {
     library(codetools)
@@ -67,7 +69,7 @@ GetPackages<-function(packred){
   list.of.packages <- c("devtools","dplyr", "ggplot2","sf","tidyverse","openxlsx","pracma",
                         "geojsonR", "tiff", "gstat", "mvtnorm","xml2","rgdal",
                         "RColorBrewer", "geosphere","GGally", "wbstats","reshape2",
-                        "rjson","geodist",
+                        "rjson","geodist","lwgeom","ggthemes",
                         "countrycode","rworldmap","rworldxtra","chron","ncdf4",
                         "GADMTools","akima","adehabitatMA","flexsurv", "ExtDist", 
                         'EnvStats', 'posterior', 'doParallel', 'VGAM', 'abind',

@@ -632,6 +632,19 @@ convIso3Country<-function(iso3){
 }
 
 convIso3Continent<-function(iso3){
+  # Access the file that contains all the relevant continent taxonomies
+  filer<-"./Taxonomies/IsoContinentRegion.xlsx"
+  if(!file.exists(filer)){
+    url<-"https://data.unicef.org/wp-content/uploads/2018/05/JME_Regional-Classifications.xlsx"
+    download.file(url,filer)
+  }
+  # continents<-countrycode::countrycode(sourcevar = iso3,
+  #                                      origin = "iso3c",
+  #                                      destination = "continent",warn = F)
+  left_join(data.frame(ISO3=iso3),readxl::read_xlsx(filer)%>%transmute(ISO3=`ISO Code`,continent=`UN Region`),by="ISO3")$continent
+}
+
+convIso3Continent_alt<-function(iso3){
   # continents<-countrycode::countrycode(sourcevar = iso3,
   #                                      origin = "iso3c",
   #                                      destination = "continent",warn = F)

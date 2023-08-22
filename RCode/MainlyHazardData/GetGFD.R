@@ -1,6 +1,78 @@
+# 
+ExtractGFDmeta<-function(metaGFD){
+  # Extract the full list
+  metties<-metaGFD$getInfo()
+  # Now split by event and extract the important information
+  out<-do.call(rbind,lapply(1:length(metties$features),function(i){
+    minimet<-metties$features[[i]]
+    as.data.frame(t(as.data.frame(unlist(minimet$properties[names(minimet$properties)[!names(minimet$properties)%in%c("countries","otsu_sample_res","system:footprint")]]))))
+  }))
+  row.names(out)<-NULL
+  
+  out%<>%mutate(hazsub_ID=`system:index`,hazAb="FL",haztype="haztypehydromet",hazcluster="hazhmflood",
+                hazspec="",
+                dfo_main_cause=str_to_lower(dfo_main_cause),
+                ev_sdate=as.Date(str_split(str_split(hazsub_ID,"From_",simplify = T)[,2],"_to_",simplify = T)[,1],format = "%Y%m%d"),
+                ev_fdate=as.Date(str_split(str_split(hazsub_ID,"From_",simplify = T)[,2],"_to_",simplify = T)[,2],format = "%Y%m%d"))
+  
+  
+  
+  # Dam-related incidents
+  out$haztype[grepl("dam",out$dfo_main_cause) & !grepl("damrey",out$dfo_main_cause)]<-"haztypehydromet,haztypetech"
+  out$hazcluster[grepl("dam",out$dfo_main_cause) & !grepl("damrey",out$dfo_main_cause)]<-"hazhmflood,haztechstrfail,haztechflood"
+  # Now export only the variables we want
+  out%>%transmute(GLIDE=glide_index,
+                  ev_sdate=ev_sdate,ev_fdate=ev_fdate,
+                  ev_name_en=paste0(dfo_main_cause," in ",cc,", ",AsYear(ev_sdate)))
+}
 # Code to extract and absorb GFD event into an ODD object
 # Automatically extract data from GFD database using Google Earth Engine (you will almost certainly need either Python or Java wrapper functions)
 GetGFDautoAPI<-function(bbox,sdate,fdate=NULL,I0=0){ # This should have the same form as the GetUSGS function
+  # Setup Google Earth Engine library and objects
+  SetupGEE()
+  # Extract the metadata
+  metaGFD<-ee$ImageCollection("GLOBAL_FLOOD_DB/MODIS_EVENTS/V1")
+  # Let's have a look
+  # ee_print(metaGFD)
+  # Extract the event names
+  metties<-ExtractGFDmeta(metaGFD)
+  # Get the continents
+  metties$continent<-sapply(1:nrow(metties),function(i){
+    isos<-c(str_remove_all(str_split(metties$cc[i],",",simplify = T)," "))
+    conties<-sort(unique(convIso3Continent(isos))) #; conties[conties!="Not Classified"]
+    if(length(conties[!is.na(conties) & conties!="Not Classified"]>1)) conties<-conties[!is.na(conties) & conties!="Not Classified"]
+    return(paste0(conties,collapse = ","))
+  })
+  
+  eventNames<-metaGFD$toBands()$bandNames()$getInfo()
+  
+  
+  
+  
+  metaGFD$filter()$select('flooded')$toBands()%>%
+  # metaGFD$toBands()%>%
+    ee_as_raster(via = "drive",quiet = T)
+  
+  
+  dataset<-ee$ImageCollection("GLOBAL_FLOOD_DB/MODIS_EVENTS/V1")%>%
+    ee_get(1:10)
+  
+  eventNames<-metaGFD$toBands()$bandNames()$getInfo()
+  metaGFD$toBands()
+  tmp<-ee_as_raster(metaGFD$toBands(),via = "drive",quiet = T)
+  
+  
+  GDF<-metaGFD$select(c("flooded","duration","clear_views","clear_perc","jrc_perm_water"))
+  
+  GFD<-ee_as_raster(ee$ImageCollection(metaGDF))
+  
+  bandNames <- GFD$bandNames()
+  cat("Band names: ",paste(bandNames$getInfo(),collapse=","))
+  
+  
+
+  
+  GFD<-ee_as_raster(tGDF,via = "drive",quiet = T)
   
   # Search for all GFD events within this window via API access to Google Earth Engine
   # Look at the following links
