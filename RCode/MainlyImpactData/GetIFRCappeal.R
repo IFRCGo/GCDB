@@ -21,7 +21,7 @@ getGOurl<-function(db="GO-App",token=NULL){
   } else return(jsonlite::fromJSON(url)$results)
 }
 
-ExtractGOdata<-function(haz="EQ",db="GO-App", token = NULL){
+ExtractGOdata<-function(db="GO-App", token = NULL){
   options(timeout = max(10000, getOption("timeout")))
   getGOurl(db=db,token)
 }
@@ -71,28 +71,25 @@ PostModGO<-function(colConv){
   return(colConv)
 }
 
-GOHazards<-function(impies,haz="EQ"){
+GOHazards<-function(impies){
   
   # Read in the EMDAT-HIPS taxonomy conversion dataframe
-  colConv<-openxlsx::read.xlsx("./Taxonomies/MostlyImpactData/IFRC_HIP.xlsx")%>%
-    filter(hazG==haz)
-  colConv$dtype%<>%str_to_lower()
+  colConv<-openxlsx::read.xlsx("./Taxonomies/MostlyImpactData/IFRC_HIP.xlsx")
+  # Make sure spelling is a little less error prone
+  colConv$dtype%<>%str_to_lower();impies$dtype%<>%str_to_lower()
   # Reduce the translated vector and merge
-  impies%<>%left_join(colConv%>%dplyr::select(-c(hazG)),by = "dtype")
-  
-  if(haz=="EQ"){
-    impies$hazpotlink<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
-  } 
+  impies%<>%left_join(colConv,by = "dtype")
+  colnames(impies)[colnames(impies)=="hazG"]<-"hazAb"
   
   return(impies)
   
 }
 
-CleanGO_app<-function(appeal,haz="EQ"){
+CleanGO_app<-function(appeal){
   
   appeal$dtype<-appeal$dtype$name
   
-  appeal%<>%GOHazards(haz = haz); appeal$dtype<-NULL
+  appeal%<>%GOHazards(); appeal$dtype<-NULL
   
   appeal$ISO3<-appeal$country$iso3
   appeal$Continent<-convIso3Continent(appeal$ISO3)
@@ -120,12 +117,7 @@ CleanGO_app<-function(appeal,haz="EQ"){
                    spat_ID=NA_character_,
                    spat_res="ADM-0")
   
-  appeal$GCDB_ID<-GetGCDB_ID(appeal)
-  appeal$hazspec<-"GH0001,GH0002"
-  appeal$haztype<-"haztypegeohaz"
-  appeal$hazcluster<-"hazgeoseis"
-  appeal$hazpotlink<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
-  appeal$hazlink<-NA_character_
+  appeal$GCDB_ID<-GetGCDB_ID(appeal,haz=appeal$hazAb)
   
   appeal%<>%ImpLabs(nomDB = "GO-App", dropName = T)
   
@@ -142,11 +134,11 @@ CleanGO_app<-function(appeal,haz="EQ"){
   
 }
 
-CleanGO_field<-function(fieldr,haz="EQ"){
+CleanGO_field<-function(fieldr){
   
   fieldr$dtype<-fieldr$dtype$name
   
-  fieldr%<>%GOHazards(haz = haz); fieldr$dtype<-NULL
+  fieldr%<>%GOHazards(); fieldr$dtype<-NULL
   
   fieldr$num_affected<-sapply(1:nrow(fieldr), function(i){
     ifelse(is.na(fieldr$num_affected[i]) & !is.na(fieldr$num_potentially_affected[i]),
@@ -193,12 +185,7 @@ CleanGO_field<-function(fieldr,haz="EQ"){
   fieldr$spat_ID[districts!=""]<-districts[districts!=""]
   fieldr$spat_res[districts!=""]<-"ADM-1"
   
-  fieldr$GCDB_ID<-GetGCDB_ID(fieldr)
-  fieldr$hazspec<-"GH0001,GH0002"
-  fieldr$haztype<-"haztypegeohaz"
-  fieldr$hazcluster<-"hazgeoseis"
-  fieldr$hazpotlink<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
-  fieldr$hazlink<-NA_character_
+  fieldr$GCDB_ID<-GetGCDB_ID(fieldr,haz=fieldr$hazAb)
   
   fieldr$countries<-fieldr$event<-fieldr$actions_taken<-fieldr$districts<-fieldr$regions<-fieldr$external_partners<-fieldr$supported_activities<-NULL
   
@@ -227,15 +214,15 @@ CleanGO_field<-function(fieldr,haz="EQ"){
   
 }
 
-GetGO<-function(haz="EQ", token=NULL){
+GetGO<-function(token=NULL){
   # Get the Emergency Appeal data from GO
-  appeal<-ExtractGOdata(haz = haz,db = "GO-App", token = token)
+  appeal<-ExtractGOdata(db = "GO-App", token = token)
   # Clean it up!
-  appeal%<>%CleanGO_app(haz = haz)
+  appeal%<>%CleanGO_app()
   # Get the Field Reports data from GO
-  fieldr<-ExtractGOdata(haz = "EQ",db = "GO-FR") #, token = token)
+  fieldr<-ExtractGOdata(db = "GO-FR") #, token = token)
   # Clean it up!
-  fieldr%<>%CleanGO_field(haz = haz)
+  fieldr%<>%CleanGO_field()
   # Combine both datasets and output
   rbind(appeal,fieldr)
 }

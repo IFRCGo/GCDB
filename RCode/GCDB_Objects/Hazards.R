@@ -68,7 +68,7 @@ GetGCDB_ID<-function(DF,haz=NULL) {
   paste0(namerz,"-GCDB")
 }
 
-AddEmptyColImp<-function(DF){
+AddEmptyColHaz<-function(DF){
   for(i in which(!names(col_hazGCDB)%in%colnames(DF))){
     tmp<-NA
     class(tmp)<-col_hazGCDB[i]
