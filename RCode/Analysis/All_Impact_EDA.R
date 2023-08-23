@@ -1,6 +1,8 @@
 source("./RCode/Analysis/SpatialAnalysis.R")
 options(scipen = 999)
 
+lhaz<-c("EQ","FL","TC","VO","DR","ET","LS","ST","WF")
+
 # impies<-GatherAllImps(lhaz)
 # saveRDS(impies,"./CleanedData/MostlyImpactData/AllHaz_impies.RData")
 impies<-readRDS("./CleanedData/MostlyImpactData/AllHaz_impies.RData")
@@ -15,8 +17,6 @@ EMDAT<-impies%>%filter(src_db=="EM-DAT" & ev_sdate>as.Date("2000-01-01"))
 taxies<-openxlsx::read.xlsx("./ImpactInformationProfiles.xlsx")
 # Admin boundaries
 ADM<-ImpactAggADM0(impies)
-
-lhaz<-c("EQ","FL","TC","VO","DR","ET","LS","ST","WF")
 
 pal <- c(
   "EQ" = "magenta",
@@ -327,6 +327,290 @@ p<-subbie%>%filter(!is.na(hazAb) & hazAb%in%lhaz &
   labs(fill="Data Source"); p #+facet_wrap(~RCnot,scales = "free");p
 ggsave("NS_allhazards_Cost.png",p,path="./Plots/GCDB_Workshop/",width = 10,height = 7)  
 
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%% EXCEEDANCE CURVE DATA %%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+
+impRP_calc<-function(indf,retper=5,timeline=NULL){
+  # Time frame to correctly calculate return periods
+  if(is.null(timeline))  timeline<-as.numeric(max(as.Date(indf$ev_sdate),na.rm = T)-
+                                                min(as.Date(indf$ev_sdate),na.rm = T))/365
+  # Exceedance probability curve data
+  rankie<-data.frame(innie=sort(indf%>%pull(impvalue)%>%na.omit()),
+                     ranking=1:nrow(indf))%>%
+    mutate(prob=rev(ranking))
+  # Plot?
+  # rankie%>%ggplot()+geom_point(aes(innie,prob))+
+  #   scale_y_log10() + scale_x_log10() +
+  #   xlab("No. Deaths") + ylab("Annual Probability %")
+  
+  data.frame(impRP=rankie$innie[which.min(abs(1/rankie$prob-retper))],
+             N=nrow(indf))
+}
+
+
+impies%>%filter(impactdetails=="impdetallpeop" & imptype=="imptypdeat" &
+                  ev_sdate>1975 & !is.na(impvalue))%>%
+  impRP_calc()
+
+timeliner<-2023-1975
+
+deathsRP<-do.call(rbind,lapply(unique(impies$ISO3),function(iso3){
+  tryCatch(impies%>%filter(ISO3==iso3,
+                           impactdetails=="impdetallpeop" & imptype=="imptypdeat" &
+                             ev_sdate>1975 & !is.na(impvalue))%>%
+             impRP_calc()%>%cbind(data.frame(ISO3=iso3,impact="Deaths",src_db="All")),
+           error=function(e) data.frame(impRP=NA,N=NA,ISO3=iso3,impact="Deaths",src_db="All"))
+}))%>%filter(!is.na(N))
+
+# Extract Global ADM
+ADM <- rworldmap::getMap(resolution='low')
+ADM@data%<>%transmute(ISO3=ISO_A3,Population=POP_EST,GDP=GDP_MD_EST)
+ADM@data%<>%left_join(deathsRP,by="ISO3")
+
+ADM$impRP[ADM$N<30]<-NA
+
+# Change the projection
+crs_mappy <- "+proj=wintri +x_0=-74 +y_0=0 +datum=WGS84 +no_defs +over" # TRIPEL PROJECTION
+# crs_mappy <- "+proj=laea +x_0=0 +y_0=0 +lon_0=-74 +lat_0=0" # Lambert azimuthal equal-area projection
+projdat <- lwgeom::st_transform_proj(st_as_sf(ADM), crs = crs_mappy)
+# Add the grid layout to the plot (graticule)
+grat_wintri <- st_graticule(lat = c(-89.9, seq(-80, 80, 20), 89.9)) %>%
+  lwgeom::st_transform_proj(crs = crs_mappy)
+# To add the blue background to the map
+lats <- c(90:-90, -90:90, 90)
+# longs <- c(rep(c(180-74, -180-74), each = 181), 180-74)
+longs <- c(rep(c(180, -180), each = 181), 180)
+# turn into correctly projected sf collection
+wintri_outline <- 
+  list(cbind(longs, lats)) %>%
+  st_polygon() %>%
+  st_sfc( # create sf geometry list column
+    crs = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
+  ) %>% 
+  st_sf() %>%
+  lwgeom::st_transform_proj(crs = crs_mappy)
+
+# Plot it out!
+q<-ggplot()+
+  geom_sf(data = wintri_outline, fill = "#56B4E950", color = "black", alpha=0.5) +
+  geom_sf(data = grat_wintri, color = "gray30", linewidth = 0.05, alpha=0.1) +
+  geom_sf(data=projdat,aes(fill=impRP), color = "grey30", linewidth=0.1) + #, inherit.aes = FALSE) +
+  coord_sf(datum = NULL) + #ylim(c(-80,80)) +
+  # coord_sf(datum = crs_mappy, xlim = c(-100,-40), ylim=c(-30,30), expand = FALSE) + #ylim(c(-80,80)) + 
+  ggthemes::theme_map() +
+  theme(legend.background = element_rect(fill="white",
+                                         linetype="solid", 
+                                         colour ="black"),
+        plot.title = element_text(hjust = 0.5,face="bold",size=18),
+        legend.position = c(0.1, 0.1))+
+  ggtitle("Expected No. Deaths Assoc. 5-Year Return Period")+
+  scale_fill_gradient(name = "Total Deaths",guide="legend", trans = "log10",
+                      low="magenta4",high="magenta",n.breaks=6);q
+ggsave("allhaz_spatial_deaths_5Yr-RP.png",q,path="./Plots/GCDB_Workshop/",width = 10)
+
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+# Economic cost RP too!
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+
+costRP<-do.call(rbind,lapply(unique(impies$ISO3),function(iso3){
+  tryCatch(impies%>%filter(ISO3==iso3,
+                           impactsubcats%in%c("impecotot","impecodirtot") & imptype=="imptypcost" & 
+                             ev_sdate>1975 & !is.na(impvalue))%>%
+             impRP_calc()%>%cbind(data.frame(ISO3=iso3,impact="Deaths",src_db="All")),
+           error=function(e) data.frame(impRP=NA,N=NA,ISO3=iso3,impact="Deaths",src_db="All"))
+}))%>%filter(!is.na(N))
+
+# Extract Global ADM
+ADM <- rworldmap::getMap(resolution='low')
+ADM@data%<>%transmute(ISO3=ISO_A3,Population=POP_EST,GDP=GDP_MD_EST)
+ADM@data%<>%left_join(costRP,by="ISO3")
+
+ADM$impRP[ADM$N<30]<-NA
+
+ADM$impRP<-ADM$impRP/1e6
+
+# Change the projection
+crs_mappy <- "+proj=wintri +x_0=-74 +y_0=0 +datum=WGS84 +no_defs +over" # TRIPEL PROJECTION
+# crs_mappy <- "+proj=laea +x_0=0 +y_0=0 +lon_0=-74 +lat_0=0" # Lambert azimuthal equal-area projection
+projdat <- lwgeom::st_transform_proj(st_as_sf(ADM), crs = crs_mappy)
+# Add the grid layout to the plot (graticule)
+grat_wintri <- st_graticule(lat = c(-89.9, seq(-80, 80, 20), 89.9)) %>%
+  lwgeom::st_transform_proj(crs = crs_mappy)
+# To add the blue background to the map
+lats <- c(90:-90, -90:90, 90)
+# longs <- c(rep(c(180-74, -180-74), each = 181), 180-74)
+longs <- c(rep(c(180, -180), each = 181), 180)
+# turn into correctly projected sf collection
+wintri_outline <- 
+  list(cbind(longs, lats)) %>%
+  st_polygon() %>%
+  st_sfc( # create sf geometry list column
+    crs = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
+  ) %>% 
+  st_sf() %>%
+  lwgeom::st_transform_proj(crs = crs_mappy)
+
+# Plot it out!
+q<-ggplot()+
+  geom_sf(data = wintri_outline, fill = "#56B4E950", color = "black", alpha=0.5) +
+  geom_sf(data = grat_wintri, color = "gray30", linewidth = 0.05, alpha=0.1) +
+  geom_sf(data=projdat,aes(fill=impRP), color = "grey30", linewidth=0.1) + #, inherit.aes = FALSE) +
+  coord_sf(datum = NULL) + #ylim(c(-80,80)) +
+  # coord_sf(datum = crs_mappy, xlim = c(-100,-40), ylim=c(-30,30), expand = FALSE) + #ylim(c(-80,80)) + 
+  ggthemes::theme_map() +
+  theme(legend.background = element_rect(fill="white",
+                                         linetype="solid", 
+                                         colour ="black"),
+        plot.title = element_text(hjust = 0.5,face="bold",size=18),
+        legend.position = c(0.1, 0.1))+
+  ggtitle("Expected Economic Cost Assoc. 5-Year Return Period")+
+  scale_fill_gradient(name = "Total Cost (Millions USD-2011)",guide="legend", trans = "log10",
+                      high="chartreuse",low="chartreuse4",n.breaks=6);q
+ggsave("allhaz_spatial_cost_5Yr-RP.png",q,path="./Plots/GCDB_Workshop/",width = 10)
+
+
+
+
+
+
+
+
+
+
+
+
+timeliner<-2023-1975
+
+deathsRP<-do.call(rbind,lapply(unique(impies$ISO3),function(iso3){
+  tryCatch(impies%>%filter(ISO3==iso3,
+                           hazAb=="FL",
+                           impactdetails=="impdetallpeop" & imptype=="imptypdeat" &
+                             ev_sdate>1975 & !is.na(impvalue))%>%
+             impRP_calc()%>%cbind(data.frame(ISO3=iso3,impact="Deaths",src_db="All")),
+           error=function(e) data.frame(impRP=NA,N=NA,ISO3=iso3,impact="Deaths",src_db="All"))
+}))%>%filter(!is.na(N))
+
+# Extract Global ADM
+ADM <- rworldmap::getMap(resolution='low')
+ADM@data%<>%transmute(ISO3=ISO_A3,Population=POP_EST,GDP=GDP_MD_EST)
+ADM@data%<>%left_join(deathsRP,by="ISO3")
+
+ADM$impRP[ADM$N<30]<-NA
+
+# Change the projection
+crs_mappy <- "+proj=wintri +x_0=-74 +y_0=0 +datum=WGS84 +no_defs +over" # TRIPEL PROJECTION
+# crs_mappy <- "+proj=laea +x_0=0 +y_0=0 +lon_0=-74 +lat_0=0" # Lambert azimuthal equal-area projection
+projdat <- lwgeom::st_transform_proj(st_as_sf(ADM), crs = crs_mappy)
+# Add the grid layout to the plot (graticule)
+grat_wintri <- st_graticule(lat = c(-89.9, seq(-80, 80, 20), 89.9)) %>%
+  lwgeom::st_transform_proj(crs = crs_mappy)
+# To add the blue background to the map
+lats <- c(90:-90, -90:90, 90)
+# longs <- c(rep(c(180-74, -180-74), each = 181), 180-74)
+longs <- c(rep(c(180, -180), each = 181), 180)
+# turn into correctly projected sf collection
+wintri_outline <- 
+  list(cbind(longs, lats)) %>%
+  st_polygon() %>%
+  st_sfc( # create sf geometry list column
+    crs = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
+  ) %>% 
+  st_sf() %>%
+  lwgeom::st_transform_proj(crs = crs_mappy)
+
+# Plot it out!
+q<-ggplot()+
+  geom_sf(data = wintri_outline, fill = "#56B4E950", color = "black", alpha=0.5) +
+  geom_sf(data = grat_wintri, color = "gray30", linewidth = 0.05, alpha=0.1) +
+  geom_sf(data=projdat,aes(fill=impRP), color = "grey30", linewidth=0.1) + #, inherit.aes = FALSE) +
+  coord_sf(datum = NULL) + #ylim(c(-80,80)) +
+  # coord_sf(datum = crs_mappy, xlim = c(-100,-40), ylim=c(-30,30), expand = FALSE) + #ylim(c(-80,80)) + 
+  ggthemes::theme_map() +
+  theme(legend.background = element_rect(fill="white",
+                                         linetype="solid", 
+                                         colour ="black"),
+        plot.title = element_text(hjust = 0.5,face="bold",size=18),
+        legend.position = c(0.1, 0.1))+
+  ggtitle("Expected No. Deaths Assoc. 5-Year Return Period")+
+  scale_fill_gradient(name = "Total Deaths",guide="legend", trans = "log10",
+                      low="magenta4",high="magenta",n.breaks=6);q
+ggsave("FL_spatial_deaths_5Yr-RP.png",q,path="./Plots/GCDB_Workshop/",width = 10)
+
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+# Economic cost RP too!
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+
+costRP<-do.call(rbind,lapply(unique(impies$ISO3),function(iso3){
+  tryCatch(impies%>%filter(ISO3==iso3,
+                           impactsubcats%in%c("impecotot","impecodirtot") & imptype=="imptypcost" & 
+                             hazAb=="FL",
+                             ev_sdate>1975 & !is.na(impvalue))%>%
+             impRP_calc()%>%cbind(data.frame(ISO3=iso3,impact="Deaths",src_db="All")),
+           error=function(e) data.frame(impRP=NA,N=NA,ISO3=iso3,impact="Deaths",src_db="All"))
+}))%>%filter(!is.na(N))
+
+# Extract Global ADM
+ADM <- rworldmap::getMap(resolution='low')
+ADM@data%<>%transmute(ISO3=ISO_A3,Population=POP_EST,GDP=GDP_MD_EST)
+ADM@data%<>%left_join(costRP,by="ISO3")
+
+ADM$impRP[ADM$N<30]<-NA
+
+ADM$impRP<-ADM$impRP/1e6
+
+# Change the projection
+crs_mappy <- "+proj=wintri +x_0=-74 +y_0=0 +datum=WGS84 +no_defs +over" # TRIPEL PROJECTION
+# crs_mappy <- "+proj=laea +x_0=0 +y_0=0 +lon_0=-74 +lat_0=0" # Lambert azimuthal equal-area projection
+projdat <- lwgeom::st_transform_proj(st_as_sf(ADM), crs = crs_mappy)
+# Add the grid layout to the plot (graticule)
+grat_wintri <- st_graticule(lat = c(-89.9, seq(-80, 80, 20), 89.9)) %>%
+  lwgeom::st_transform_proj(crs = crs_mappy)
+# To add the blue background to the map
+lats <- c(90:-90, -90:90, 90)
+# longs <- c(rep(c(180-74, -180-74), each = 181), 180-74)
+longs <- c(rep(c(180, -180), each = 181), 180)
+# turn into correctly projected sf collection
+wintri_outline <- 
+  list(cbind(longs, lats)) %>%
+  st_polygon() %>%
+  st_sfc( # create sf geometry list column
+    crs = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
+  ) %>% 
+  st_sf() %>%
+  lwgeom::st_transform_proj(crs = crs_mappy)
+
+# Plot it out!
+q<-ggplot()+
+  geom_sf(data = wintri_outline, fill = "#56B4E950", color = "black", alpha=0.5) +
+  geom_sf(data = grat_wintri, color = "gray30", linewidth = 0.05, alpha=0.1) +
+  geom_sf(data=projdat,aes(fill=impRP), color = "grey30", linewidth=0.1) + #, inherit.aes = FALSE) +
+  coord_sf(datum = NULL) + #ylim(c(-80,80)) +
+  # coord_sf(datum = crs_mappy, xlim = c(-100,-40), ylim=c(-30,30), expand = FALSE) + #ylim(c(-80,80)) + 
+  ggthemes::theme_map() +
+  theme(legend.background = element_rect(fill="white",
+                                         linetype="solid", 
+                                         colour ="black"),
+        plot.title = element_text(hjust = 0.5,face="bold",size=18),
+        legend.position = c(0.1, 0.1))+
+  ggtitle("Expected Economic Cost Assoc. 5-Year Return Period")+
+  scale_fill_gradient(name = "Total Cost (Millions USD-2011)",guide="legend", trans = "log10",
+                      high="chartreuse",low="chartreuse4",n.breaks=6);q
+ggsave("FL_spatial_cost_5Yr-RP.png",q,path="./Plots/GCDB_Workshop/",width = 10)
+
+
+
+
+
+
+
+
+
+
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 #%%%%%%%%%%%%%%%%%%%%%%%%% DESINVENTAR SUB-NATIONAL DATA %%%%%%%%%%%%%%%%%%%%%%%%%#
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
@@ -348,16 +632,48 @@ sapply(seq_along(centrams),function(i){
     sum(grepl(codie,cntimps$spat_ID,ignore.case = T))
   })
   
-  q<-ADM[ADM$ADMlevel==min(max(ADM$ADMlevel),2),]%>%st_as_sf()%>%ggplot()+
+  ADM$deathsRP<-sapply(ADM$ADMcode,function(codie){
+    output<-tryCatch(cntimps%>%filter(impactdetails=="impdetallpeop" & imptype=="imptypdeat" &
+                      ev_sdate>1975 & !is.na(impvalue) &
+                      grepl(codie,spat_ID,ignore.case = T))%>%
+      impRP_calc(),error=function(e) data.frame(impRP=NA,N=NA))
+    ifelse(output$N>30,output$impRP,NA)
+  })
+    
+  ADM$costRP<-sapply(ADM$ADMcode,function(codie){
+    output<-tryCatch(cntimps%>%filter(impactsubcats%in%c("impecotot","impecodirtot") & imptype=="imptypcost" & 
+                                        ev_sdate>1975 & !is.na(impvalue) &
+                                        grepl(codie,spat_ID,ignore.case = T))%>%
+                       impRP_calc(),error=function(e) data.frame(impRP=NA,N=NA))
+    ifelse(output$N>30,output$impRP/1e6,NA)
+  })  
+    
+  # Extract the bounding box of the admin boundaries
+  # bbox<-expandBbox(unlist(unname(ExtractBBOXpoly(ADM)[1,2:5])),3)
+  # 
+  # mad_map <- get_stamenmap(bbox,source = "stamen",maptype = "terrain",zoom=8)
+  # 
+  # p<-ggmap(mad_map) + xlab("Longitude") + ylab("Latitude")
+  
+  q<-p+ADM[ADM$ADMlevel==min(max(ADM$ADMlevel),2),]%>%st_as_sf()%>%ggplot()+
     geom_sf(aes(fill=Allrecords), color = "grey30", linewidth=0.1)+ #, inherit.aes = FALSE) +
     scale_fill_gradient("No. Records",low="magenta4", high="magenta", trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
   ggsave(paste0("Allrecords_ADM2_",iso3,"_Dessie.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
   
-  q<-ADM[ADM$ADMlevel==min(ADM$ADMlevel),]%>%st_as_sf()%>%ggplot()+
+  q<-p+ADM[ADM$ADMlevel==min(ADM$ADMlevel),]%>%st_as_sf()%>%ggplot()+
     geom_sf(aes(fill=Allrecords), color = "grey30", linewidth=0.1)+ #, inherit.aes = FALSE) +
     scale_fill_gradient("No. Records",low="magenta4", high="magenta", trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
   ggsave(paste0("Allrecords_ADM1_",iso3,"_Dessie.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
   
+  q<-ADM[ADM$ADMlevel==min(ADM$ADMlevel),]%>%st_as_sf()%>%ggplot()+
+    geom_sf(aes(fill=deathsRP), color = "grey30", linewidth=0.1, inherit.aes = FALSE) +
+    scale_fill_gradient("Exp. No. Deaths 5Yr RP",low="magenta4", high="magenta", trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
+  ggsave(paste0("DeathsRP_Allrecords_ADM1_",iso3,"_Dessie.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
+  
+  q<-ADM[ADM$ADMlevel==min(ADM$ADMlevel),]%>%st_as_sf()%>%ggplot()+
+    geom_sf(aes(fill=costRP), color = "grey30", linewidth=0.1, inherit.aes = FALSE) +
+    scale_fill_gradient("Exp. Cost 5Yr RP [Millions Local Curr]",high="chartreuse",low="chartreuse4",trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
+  ggsave(paste0("CostRP_Allrecords_ADM1_",iso3,"_Dessie.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
   
   sapply(lhaz,function(hazzie){
     
@@ -365,12 +681,12 @@ sapply(seq_along(centrams),function(i){
       sum(grepl(codie,cntimps$spat_ID[cntimps$hazAb==hazzie],ignore.case = T))
     })
     
-    q<-ADM[ADM$ADMlevel==min(max(ADM$ADMlevel),2),]%>%st_as_sf()%>%ggplot()+
+    q<-p+ADM[ADM$ADMlevel==min(max(ADM$ADMlevel),2),]%>%st_as_sf()%>%ggplot()+
       geom_sf(aes(fill=records), color = "grey30", linewidth=0.1)+
       scale_fill_gradient(paste0("No. Records - ",hazzie), high=pal[names(pal)==hazzie], trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
     ggsave(paste0(hazzie,"_records_ADM2_",iso3,"_Dessie.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
     
-    q<-ADM[ADM$ADMlevel==min(ADM$ADMlevel),]%>%st_as_sf()%>%ggplot()+
+    q<-p+ADM[ADM$ADMlevel==min(ADM$ADMlevel),]%>%st_as_sf()%>%ggplot()+
       geom_sf(aes(fill=records), color = "grey30", linewidth=0.1)+
       scale_fill_gradient(paste0("No. Records - ",hazzie),high=pal[names(pal)==hazzie], trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
     ggsave(paste0(hazzie,"_records_ADM1_",iso3,"_Dessie.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
@@ -441,6 +757,50 @@ sapply(seq_along(centrams),function(i){
     return(T)},simplify = T)
   
   return(T)},simplify = T)
+
+
+
+
+
+
+
+
+q<-impies%>%filter(!is.na(Continent) & Continent!="Not Classified" &
+                  src_db!="GO-FR")%>%
+  group_by(src_db,Year,Continent)%>%reframe(Counts=length(impvalue))%>%
+  ggplot(aes(Year,Counts,group=Continent))+geom_point(aes(colour=Continent))+
+  scale_y_log10()+xlim(c(1975,2022))+
+  geom_smooth(aes(colour=Continent,fill=Continent))+
+  ylab("No. of Impact Records")+facet_wrap(~src_db)
+ggsave("Temporal_Bias_Continents-databases.png",q,path="./Plots/",width = 12)  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
