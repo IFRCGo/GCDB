@@ -154,14 +154,29 @@ p<-PlotImpAgg(EQ,loggie = F)+
                       labels=c("10^1","10^2","10^3","10^4","10^5","10^6","10^7"));p
 ggsave("EQ_spatial_deaths.png",p,path="./Plots/",width = 13,height = 7)
 
-p<-impies%>%filter(Year>1950 & Year<2024 & hazAb!="LS")%>%
+p<-impies%>%filter(Year>1950 & Year<2024 & hazAb!="LS" & src_db!="GO-FR")%>%
   group_by(Year,src_db)%>%reframe(Count=length(unique(GCDB_ID)))%>%
   filter(Count>0)%>%
   ggplot()+geom_point(aes(Year,Count,colour=src_db))+
-  scale_y_log10(n.breaks=5)+scale_x_continuous(n.breaks=15)+
-  ylab("Number of Impact Records")+
+  scale_x_continuous(n.breaks=15)+
+  ylab("Number of Impact Records")+facet_wrap(~src_db)+
   labs(colour="Database");p
 ggsave("Alldatabases_temporal.png",p,path="./Plots/",width = 13,height = 7)  
+
+p<-impies%>%filter(Year>1952 & Year<2023 & 
+                     hazAb%in%c("EQ","VO") & 
+                     src_db!="GO-FR")%>%
+  group_by(Year,src_db)%>%
+  reframe(Count=length(unique(GCDB_ID)))%>%
+  # filter(Count>0)%>%
+  ggplot()+geom_point(aes(Year,Count,colour=src_db))+
+  # geom_line(aes(Year,Count,colour=src_db))+
+  # scale_y_log10(n.breaks=5)+
+  scale_x_continuous(n.breaks=15)+
+  facet_wrap(~src_db)+
+  ylab("Number of Impact Records")+xlab("Year")+
+  labs(colour="Database");p
+ggsave("EQs_Alldatabases_temporal.png",p,path="./Plots/",width = 12,height = 8)  
 
 p<-impies%>%filter(Year>1952 & Year<2023 & 
                      hazAb%in%c("EQ","VO") & 
