@@ -163,7 +163,20 @@ p<-impies%>%filter(Year>1950 & Year<2024 & hazAb!="LS")%>%
   labs(colour="Database");p
 ggsave("Alldatabases_temporal.png",p,path="./Plots/",width = 13,height = 7)  
 
-
+p<-impies%>%filter(Year>1952 & Year<2023 & 
+                     hazAb%in%c("EQ","VO") & 
+                     src_db!="GO-FR")%>%
+  group_by(Year = findInterval(Year, seq(min(Year), max(Year), 5)),src_db)%>%
+  reframe(Count=length(unique(GCDB_ID)))%>%
+  mutate(Year=(Year-1)*5+1952.5)%>%
+  # filter(Count>0)%>%
+  ggplot()+geom_point(aes(Year,Count,colour=src_db))+
+  geom_line(aes(Year,Count,colour=src_db))+
+  # scale_y_log10(n.breaks=5)+
+  scale_x_continuous(n.breaks=15)+
+  ylab("Number of Impact Records")+xlab("5-Year Interval")+
+  labs(colour="Database");p
+ggsave("EQs_Alldatabases_temporal_5YrBin.png",p,path="./Plots/",width = 8,height = 5)  
 
 
 
