@@ -106,7 +106,7 @@ GatherAllImps<-function(lhaz){
 # checker<-GO_GCDB(lhaz,cores=cores)
 
 
-
+cnties<-c("MNG","SRI","NPL","TLS","IDN","PAK","FJI")
 
 
 # Juicy juicy:

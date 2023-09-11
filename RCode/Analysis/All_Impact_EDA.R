@@ -30,6 +30,53 @@ pal <- c(
   "WF" = "red"
 )
 
+p<-impies%>%filter(impactdetails=="impdetallpeop" & imptype=="imptypdeat" &
+                     Year>1970 & impvalue>0 & src_db=="EM-DAT" &
+                     haztype!="haztypeenviron")%>%
+  mutate(YearWindow=cut(Year, breaks=seq.int(1970,2020,by=10),labels=as.character(seq.int(1975,2020,by=10))))%>%
+  group_by(src_db,haztype,YearWindow,ISO3)%>%
+  summarise(impvalue=mean(impvalue))%>%
+  ggplot()+geom_boxplot(aes(YearWindow, impvalue, fill=haztype))+
+  # geom_smooth(aes(YearWindow, impvalue, colour=haztype))+
+  scale_y_log10();p
+  # facet_wrap(~src_db, scales = "free");p
+
+tmp<-impies%>%filter(impactdetails=="impdetallpeop" & imptype=="imptypdeat" &
+                       Year>1970 & impvalue>0 & src_db=="EM-DAT" &
+                       haztype!="haztypeenviron")
+
+sapply(1975:2022, function(yeary){
+  quantile(tmp$impvalue[tmp$Year<=yeary & tmp$Year>=yeary-5],
+           probs=c(...................))
+})
+
+p<-impies%>%filter(impactdetails=="impdetbuild" & imptype=="imptypdama" &
+                     Year>1970 & impvalue>0 & Year<2023 &
+                     haztype!="haztypeenviron")%>%
+  group_by(src_db,haztype,Year,ISO3)%>%
+  summarise(impval=mean(impvalue))%>%
+  ggplot()+geom_point(aes(Year, impval, colour=haztype))+
+  geom_smooth(aes(Year, impval, colour=haztype))+
+  scale_y_log10()+
+  facet_wrap(~src_db, scales = "free");p
+
+
+p<-impies%>%filter(impies$impactcats=="impcatfineco" &
+                     impactsubcats%in%c("impecoaid","impecodirtot","impecotot") &
+                   imptype%in%c("imptypcost","imptypaidreqifrc") &
+                     impactdetails%in%c("impdetaidgen","impdetinfloccur","impdetusdunsure") &
+                     Year>1970 & Year<2023 & impvalue>0 & 
+                     haztype!="haztypeenviron")%>%
+  ggplot()+geom_point(aes(Year, impvalue, colour=haztype))+
+  geom_smooth(aes(Year, impvalue, colour=haztype))+
+  scale_y_log10()+
+  facet_wrap(~src_db, scales = "free");p
+  
+  
+impactsubcats%in%c("impecodirtot","impecoaid") &
+  imptype%in%c("imptypaidreqifrc","imptypcost") &
+
+
 p<-impies%>%group_by(hazAb)%>%reframe(Count=length(unique(GCDB_ID)))%>%arrange(desc(Count))%>%
   ggplot()+geom_bar(aes(x=hazAb,y=Count,fill=hazAb),colour="black",stat = "identity")+
   xlab("Hazard")+ylab("Number of Impact Records")+
