@@ -22,6 +22,9 @@ sum(WDR$ISO3%in%unique(impies$ISO3))
 
 convIso3Country(unique(WDR$ISO3[!WDR$ISO3%in%impies$ISO3]))
 
+climvars<-c("Storm","Flood","Drought","Wildfire","ExtrTemp")
+geovars<-c("Earthquake","Volcano","Landslide")
+
 # Extract EM-DAT deaths and IDMC displacements
 # Make an average of the number of events per country to produce the incidence, per year
 #   but this only uses IDMC from 2018 onwards
@@ -50,6 +53,10 @@ EMFull<-WDR%>%dplyr::select(1:5)%>%left_join(EMFull)
 
 EMFull[is.na(EMFull)]<-0
 
+EMFull$ALL_CLIM<-rowSums(EMFull[,climvars])
+EMFull$ALL_GEO<-rowSums(EMFull[,geovars])
+EMFull$ALL<-EMFull$ALL_CLIM+EMFull$ALL_GEO
+
 HEFull<-impies%>%filter(Year>=2018 & src_db=="HELIX")%>%
   group_by(ISO3,Year)%>%
   summarise(ALL_CLIM=sum(haztype=="haztypehydromet"),
@@ -67,6 +74,10 @@ HEFull<-impies%>%filter(Year>=2018 & src_db=="HELIX")%>%
 HEFull<-WDR%>%dplyr::select(1:5)%>%left_join(HEFull)
 
 HEFull[is.na(HEFull)]<-0
+
+HEFull$ALL_CLIM<-rowSums(HEFull[,climvars])
+HEFull$ALL_GEO<-rowSums(HEFull[,geovars])
+HEFull$ALL<-HEFull$ALL_CLIM+HEFull$ALL_GEO
 
 IncFull<-EMFull
 # Only do the averaging for when IDMC started recording lots of events
@@ -102,6 +113,10 @@ View(FatFull)
 
 FatFull[is.na(FatFull)]<-0
 
+FatFull$ALL_CLIM<-rowSums(FatFull[,climvars])
+FatFull$ALL_GEO<-rowSums(FatFull[,geovars])
+FatFull$ALL<-FatFull$ALL_CLIM+FatFull$ALL_GEO
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%% IDPs %%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
@@ -127,7 +142,10 @@ IDPFull[IDPFull$Year<2018,6:ncol(IDPFull)]<- -999
 
 IDPFull[is.na(IDPFull)]<-0
 IDPFull[IDPFull== -999]<-NA
-View(IDPFull)
+
+IDPFull$ALL_CLIM<-rowSums(IDPFull[,climvars])
+IDPFull$ALL_GEO<-rowSums(IDPFull[,geovars])
+IDPFull$ALL<-IDPFull$ALL_CLIM+IDPFull$ALL_GEO
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 #%%%%%%%%%%%%%%%%%%%%%%%%%%% AFFECTED %%%%%%%%%%%%%%%%%%%%%%%%%%%#
@@ -152,8 +170,9 @@ AFFFull<-WDR%>%dplyr::select(1:5)%>%left_join(AFFFull)
 
 AFFFull[is.na(AFFFull)]<-0
 
-View(AFFFull)
-
+AFFFull$ALL_CLIM<-rowSums(AFFFull[,climvars])
+AFFFull$ALL_GEO<-rowSums(AFFFull[,geovars])
+AFFFull$ALL<-AFFFull$ALL_CLIM+AFFFull$ALL_GEO
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%% COST %%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
@@ -178,5 +197,15 @@ COSFull<-WDR%>%dplyr::select(1:5)%>%left_join(COSFull)
 
 COSFull[is.na(COSFull)]<-0
 
-View(COSFull)
+COSFull$ALL_CLIM<-rowSums(COSFull[,climvars])
+COSFull$ALL_GEO<-rowSums(COSFull[,geovars])
+COSFull$ALL<-COSFull$ALL_CLIM+COSFull$ALL_GEO
+
+#%%%%%%%%%%%%%%%%%%%%%%%%% WRITE-OUT %%%%%%%%%%%%%%%%%%%%%%%%%%#
+
+openxlsx::write.xlsx(IncFull,"./Analysis_Results/Kirsten/Indicence.xlsx")
+openxlsx::write.xlsx(FatFull,"./Analysis_Results/Kirsten/Fatalities.xlsx")
+openxlsx::write.xlsx(IDPFull,"./Analysis_Results/Kirsten/IDPs.xlsx")
+openxlsx::write.xlsx(AFFFull,"./Analysis_Results/Kirsten/Affected.xlsx")
+openxlsx::write.xlsx(COSFull,"./Analysis_Results/Kirsten/Cost.xlsx")
 
