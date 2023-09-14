@@ -46,88 +46,88 @@ PairEMDATspatial<-function(EMDAT,haz="EQ",GAULexist=F){
   
 }
 
-PostModEMDAT<-function(colConv){
-  # hazard Types
-  colConv$haztype[colConv$hazEM%in%c("FL","ST","TC","DR","ET","SN","CW","HW","SS")]<-"haztypehydromet"
-  colConv$haztype[colConv$hazEM%in%c("EQ","LS","TS","VO","AV")]<-"haztypegeohaz"
-  colConv$haztype[colConv$hazEM=="WF"]<-"haztypeenviron"
-  colConv$haztype[colConv$hazEM=="EP"]<-"haztypebio"
-  colConv$haztype[grepl("cyclone & flood",colConv$Disaster.Subtype,ignore.case = T)]<-"haztypehydromet"
-  
-  # Hazard clusters
-  colConv$hazcluster[colConv$hazEM=="DR"]<-"hazhmprecip,hazhmtemp"
-  colConv$hazcluster[colConv$hazEM=="FL"]<-"hazhmflood"
-  colConv$hazcluster[colConv$hazEM=="ST"]<-"hazhmconv,hazhmwind,hazhmpress,hazhmflood"
-  colConv$hazcluster[grepl("rain",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmprecip"
-  colConv$hazcluster[grepl("wind",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmwind,hazhmpress"
-  colConv$hazcluster[grepl("lightning",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmconv"
-  colConv$hazcluster[colConv$hazEM=="ET"]<-"hazhmtemp"
-  colConv$hazcluster[colConv$hazEM=="TC"]<-"hazhmwind,hazhmpress,hazhmconv,hazhmflood"
-  colConv$hazcluster[colConv$hazEM=="TS"]<-"hazgeoother,hazhmmarine,hazhmflood"
-  colConv$hazcluster[colConv$hazEM=="EQ"]<-"hazgeoseis"
-  colConv$hazcluster[colConv$hazEM=="VO"]<-"hazgeovolc"
-  colConv$hazcluster[colConv$hazEM=="WF"]<-"hazenvenvdeg"
-  colConv$hazcluster[grepl("hail",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmprecip"
-  colConv$hazcluster[colConv$hazEM=="LS"]<-"hazgeoseis,hazenvenvdeg,hazgeovolc,hazgeoother"
-  colConv$hazcluster[grepl("rock",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmterr"
-  colConv$hazcluster[grepl("mud",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmterr"
-  colConv$hazcluster[grepl("liquefaction",colConv$Disaster.Subtype,ignore.case = T)]<-"hazgeoseis,hazgeoother"
-  colConv$hazcluster[colConv$hazEM=="AV"]<-"hazhmterr"
-  colConv$hazcluster[grepl("tidal",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmmarine,hazhmflood"
-  colConv$hazcluster[grepl("wave",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmmarine,hazhmflood"
-  colConv$hazcluster[grepl("coastal flood",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmflood,hazhmmarine"
-  colConv$hazcluster[grepl("surge",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmmarine,hazhmflood,hazhmwind"
-  colConv$hazcluster[grepl("hail",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmprecip"
-  colConv$hazcluster[grepl("tropical storm",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmwind"
-  colConv$hazcluster[grepl("convective storm",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmconv"
-  colConv$hazcluster[grepl("cold wave",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmtemp"
-  
-  # Specific Hazards
-  colConv$hazspec[colConv$hazEM=="EQ"]<-"GH0001,GH0002"
-  colConv$hazpotlink[colConv$hazEM=="EQ"]<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
-  
-  # Save it out
-  openxlsx::write.xlsx(colConv,"./Taxonomies/MostlyImpactData/EMDAT_HIP.xlsx")
-  
-  return(colConv)
-}
+# PostModEMDAT<-function(colConv){
+#   # hazard Types
+#   colConv$haztype[colConv$hazEM%in%c("FL","ST","TC","DR","ET","SN","CW","HW","SS")]<-"haztypehydromet"
+#   colConv$haztype[colConv$hazEM%in%c("EQ","LS","TS","VO","AV")]<-"haztypegeohaz"
+#   colConv$haztype[colConv$hazEM=="WF"]<-"haztypeenviron"
+#   colConv$haztype[colConv$hazEM=="EP"]<-"haztypebio"
+#   colConv$haztype[grepl("cyclone & flood",colConv$Disaster.Subtype,ignore.case = T)]<-"haztypehydromet"
+#   
+#   # Hazard clusters
+#   colConv$hazcluster[colConv$hazEM=="DR"]<-"hazhmprecip,hazhmtemp"
+#   colConv$hazcluster[colConv$hazEM=="FL"]<-"hazhmflood"
+#   colConv$hazcluster[colConv$hazEM=="ST"]<-"hazhmconv,hazhmwind,hazhmpress,hazhmflood"
+#   colConv$hazcluster[grepl("rain",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmprecip"
+#   colConv$hazcluster[grepl("wind",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmwind,hazhmpress"
+#   colConv$hazcluster[grepl("lightning",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmconv"
+#   colConv$hazcluster[colConv$hazEM=="ET"]<-"hazhmtemp"
+#   colConv$hazcluster[colConv$hazEM=="TC"]<-"hazhmwind,hazhmpress,hazhmconv,hazhmflood"
+#   colConv$hazcluster[colConv$hazEM=="TS"]<-"hazgeoother,hazhmmarine,hazhmflood"
+#   colConv$hazcluster[colConv$hazEM=="EQ"]<-"hazgeoseis"
+#   colConv$hazcluster[colConv$hazEM=="VO"]<-"hazgeovolc"
+#   colConv$hazcluster[colConv$hazEM=="WF"]<-"hazenvenvdeg"
+#   colConv$hazcluster[grepl("hail",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmprecip"
+#   colConv$hazcluster[colConv$hazEM=="LS"]<-"hazgeoseis,hazenvenvdeg,hazgeovolc,hazgeoother"
+#   colConv$hazcluster[grepl("rock",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmterr"
+#   colConv$hazcluster[grepl("mud",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmterr"
+#   colConv$hazcluster[grepl("liquefaction",colConv$Disaster.Subtype,ignore.case = T)]<-"hazgeoseis,hazgeoother"
+#   colConv$hazcluster[colConv$hazEM=="AV"]<-"hazhmterr"
+#   colConv$hazcluster[grepl("tidal",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmmarine,hazhmflood"
+#   colConv$hazcluster[grepl("wave",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmmarine,hazhmflood"
+#   colConv$hazcluster[grepl("coastal flood",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmflood,hazhmmarine"
+#   colConv$hazcluster[grepl("surge",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmmarine,hazhmflood,hazhmwind"
+#   colConv$hazcluster[grepl("hail",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmprecip"
+#   colConv$hazcluster[grepl("tropical storm",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmwind"
+#   colConv$hazcluster[grepl("convective storm",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmconv"
+#   colConv$hazcluster[grepl("cold wave",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmtemp"
+#   
+#   # Specific Hazards
+#   colConv$hazspec[colConv$hazEM=="EQ"]<-"GH0001,GH0002"
+#   colConv$hazpotlink[colConv$hazEM=="EQ"]<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
+#   
+#   # Save it out
+#   openxlsx::write.xlsx(colConv,"./Taxonomies/MostlyImpactData/EMDAT_HIP.xlsx")
+#   
+#   return(colConv)
+# }
 
-EMDATHazards<-function(EMDAT,haz="EQ"){
+EMDATHazards<-function(EMDAT){
+  EMDAT$Disaster.Subgroup%<>%str_to_lower()
+  EMDAT$Disaster.Type%<>%str_to_lower()
   EMDAT$Disaster.Subtype%<>%str_to_lower()
   # Read in the EMDAT-HIPS taxonomy conversion dataframe
-  colConv<-openxlsx::read.xlsx("./Taxonomies/MostlyImpactData/EMDAT_HIP.xlsx")%>%
-    filter(hazEM==haz)
+  colConv<-openxlsx::read.xlsx("./Taxonomies/MostlyImpactData/EMDAT_HIP.xlsx")
+  colConv$Disaster.Subgroup%<>%str_to_lower()
+  colConv$Disaster.Type%<>%str_to_lower()
   colConv$Disaster.Subtype%<>%str_to_lower()
   # Reduce the translated vector and merge
-  EMDAT%<>%left_join(colConv%>%dplyr::select(-c(hazEM)),by = "Disaster.Subtype")
+  EMDAT%<>%left_join(colConv,by = c("Disaster.Subgroup","Disaster.Type","Disaster.Subtype","Disaster.Subsubtype"),
+                     relationship="many-to-one")
   # Convert EMDAT hazard categorisation to the HIPS!
-  if(haz=="EQ"){
-    # Actual linked hazards
-    EMDAT$hazlink<-NA_character_
-    # Modify EMDAT dataframe, line by line
-    for(i in 1:nrow(colConv)){
-      # Primary associated hazard
-      ind<-!is.na(EMDAT$Associated.Dis) & EMDAT$Associated.Dis==colConv$Disaster.Subtype[i]
-      EMDAT$hazlink[ind]<-colConv$hazspec[i]
-      # Secondary associated hazard
-      ind<-!is.na(EMDAT$Associated.Dis2) & EMDAT$Associated.Dis2==colConv$Disaster.Subtype[i]
-      EMDAT$hazlink[ind]<-paste0(EMDAT$hazlink[ind],paste0(",",colConv$hazspec[i]))
-    }
-    # Potential linked hazards
-    EMDAT$hazpotlink<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
-    EMDAT$hazpotlink[EMDAT$Disaster.Subtype=="Tsunami"]<-paste0(c("GH0001","GH0002","GH0003","GH0004","GH0005","GH0007"),collapse = ",")
+  # if(haz=="EQ"){
+  #   # Actual linked hazards
+  #   EMDAT$hazlink<-NA_character_
+  #   # Modify EMDAT dataframe, line by line
+  #   for(i in 1:nrow(colConv)){
+  #     # Primary associated hazard
+  #     ind<-!is.na(EMDAT$Associated.Dis) & EMDAT$Associated.Dis==colConv$Disaster.Subtype[i]
+  #     EMDAT$hazlink[ind]<-colConv$hazspec[i]
+  #     # Secondary associated hazard
+  #     ind<-!is.na(EMDAT$Associated.Dis2) & EMDAT$Associated.Dis2==colConv$Disaster.Subtype[i]
+  #     EMDAT$hazlink[ind]<-paste0(EMDAT$hazlink[ind],paste0(",",colConv$hazspec[i]))
+  #   }
+  #   # Potential linked hazards
+  #   EMDAT$hazpotlink<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
+  #   EMDAT$hazpotlink[EMDAT$Disaster.Subtype=="Tsunami"]<-paste0(c("GH0001","GH0002","GH0003","GH0004","GH0005","GH0007"),collapse = ",")
+  EMDAT%<>%dplyr::select(-c(Disaster.Subtype,Disaster.Subsubtype,
+                            Disaster.Subgroup,Disaster.Type,Disaster.Group,
+                            Associated.Dis,Associated.Dis2))
     
-    EMDAT%<>%dplyr::select(-c(Disaster.Subtype,Disaster.Subsubtype,
-                              Disaster.Subgroup,Disaster.Type,Disaster.Group,
-                              Associated.Dis,Associated.Dis2))
-    
-  } 
+} 
   
-  # Now remove all non-relevant hazards
-  EMDAT%>%filter(!is.na(EMDAT$haztype))
-}
 
-CleanEMDAT<-function(EMDAT,haz="EQ"){
+CleanEMDAT<-function(EMDAT){
   # Replace empty values
   EMDAT[EMDAT=="Source:"]<-NA
   # Some of the column names are messed up due to presence of non-letters
@@ -179,15 +179,16 @@ CleanEMDAT<-function(EMDAT,haz="EQ"){
   # Admin level resolution
   EMDAT$spat_res<-"ADM-0"; EMDAT$spat_res[!is.na(EMDAT$Admin1.Code)]<-"ADM-1"; EMDAT$spat_res[!is.na(EMDAT$Admin2.Code)]<-"ADM-2"
   # Link to the hazard taxonomy from HIPS
-  EMDAT%<>%EMDATHazards(haz=haz)
+  EMDAT%<>%EMDATHazards()
   
   if(nrow(EMDAT)==0) return(EMDAT)
   # Some GLIDE numbers don't have an associated hazard...
-  EMDAT$Glide[!is.na(EMDAT$Glide) & nchar(EMDAT$Glide)==11]<-paste0(haz,"-",EMDAT$Glide[!is.na(EMDAT$Glide) & nchar(EMDAT$Glide)==11])
+  ind<-!is.na(EMDAT$Glide) & nchar(EMDAT$Glide)==11
+  EMDAT$Glide[ind]<-paste0(EMDAT$hazAb[ind],"-",EMDAT$Glide[ind])
   # Ensure column name aligns with imp_GCDB object
   colnames(EMDAT)[colnames(EMDAT)=="Glide"]<-"GLIDE"
   # Generate the GCDB ID
-  EMDAT$GCDB_ID<-GetGCDB_ID(EMDAT,haz=haz)
+  EMDAT$GCDB_ID<-GetGCDB_ID(EMDAT)
   # Melt the columns and apply the impact categorisation
   EMDAT%<>%ImpLabs(nomDB = "EM-DAT")
   # Now get rid of the extra columns of data
@@ -202,7 +203,7 @@ CleanEMDAT<-function(EMDAT,haz="EQ"){
   EMDAT%>%AddEmptyColImp()
 }
 
-GetEMDAT<-function(haz="EQ"){
+GetEMDAT<-function(){
   # EMDAT file
   filez<-paste0("./RawData/MostlyImpactData/EMDAT/emdat_public_",haz,"_20230526.xlsx")
   # If nothing found
@@ -210,7 +211,7 @@ GetEMDAT<-function(haz="EQ"){
   # Extract the hazard-specific EMDAT data
   EMDAT<-openxlsx::read.xlsx(filez,startRow = 7)
   # Clean it up and get it in the right format
-  EMDAT%<>%CleanEMDAT(haz=haz)
+  EMDAT%<>%CleanEMDAT()
   # Make sure that the spatial data required actually exists
   # EMDAT%<>%PairEMDATspatial(haz=haz)
   # Form a GCDB impacts object from EMDAT data (if there is a problem, return an empty impGCDB object)

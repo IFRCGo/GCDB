@@ -1,15 +1,19 @@
 source("./RCode/Setup/GetPackages.R")
 
-WDR<-openxlsx::read.xlsx("~/Downloads/WDR_country_data-2022update.xlsx",sheet = 9,startRow = 5)
+WDR<-openxlsx::read.xlsx("~/Downloads/WDR_country_data-2022update.xlsx",sheet = 9,startRow = 5)%>%
+  dplyr::select(1:5)
+skeleton<-WDR%>%filter(Year==2010)%>%dplyr::select(1:4)
+WDR%<>%rbind(skeleton%>%mutate(Year=2023))
 
 ISOS<-unique(WDR$ISO3)
 
-lhaz<-c("EQ","FL","TC","VO","DR","ET","LS","ST","WF")
+lhaz<-c("EQ","FL","TC","VO","DR","ET","LS","ST","WF","CW","HW")
 
 impies<-readRDS("./CleanedData/MostlyImpactData/AllHaz_impies.RData")
+# impies<-rbind(GetEMDAT(),GetGIDD())
 impies%<>%filter(hazAb%in%lhaz)
 # Create a variable to separate what is and isn't RC data 
-impies%<>%mutate(RCnot="Not RC",RCnot=replace(RCnot, grepl("GO-",src_db), "RC"))
+# impies%<>%mutate(RCnot="Not RC",RCnot=replace(RCnot, grepl("GO-",src_db), "RC"))
 # Add the year variable
 impies$Year<-AsYear(impies$ev_sdate)
 
@@ -18,12 +22,11 @@ taxies<-openxlsx::read.xlsx("./ImpactInformationProfiles.xlsx")
 impies%<>%filter(Year>=2010)
 
 sum(unique(impies$ISO3)%in%WDR$ISO3)
-sum(WDR$ISO3%in%unique(impies$ISO3))
 
 convIso3Country(unique(WDR$ISO3[!WDR$ISO3%in%impies$ISO3]))
 
-climvars<-c("Storm","Flood","Drought","Wildfire","ExtrTemp")
-geovars<-c("Earthquake","Volcano","Landslide")
+climvars<-c("Storm","Flood","Drought","Wildfire","ExtrTemp","LandslideH")
+geovars<-c("Earthquake","Volcano","LandslideG")
 
 # Extract EM-DAT deaths and IDMC displacements
 # Make an average of the number of events per country to produce the incidence, per year
@@ -32,7 +35,7 @@ geovars<-c("Earthquake","Volcano","Landslide")
 # 
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
-#%%%%%%%%%%%%%%%%%%%%%%%%%% INCIDENTS %%%%%%%%%%%%%%%%%%%%%%%%%%%#
+#%%%%%%%%%%%%%%%%%%%%%%%%%% INCIDENCE %%%%%%%%%%%%%%%%%%%%%%%%%%%#
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 
 EMFull<-impies%>%filter(Year>=2010 & src_db=="EM-DAT")%>%
@@ -40,13 +43,14 @@ EMFull<-impies%>%filter(Year>=2010 & src_db=="EM-DAT")%>%
   summarise(ALL_CLIM=sum(haztype=="haztypehydromet"),
             Storm=sum(hazAb%in%c("ST","TC")),
             Flood=sum(hazAb=="FL"),
+            LandslideH=sum(hazAb=="LS" & haztype=="haztypehydromet"),
             Drought=sum(hazAb=="DR"),
             Wildfire=sum(hazAb=="WF"),
             ExtrTemp=sum(hazAb%in%c("ET","CW","HW")),
             ALL_GEO=sum(haztype=="haztypegeo"),
             Earthquake=sum(hazAb=="EQ"),
             Volcano=sum(hazAb=="VC"),
-            Landslide=sum(hazAb=="LS"),
+            LandslideG=sum(hazAb=="LS" & haztype=="haztypegeohaz"),
             ALL=sum(haztype%in%c("haztypehydromet","haztypegeo")),
             .groups="drop")
 EMFull<-WDR%>%dplyr::select(1:5)%>%left_join(EMFull)
@@ -62,13 +66,14 @@ HEFull<-impies%>%filter(Year>=2018 & src_db=="HELIX")%>%
   summarise(ALL_CLIM=sum(haztype=="haztypehydromet"),
             Storm=sum(hazAb%in%c("ST","TC")),
             Flood=sum(hazAb=="FL"),
+            LandslideH=sum(hazAb=="LS" & haztype=="haztypehydromet"),
             Drought=sum(hazAb=="DR"),
             Wildfire=sum(hazAb=="WF"),
             ExtrTemp=sum(hazAb%in%c("ET","CW","HW")),
             ALL_GEO=sum(haztype=="haztypegeo"),
             Earthquake=sum(hazAb=="EQ"),
             Volcano=sum(hazAb=="VC"),
-            Landslide=sum(hazAb=="LS"),
+            LandslideG=sum(hazAb=="LS" & haztype=="haztypegeo"),
             ALL=sum(haztype%in%c("haztypehydromet","haztypegeo")),
             .groups="drop")
 HEFull<-WDR%>%dplyr::select(1:5)%>%left_join(HEFull)
@@ -81,13 +86,44 @@ HEFull$ALL<-HEFull$ALL_CLIM+HEFull$ALL_GEO
 
 IncFull<-EMFull
 # Only do the averaging for when IDMC started recording lots of events
-inds<-IncFull$Year>2018
+inds<-IncFull$Year>=2018 & IncFull$Year<2023
   
 IncFull[inds,6:ncol(IncFull)]<-do.call(cbind,lapply(6:ncol(IncFull),function(i) {
-  ceiling(rowMeans(cbind(EMFull[inds,i],HEFull[inds,i]),na.rm = T))
+  ceiling(apply(cbind(EMFull[inds,i],HEFull[inds,i]),1,max,na.rm = T))
 }))
 
-View(IncFull)
+RegIncFull<-IncFull%>%group_by(Year,REGION_IFRC)%>%
+  summarise(ALL_CLIM=sum(ALL_CLIM),
+            Storm=sum(Storm),
+            Flood=sum(Flood),
+            LandslideH=sum(LandslideH),
+            Drought=sum(Drought),
+            Wildfire=sum(Wildfire),
+            ExtrTemp=sum(ExtrTemp),
+            ALL_GEO=sum(ALL_GEO),
+            Earthquake=sum(Earthquake),
+            Volcano=sum(Volcano),
+            LandslideG=sum(LandslideG),
+            ALL=sum(ALL),
+            .groups="drop")
+
+global<-RegIncFull%>%group_by(Year)%>%
+  summarise(ALL_CLIM=sum(ALL_CLIM),
+            Storm=sum(Storm),
+            Flood=sum(Flood),
+            LandslideH=sum(LandslideH),
+            Drought=sum(Drought),
+            Wildfire=sum(Wildfire),
+            ExtrTemp=sum(ExtrTemp),
+            ALL_GEO=sum(ALL_GEO),
+            Earthquake=sum(Earthquake),
+            Volcano=sum(Volcano),
+            LandslideG=sum(LandslideG),
+            ALL=sum(ALL),
+            .groups="drop")%>%
+  mutate(REGION_IFRC="Global")
+
+RegIncFull%<>%rbind(global)%>%arrange(Year)
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 #%%%%%%%%%%%%%%%%%%%%%%%%%% FATALITIES %%%%%%%%%%%%%%%%%%%%%%%%%%#
@@ -99,17 +135,17 @@ FatFull<-impies%>%filter(Year>=2010 & src_db%in%c("EM-DAT","HELIX") &
   summarise(ALL_CLIM=sum(impvalue[haztype=="haztypehydromet"]),
             Storm=sum(impvalue[hazAb%in%c("ST","TC")]),
             Flood=sum(impvalue[hazAb=="FL"]),
+            LandslideH=sum(impvalue[hazAb=="LS" & haztype=="haztypehydromet"]),
             Drought=sum(impvalue[hazAb=="DR"]),
             Wildfire=sum(impvalue[hazAb=="WF"]),
             ExtrTemp=sum(impvalue[hazAb%in%c("ET","CW","HW")]),
             ALL_GEO=sum(impvalue[haztype=="haztypegeo"]),
             Earthquake=sum(impvalue[hazAb=="EQ"]),
             Volcano=sum(impvalue[hazAb=="VC"]),
-            Landslide=sum(impvalue[hazAb=="LS"]),
+            LandslideG=sum(impvalue[hazAb=="LS" & haztype=="haztypegeo"]),
             ALL=sum(impvalue[haztype%in%c("haztypehydromet","haztypegeo")]),
             .groups="drop")
 FatFull<-WDR%>%dplyr::select(1:5)%>%left_join(FatFull)
-View(FatFull)
 
 FatFull[is.na(FatFull)]<-0
 
@@ -127,13 +163,14 @@ IDPFull<-impies%>%filter(Year>=2018 & src_db=="HELIX" &
   summarise(ALL_CLIM=sum(impvalue[haztype=="haztypehydromet"]),
             Storm=sum(impvalue[hazAb%in%c("ST","TC")]),
             Flood=sum(impvalue[hazAb=="FL"]),
+            LandslideH=sum(impvalue[hazAb=="LS" & haztype=="haztypehydromet"]),
             Drought=sum(impvalue[hazAb=="DR"]),
             Wildfire=sum(impvalue[hazAb=="WF"]),
             ExtrTemp=sum(impvalue[hazAb%in%c("ET","CW","HW")]),
             ALL_GEO=sum(impvalue[haztype=="haztypegeo"]),
             Earthquake=sum(impvalue[hazAb=="EQ"]),
             Volcano=sum(impvalue[hazAb=="VC"]),
-            Landslide=sum(impvalue[hazAb=="LS"]),
+            LandslideG=sum(impvalue[hazAb=="LS" & haztype=="haztypegeo"]),
             ALL=sum(impvalue[haztype%in%c("haztypehydromet","haztypegeo")]),
             .groups="drop")
 IDPFull<-WDR%>%dplyr::select(1:5)%>%left_join(IDPFull)
@@ -157,13 +194,14 @@ AFFFull<-impies%>%filter(Year>=2010 & src_db=="EM-DAT" &
   summarise(ALL_CLIM=sum(impvalue[haztype=="haztypehydromet"]),
             Storm=sum(impvalue[hazAb%in%c("ST","TC")]),
             Flood=sum(impvalue[hazAb=="FL"]),
+            LandslideH=sum(impvalue[hazAb=="LS" & haztype=="haztypehydromet"]),
             Drought=sum(impvalue[hazAb=="DR"]),
             Wildfire=sum(impvalue[hazAb=="WF"]),
             ExtrTemp=sum(impvalue[hazAb%in%c("ET","CW","HW")]),
             ALL_GEO=sum(impvalue[haztype=="haztypegeo"]),
             Earthquake=sum(impvalue[hazAb=="EQ"]),
             Volcano=sum(impvalue[hazAb=="VC"]),
-            Landslide=sum(impvalue[hazAb=="LS"]),
+            LandslideG=sum(impvalue[hazAb=="LS" & haztype=="haztypegeo"]),
             ALL=sum(impvalue[haztype%in%c("haztypehydromet","haztypegeo")]),
             .groups="drop")
 AFFFull<-WDR%>%dplyr::select(1:5)%>%left_join(AFFFull)
@@ -184,13 +222,14 @@ COSFull<-impies%>%filter(Year>=2010 & src_db=="EM-DAT" &
   summarise(ALL_CLIM=sum(impvalue[haztype=="haztypehydromet"]),
             Storm=sum(impvalue[hazAb%in%c("ST","TC")]),
             Flood=sum(impvalue[hazAb=="FL"]),
+            LandslideH=sum(impvalue[hazAb=="LS" & haztype=="haztypehydromet"]),
             Drought=sum(impvalue[hazAb=="DR"]),
             Wildfire=sum(impvalue[hazAb=="WF"]),
             ExtrTemp=sum(impvalue[hazAb%in%c("ET","CW","HW")]),
             ALL_GEO=sum(impvalue[haztype=="haztypegeo"]),
             Earthquake=sum(impvalue[hazAb=="EQ"]),
             Volcano=sum(impvalue[hazAb=="VC"]),
-            Landslide=sum(impvalue[hazAb=="LS"]),
+            LandslideG=sum(impvalue[hazAb=="LS" & haztype=="haztypegeo"]),
             ALL=sum(impvalue[haztype%in%c("haztypehydromet","haztypegeo")]),
             .groups="drop")
 COSFull<-WDR%>%dplyr::select(1:5)%>%left_join(COSFull)
@@ -204,6 +243,7 @@ COSFull$ALL<-COSFull$ALL_CLIM+COSFull$ALL_GEO
 #%%%%%%%%%%%%%%%%%%%%%%%%% WRITE-OUT %%%%%%%%%%%%%%%%%%%%%%%%%%#
 
 openxlsx::write.xlsx(IncFull,"./Analysis_Results/Kirsten/Indicence.xlsx")
+openxlsx::write.xlsx(RegIncFull,"./Analysis_Results/Kirsten/RegionalIndicence.xlsx")
 openxlsx::write.xlsx(FatFull,"./Analysis_Results/Kirsten/Fatalities.xlsx")
 openxlsx::write.xlsx(IDPFull,"./Analysis_Results/Kirsten/IDPs.xlsx")
 openxlsx::write.xlsx(AFFFull,"./Analysis_Results/Kirsten/Affected.xlsx")

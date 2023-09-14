@@ -4,87 +4,90 @@ ExtractGIDD<-function(){
   # Create the folder for the data
   dir.create(IDMCfolder,showWarnings = F,recursive = T); 
   # Download the data directly from IDMC
-  download.file("https://helix-tools-api.idmcdb.org/external-api/gidd/disasters/disaster-export/?iso3__in=&start_year=2000&end_year=2022&hazard_type__in=&client_id=IDMCWSHSOLO009&release_environment=RELEASE",
-                paste0(IDMCfolder,"GIDD-IDMC.xlsx"))
-  return(T)
+  rety<-tryCatch(download.file("https://helix-tools-api.idmcdb.org/external-api/gidd/disasters/disaster-export/?iso3__in=&start_year=2000&end_year=2022&hazard_type__in=&client_id=IDMCWSHSOLO009&release_environment=RELEASE",
+                paste0(IDMCfolder,"GIDD-IDMC.xlsx")),error=function(e) NA)
+  !is.na(rety)
 }
 
 
-PostModGIDD<-function(colConv){
-  # hazard Types
-  colConv$haztype[colConv$hazG%in%c("FL","ST","TC","DR","ET","SN","CW","HW","SS")]<-"haztypehydromet"
-  colConv$haztype[colConv$hazG%in%c("EQ","LS","TS","VO","AV")]<-"haztypegeohaz"
-  colConv$haztype[colConv$hazG=="WF"]<-"haztypeenviron"
-  colConv$haztype[colConv$hazG=="EP"]<-"haztypebio"
-  
-  # Hazard clusters
-  colConv$hazcluster[colConv$hazG=="DR"]<-"hazhmprecip,hazhmtemp"
-  colConv$hazcluster[colConv$hazG=="FL"]<-"hazhmflood"
-  colConv$hazcluster[colConv$hazG=="ST"]<-"hazhmconv,hazhmwind,hazhmpress,hazhmflood"
-  colConv$hazcluster[grepl("rain",colConv$HazardSubType,ignore.case = T)]<-"hazhmprecip"
-  colConv$hazcluster[grepl("wind",colConv$HazardSubType,ignore.case = T)]<-"hazhmwind,hazhmpress"
-  colConv$hazcluster[grepl("lightning",colConv$HazardSubType,ignore.case = T)]<-"hazhmconv"
-  colConv$hazcluster[colConv$hazG=="ET"]<-"hazhmtemp"
-  colConv$hazcluster[colConv$hazG=="TC"]<-"hazhmwind,hazhmpress,hazhmconv,hazhmflood"
-  colConv$hazcluster[colConv$hazG=="TS"]<-"hazgeoother,hazhmmarine,hazhmflood"
-  colConv$hazcluster[colConv$hazG=="EQ"]<-"hazgeoseis"
-  colConv$hazcluster[colConv$hazG=="VO"]<-"hazgeovolc"
-  colConv$hazcluster[colConv$hazG=="WF"]<-"hazenvenvdeg"
-  colConv$hazcluster[grepl("hail",colConv$HazardSubType,ignore.case = T)]<-"hazhmprecip"
-  colConv$hazcluster[colConv$hazG=="LS"]<-"hazgeoseis,hazenvenvdeg,hazgeovolc,hazgeoother"
-  colConv$hazcluster[grepl("rock",colConv$HazardSubType,ignore.case = T)]<-"hazhmterr"
-  colConv$hazcluster[grepl("mud",colConv$HazardSubType,ignore.case = T)]<-"hazhmterr"
-  colConv$hazcluster[grepl("liquefaction",colConv$HazardSubType,ignore.case = T)]<-"hazgeoseis,hazgeoother"
-  colConv$hazcluster[colConv$hazG=="AV"]<-"hazhmterr"
-  colConv$hazcluster[grepl("tidal",colConv$HazardSubType,ignore.case = T)]<-"hazhmmarine,hazhmflood"
-  colConv$hazcluster[grepl("coastal flood",colConv$HazardSubType,ignore.case = T)]<-"hazhmflood,hazhmmarine"
-  colConv$hazcluster[grepl("wave",colConv$HazardSubType,ignore.case = T)]<-"hazhmmarine,hazhmflood"
-  colConv$hazcluster[grepl("surge",colConv$HazardSubType,ignore.case = T)]<-"hazhmmarine,hazhmflood,hazhmwind"
-  colConv$hazcluster[grepl("hail",colConv$HazardSubType,ignore.case = T)]<-"hazhmprecip"
-  colConv$hazcluster[grepl("tropical storm",colConv$HazardSubType,ignore.case = T)]<-"hazhmwind"
-  colConv$hazcluster[grepl("convective storm",colConv$HazardSubType,ignore.case = T)]<-"hazhmconv"
-  colConv$hazcluster[grepl("cold wave",colConv$HazardSubType,ignore.case = T)]<-"hazhmtemp"
-  
-  # Specific Hazards
-  colConv$hazspec[colConv$hazG=="EQ"]<-"GH0001,GH0002"
-  colConv$hazpotlink[colConv$hazG=="EQ"]<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
-  
-  # Save it out
-  openxlsx::write.xlsx(colConv,"./Taxonomies/MostlyImpactData/GIDD-HIP.xlsx")
-  
-  return(colConv)
-}
+# PostModGIDD<-function(colConv){
+#   # hazard Types
+#   colConv$haztype[colConv$hazG%in%c("FL","ST","TC","DR","ET","SN","CW","HW","SS")]<-"haztypehydromet"
+#   colConv$haztype[colConv$hazG%in%c("EQ","LS","TS","VO","AV")]<-"haztypegeohaz"
+#   colConv$haztype[colConv$hazG=="WF"]<-"haztypeenviron"
+#   colConv$haztype[colConv$hazG=="EP"]<-"haztypebio"
+#   
+#   # Hazard clusters
+#   colConv$hazcluster[colConv$hazG=="DR"]<-"hazhmprecip,hazhmtemp"
+#   colConv$hazcluster[colConv$hazG=="FL"]<-"hazhmflood"
+#   colConv$hazcluster[colConv$hazG=="ST"]<-"hazhmconv,hazhmwind,hazhmpress,hazhmflood"
+#   colConv$hazcluster[grepl("rain",colConv$HazardSubType,ignore.case = T)]<-"hazhmprecip"
+#   colConv$hazcluster[grepl("wind",colConv$HazardSubType,ignore.case = T)]<-"hazhmwind,hazhmpress"
+#   colConv$hazcluster[grepl("lightning",colConv$HazardSubType,ignore.case = T)]<-"hazhmconv"
+#   colConv$hazcluster[colConv$hazG=="ET"]<-"hazhmtemp"
+#   colConv$hazcluster[colConv$hazG=="TC"]<-"hazhmwind,hazhmpress,hazhmconv,hazhmflood"
+#   colConv$hazcluster[colConv$hazG=="TS"]<-"hazgeoother,hazhmmarine,hazhmflood"
+#   colConv$hazcluster[colConv$hazG=="EQ"]<-"hazgeoseis"
+#   colConv$hazcluster[colConv$hazG=="VO"]<-"hazgeovolc"
+#   colConv$hazcluster[colConv$hazG=="WF"]<-"hazenvenvdeg"
+#   colConv$hazcluster[grepl("hail",colConv$HazardSubType,ignore.case = T)]<-"hazhmprecip"
+#   colConv$hazcluster[colConv$hazG=="LS"]<-"hazgeoseis,hazenvenvdeg,hazgeovolc,hazgeoother"
+#   colConv$hazcluster[grepl("rock",colConv$HazardSubType,ignore.case = T)]<-"hazhmterr"
+#   colConv$hazcluster[grepl("mud",colConv$HazardSubType,ignore.case = T)]<-"hazhmterr"
+#   colConv$hazcluster[grepl("liquefaction",colConv$HazardSubType,ignore.case = T)]<-"hazgeoseis,hazgeoother"
+#   colConv$hazcluster[colConv$hazG=="AV"]<-"hazhmterr"
+#   colConv$hazcluster[grepl("tidal",colConv$HazardSubType,ignore.case = T)]<-"hazhmmarine,hazhmflood"
+#   colConv$hazcluster[grepl("coastal flood",colConv$HazardSubType,ignore.case = T)]<-"hazhmflood,hazhmmarine"
+#   colConv$hazcluster[grepl("wave",colConv$HazardSubType,ignore.case = T)]<-"hazhmmarine,hazhmflood"
+#   colConv$hazcluster[grepl("surge",colConv$HazardSubType,ignore.case = T)]<-"hazhmmarine,hazhmflood,hazhmwind"
+#   colConv$hazcluster[grepl("hail",colConv$HazardSubType,ignore.case = T)]<-"hazhmprecip"
+#   colConv$hazcluster[grepl("tropical storm",colConv$HazardSubType,ignore.case = T)]<-"hazhmwind"
+#   colConv$hazcluster[grepl("convective storm",colConv$HazardSubType,ignore.case = T)]<-"hazhmconv"
+#   colConv$hazcluster[grepl("cold wave",colConv$HazardSubType,ignore.case = T)]<-"hazhmtemp"
+#   
+#   # Specific Hazards
+#   colConv$hazspec[colConv$hazG=="EQ"]<-"GH0001,GH0002"
+#   colConv$hazpotlink[colConv$hazG=="EQ"]<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
+#   
+#   # Save it out
+#   openxlsx::write.xlsx(colConv,"./Taxonomies/MostlyImpactData/GIDD-HIP.xlsx")
+#   
+#   return(colConv)
+# }
 
-GIDDHazards<-function(GIDD,haz="EQ"){
+GIDDHazards<-function(GIDD){
+  GIDD$HazardCategory%<>%str_to_lower()
+  GIDD$HazardType%<>%str_to_lower()
   GIDD$HazardSubType%<>%str_to_lower()
   # Read in the EMDAT-HIPS taxonomy conversion dataframe
-  colConv<-openxlsx::read.xlsx("./Taxonomies/MostlyImpactData/GIDD-HIP.xlsx")%>%
-    filter(hazG==haz)
+  colConv<-openxlsx::read.xlsx("./Taxonomies/MostlyImpactData/GIDD-HIP.xlsx")
+  colConv$HazardCategory%<>%str_to_lower()
+  colConv$HazardType%<>%str_to_lower()
   colConv$HazardSubType%<>%str_to_lower()
   # Reduce the translated vector and merge
-  GIDD%<>%left_join(colConv%>%dplyr::select(-c(hazG)),by = "HazardSubType")%>%
-    filter(!is.na(haztype))
-  
-  if(haz=="EQ"){
-    GIDD$hazpotlink<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
-  } 
+  GIDD%<>%left_join(colConv,by = c("HazardCategory","HazardType","HazardSubType"),
+                    relationship="many-to-one")%>%
+    dplyr::select(-c("HazardCategory","HazardType","HazardSubType"))
+  # if(haz=="EQ"){
+  #   GIDD$hazpotlink<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
+  # } 
   
   return(GIDD)
 }
 
 
-GetGIDD<-function(haz="EQ"){
+GetGIDD<-function(){
   # File storage
   filez<-paste0(IDMCfolder,"GIDD-IDMC.xlsx")
   # If it doesn't exist, extract it
-  if(!file.exists(filez)) ExtractGIDD()
+  ExtractGIDD()
   # Load data
   GIDD<-readxl::read_xlsx(filez)
   # Change the column names to something more user friendly
   colnames(GIDD)<-str_remove_all(str_split(str_split(colnames(GIDD),"\\(",simplify = T)[,1],"\\/",simplify = T)[,1]," ")
   colnames(GIDD)[7]<-paste0(colnames(GIDD)[7],"Raw")
   # Hazard taxonomy - HIPS
-  GIDD%<>%GIDDHazards(haz=haz)
+  GIDD%<>%GIDDHazards()
   # Modify date names
   GIDD$imp_sdate<-GIDD$imp_fdate<-GIDD$ev_sdate<-GIDD$ev_fdate<-GIDD$unitdate<-as.character(GIDD$DateofEvent)
   # Rename the event name
@@ -93,7 +96,7 @@ GetGIDD<-function(haz="EQ"){
   GIDD%<>%mutate(Continent=convIso3Continent(ISO3))%>%
     filter(!is.na(Continent))
   # Generate GCDB event ID
-  GIDD$GCDB_ID<-GetGCDB_ID(GIDD,haz=haz)
+  GIDD$GCDB_ID<-GetGCDB_ID(GIDD)
   # Add some of the extra details that are Desinventar-specific
   GIDD$est_type<-"Primary"
   GIDD$src_URL<-"https://helix-tools-api.idmcdb.org/external-api/gidd/disasters/disaster-export/"
