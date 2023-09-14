@@ -101,7 +101,7 @@ GetGIDD<-function(){
   GIDD$est_type<-"Primary"
   GIDD$src_URL<-"https://helix-tools-api.idmcdb.org/external-api/gidd/disasters/disaster-export/"
   GIDD$spat_srcorg<-GIDD$src_org<-"Internal Displacement Monitoring Centre (IDMC)"
-  GIDD$src_db<-"HELIX"
+  GIDD$src_db<-"GIDD"
   GIDD$src_orgtype<-"orgtypengo"
   GIDD$spat_type<-"Polygon"
   GIDD$spat_ID<-NA_character_

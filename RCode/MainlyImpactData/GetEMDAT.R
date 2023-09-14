@@ -136,6 +136,8 @@ CleanEMDAT<-function(EMDAT){
       "Insured.Damages","Insured.Damages.Adjusted","Total.Damages","Total.Damages.Adjusted")
   # Also, make sure to convert to the full value in US dollars
   for(i in c(22,40:45)) EMDAT[,i]<-1000*as.numeric(EMDAT[,i])
+  # For dates with no start day, make it the middle of the month
+  EMDAT$Start.Day[is.na(EMDAT$Start.Day)]<-15
   # Make sure the start date is 2 characters
   EMDAT$Start.Day[nchar(EMDAT$Start.Day)==1 & !is.na(EMDAT$Start.Day)]<-
     paste0("0",EMDAT$Start.Day[nchar(EMDAT$Start.Day)==1 & !is.na(EMDAT$Start.Day)])
@@ -205,7 +207,8 @@ CleanEMDAT<-function(EMDAT){
 
 GetEMDAT<-function(){
   # EMDAT file
-  filez<-paste0("./RawData/MostlyImpactData/EMDAT/emdat_public_",haz,"_20230526.xlsx")
+  # filez<-paste0("./RawData/MostlyImpactData/EMDAT/emdat_public_",haz,"_20230526.xlsx")
+  filez<-paste0("./CleanedData/MostlyImpactData/EMDAT/emdat_public_2023_09_14_query_uid-706djW.xlsx")
   # If nothing found
   if(!file.exists(filez)) return(data.frame())
   # Extract the hazard-specific EMDAT data

@@ -38,9 +38,9 @@ GetDessie<-function(iso3,forcer=F){
   # Don't waste time if the file already exists
   if(file.exists(paste0("./RawData/MostlyImpactData/Desinventar/",iso3,"/DI_export_",iso3,".xml")) & !forcer) return(T)
   # Temporary location to store the zip file
-  temp<-"./RawData/tmp/tmp.zip"
+  temp<-paste0("./RawData/tmp/tmp_",iso3,".zip")
   # Set the maximum timeout limit
-  options(timeout = max(500, getOption("timeout")))
+  options(timeout = 60)#  options(timeout = max(10, getOption("timeout")))
   # Download the raster file to the location 'temp'
   download.file(paste0(desbaseurl,iso3,".zip"),temp)
   # Output location: one folder per country, to house everything
@@ -422,32 +422,37 @@ ExtADMDev<-function(xmlly,iso3){
   return(ADMout)
 }
 
-ReadDessie<-function(iso3){
+ReadDessie<-function(iso3, forcer=F){
   iso3%<>%str_to_lower()
   # Temporary save out location
   savout<-paste0("./RawData/MostlyImpactData/Desinventar/",iso3,"/DI_export_",iso3,"_xml.RData")
   # Extract the aggregated data
-  if(file.exists(savout)) {
-    xmlly<-readRDS(savout)
+  if(file.exists(savout) & !forcer) {
+    # Keep only the important columns
+    impacts<-ExtImpDev(readRDS(savout))
   } else {
     xmlly<-xml2::as_list(xml2::read_xml(paste0("./RawData/MostlyImpactData/Desinventar/",iso3,"/DI_export_",iso3,".xml")))
     saveRDS(xmlly,savout)
+    # Keep only the important columns
+    impacts<-ExtImpDev(xmlly)
+    # Store it for later
+    saveRDS(impacts,savout)
   }
-  # Keep only the important columns
-  impacts<-ExtImpDev(xmlly)
   # Create a folder for the results
   dir.create(paste0("./CleanedData/MostlyImpactData/Desinventar/",iso3),showWarnings = F,recursive = T)
   # Save out to be read in later on
   openxlsx::write.xlsx(impacts,paste0("./CleanedData/MostlyImpactData/Desinventar/",iso3,"/",iso3,".xlsx"))
-  # Extract the admin boundary data
-  ADMout<-ExtADMDev(xmlly,iso3)
-  # Create a folder for the results
-  dir.create(paste0("./CleanedData/SocioPoliticalData/Desinventar/",iso3),showWarnings = F,recursive = T)
-  # Save out to be read in later on
-  rgdal::writeOGR(ADMout,
-                  dsn=paste0("./CleanedData/SocioPoliticalData/Desinventar/",iso3,"/ADM_",iso3,".geojson"),
-                  layer = paste0("/ADM_",iso3),
-                  driver = "GeoJSON",overwrite_layer = T)
+  # If needed, extract the admin boundary data
+  if(!file.exists(paste0("./CleanedData/SocioPoliticalData/Desinventar/",iso3,"/ADM_",iso3,".geojson"))){
+    ADMout<-ExtADMDev(xmlly,iso3)
+    # Create a folder for the results
+    dir.create(paste0("./CleanedData/SocioPoliticalData/Desinventar/",iso3),showWarnings = F,recursive = T)
+    # Save out to be read in later on
+    rgdal::writeOGR(ADMout,
+                    dsn=paste0("./CleanedData/SocioPoliticalData/Desinventar/",iso3,"/ADM_",iso3,".geojson"),
+                    layer = paste0("/ADM_",iso3),
+                    driver = "GeoJSON",overwrite_layer = T)
+  }
   # Output the safeword... TRUE!
   return(T)
   
@@ -464,7 +469,7 @@ WrangleDessie<-function(iso3){
   return(T)
 }
 
-DesHazards<-function(Dessie,haz="EQ"){
+DesHazards<-function(Dessie){
   # Extract the list of translated Desinventar hazards
   colConv<-openxlsx::read.xlsx("./Taxonomies/MostlyImpactData/Desinventar_HIP.xlsx")
   # Make sure to avoid missing out!
@@ -472,11 +477,11 @@ DesHazards<-function(Dessie,haz="EQ"){
   # Also check for duplicates
   colConv%<>%dplyr::select(-ISO3)%>%distinct()
   # Extract the names of the disasters
-  haznams<-colConv$event[!is.na(colConv$haz) & colConv$haz==haz]
+  haznams<-colConv$event[!is.na(colConv$hazAb)]
   # Now remove all non-relevant hazards
   Dessie%<>%mutate(event=str_to_lower(event))%>%filter(event%in%haznams)
   # Reduce the translated vector and merge
-  Dessie%<>%left_join(colConv%>%dplyr::select(-c(event_en,haz)),by = "event")
+  Dessie%<>%left_join(colConv%>%dplyr::select(-c(event_en)),by = "event")
   # Remove all irrelevant hazards
   Dessie%<>%filter(!is.na(haztype))
   
@@ -592,7 +597,7 @@ PostModTransies<-function(colConv){
   return(colConv)
 }
 
-Des2impGCDB<-function(Dessie,haz="EQ"){
+Des2impGCDB<-function(Dessie){
   # Modify date names
   Dessie$imp_sdate<-Dessie$imp_fdate<-Dessie$ev_sdate<-Dessie$ev_fdate<-Dessie$unitdate<-Dessie$date
   # Any event without a date are automatically removed
@@ -600,14 +605,14 @@ Des2impGCDB<-function(Dessie,haz="EQ"){
   # Make sure we can properly match them both
   Dessie$event%<>%str_to_lower()
   # Extract only the relevant hazards
-  Dessie%<>%DesHazards(haz=haz)
+  Dessie%<>%DesHazards()
   # Rename the event name
   colnames(Dessie)[colnames(Dessie)=="event"]<-"ev_name_orig"
   # Add the continent, then remove the unnecesary layers
   Dessie%<>%mutate(Continent=convIso3Continent(ISO3))%>%
     dplyr::select(-c(date,level0,name0))%>%filter(!is.na(Continent))
   # Generate GCDB event ID
-  Dessie$GCDB_ID<-GetGCDB_ID(Dessie,haz=haz)
+  Dessie$GCDB_ID<-GetGCDB_ID(Dessie)
   # Add some of the extra details that are Desinventar-specific
   Dessie$est_type<-"Primary"
   Dessie$src_URL<-paste0(desbaseurl,Dessie$ISO3,".zip")
@@ -636,7 +641,7 @@ Des2impGCDB<-function(Dessie,haz="EQ"){
   Dessie%>%AddEmptyColImp()
 }
 
-GetDesinventar<-function(haz="EQ"){
+GetDesinventar<-function(){
   # Find the impact files
   filez<-list.files("./CleanedData/MostlyImpactData/Desinventar/",
                     pattern = ".xlsx",
@@ -659,7 +664,7 @@ GetDesinventar<-function(haz="EQ"){
     return(out)
   }))
   # Get in impGCDB format
-  impies<-Des2impGCDB(Dessie,haz=haz)
+  impies<-Des2impGCDB(Dessie)
   # The Desinventar database has many entries per single event, so we take the most recent estimate
   impies<-impies[nrow(impies):1,]%>%filter(impvalue>0)
   # Find the duplicated elements
@@ -685,6 +690,16 @@ GetDesinventar<-function(haz="EQ"){
 # },simplify = T)
 
 # chk<-sapply(DesIsos, function(is) WrangleDessie(is),simplify = T)
+# chk<-mclapply(DesIsos, function(is) WrangleDessie(str_to_lower(is)),mc.cores = 10)
+# chk<-unlist(mclapply(unique(na.omit(impies$ISO3)), 
+#               function(is) tryCatch(GetDessie(is,forcer=T),
+#                                     error=function(e) F),
+#               mc.cores = 10))
+# 
+# chk<-mclapply(unique(na.omit(impies$ISO3))[chk], 
+#               function(is) tryCatch(ReadDessie(is,forcer=T),
+#                                     error=function(e) F),
+#               mc.cores = 10)
 
 # 
 

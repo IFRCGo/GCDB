@@ -2,15 +2,15 @@
 source("./RCode/Setup/GetPackages.R")
 
 # Extract the impact databases, focussing specifically on the provided hazard
-GetImpacts<-function(haz="EQ"){
+GetImpacts<-function(){
   # Desinventar
-  impies<-GetDesinventar(haz=haz)
+  impies<-GetDesinventar()
   # EM-DAT
-  impies%<>%rbind(GetEMDAT(haz=haz))
+  impies %<>% rbind(GetEMDAT())
   # GIDD (IDMC)
-  impies%<>%rbind(GetGIDD(haz=haz))
+  impies%<>%rbind(GetGIDD())
   # IFRC GO
-  impies%<>%rbind(GetGO(token=token)%>%filter(hazAb==haz))
+  impies%<>%rbind(GetGO())
   # GLIDE
   # impies$GLIDE[is.na(impies$GLIDE)]<-GetGLIDEnum(impies[is.na(impies$GLIDE)],"EQ",numonly=T)
   
@@ -84,7 +84,7 @@ GO_GCDB<-function(lhaz,cores=1){
   
 }
 
-lhaz<-c("EQ","FL","TC","VO","DR","ET","LS","ST","WF")
+lhaz<-c("EQ","FL","TC","VO","DR","ET","LS","ST","WF","HW","CW")
 
 GatherAllImps<-function(lhaz){
   do.call(rbind,lapply(lhaz,function(haz) {
