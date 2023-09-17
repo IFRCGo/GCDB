@@ -4,20 +4,23 @@ negexp <-function(x) -exp(x)
 logneg <-function(x) log(-x)
 
 AsYear<-function(date,red=F,limit=T){
-  date%<>%as.Date()
-  if(!red) year<-as.numeric(format(date,"%Y"))
-  else year<-as.numeric(format(date,"%y"))
-  
-  # if(limit&any(year>as.numeric(format(Sys.Date(),"%Y")))) 
-  #   year[year>as.numeric(format(Sys.Date(),"%Y"))]<-AsYear(Sys.Date())
-  
-  return(year)
+  str_split(as.character(date),pattern = "-",simplify = T)[,1]%>%as.integer()%>%return()
+  # date%<>%as.Date(optional=T)
+  # if(!red) year<-as.numeric(format(date,"%Y"))
+  # else year<-as.numeric(format(date,"%y"))
+  # 
+  # # if(limit&any(year>as.numeric(format(Sys.Date(),"%Y")))) 
+  # #   year[year>as.numeric(format(Sys.Date(),"%Y"))]<-AsYear(Sys.Date())
+  # 
+  # return(year)
 }
 AsMonth<-function(date){
-  return(as.numeric(format(as.Date(date),"%m")))
+  str_split(as.character(date),pattern = "-",simplify = T)[,2]%>%as.integer()%>%return()
+  # return(as.numeric(format(as.Date(date),"%m")))
 }
 AsDay<-function(date){
-  return(as.numeric(format(as.Date(date),"%d")))
+  str_split(as.character(date),pattern = "-",simplify = T)[,3]%>%as.integer()%>%return()
+  # return(as.numeric(format(as.Date(date),"%d")))
 }
 
 # Used to save output files by date and time for model validation comparison in time

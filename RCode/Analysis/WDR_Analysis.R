@@ -2,8 +2,8 @@ source("./RCode/Setup/GetPackages.R")
 
 WDR<-openxlsx::read.xlsx("./Analysis_Results/Kirsten/WDR_country_data-2023_HP_full.xlsx",sheet = 9,startRow = 5)%>%
   dplyr::select(1:5)
-skeleton<-WDR%>%filter(Year==2010)%>%dplyr::select(1:4)
-WDR%<>%rbind(skeleton%>%mutate(Year=2023))
+# skeleton<-WDR%>%filter(Year==2010)%>%dplyr::select(1:4)
+# WDR%<>%rbind(skeleton%>%mutate(Year=2023))
 
 ISOS<-unique(WDR$ISO3)
 
@@ -11,15 +11,19 @@ lhaz<-c("EQ","FL","TC","VO","DR","ET","LS","ST","WF","CW","HW")
 
 impies<-rbind(CleanEMDAT(openxlsx::read.xlsx("./Analysis_Results/Kirsten/emdat_public_2023_09_14_query_uid-xKzgpi.xlsx",startRow = 7)),
               GetGIDD())
-
 # impies<-readRDS("./Analysis_Results/Kirsten/impies_20230910.RData")
 
-impies%<>%filter(hazAb%in%lhaz)
+impies$hazAb[impies$hazAb%in%c("CW","HW")]<-"ET"
+
+impies$hazAb[impies$hazAb=="LS" & impies$haztype=="haztypehydromet"]<-"LS-HM"
+impies$hazAb[impies$hazAb=="LS" & impies$haztype=="haztypegeohaz"]<-"LS-G"
 # Create a variable to separate what is and isn't RC data 
 # impies%<>%mutate(RCnot="Not RC",RCnot=replace(RCnot, grepl("GO-",src_db), "RC"))
 # Add the year variable
 impies$Year<-AsYear(impies$ev_sdate)
-impies%<>%filter(!is.na(Year))
+# impies%<>%filter(!is.na(Year))
+
+isoEQ<-unique(impies$ISO3[impies$hazAb=="EQ"])
 
 taxies<-openxlsx::read.xlsx("./ImpactInformationProfiles.xlsx")
 
@@ -41,8 +45,7 @@ geovars<-c("Earthquake","Volcano","LandslideG")
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 #%%%%%%%%%%%%%%%%%%%%%%%%%% INCIDENCE %%%%%%%%%%%%%%%%%%%%%%%%%%%#
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
-
-EMFull<-impies%>%filter(Year>=2010 & src_db=="EM-DAT")%>%
+EMFull<-impies%>%filter(Year>=2010 & src_db=="EM-DAT" & !duplicated(impsub_ID))%>%
   group_by(ISO3,Year)%>%
   summarise(ALL_CLIM=sum(haztype=="haztypehydromet"),
             Storm=sum(hazAb%in%c("ST","TC")),
@@ -57,7 +60,8 @@ EMFull<-impies%>%filter(Year>=2010 & src_db=="EM-DAT")%>%
             LandslideG=sum(hazAb=="LS" & haztype=="haztypegeohaz"),
             ALL=sum(haztype%in%c("haztypehydromet","haztypegeohaz")),
             .groups="drop")
-EMFull<-WDR%>%dplyr::select(1:5)%>%left_join(EMFull)
+EMFull<-WDR%>%dplyr::select(1:5)%>%
+  left_join(EMFull,by=join_by(ISO3,Year),relationship="one-to-one")
 
 EMFull[is.na(EMFull)]<-0
 
@@ -65,7 +69,7 @@ EMFull$ALL_CLIM<-rowSums(EMFull[,climvars])
 EMFull$ALL_GEO<-rowSums(EMFull[,geovars])
 EMFull$ALL<-EMFull$ALL_CLIM+EMFull$ALL_GEO
 
-HEFull<-impies%>%filter(Year>=2018 & src_db=="HELIX")%>%
+HEFull<-impies%>%filter(Year>=2018 & src_db=="GIDD" & !duplicated(impsub_ID))%>%
   group_by(ISO3,Year)%>%
   summarise(ALL_CLIM=sum(haztype=="haztypehydromet"),
             Storm=sum(hazAb%in%c("ST","TC")),
@@ -80,7 +84,8 @@ HEFull<-impies%>%filter(Year>=2018 & src_db=="HELIX")%>%
             LandslideG=sum(hazAb=="LS" & haztype=="haztypegeohaz"),
             ALL=sum(haztype%in%c("haztypehydromet","haztypegeohaz")),
             .groups="drop")
-HEFull<-WDR%>%dplyr::select(1:5)%>%left_join(HEFull)
+HEFull<-WDR%>%dplyr::select(1:5)%>%
+  left_join(HEFull,by=join_by(ISO3,Year),relationship="one-to-one")
 
 HEFull[is.na(HEFull)]<-0
 
@@ -133,7 +138,7 @@ RegIncFull%<>%rbind(global)%>%arrange(Year)
 #%%%%%%%%%%%%%%%%%%%%%%%%%% FATALITIES %%%%%%%%%%%%%%%%%%%%%%%%%%#
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 
-FatFull<-impies%>%filter(Year>=2010 & src_db%in%c("EM-DAT","HELIX") &
+FatFull<-impies%>%filter(Year>=2010 & src_db%in%c("EM-DAT","GIDD") &
                          impactdetails=="impdetallpeop" & imptype=="imptypdeat")%>%
   group_by(ISO3,Year)%>%
   summarise(ALL_CLIM=sum(impvalue[haztype=="haztypehydromet"]),
@@ -161,7 +166,7 @@ FatFull$ALL<-FatFull$ALL_CLIM+FatFull$ALL_GEO
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%% IDPs %%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 
-IDPFull<-impies%>%filter(Year>=2018 & src_db=="HELIX" &
+IDPFull<-impies%>%filter(Year>=2018 & src_db=="GIDD" &
                            impactdetails=="impdetallpeop" & imptype=="imptypidp")%>%
   group_by(ISO3,Year)%>%
   summarise(ALL_CLIM=sum(impvalue[haztype=="haztypehydromet"]),
@@ -288,9 +293,6 @@ impies%>%filter(Year>2010 & src_db=="EM-DAT" &
   reframe(Percentage=100*sum(haztype=="haztypehydromet")/(sum(haztype=="haztypegeohaz")+sum(haztype=="haztypehydromet")))%>%
   ggplot()+geom_point(aes(Year,Percentage))
 
-
-isoEQ<-unique(impies$ISO3[impies$hazAb=="EQ"])
-
 impies%>%filter(Year>2010 & src_db=="EM-DAT" & ISO3%in%isoEQ &
                   impactdetails=="impdetallpeop" & imptype%in%c("imptypidp","imptypdeat"))%>%
   # mutate(YearGroup = cut(Year,breaks = brks,
@@ -352,24 +354,39 @@ impies%>%filter(ISO3%in%isoEQ &
 
 
 
-
-
-
-p<-impies%>%filter(Year>1990 & Year<2023 & #ISO3%in%isoEQ & 
+p<-impies%>%filter(Year>1990 & Year<2023 & ISO3%in%isoEQ & 
+                     !(src_db=="GIDD" & Year<2015) &
                   # impactdetails=="impdetallpeop" & imptype=="imptypdeat" &
-                  src_db!="GO-FR")%>%
+                  !src_db%in%c("GO-FR","GO-App"))%>%
   # mutate(YearGroup = cut(Year,breaks = brks,
   #                              include.lowest = T,right=F))%>%
   # filter(!is.na(YearGroup))%>%
   group_by(src_db,Year)%>%
   # reframe(Percentage=sum(impvalue[haztype=="haztypehydromet"],na.rm = T)/(sum(impvalue[haztype=="haztypegeohaz"],na.rm = T)+sum(impvalue[haztype=="haztypehydromet"],na.rm = T)))%>%
   reframe(Percentage=sum(haztype=="haztypehydromet",na.rm = T)/(sum(haztype=="haztypegeohaz",na.rm = T)+sum(haztype=="haztypehydromet",na.rm = T)))%>%
-  ggplot(aes(group=src_db))+geom_point(aes(Year,Percentage,colour=src_db))+
+  ggplot(aes(group=src_db))+geom_point(aes(Year,Percentage,colour=src_db),alpha=0.5)+
   geom_smooth(aes(Year,Percentage,colour=src_db),alpha=0.1,method = "glm", method.args = list(family = "binomial"),se = FALSE)+
   ylab("Proportion")+ylim(c(0.75,0.97))+labs(colour="Database")+
-  ggtitle("Proportion of Hydro-Met Hazard Events")+theme(plot.title = element_text(hjust = 0.5))+
-  facet_wrap(~src_db,scales = "fixed");p
-ggsave("./Analysis_Results/Kirsten/Percentage_HM-G_Year.png",p)
+  ggtitle("Proportion of Climate & Weather Events")+theme(plot.title = element_text(hjust = 0.5));p
+  # facet_wrap(~src_db,scales = "fixed");p
+ggsave("./Analysis_Results/Kirsten/Percentage_HM-G_Year.png",p,width=8,height = 5)
+
+p<-impies%>%filter(Year>1990 & Year<2023 & ISO3%in%isoEQ & 
+                     # impactdetails=="impdetallpeop" & imptype=="imptypdeat" &
+                     !src_db%in%c("GIDD","GO-FR","GO-App"))%>%
+  # mutate(YearGroup = cut(Year,breaks = brks,
+  #                              include.lowest = T,right=F))%>%
+  # filter(!is.na(YearGroup))%>%
+  group_by(src_db,Year)%>%
+  # reframe(Percentage=sum(impvalue[haztype=="haztypehydromet"],na.rm = T)/(sum(impvalue[haztype=="haztypegeohaz"],na.rm = T)+sum(impvalue[haztype=="haztypehydromet"],na.rm = T)))%>%
+  reframe(Percentage=sum(haztype=="haztypehydromet",na.rm = T)/(sum(haztype=="haztypegeohaz",na.rm = T)+sum(haztype=="haztypehydromet",na.rm = T)))%>%
+  ggplot(aes(group=src_db))+geom_point(aes(Year,Percentage,colour=src_db),alpha=0.5)+
+  geom_smooth(aes(Year,Percentage,colour=src_db),alpha=0.1,method = "glm", method.args = list(family = "binomial"),se = FALSE)+
+  ylab("Proportion")+ylim(c(0.75,0.97))+labs(colour="Database")+
+  ggtitle("Proportion of Climate & Weather Events")+theme(plot.title = element_text(hjust = 0.5));p
+# facet_wrap(~src_db,scales = "fixed");p
+ggsave("./Analysis_Results/Kirsten/Percentage_HM-G_Year_noGIDD.png",p,width=8,height = 5)
+
 
 
 
@@ -421,15 +438,7 @@ p<-impies%>%filter(Year>1990 & Year<2023 & #ISO3%in%isoEQ &
   ggtitle("Proportion Hydro-Met to Geological Hazards")+theme(plot.title = element_text(hjust = 0.5))+
   facet_wrap(~src_db,scales = "fixed");p
 
-
-
-tmp<-impies
-tmp$hazAb[tmp$hazAb%in%c("CW","HW")]<-"ET"
-
-tmp$hazAb[tmp$hazAb=="LS" & tmp$haztype=="haztypehydromet"]<-"LS-HM"
-tmp$hazAb[tmp$hazAb=="LS" & tmp$haztype=="haztypegeohaz"]<-"LS-G"
-
-p<-tmp%>%filter(Year>1990 & Year<2023 & !is.na(hazAb) & hazAb!="GL" & #ISO3%in%isoEQ & 
+p<-impies%>%filter(Year>1990 & Year<2023 & !is.na(hazAb) & hazAb!="GL" & #ISO3%in%isoEQ & 
                      # impactdetails=="impdetallpeop" & imptype=="imptypdeat" &
                      src_db!="GO-FR")%>%
   # mutate(YearGroup = cut(Year,breaks = brks,
@@ -445,7 +454,7 @@ p<-tmp%>%filter(Year>1990 & Year<2023 & !is.na(hazAb) & hazAb!="GL" & #ISO3%in%i
   facet_wrap(~hazAb,scales = "free_y");p
 
 
-p<-tmp%>%filter(Year>1990 & Year<2023 & !is.na(hazAb) & hazAb!="GL" & #ISO3%in%isoEQ & 
+p<-impies%>%filter(Year>1990 & Year<2023 & !is.na(hazAb) & hazAb!="GL" & #ISO3%in%isoEQ & 
                   impactdetails=="impdetallpeop" & imptype=="imptypdeat" &
                   src_db!="GO-FR")%>%
   # mutate(YearGroup = cut(Year,breaks = brks,
@@ -462,7 +471,7 @@ p<-tmp%>%filter(Year>1990 & Year<2023 & !is.na(hazAb) & hazAb!="GL" & #ISO3%in%i
 ggsave("./Analysis_Results/Kirsten/Log-No-Fatalities_haz_db.png",p)
 
 
-p<-tmp%>%filter(Year>1990 & Year<2023 & !is.na(hazAb) & hazAb!="GL" & #ISO3%in%isoEQ & 
+p<-impies%>%filter(Year>1990 & Year<2023 & !is.na(hazAb) & hazAb!="GL" & #ISO3%in%isoEQ & 
                   impactdetails=="impdetallpeop" & imptype=="imptypdeat" &
                   src_db=="EM-DAT")%>%
   # mutate(YearGroup = cut(Year,breaks = seq.int(1990,2020,10),
@@ -479,7 +488,7 @@ p<-tmp%>%filter(Year>1990 & Year<2023 & !is.na(hazAb) & hazAb!="GL" & #ISO3%in%i
 ggsave("./Analysis_Results/Kirsten/No-Fatalities_haz_db.png",p)
 
 
-p<-tmp%>%filter(Year>1990 & Year<2023 & !is.na(hazAb) & hazAb!="GL" & #ISO3%in%isoEQ & 
+p<-impies%>%filter(Year>1990 & Year<2023 & !is.na(hazAb) & hazAb!="GL" & #ISO3%in%isoEQ & 
                   impactdetails=="impdetallpeop" & imptype=="imptypdeat" &
                   src_db!="GO-FR")%>%
   mutate(YearGroup = cut(Year,breaks = seq.int(1990,2020,3),
@@ -495,7 +504,7 @@ p<-tmp%>%filter(Year>1990 & Year<2023 & !is.na(hazAb) & hazAb!="GL" & #ISO3%in%i
   ggtitle("Fatalities per Hazard")+theme(plot.title = element_text(hjust = 0.5))+
   facet_wrap(~hazAb,scales = "free_y");p
 
-p<-tmp%>%filter(Year>1990 & Year<2023 & !is.na(hazAb) & hazAb!="GL" & #ISO3%in%isoEQ & 
+p<-impies%>%filter(Year>1990 & Year<2023 & !is.na(hazAb) & hazAb!="GL" & #ISO3%in%isoEQ & 
                   src_db!="GO-FR")%>%
   # mutate(YearGroup = cut(Year,breaks = seq.int(1990,2020,3),
   #                        include.lowest = T,right=F))%>%
@@ -515,7 +524,7 @@ ggsave("./Analysis_Results/Kirsten/Log_No-Events_haz_db.png",p)
 
 
 
-p<-tmp%>%filter(Year>1990 & Year<2023 & !is.na(hazAb) & hazAb!="GL" & #ISO3%in%isoEQ & 
+p<-impies%>%filter(Year>1990 & Year<2023 & !is.na(hazAb) & hazAb!="GL" & #ISO3%in%isoEQ & 
                   impactdetails=="impdetallpeop" & imptype=="imptypdeat" &
                   src_db!="GO-FR")%>%
   # reframe(Percentage=sum(impvalue[haztype=="haztypehydromet"],na.rm = T)/(sum(impvalue[haztype=="haztypegeohaz"],na.rm = T)+sum(impvalue[haztype=="haztypehydromet"],na.rm = T)))%>%
