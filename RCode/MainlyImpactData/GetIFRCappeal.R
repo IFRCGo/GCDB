@@ -214,6 +214,23 @@ CleanGO_field<-function(fieldr){
   
 }
 
+CleanGO_dref<-function(dref){
+  dref$dtype<-dref$disaster_type_details$id
+  dref$dtype_disp<-dref$disaster_type_details$name
+  dref$disaster_type_details<-NULL
+
+  tmp<-dref%>%dplyr::select(-c(national_society_actions,needs_identified,
+                           modified_by_details,event_map_file,
+                           images_file,created_by_details,users_details,
+                           budget_file_details,cover_image_file,
+                           operational_update_details,country_details,
+                           dref_final_report_details))
+
+  tmp%<>%dplyr::select(-c(planned_interventions))
+
+  colnames(tmp)
+}
+
 GetGO<-function(token=NULL){
   # Get the Emergency Appeal data from GO
   appeal<-ExtractGOdata(db = "GO-App", token = token)
@@ -223,6 +240,10 @@ GetGO<-function(token=NULL){
   fieldr<-ExtractGOdata(db = "GO-FR") #, token = token)
   # Clean it up!
   fieldr%<>%CleanGO_field()
+  # Get the DREF data from GO
+  dref<-ExtractGOdata(db="GO-DREF", token = token)
+  # Clean it up!
+  fieldr%<>%CleanGO_dref()
   # Combine both datasets and output
   rbind(appeal,fieldr)
 }

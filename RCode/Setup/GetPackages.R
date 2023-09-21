@@ -22,6 +22,7 @@ GetSourceFiles<-function(packred){
   source(paste0(dir,'RCode/MainlyHazardData/GetUSGS.R'))
   # source(paste0(dir,'RCode/MainlyHazardData/GetDisaster.R'))
   source(paste0(dir,'RCode/MainlyHazardData/GetGLIDEnumber.R'))
+  source(paste0(dir,'RCode/MainlyHazardData/GetGFD.R'))
   # Admin boundaries & Infrastructure related:
   source(paste0(dir,'RCode/Spatio-Infra-Political/GetOSM.R'))
   source(paste0(dir,'RCode/Spatio-Infra-Political/GetAdminBoundaries.R'))

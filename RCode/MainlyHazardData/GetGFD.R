@@ -72,7 +72,7 @@ GetGFDautoAPI<-function(bbox,sdate,fdate=NULL,I0=0){ # This should have the same
   
 
   
-  GFD<-ee_as_raster(tGDF,via = "drive",quiet = T)
+  GFD<-ee_as_raster(GDF,via = "drive",quiet = T)
   
   # Search for all GFD events within this window via API access to Google Earth Engine
   # Look at the following links

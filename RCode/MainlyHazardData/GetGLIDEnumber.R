@@ -3,11 +3,12 @@ GLIDEcols<-c("comments","year","docid","latitude","homeless","source","idsource"
 # Skeleton for empty output
 glide_skel<-data.frame(matrix(NA_character_,nrow = 1,ncol = 22)); colnames(glide_skel)<-GLIDEcols
 
-GetGLIDEnum<-function(DF,haz,numonly=T){
+GetGLIDEnum<-function(DF,numonly=T){
   # Needs to contain the columns: ev_sdate, ISO3 & haz
   # Make sure dates are not in character format
   DF$ev_sdate%<>%as.Date()
-  if(length(haz)>1) haz%<>%paste0(collapse = ",")
+  # Abbreviated hazard taxonomy
+  hazAb<-DF$hazAb; 
   # Fetch the different GLIDE numbers, individually
   glides<-do.call(rbind,lapply(1:nrow(DF),function(i){
     baseurl<-"https://www.glidenumber.net/glide/jsonglideset.jsp?level1="
@@ -18,7 +19,7 @@ GetGLIDEnum<-function(DF,haz,numonly=T){
            "&toyear=",AsYear(DF$ev_sdate[i]+5),
            "&tomonth=",AsMonth(DF$ev_sdate[i]+5),
            "&today=",AsDay(DF$ev_sdate[i]+5),
-           "&events=",haz)
+           "&events=",hazAb)
     out<-rjson::fromJSON(file = URL)[[1]]; 
     if(length(out)==0) return(glide_skel)
     # Just in case there are multiple GLIDE numbers, take the first one
