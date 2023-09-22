@@ -7,11 +7,10 @@ GetSourceFiles<-function(packred){
   #@@@@@ SOURCE FILES @@@@@#
   # Basic functions:
   source(paste0(dir,'RCode/Setup/Functions.R'))
+  source(paste0(dir,'RCode/Setup/GetEnv.R'))
   source(paste0(dir,'RCode/Other/GetGoogleEarthEngineData.R'))
   # Objects
-  source(paste0(dir,'RCode/GCDB_Objects/Impacts.R'))
-  source(paste0(dir,'RCode/GCDB_Objects/Hazards.R'))
-  source(paste0(dir,'RCode/Setup/GetEnv.R'))
+  source(paste0(dir,'RCode/GCDB_Objects/GCDB_table.R'))
   # Impact related:
   source(paste0(dir,'RCode/MainlyImpactData/GetDesinventar.R'))
   source(paste0(dir,'RCode/MainlyImpactData/GetEMDAT.R'))

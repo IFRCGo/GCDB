@@ -597,7 +597,7 @@ PostModTransies<-function(colConv){
   return(colConv)
 }
 
-Des2impGCDB<-function(Dessie){
+Des2tabGCDB<-function(Dessie){
   # Modify date names
   Dessie$imp_sdate<-Dessie$imp_fdate<-Dessie$ev_sdate<-Dessie$ev_fdate<-Dessie$unitdate<-Dessie$date
   # Any event without a date are automatically removed
@@ -614,7 +614,7 @@ Des2impGCDB<-function(Dessie){
   # Generate GCDB event ID
   Dessie$GCDB_ID<-GetGCDB_ID(Dessie)
   # Add some of the extra details that are Desinventar-specific
-  Dessie$est_type<-"Primary"
+  Dessie$imp_est_type<-"esttype_prim"
   Dessie$src_URL<-paste0(desbaseurl,Dessie$ISO3,".zip")
   Dessie$spat_srcorg<-Dessie$src_org<-"Local Government Estimate"
   Dessie$src_db<-"Desinventar"
@@ -663,16 +663,16 @@ GetDesinventar<-function(){
     
     return(out)
   }))
-  # Get in impGCDB format
-  impies<-Des2impGCDB(Dessie)
+  # Get in tabGCDB format
+  impies<-Des2tabGCDB(Dessie)
   # The Desinventar database has many entries per single event, so we take the most recent estimate
   impies<-impies[nrow(impies):1,]%>%filter(impvalue>0)
   # Find the duplicated elements
   inds<-impies%>%dplyr::select(impsub_ID)%>%duplicated()
   
   return(impies[!inds,])
-  # Form a GCDB impacts object from EMDAT data (if there is a problem, return an empty impGCDB object)
-  # tryCatch(new("impGCDB",impies),error=function(e) new("impGCDB"))
+  # Form a GCDB impacts object from EMDAT data (if there is a problem, return an empty tabGCDB object)
+  # tryCatch(new("tabGCDB",impies),error=function(e) new("tabGCDB"))
 }
 # tmp<-Dessie[nrow(Dessie):1,]%>%filter(impvalue>0)
 # inds<-tmp%>%dplyr::select(impsub_ID)%>%duplicated()

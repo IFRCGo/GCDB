@@ -248,6 +248,53 @@ FilterGDACS<-function(haz=NULL,syear=2016L,fyear=AsYear(Sys.Date()),list_GDACS=N
   
 }
 
+convGDACS_GCDB<-function(GDACS){
+  
+  GDACS$imp_sdate<-GIDD$unitdate<-GDACS$ev_sdate
+  GDACS$imp_fdate<-GDACS$ev_fdate
+  GDACS$ev_name_en<-GDACS$ev_name_orig
+  # Add the continent, then remove the unnecesary layers
+  GDACS%<>%mutate(Continent=convIso3Continent(ISO3))%>%
+    filter(!is.na(Continent))
+  # Add alertscore as the impact value
+  GDACS$impvalue<-GDACS$alertscore
+  # This estimate is modelled
+  GDACS$imp_est_type<-"esttype_model"
+  GDACS$haz_est_type<-"esttype_second"
+  # Organisation
+  GDACS$src_db<-"GDACS"
+  GDACS$src_org<-"European Commission"
+  GDACS$src_orgtype<-"orgtyperio"
+  colnames(GDACS)[colnames(GDACS)=="link"]<-"src_URL"
+  
+  c(
+    
+    "impsub_ID"="character", # ID of each impact element in the overall event
+    "imphaz_ID"="character", # ID of each hazard of each impact element in the overall event
+    "impactcats"="character", # Impact category
+    "impactsubcats"="character", # Impact subcategory
+    "impactdetails"="character", # Impact subsubcategory
+    "imptype"="character", # Impact units
+    "imp_units"="character", # Impact unit (e.g. stock or currency)
+    
+    "haztype"="character", # Impacting hazard type
+    "hazcluster"="character", # Impacting hazard cluster
+    "hazspec"="character", # Impacting specific hazard
+    "hazlink"="character", # Associated impactful-hazards to the specific hazard
+    "hazpotlink"="character", # Potential other impactful-hazards that may be associated to the specific hazard
+    "spat_ID"="character", # ID of the spatial object
+    "spat_type"="character", # Spatial object type
+    "spat_res"="character", # Spatial resolution of impact estimate
+    "spat_srcorg"="character") # Source organisation from where the spatial object comes from
+}
+
+GetGDACS_GCDB<-function(){
+  # Extract the data
+  GDACS<-FilterGDACS()
+  # Store it out as a imp_GCDB object
+  GDACS%<>%convGDACS_GCDB()
+}
+
 GetGDACSalertscore<-function(dfGDACS=NULL,haz,bbox,sdater,fdater=NULL,isos=NULL){
   
   if(any(is.null(c(haz,sdater,bbox)))) stop("Please provide hazard type, start date and bounding box to extract GDACS alertscore")

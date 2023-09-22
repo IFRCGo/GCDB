@@ -363,7 +363,10 @@ p<-impies%>%filter(Year>1950 & Year<2024 & src_db!="GO-FR")%>%
   labs(colour="Data Source");p
 ggsave("RCnot_temporal.png",p,path="./Plots/GCDB_Workshop/",width = 8,height = 5)  
 
-centrams<-c("COL","CRI","PAN","HND")
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%% COUNTRY-SPECIFIC %%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+
+# centrams<-c("COL","CRI","PAN","HND")
+centrams<-c("IDN","NPL","PAK","TLS","LKA","MNG","FJI")
   
 subbie<-impies%>%filter(ISO3%in%centrams)
 

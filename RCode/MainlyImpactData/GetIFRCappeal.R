@@ -107,7 +107,7 @@ CleanGO_app<-function(appeal){
                    ev_sdate=as.character(as.Date(start_date)),ev_fdate=as.character(as.Date(end_date)),
                    # ev_sdate=as.character(as.Date(created_at)),ev_fdate=as.character(as.Date(created_at)),
                    unitdate=as.character(as.Date(modified_at)),
-                   est_type="Primary",
+                   imp_est_type="esttype_prim",
                    src_URL="https://goadmin.ifrc.org/api/v2/appeal",
                    src_org="International Federation of Red Cross and Red Crescent Societies (IFRC)",
                    src_db="GO-App",

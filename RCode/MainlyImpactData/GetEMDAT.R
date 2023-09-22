@@ -165,7 +165,7 @@ CleanEMDAT<-function(EMDAT){
   # Column renaming
   colnames(EMDAT)[colnames(EMDAT)=="Event.Name"]<-"ev_name_en"; colnames(EMDAT)[colnames(EMDAT)=="Location"]<-"location"; colnames(EMDAT)[colnames(EMDAT)=="ISO"]<-"ISO3"
   # Add some of the extra details that are Desinventar-specific
-  EMDAT$est_type<-"Primary"
+  EMDAT$imp_est_type<-"esttype_prim"
   EMDAT$src_URL<-"https://public.emdat.be/"
   EMDAT$spat_srcorg<-EMDAT$src_org<-"CRED - Uni. Louvain"
   EMDAT$src_db<-"EM-DAT"

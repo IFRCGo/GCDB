@@ -98,7 +98,7 @@ GetGIDD<-function(){
   # Generate GCDB event ID
   GIDD$GCDB_ID<-GetGCDB_ID(GIDD)
   # Add some of the extra details that are Desinventar-specific
-  GIDD$est_type<-"Primary"
+  GIDD$imp_est_type<-"esttype_prim"
   GIDD$src_URL<-"https://helix-tools-api.idmcdb.org/external-api/gidd/disasters/disaster-export/"
   GIDD$spat_srcorg<-GIDD$src_org<-"Internal Displacement Monitoring Centre (IDMC)"
   GIDD$src_db<-"GIDD"
