@@ -3,9 +3,9 @@ ImpactAggADM0<-function(impies, haz="EQ"){
   ADM <- rworldmap::getMap(resolution='low')
   ADM@data%<>%transmute(ISO3=ISO_A3,Population=POP_EST,GDP=GDP_MD_EST)
   
-  impies%<>%filter(!(is.na(impactdetails) | is.na(imptype))) 
+  impies%<>%filter(!(is.na(imp_det) | is.na(imp_type))) 
   
-  impies$impact<-sapply(1:nrow(impies),function(i) paste0(impies$impactsubcats[i],"-",impies$imptype[i]),simplify = T)
+  impies$impact<-sapply(1:nrow(impies),function(i) paste0(impies$imp_subcats[i],"-",impies$imp_type[i]),simplify = T)
   
   ADM@data$N<-sapply(ADM@data$ISO3, function(is){
     length(unique(impies$GCDB_ID[impies$ISO3==is]))
@@ -16,7 +16,7 @@ ImpactAggADM0<-function(impies, haz="EQ"){
   for(imp in unique(impies$impact)){
     # Aggregated per country
     ADM@data$tmp<-sapply(ADM@data$ISO3, function(is){
-      sum(impies$impvalue[impies$ISO3==is & impies$impact==imp])
+      sum(impies$imp_value[impies$ISO3==is & impies$impact==imp])
     },simplify = T)
     # Remove all zero counts
     ADM@data$tmp[ADM@data$tmp==0]<-NA
@@ -27,7 +27,7 @@ ImpactAggADM0<-function(impies, haz="EQ"){
   return(ADM)
 }
 
-PlotImpAgg<-function(ADM,impact="imptypepopcnt-imptypdeat",loggie=T,bks=NULL,lbs=NULL,guidie="colourbar"){
+PlotImpAgg<-function(ADM,impact="imp_typepopcnt-imptypdeat",loggie=T,bks=NULL,lbs=NULL,guidie="colourbar"){
   
   ADM@data$tmp<-ADM@data[,impact]
   
@@ -38,7 +38,7 @@ PlotImpAgg<-function(ADM,impact="imptypepopcnt-imptypdeat",loggie=T,bks=NULL,lbs
     # Extract the correct label for the legend
     taxies<-openxlsx::read.xlsx("./ImpactInformationProfiles.xlsx")
     # 
-    labeller<-paste0(taxies%>%filter(list_name=="impactsubcats" &
+    labeller<-paste0(taxies%>%filter(list_name=="imp_subcats" &
                                        name==str_split(impact,"-",simplify = T)[1])%>%
                        pull(label)," ",
                      taxies%>%filter(list_name=="impacttypes" &

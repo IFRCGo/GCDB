@@ -28,42 +28,42 @@ ExtractGOdata<-function(db="GO-App", token = NULL){
 
 PostModGO<-function(colConv){
   # hazard Types
-  colConv$haztype[colConv$hazG%in%c("FL","ST","TC","DR","ET","SN","CW","HW","SS")]<-"haztypehydromet"
-  colConv$haztype[colConv$hazG%in%c("EQ","LS","TS","VO","AV")]<-"haztypegeohaz"
-  colConv$haztype[colConv$hazG=="WF"]<-"haztypeenviron"
-  colConv$haztype[colConv$hazG=="EP"]<-"haztypebio"
+  colConv$haz_type[colConv$haz_Ab%in%c("FL","ST","TC","DR","ET","SN","CW","HW","SS")]<-"haz_typehydromet"
+  colConv$haz_type[colConv$haz_Ab%in%c("EQ","LS","TS","VO","AV")]<-"haz_typegeohaz"
+  colConv$haz_type[colConv$haz_Ab=="WF"]<-"haz_typeenviron"
+  colConv$haz_type[colConv$haz_Ab=="EP"]<-"haz_typebio"
   
   # Hazard clusters
-  colConv$hazcluster[colConv$hazG=="DR"]<-"hazhmprecip,hazhmtemp"
-  colConv$hazcluster[colConv$hazG=="FL"]<-"hazhmflood"
-  colConv$hazcluster[colConv$hazG=="ST"]<-"hazhmconv,hazhmwind,hazhmpress,hazhmflood"
-  colConv$hazcluster[grepl("rain",colConv$dtype,ignore.case = T)]<-"hazhmprecip"
-  colConv$hazcluster[grepl("wind",colConv$dtype,ignore.case = T)]<-"hazhmwind,hazhmpress"
-  colConv$hazcluster[grepl("lightning",colConv$dtype,ignore.case = T)]<-"hazhmconv"
-  colConv$hazcluster[colConv$hazG=="ET"]<-"hazhmtemp"
-  colConv$hazcluster[colConv$hazG=="TC"]<-"hazhmwind,hazhmpress,hazhmconv,hazhmflood"
-  colConv$hazcluster[colConv$hazG=="TS"]<-"hazgeoother,hazhmmarine,hazhmflood"
-  colConv$hazcluster[colConv$hazG=="EQ"]<-"hazgeoseis"
-  colConv$hazcluster[colConv$hazG=="VO"]<-"hazgeovolc"
-  colConv$hazcluster[colConv$hazG=="WF"]<-"hazenvenvdeg"
-  colConv$hazcluster[grepl("hail",colConv$dtype,ignore.case = T)]<-"hazhmprecip"
-  colConv$hazcluster[colConv$hazG=="LS"]<-"hazgeoseis,hazenvenvdeg,hazgeovolc,hazgeoother"
-  colConv$hazcluster[grepl("rock",colConv$dtype,ignore.case = T)]<-"hazhmterr"
-  colConv$hazcluster[grepl("mud",colConv$dtype,ignore.case = T)]<-"hazhmterr"
-  colConv$hazcluster[grepl("liquefaction",colConv$dtype,ignore.case = T)]<-"hazgeoseis,hazgeoother"
-  colConv$hazcluster[colConv$hazG=="AV"]<-"hazhmterr"
-  colConv$hazcluster[grepl("tidal",colConv$dtype,ignore.case = T)]<-"hazhmmarine,hazhmflood"
-  colConv$hazcluster[grepl("wave",colConv$dtype,ignore.case = T)]<-"hazhmmarine,hazhmflood"
-  colConv$hazcluster[grepl("coastal flood",colConv$dtype,ignore.case = T)]<-"hazhmflood,hazhmmarine"
-  colConv$hazcluster[grepl("surge",colConv$dtype,ignore.case = T)]<-"hazhmmarine,hazhmflood,hazhmwind"
-  colConv$hazcluster[grepl("hail",colConv$dtype,ignore.case = T)]<-"hazhmprecip"
-  colConv$hazcluster[grepl("tropical storm",colConv$dtype,ignore.case = T)]<-"hazhmwind"
-  colConv$hazcluster[grepl("convective storm",colConv$dtype,ignore.case = T)]<-"hazhmconv"
-  colConv$hazcluster[grepl("cold wave",colConv$dtype,ignore.case = T)]<-"hazhmtemp"
+  colConv$haz_cluster[colConv$haz_Ab=="DR"]<-"hazhmprecip,hazhmtemp"
+  colConv$haz_cluster[colConv$haz_Ab=="FL"]<-"hazhmflood"
+  colConv$haz_cluster[colConv$haz_Ab=="ST"]<-"hazhmconv,hazhmwind,hazhmpress,hazhmflood"
+  colConv$haz_cluster[grepl("rain",colConv$dtype,ignore.case = T)]<-"hazhmprecip"
+  colConv$haz_cluster[grepl("wind",colConv$dtype,ignore.case = T)]<-"hazhmwind,hazhmpress"
+  colConv$haz_cluster[grepl("lightning",colConv$dtype,ignore.case = T)]<-"hazhmconv"
+  colConv$haz_cluster[colConv$haz_Ab=="ET"]<-"hazhmtemp"
+  colConv$haz_cluster[colConv$haz_Ab=="TC"]<-"hazhmwind,hazhmpress,hazhmconv,hazhmflood"
+  colConv$haz_cluster[colConv$haz_Ab=="TS"]<-"hazgeoother,hazhmmarine,hazhmflood"
+  colConv$haz_cluster[colConv$haz_Ab=="EQ"]<-"hazgeoseis"
+  colConv$haz_cluster[colConv$haz_Ab=="VO"]<-"hazgeovolc"
+  colConv$haz_cluster[colConv$haz_Ab=="WF"]<-"hazenvenvdeg"
+  colConv$haz_cluster[grepl("hail",colConv$dtype,ignore.case = T)]<-"hazhmprecip"
+  colConv$haz_cluster[colConv$haz_Ab=="LS"]<-"hazgeoseis,hazenvenvdeg,hazgeovolc,hazgeoother"
+  colConv$haz_cluster[grepl("rock",colConv$dtype,ignore.case = T)]<-"hazhmterr"
+  colConv$haz_cluster[grepl("mud",colConv$dtype,ignore.case = T)]<-"hazhmterr"
+  colConv$haz_cluster[grepl("liquefaction",colConv$dtype,ignore.case = T)]<-"hazgeoseis,hazgeoother"
+  colConv$haz_cluster[colConv$haz_Ab=="AV"]<-"hazhmterr"
+  colConv$haz_cluster[grepl("tidal",colConv$dtype,ignore.case = T)]<-"hazhmmarine,hazhmflood"
+  colConv$haz_cluster[grepl("wave",colConv$dtype,ignore.case = T)]<-"hazhmmarine,hazhmflood"
+  colConv$haz_cluster[grepl("coastal flood",colConv$dtype,ignore.case = T)]<-"hazhmflood,hazhmmarine"
+  colConv$haz_cluster[grepl("surge",colConv$dtype,ignore.case = T)]<-"hazhmmarine,hazhmflood,hazhmwind"
+  colConv$haz_cluster[grepl("hail",colConv$dtype,ignore.case = T)]<-"hazhmprecip"
+  colConv$haz_cluster[grepl("tropical storm",colConv$dtype,ignore.case = T)]<-"hazhmwind"
+  colConv$haz_cluster[grepl("convective storm",colConv$dtype,ignore.case = T)]<-"hazhmconv"
+  colConv$haz_cluster[grepl("cold wave",colConv$dtype,ignore.case = T)]<-"hazhmtemp"
   
   # Specific Hazards
-  colConv$hazspec[colConv$hazG=="EQ"]<-"GH0001,GH0002"
-  colConv$hazpotlink[colConv$hazG=="EQ"]<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
+  colConv$haz_spec[colConv$haz_Ab=="EQ"]<-"GH0001,GH0002"
+  colConv$haz_potlink[colConv$haz_Ab=="EQ"]<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
   
   # Save it out
   openxlsx::write.xlsx(colConv,"./Taxonomies/MostlyImpactData/IFRC_HIP.xlsx")
@@ -79,7 +79,6 @@ GOHazards<-function(impies){
   colConv$dtype%<>%str_to_lower();impies$dtype%<>%str_to_lower()
   # Reduce the translated vector and merge
   impies%<>%left_join(colConv,by = "dtype")
-  colnames(impies)[colnames(impies)=="hazG"]<-"hazAb"
   
   return(impies)
   
@@ -106,24 +105,24 @@ CleanGO_app<-function(appeal){
                    imp_sdate=as.character(as.Date(created_at)),imp_fdate=as.character(as.Date(modified_at)),
                    ev_sdate=as.character(as.Date(start_date)),ev_fdate=as.character(as.Date(end_date)),
                    # ev_sdate=as.character(as.Date(created_at)),ev_fdate=as.character(as.Date(created_at)),
-                   unitdate=as.character(as.Date(modified_at)),
+                   imp_unitdate=as.character(as.Date(modified_at)),
                    imp_est_type="esttype_prim",
                    src_URL="https://goadmin.ifrc.org/api/v2/appeal",
-                   src_org="International Federation of Red Cross and Red Crescent Societies (IFRC)",
-                   src_db="GO-App",
-                   src_orgtype="orgtypengo",
+                   imp_src_org="International Federation of Red Cross and Red Crescent Societies (IFRC)",
+                   imp_src_db="GO-App",
+                   imp_src_orgtype="orgtypengo",
                    spat_type="Polygon",
                    spat_srcorg="IFRC",
                    spat_ID=NA_character_,
                    spat_res="ADM-0")
   
-  appeal$GCDB_ID<-GetGCDB_ID(appeal,haz=appeal$hazAb)
+  appeal$GCDB_ID<-GetGCDB_ID(appeal,haz=appeal$haz_Ab)
   
   appeal%<>%ImpLabs(nomDB = "GO-App", dropName = T)
   
   # Create an impact-specific ID
-  appeal$impsub_ID<-appeal%>%dplyr::select(c(GCDB_ID,src_db,hazspec,impactdetails))%>%
-    mutate(src_db=stringr::str_remove(stringi::stri_trans_totitle(src_db),pattern = " "))%>%
+  appeal$impsub_ID<-appeal%>%dplyr::select(c(GCDB_ID,imp_src_db,haz_spec,imp_det))%>%
+    mutate(imp_src_db=stringr::str_remove(stringi::stri_trans_totitle(imp_src_db),pattern = " "))%>%
     apply(1,function(x) paste0(x,collapse = "-"))
   # Add missing columns & reorder the dataframe to fit imp_GCDB object
   appeal%<>%AddEmptyColImp()
@@ -170,12 +169,12 @@ CleanGO_field<-function(fieldr){
   fieldr%<>%mutate(ISO3=ISO3,Continent=Continent,
                    imp_sdate=as.character(as.Date(created_at)),imp_fdate=as.character(as.Date(updated_at)),
                    ev_sdate=as.character(as.Date(start_date)),ev_fdate=as.character(as.Date(report_date)),
-                   unitdate=as.character(as.Date(report_date)),
-                   est_type="Primary",
+                   imp_unitdate=as.character(as.Date(report_date)),
+                   imp_est_type="Primary",
                    src_URL="https://goadmin.ifrc.org/api/v2/field_reports",
-                   src_org="International Federation of Red Cross and Red Crescent Societies (IFRC)",
-                   src_db="GO-FR",
-                   src_orgtype="orgtypengo",
+                   imp_src_org="International Federation of Red Cross and Red Crescent Societies (IFRC)",
+                   imp_src_db="GO-FR",
+                   imp_src_orgtype="orgtypengo",
                    spat_type="Polygon",
                    spat_srcorg="IFRC",
                    spat_ID=NA_character_,
@@ -185,7 +184,7 @@ CleanGO_field<-function(fieldr){
   fieldr$spat_ID[districts!=""]<-districts[districts!=""]
   fieldr$spat_res[districts!=""]<-"ADM-1"
   
-  fieldr$GCDB_ID<-GetGCDB_ID(fieldr,haz=fieldr$hazAb)
+  fieldr$GCDB_ID<-GetGCDB_ID(fieldr,haz=fieldr$haz_Ab)
   
   fieldr$countries<-fieldr$event<-fieldr$actions_taken<-fieldr$districts<-fieldr$regions<-fieldr$external_partners<-fieldr$supported_activities<-NULL
   
@@ -193,21 +192,21 @@ CleanGO_field<-function(fieldr){
   # Correct for some entries being government or 'other' estimates
   # Make sure that government estimates are saved separately
   inds<-grepl(fieldr$VarName,pattern = "gov_num")
-  fieldr$src_orgtype[inds]<-"orgtypegov"
-  fieldr$src_org[inds]<-"IFRC-Curated Government"
+  fieldr$imp_src_orgtype[inds]<-"orgtypegov"
+  fieldr$imp_src_org[inds]<-"IFRC-Curated Government"
   # And the 'other' column of estimates
   inds<-grepl(fieldr$VarName,pattern = "other_num")
-  fieldr$src_orgtype[inds]<-"orgtypeun,orgtyperio,orgtypengo,orgtypeacad,orgtypepriv,orgtypenews,orgtypeother"
-  fieldr$src_org[inds]<-"IFRC-Curated Other"
+  fieldr$imp_src_orgtype[inds]<-"orgtypeun,orgtyperio,orgtypengo,orgtypeacad,orgtypepriv,orgtypenews,orgtypeother"
+  fieldr$imp_src_org[inds]<-"IFRC-Curated Other"
   
   # Create an impact-specific ID
-  fieldr$impsub_ID<-fieldr%>%dplyr::select(c(GCDB_ID,src_db,hazspec,impactdetails))%>%
-    mutate(src_db=stringr::str_remove(stringi::stri_trans_totitle(src_db),pattern = " "))%>%
+  fieldr$impsub_ID<-fieldr%>%dplyr::select(c(GCDB_ID,imp_src_db,haz_spec,imp_det))%>%
+    mutate(imp_src_db=stringr::str_remove(stringi::stri_trans_totitle(imp_src_db),pattern = " "))%>%
     apply(1,function(x) paste0(x,collapse = "-"))
   # Add missing columns & reorder the dataframe to fit imp_GCDB object
   fieldr%<>%AddEmptyColImp()
   
-  fieldr%<>%filter(!is.na(impvalue))
+  fieldr%<>%filter(!is.na(imp_value))
   # fieldr$GLIDE<-GetGLIDEnum(fieldr)
   
   return(fieldr)

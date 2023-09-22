@@ -185,7 +185,7 @@ MatchUSGS<-function(impies,noextract=F){
     
   }))
   # Prioritise extracting the events with the largest impact first
-  out%<>%arrange(desc(impvalue))
+  out%<>%arrange(desc(imp_value))
   # Save out, just in case!
   saveRDS(out,"./RawData/MatchedEQ_hazimp_0D_20230627.RData")
   # If this was all you needed...

@@ -27,13 +27,13 @@ col_hazGCDB<-c("GCDB_ID"="character", # GCDB event ID
                "Continent"="character", # Local-continent
                "ev_sdate"="POSIXct", # Start date of the event or the hazard
                "ev_fdate"="POSIXct", # Finish date of the event or the hazard
-               "haztype"="character", # Impacting hazard type
-               "hazcluster"="character", # Impacting hazard cluster
-               "hazspec"="character", # Impacting specific hazard
-               "hazlink"="character", # Associated hazards to the specific hazard
-               "hazpotlink"="character", # Potential other hazards that may be associated to the specific hazard
+               "haz_type"="character", # Impacting hazard type
+               "haz_cluster"="character", # Impacting hazard cluster
+               "haz_spec"="character", # Impacting specific hazard
+               "haz_link"="character", # Associated hazards to the specific hazard
+               "haz_potlink"="character", # Potential other hazards that may be associated to the specific hazard
                "hazvalue"="numeric", # Impact units
-               "hazAb"="character", # Abbreviated, simplified name of the hazard
+               "haz_Ab"="character", # Abbreviated, simplified name of the hazard
                "haz_sev"="numeric", # Hazard severity
                "haz_sev_add"="numeric", # In case an additional severity measurement is provided (e.g. EQ magnitude AND DEPTH)
                "haz_sev_type"="character", # Type of hazard severity, (intensity or magnitude)
@@ -42,9 +42,9 @@ col_hazGCDB<-c("GCDB_ID"="character", # GCDB event ID
                "alertscore"="character", # In case the hazard data comes with either a numeric or categorical alert (e.g. PAGER)
                "forecast"="logical", # Is this hazard information a forecast or of the actual occurred hazard?
                "est_type"="character", # Estimate type: primary, secondary, modelled
-               "src_db"="character", # Source database name of hazard data
-               "src_org"="character", # Source organisation of hazard data
-               "src_orgtype"="character", # Source organisation type
+               "imp_src_db"="character", # Source database name of hazard data
+               "imp_src_org"="character", # Source organisation of hazard data
+               "imp_src_orgtype"="character", # Source organisation type
                "src_URL"="character", # URL of the hazard data
                "spat_ID"="character", # ID of the spatial object
                "spat_type"="character", # Spatial object type
@@ -54,15 +54,15 @@ col_hazGCDB<-c("GCDB_ID"="character", # GCDB event ID
                "cent_lat"="numeric") # Source organisation from where the spatial object comes from
 
 oblig_hazGCDB<-c("GCDB_ID","hazsub_ID","ISO3",
-                 "est_type","src_org","src_orgtype","src_URL",
-                 "haz_sev","haz_unit","hazAb","haztype","hazcluster")
+                 "est_type","imp_src_org","imp_src_orgtype","src_URL",
+                 "haz_sev","haz_unit","haz_Ab","haz_type","haz_cluster")
 
 GetGCDB_ID<-function(DF,haz=NULL) {
   # In case a specific hazard is fed in
-  if(!is.null(haz)) DF%<>%mutate(hazAb=haz)
+  if(!is.null(haz)) DF%<>%mutate(haz_Ab=haz)
   # Generate the names from the dataframe
   namerz<-DF%>%
-    dplyr::select(hazAb,ev_sdate,ISO3)%>%
+    dplyr::select(haz_Ab,ev_sdate,ISO3)%>%
     apply(1,function(x) paste0(x,collapse = "-"))
   
   paste0(namerz,"-GCDB")
