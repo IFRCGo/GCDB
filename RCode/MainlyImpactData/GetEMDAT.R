@@ -208,7 +208,7 @@ CleanEMDAT<-function(EMDAT){
 GetEMDAT<-function(){
   # EMDAT file
   # filez<-paste0("./RawData/MostlyImpactData/EMDAT/emdat_public_",haz,"_20230526.xlsx")
-  filez<-paste0("./CleanedData/MostlyImpactData/EMDAT/emdat_public_2023_09_14_query_uid-706djW.xlsx")
+  filez<-paste0("./CleanedData/MostlyImpactData/EMDAT/emdat_public_2023_09_22_query_uid-tUnheR.xlsx")
   # If nothing found
   if(!file.exists(filez)) return(data.frame())
   # Extract the hazard-specific EMDAT data
