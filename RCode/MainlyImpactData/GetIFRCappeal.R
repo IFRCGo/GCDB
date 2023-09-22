@@ -241,9 +241,9 @@ GetGO<-function(token=NULL){
   # Clean it up!
   fieldr%<>%CleanGO_field()
   # Get the DREF data from GO
-  dref<-ExtractGOdata(db="GO-DREF", token = token)
+  # dref<-ExtractGOdata(db="GO-DREF", token = token)
   # Clean it up!
-  fieldr%<>%CleanGO_dref()
+  # fieldr%<>%CleanGO_dref()
   # Combine both datasets and output
   rbind(appeal,fieldr)
 }
