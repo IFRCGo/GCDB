@@ -1,0 +1,27 @@
+ConvertOldGCDBobjs<-function(impies){
+  colnames(impies)[c(4,14:35)]<-c("subhaz_ID",
+                             "imp_cats",
+                             "imp_subcats",
+                             "imp_det",
+                             "imp_value",
+                             "imp_type",
+                             "imp_units",
+                             "imp_unitdate",
+                             "imp_est_type",
+                             "imp_src_db",
+                             "imp_src_org",
+                             "imp_src_orgtype",
+                             "imp_src_URL",
+                             "haz_Ab",
+                             "haz_type",
+                             "haz_cluster",
+                             "haz_spec",
+                             "haz_link",
+                             "haz_potlink",
+                             "imp_spat_ID",
+                             "imp_spat_type",
+                             "imp_spat_res",
+                             "imp_spat_srcorg")
+  colnames(impies)[4]
+  
+}
