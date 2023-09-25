@@ -477,13 +477,13 @@ DesHazards<-function(Dessie){
   # Also check for duplicates
   colConv%<>%dplyr::select(-ISO3)%>%distinct()
   # Extract the names of the disasters
-  haznams<-colConv$event[!is.na(colConv$hazAb)]
+  haznams<-colConv$event[!is.na(colConv$haz_Ab)]
   # Now remove all non-relevant hazards
   Dessie%<>%mutate(event=str_to_lower(event))%>%filter(event%in%haznams)
   # Reduce the translated vector and merge
   Dessie%<>%left_join(colConv%>%dplyr::select(-c(event_en)),by = "event")
   # Remove all irrelevant hazards
-  Dessie%<>%filter(!is.na(haztype))
+  Dessie%<>%filter(!is.na(haz_type))
   
   return(Dessie)
 }
@@ -552,44 +552,44 @@ PostModTransies<-function(colConv){
   colConv$haz[grepl("cyclone & flood",colConv$event_en,ignore.case = T)]<-"TC,FL"
   
   # hazard Types
-  colConv$haztype[colConv$haz%in%c("FL","ST","TC","DR","ET","SN","CW","HW","SS")]<-"haztypehydromet"
-  colConv$haztype[colConv$haz%in%c("EQ","LS","TS","VO","AV")]<-"haztypegeohaz"
-  colConv$haztype[colConv$haz=="WF"]<-"haztypeenviron"
-  colConv$haztype[colConv$haz=="EP"]<-"haztypebio"
-  colConv$haztype[grepl("cyclone & flood",colConv$event_en,ignore.case = T)]<-"haztypehydromet"
+  colConv$haz_type[colConv$haz%in%c("FL","ST","TC","DR","ET","SN","CW","HW","SS")]<-"haz_typehydromet"
+  colConv$haz_type[colConv$haz%in%c("EQ","LS","TS","VO","AV")]<-"haz_typegeohaz"
+  colConv$haz_type[colConv$haz=="WF"]<-"haz_typeenviron"
+  colConv$haz_type[colConv$haz=="EP"]<-"haz_typebio"
+  colConv$haz_type[grepl("cyclone & flood",colConv$event_en,ignore.case = T)]<-"haz_typehydromet"
   
   # Hazard clusters
-  colConv$hazcluster[colConv$haz=="DR"]<-"hazhmprecip,hazhmtemp"
-  colConv$hazcluster[colConv$haz=="FL"]<-"hazhmflood"
-  colConv$hazcluster[colConv$haz=="ST"]<-"hazhmconv,hazhmwind,hazhmpress,hazhmflood"
-  colConv$hazcluster[grepl("rain",colConv$event_en,ignore.case = T)]<-"hazhmprecip"
-  colConv$hazcluster[grepl("wind",colConv$event_en,ignore.case = T)]<-"hazhmwind,hazhmpress"
-  colConv$hazcluster[grepl("lightning",colConv$event_en,ignore.case = T)]<-"hazhmconv"
-  colConv$hazcluster[colConv$haz=="ET"]<-"hazhmtemp"
-  colConv$hazcluster[colConv$haz=="TC"]<-"hazhmwind,hazhmpress,hazhmconv,hazhmflood"
-  colConv$hazcluster[colConv$haz=="TS"]<-"hazgeoother,hazhmmarine,hazhmflood"
-  colConv$hazcluster[colConv$haz=="EQ"]<-"hazgeoseis"
-  colConv$hazcluster[colConv$haz=="VO"]<-"hazgeovolc"
-  colConv$hazcluster[colConv$haz=="WF"]<-"hazenvenvdeg"
-  colConv$hazcluster[grepl("hail",colConv$event_en,ignore.case = T)]<-"hazhmprecip"
-  colConv$hazcluster[colConv$haz=="LS"]<-"hazgeoseis,hazenvenvdeg,hazgeovolc,hazgeoother"
-  colConv$hazcluster[grepl("rock",colConv$event_en,ignore.case = T)]<-"hazhmterr"
-  colConv$hazcluster[grepl("mud",colConv$event_en,ignore.case = T)]<-"hazhmterr"
-  colConv$hazcluster[grepl("liquefaction",colConv$event_en,ignore.case = T)]<-"hazgeoseis,hazgeoother"
-  colConv$hazcluster[colConv$haz=="AV"]<-"hazhmterr"
-  colConv$hazcluster[grepl("surge",colConv$event_en,ignore.case = T)]<-"hazhmmarine,hazhmflood,hazhmwind"
-  colConv$hazcluster[grepl("tidal",colConv$event_en,ignore.case = T)]<-"hazhmmarine,hazhmflood"
-  colConv$hazcluster[grepl("coastal flood",colConv$event_en,ignore.case = T)]<-"hazhmflood,hazhmmarine"
-  colConv$hazcluster[grepl("wave",colConv$event_en,ignore.case = T)]<-"hazhmmarine,hazhmflood"
-  colConv$hazcluster[grepl("hail",colConv$event_en,ignore.case = T)]<-"hazhmprecip"
-  colConv$hazcluster[grepl("tropical storm",colConv$event_en,ignore.case = T)]<-"hazhmwind"
-  colConv$hazcluster[grepl("convective storm",colConv$event_en,ignore.case = T)]<-"hazhmconv"
-  colConv$hazcluster[grepl("electric",colConv$event_en,ignore.case = T)]<-"hazhmconv"
-  colConv$hazcluster[grepl("cold wave",colConv$event_en,ignore.case = T)]<-"hazhmtemp"
+  colConv$haz_cluster[colConv$haz=="DR"]<-"hazhmprecip,hazhmtemp"
+  colConv$haz_cluster[colConv$haz=="FL"]<-"hazhmflood"
+  colConv$haz_cluster[colConv$haz=="ST"]<-"hazhmconv,hazhmwind,hazhmpress,hazhmflood"
+  colConv$haz_cluster[grepl("rain",colConv$event_en,ignore.case = T)]<-"hazhmprecip"
+  colConv$haz_cluster[grepl("wind",colConv$event_en,ignore.case = T)]<-"hazhmwind,hazhmpress"
+  colConv$haz_cluster[grepl("lightning",colConv$event_en,ignore.case = T)]<-"hazhmconv"
+  colConv$haz_cluster[colConv$haz=="ET"]<-"hazhmtemp"
+  colConv$haz_cluster[colConv$haz=="TC"]<-"hazhmwind,hazhmpress,hazhmconv,hazhmflood"
+  colConv$haz_cluster[colConv$haz=="TS"]<-"hazgeoother,hazhmmarine,hazhmflood"
+  colConv$haz_cluster[colConv$haz=="EQ"]<-"hazgeoseis"
+  colConv$haz_cluster[colConv$haz=="VO"]<-"hazgeovolc"
+  colConv$haz_cluster[colConv$haz=="WF"]<-"hazenvenvdeg"
+  colConv$haz_cluster[grepl("hail",colConv$event_en,ignore.case = T)]<-"hazhmprecip"
+  colConv$haz_cluster[colConv$haz=="LS"]<-"hazgeoseis,hazenvenvdeg,hazgeovolc,hazgeoother"
+  colConv$haz_cluster[grepl("rock",colConv$event_en,ignore.case = T)]<-"hazhmterr"
+  colConv$haz_cluster[grepl("mud",colConv$event_en,ignore.case = T)]<-"hazhmterr"
+  colConv$haz_cluster[grepl("liquefaction",colConv$event_en,ignore.case = T)]<-"hazgeoseis,hazgeoother"
+  colConv$haz_cluster[colConv$haz=="AV"]<-"hazhmterr"
+  colConv$haz_cluster[grepl("surge",colConv$event_en,ignore.case = T)]<-"hazhmmarine,hazhmflood,hazhmwind"
+  colConv$haz_cluster[grepl("tidal",colConv$event_en,ignore.case = T)]<-"hazhmmarine,hazhmflood"
+  colConv$haz_cluster[grepl("coastal flood",colConv$event_en,ignore.case = T)]<-"hazhmflood,hazhmmarine"
+  colConv$haz_cluster[grepl("wave",colConv$event_en,ignore.case = T)]<-"hazhmmarine,hazhmflood"
+  colConv$haz_cluster[grepl("hail",colConv$event_en,ignore.case = T)]<-"hazhmprecip"
+  colConv$haz_cluster[grepl("tropical storm",colConv$event_en,ignore.case = T)]<-"hazhmwind"
+  colConv$haz_cluster[grepl("convective storm",colConv$event_en,ignore.case = T)]<-"hazhmconv"
+  colConv$haz_cluster[grepl("electric",colConv$event_en,ignore.case = T)]<-"hazhmconv"
+  colConv$haz_cluster[grepl("cold wave",colConv$event_en,ignore.case = T)]<-"hazhmtemp"
   
   # Specific Hazards
-  colConv$hazspec[colConv$haz=="EQ"]<-"GH0001,GH0002"
-  colConv$hazpotlink[colConv$haz=="EQ"]<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
+  colConv$haz_spec[colConv$haz=="EQ"]<-"GH0001,GH0002"
+  colConv$haz_potlink[colConv$haz=="EQ"]<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
   
   # Save it out
   openxlsx::write.xlsx(colConv,"./Taxonomies/MostlyImpactData/Desinventar_HIP.xlsx")
@@ -599,7 +599,7 @@ PostModTransies<-function(colConv){
 
 Des2tabGCDB<-function(Dessie){
   # Modify date names
-  Dessie$imp_sdate<-Dessie$imp_fdate<-Dessie$ev_sdate<-Dessie$ev_fdate<-Dessie$unitdate<-Dessie$date
+  Dessie$imp_sdate<-Dessie$imp_fdate<-Dessie$ev_sdate<-Dessie$ev_fdate<-Dessie$imp_unitdate<-Dessie$date
   # Any event without a date are automatically removed
   Dessie%<>%filter(!is.na(imp_sdate))
   # Make sure we can properly match them both
@@ -616,9 +616,9 @@ Des2tabGCDB<-function(Dessie){
   # Add some of the extra details that are Desinventar-specific
   Dessie$imp_est_type<-"esttype_prim"
   Dessie$src_URL<-paste0(desbaseurl,Dessie$ISO3,".zip")
-  Dessie$spat_srcorg<-Dessie$src_org<-"Local Government Estimate"
-  Dessie$src_db<-"Desinventar"
-  Dessie$src_orgtype<-"orgtypegov"
+  Dessie$spat_srcorg<-Dessie$imp_src_org<-"Local Government Estimate"
+  Dessie$imp_src_db<-"Desinventar"
+  Dessie$imp_src_orgtype<-"orgtypegov"
   Dessie$spat_type<-"Polygon"
   Dessie$spat_ID<-apply(Dessie[,c("level1","level2")],1,function(x) {
     if(all(is.na(x))) return(NA_character_)
@@ -634,8 +634,8 @@ Des2tabGCDB<-function(Dessie){
   # Correct the labels of the impacts, melting by impact detail
   Dessie%<>%ImpLabs(nomDB = "Desinventar")
   # Create an impact-specific ID
-  Dessie$impsub_ID<-Dessie%>%dplyr::select(c(GCDB_ID,src_db,hazspec,impactdetails,spat_ID))%>%
-    mutate(src_db=stringr::str_remove(stringi::stri_trans_totitle(src_db),pattern = " "))%>%
+  Dessie$impsub_ID<-Dessie%>%dplyr::select(c(GCDB_ID,imp_src_db,haz_spec,imp_det,spat_ID))%>%
+    mutate(imp_src_db=stringr::str_remove(stringi::stri_trans_totitle(imp_src_db),pattern = " "))%>%
     apply(1,function(x) paste0(x,collapse = "-"))
   # Add missing columns & reorder the dataframe to fit imp_GCDB object
   Dessie%>%AddEmptyColImp()
@@ -666,7 +666,7 @@ GetDesinventar<-function(){
   # Get in tabGCDB format
   impies<-Des2tabGCDB(Dessie)
   # The Desinventar database has many entries per single event, so we take the most recent estimate
-  impies<-impies[nrow(impies):1,]%>%filter(impvalue>0)
+  impies<-impies[nrow(impies):1,]%>%filter(imp_value>0)
   # Find the duplicated elements
   inds<-impies%>%dplyr::select(impsub_ID)%>%duplicated()
   
@@ -674,7 +674,7 @@ GetDesinventar<-function(){
   # Form a GCDB impacts object from EMDAT data (if there is a problem, return an empty tabGCDB object)
   # tryCatch(new("tabGCDB",impies),error=function(e) new("tabGCDB"))
 }
-# tmp<-Dessie[nrow(Dessie):1,]%>%filter(impvalue>0)
+# tmp<-Dessie[nrow(Dessie):1,]%>%filter(imp_value>0)
 # inds<-tmp%>%dplyr::select(impsub_ID)%>%duplicated()
 # Dessie<-tmp[!inds,]
 # saveRDS(Dessie,"./CleanedData/MostlyImpactData/Desinventar/subDessie.RData")

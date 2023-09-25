@@ -226,7 +226,7 @@ FilterGDACS<-function(haz=NULL,syear=2016L,fyear=AsYear(Sys.Date()),list_GDACS=N
                                         country=dfct$country,
                                         ev_sdate=rep(as.Date(as.POSIXct(tmp$properties$fromdate),format = "%Y%m%d"),len),
                                         ev_fdate=rep(as.Date(as.POSIXct(tmp$properties$todate),format = "%Y%m%d"),len),
-                                        hazAb=rep(tmp$properties$eventtype,len),
+                                        haz_Ab=rep(tmp$properties$eventtype,len),
                                         hazard_severity=rep(tmp$properties$severitydata$severity,len),
                                         txt,
                                         GLIDE=rep(tmp$properties$glide,len),
@@ -250,38 +250,38 @@ FilterGDACS<-function(haz=NULL,syear=2016L,fyear=AsYear(Sys.Date()),list_GDACS=N
 
 convGDACS_GCDB<-function(GDACS){
   
-  GDACS$imp_sdate<-GIDD$unitdate<-GDACS$ev_sdate
+  GDACS$imp_sdate<-GIDD$imp_unitdate<-GDACS$ev_sdate
   GDACS$imp_fdate<-GDACS$ev_fdate
   GDACS$ev_name_en<-GDACS$ev_name_orig
   # Add the continent, then remove the unnecesary layers
   GDACS%<>%mutate(Continent=convIso3Continent(ISO3))%>%
     filter(!is.na(Continent))
   # Add alertscore as the impact value
-  GDACS$impvalue<-GDACS$alertscore
+  GDACS$imp_value<-GDACS$alertscore
   # This estimate is modelled
   GDACS$imp_est_type<-"esttype_model"
   GDACS$haz_est_type<-"esttype_second"
   # Organisation
-  GDACS$src_db<-"GDACS"
-  GDACS$src_org<-"European Commission"
-  GDACS$src_orgtype<-"orgtyperio"
+  GDACS$imp_src_db<-"GDACS"
+  GDACS$imp_src_org<-"European Commission"
+  GDACS$imp_src_orgtype<-"orgtyperio"
   colnames(GDACS)[colnames(GDACS)=="link"]<-"src_URL"
   
   c(
     
     "impsub_ID"="character", # ID of each impact element in the overall event
-    "imphaz_ID"="character", # ID of each hazard of each impact element in the overall event
-    "impactcats"="character", # Impact category
-    "impactsubcats"="character", # Impact subcategory
-    "impactdetails"="character", # Impact subsubcategory
-    "imptype"="character", # Impact units
+    "subhaz_ID"="character", # ID of each hazard of each impact element in the overall event
+    "imp_cats"="character", # Impact category
+    "imp_subcats"="character", # Impact subcategory
+    "imp_det"="character", # Impact subsubcategory
+    "imp_type"="character", # Impact units
     "imp_units"="character", # Impact unit (e.g. stock or currency)
     
-    "haztype"="character", # Impacting hazard type
-    "hazcluster"="character", # Impacting hazard cluster
-    "hazspec"="character", # Impacting specific hazard
-    "hazlink"="character", # Associated impactful-hazards to the specific hazard
-    "hazpotlink"="character", # Potential other impactful-hazards that may be associated to the specific hazard
+    "haz_type"="character", # Impacting hazard type
+    "haz_cluster"="character", # Impacting hazard cluster
+    "haz_spec"="character", # Impacting specific hazard
+    "haz_link"="character", # Associated impactful-hazards to the specific hazard
+    "haz_potlink"="character", # Potential other impactful-hazards that may be associated to the specific hazard
     "spat_ID"="character", # ID of the spatial object
     "spat_type"="character", # Spatial object type
     "spat_res"="character", # Spatial resolution of impact estimate
@@ -326,28 +326,28 @@ GetGDACSPoly<-function(GDACS){
     # Get the shapefile
     poly<-suppressWarnings(geojsonsf::geojson_sf(unique(GDACS$geom_link[ind])))
     # Modify per hazard
-    if(unique(GDACS$hazAb[ind])=="TC"){
+    if(unique(GDACS$haz_Ab[ind])=="TC"){
       # Take only the three-level wind-speed risk boundaries
       poly%<>%filter(Class%in%c("Poly_Red","Poly_Orange","Poly_Green"))%>%
         dplyr::select(any_of(poly_ccodes))
-    } else if(unique(GDACS$hazAb[ind])=="EQ"){
+    } else if(unique(GDACS$haz_Ab[ind])=="EQ"){
       # Check to see that there is some actual shakemap data contained in the polygon
       if(!any(grepl("intensity",colnames(poly)))) next
       # Take all the shakemap intensity boundaries available, except those below 4.5
       poly%<>%filter(grepl("Poly_SMP",Class) & intensity>=4.5)%>%
         mutate(polygonlabel=paste0("Intensity-",intensity),forecast=NA)%>%
         dplyr::select(any_of(poly_ccodes))
-    } else if(unique(GDACS$hazAb[ind])=="FL"){
+    } else if(unique(GDACS$haz_Ab[ind])=="FL"){
       # Take the 'affected' area... I have absolutely no idea what the definition is, nor the difference with 'global area'
       poly%<>%filter(Class%in%c("Poly_Affected"))%>%
         dplyr::select(any_of(poly_ccodes))%>%
         mutate(forecast=NA)
-    } else if(unique(GDACS$hazAb[ind])=="DR"){
+    } else if(unique(GDACS$haz_Ab[ind])=="DR"){
       # Take the 'affected' area to the drought, whatever that means
       poly%<>%filter(Class%in%c("Poly_area"))%>%
         dplyr::select(any_of(poly_ccodes))%>%
         mutate(forecast=NA)
-    } else if(unique(GDACS$hazAb[ind])=="VO"){
+    } else if(unique(GDACS$haz_Ab[ind])=="VO"){
       # Take both the forecast ("FCST") and observed ("OBS") cones
       poly%<>%filter(grepl("Poly_Cones_",Class) | grepl("Poly_Circle",Class))%>%
         dplyr::select(any_of(poly_ccodes))%>%
@@ -360,7 +360,7 @@ GetGDACSPoly<-function(GDACS){
     BigPoly$hazsub_ID<-BigPoly$spat_ID<-paste0(unique())
     
     
-    GetGCDB_ID(Dessie,haz=unique(GDACS$hazAb[ind]))
+    GetGCDB_ID(Dessie,haz=unique(GDACS$haz_Ab[ind]))
     
     
     
@@ -461,7 +461,7 @@ GetShakeGDACS_ev<-function(GDB){
                            date=rep(GDB$sdate[1],ll),
                            id=rep(qq,ll)))
     
-    if(GDB$hazAb[1]=="EQ"){
+    if(GDB$haz_Ab[1]=="EQ"){
       poly%<>%filter(Intensity<GDB$hazard_severity[1])%>%
         rbind(data.frame(eventid=GDB$eventid[1],Intensity=GDB$hazard_severity[1],
                          Longitude=GDB$long[1],Latitude=GDB$lat[1],ncontour=0,
@@ -491,7 +491,7 @@ GetShakeGDACS_ev<-function(GDB){
                    date=rep(GDB$sdate[i],ll),
                    id=rep(qq,ll))
       
-      if(GDB$hazAb[i]=="EQ"){
+      if(GDB$haz_Ab[i]=="EQ"){
         poly%<>%rbind(tpoly%>%
                         rbind(data.frame(eventid=GDB$eventid[i],Intensity=GDB$hazard_severity[i],
                                          Longitude=GDB$long[i],Latitude=GDB$lat[i],ncontour=0,
@@ -540,7 +540,7 @@ GetShakeGDACS<-function(dfGDACS,hazard="EQ",directory,plotty=FALSE){
   # url<-"https://www.gdacs.org/gdacsapi/api/shakemap/getdetails?id=9187"
   # url taken from dfGDACS$link
   
-  dfGDACS%<>%filter(hazAb==hazard)%>%arrange(desc(hazard_severity))
+  dfGDACS%<>%filter(haz_Ab==hazard)%>%arrange(desc(hazard_severity))
   
   # Remove earthquakes that are unlikely to cause damage - they probably won't be in Helix
   if(hazard=="EQ") {
@@ -860,7 +860,7 @@ PolyIntegrateData_old<-function(data,poly,Ldist=FALSE,av=FALSE){
 #      7.0    122006.5   349463808
 
   # Helix Names : 
-  # unique(helix$hazAb)
+  # unique(helix$haz_Ab)
   # [1] "Flood"               "Storm"               NA                   
   # [4] "Wildfire"            "Earthquake"         "Extreme temperature"
   # [7] "Volcanic eruption"   "Drought"            "Mass movement"  

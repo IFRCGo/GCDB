@@ -9,8 +9,8 @@ ExtractGFDmeta<-function(metaGFD){
   }))
   row.names(out)<-NULL
   
-  out%<>%mutate(hazsub_ID=`system:index`,hazAb="FL",haztype="haztypehydromet",hazcluster="hazhmflood",
-                hazspec="",
+  out%<>%mutate(hazsub_ID=`system:index`,haz_Ab="FL",haz_type="haz_typehydromet",haz_cluster="hazhmflood",
+                haz_spec="",
                 dfo_main_cause=str_to_lower(dfo_main_cause),
                 ev_sdate=as.Date(str_split(str_split(hazsub_ID,"From_",simplify = T)[,2],"_to_",simplify = T)[,1],format = "%Y%m%d"),
                 ev_fdate=as.Date(str_split(str_split(hazsub_ID,"From_",simplify = T)[,2],"_to_",simplify = T)[,2],format = "%Y%m%d"))
@@ -18,8 +18,8 @@ ExtractGFDmeta<-function(metaGFD){
   
   
   # Dam-related incidents
-  out$haztype[grepl("dam",out$dfo_main_cause) & !grepl("damrey",out$dfo_main_cause)]<-"haztypehydromet,haztypetech"
-  out$hazcluster[grepl("dam",out$dfo_main_cause) & !grepl("damrey",out$dfo_main_cause)]<-"hazhmflood,haztechstrfail,haztechflood"
+  out$haz_type[grepl("dam",out$dfo_main_cause) & !grepl("damrey",out$dfo_main_cause)]<-"haz_typehydromet,haz_typetech"
+  out$haz_cluster[grepl("dam",out$dfo_main_cause) & !grepl("damrey",out$dfo_main_cause)]<-"hazhmflood,haztechstrfail,haztechflood"
   # Now export only the variables we want
   out%>%transmute(GLIDE=glide_index,
                   ev_sdate=ev_sdate,ev_fdate=ev_fdate,

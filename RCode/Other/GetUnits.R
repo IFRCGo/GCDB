@@ -27,7 +27,7 @@ tableNISTfactors$code%<>%str_remove_all(" ")
 
 units<-read.csv("./RawData/Other/MeasurementUnit_Codes2.csv")
 units%<>%reshape2::melt(measure.vars=colnames(units))%>%filter(value!="")%>%
-  mutate(list_name="impmeasunits")%>%dplyr::select(list_name,value,variable)
+  mutate(list_name="impimp_units")%>%dplyr::select(list_name,value,variable)
 colnames(units)[2:3]<-c("codename","group")
 
 units$group%<>%str_to_lower()%>%str_remove_all(" ")
@@ -39,7 +39,7 @@ write_csv("CleanedData/Other/measurementunits.csv")
 
 units<-read.csv("./RawData/Other/MeasurementUnit_Codes2.csv")
 units%<>%reshape2::melt(measure.vars=colnames(units))%>%filter(value!="")%>%
-  mutate(list_name="impmeasunits")%>%dplyr::select(list_name,value,variable)
+  mutate(list_name="impimp_units")%>%dplyr::select(list_name,value,variable)
 colnames(units)[2:3]<-c("codename","group")
 units$codegroup<-units$group%>%str_to_lower()%>%str_remove_all(" ")
 units$codegroup<-paste0("units",units$codegroup)

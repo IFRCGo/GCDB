@@ -17,15 +17,9 @@ add_tabGCDBinfo<-function(){
        org_sec="Information Management - Geneva, CH")
 }
  
+               # Basic event-level information
 col_tabGCDB<-c("GCDB_ID"="character", # GCDB event ID
                "GLIDE"="character", # GLIDE number of impacting-hazard (not necessarily the primary hazard)
-               
-               
-               # add the fucking principal event hazard!
-               
-               
-               "impsub_ID"="character", # ID of each impact element in the overall event
-               "imphaz_ID"="character", # ID of each hazard event in the overall event, e.g. aftershocks or flash floods with cyclone
                "ev_name_orig"="character", # Name of the event in original language
                "ev_name_en"="character", # Name of the event in english
                "location"="character", # general description of hazard location
@@ -33,44 +27,68 @@ col_tabGCDB<-c("GCDB_ID"="character", # GCDB event ID
                "Continent"="character", # Local-continent
                "ev_sdate"="POSIXct", # Start date of the event or the impacting-hazard
                "ev_fdate"="POSIXct", # Finish date of the event or the impacting-hazard
+               # Add triggering hazard details
+               "prim_haz_Ab"="character", # Primary (triggering) hazard 2-letter abbreviation
+               "prim_haz_type"="character", # Primary (triggering) hazard  type
+               "prim_haz_cluster"="character", # Primary (triggering) hazard cluster 
+               "prim_haz_spec"="character", # Primary (triggering) specific hazard 
+               
+               # Impact information
+               "impsub_ID"="character", # ID of each impact element in the overall event
                "imp_sdate"="POSIXct", # Start date of the impact estimate (in case it aggregates over a range of dates)
                "imp_fdate"="POSIXct", # End date of the impact estimate (in case it aggregates over a range of dates)
+               "imp_cats"="character", # Impact category
+               "imp_subcats"="character", # Impact subcategory
+               "imp_det"="character", # Impact subsubcategory
+               "imp_value"="numeric", # Impact quantity
+               "imp_type"="character", # Impact units
+               "imp_units"="character", # Impact type (e.g. excess mortality, displacement stock)
+               "imp_unitdate"="character", # date associated to the unit (for currencies almost exclusively)
+               "imp_est_type"="character", # Estimate type: primary, secondary, modelled
+               "imp_src_db"="character", # Source database name of impact estimate or the curated estimate
+               "imp_src_org"="character", # Source organisation of impact estimate or the curated estimate
+               "imp_src_orgtype"="character", # Source organisation type
+               "imp_src_URL"="character", # URL of the impact estimate
+               
+               # Hazard information (can change from impact to impact for the same event)
+               "subhaz_ID"="character", # ID of each hazard event in the overall event, e.g. aftershocks or flash floods with cyclone
                "haz_sdate"="POSIXct", # Start date of the hazard estimate (in case it aggregates over a range of dates)
                "haz_fdate"="POSIXct", # End date of the hazard estimate (in case it aggregates over a range of dates)
-               "impactcats"="character", # Impact category
-               "impactsubcats"="character", # Impact subcategory
-               "impactdetails"="character", # Impact subsubcategory
-               "impvalue"="numeric", # Impact quantity
-               "imptype"="character", # Impact units
-               "imp_units"="character", # Impact type (e.g. excess mortality, displacement stock)
-               "unitdate"="character", # date associated to the unit (for currencies almost exclusively)
-               "imp_est_type"="character", # Estimate type: primary, secondary, modelled
+               "haz_Ab"="character", # Abbreviated, simplified name of the hazard
+               "haz_type"="character", # Impacting hazard type
+               "haz_cluster"="character", # Impacting hazard cluster
+               "haz_spec"="character", # Impacting specific hazard
+               "haz_link"="character", # Associated impactful-hazards to the specific hazard
+               "haz_potlink"="character", # Potential other impactful-hazards that may be associated to the specific hazard
+               "haz_maxvalue"="numeric", # Maximum intensity or magnitude of the hazard, e.g.  
+               "haz_units"="character", # Units of the max intensity/magnitude value estimate
                "haz_est_type"="character", # Estimate type: primary, secondary, modelled
-               "src_db"="character", # Source database name of impact estimate or the curated estimate
-               "src_org"="character", # Source organisation of impact estimate or the curated estimate
-               "src_orgtype"="character", # Source organisation type
-               "src_URL"="character", # URL of the impact estimate
-               "hazAb"="character", # Abbreviated, simplified name of the hazard
-               "haztype"="character", # Impacting hazard type
-               "hazcluster"="character", # Impacting hazard cluster
-               "hazspec"="character", # Impacting specific hazard
-               "hazlink"="character", # Associated impactful-hazards to the specific hazard
-               "hazpotlink"="character", # Potential other impactful-hazards that may be associated to the specific hazard
-               "spat_ID"="character", # ID of the spatial object
-               "spat_type"="character", # Spatial object type
-               "spat_res"="character", # Spatial resolution of impact estimate
-               "spat_srcorg"="character") # Source organisation from where the spatial object comes from
+               "haz_src_db"="character", # Source database name of impact estimate or the curated estimate
+               "haz_src_org"="character", # Source organisation of impact estimate or the curated estimate
+               "haz_src_orgtype"="character", # Source organisation type
+               "haz_src_URL"="character", # URL of the impact estimate
+               
+               # Spatial info - impact
+               "imp_spat_ID"="character", # ID of the spatial object
+               "imp_spat_type"="character", # Spatial object type
+               "imp_spat_res"="character", # Spatial resolution of impact estimate
+               "imp_spat_srcorg"="character", # URL of the impact estimate
+               # Spatial info - hazard
+               "haz_spat_ID"="character", # ID of the spatial object
+               "haz_spat_type"="character", # Spatial object type
+               "haz_spat_res"="character", # Spatial resolution of impact estimate
+               "haz_spat_srcorg"="character") # Source organisation from where the spatial object comes from
 
-oblig_tabGCDB<-c("GCDB_ID","impsub_ID","ISO3","impcat","impsubcat","imp_units",
-                 "imp_type","est_type","src_org","src_orgtype","src_URL",
-                 "hazAb","haztype","hazcluster")
+oblig_tabGCDB<-c("GCDB_ID","impsub_ID","ISO3","imp_cats","imp_subcats","imp_units",
+                 "imp_type","imp_est_type","imp_src_org","imp_src_orgtype","imp_src_URL",
+                 "haz_Ab","haz_type","haz_cluster")
 
 GetGCDB_ID<-function(DF,haz=NULL) {
   # In case a specific hazard is fed in
-  if(!is.null(haz)) DF%<>%mutate(hazAb=haz)
+  if(!is.null(haz)) DF%<>%mutate(haz_Ab=haz)
   # Generate the names from the dataframe
   namerz<-DF%>%
-    dplyr::select(hazAb,ev_sdate,ISO3)%>%
+    dplyr::select(haz_Ab,ev_sdate,ISO3)%>%
     apply(1,function(x) paste0(x,collapse = "-"))
   
   paste0(namerz,"-GCDB")
@@ -88,15 +106,15 @@ AddEmptyColImp<-function(DF){
 
 ImpLabs<-function(ImpDB,nomDB="Desinventar",dropName=T){
   # Open up the database impact taxonomy conversion file
-  imptax<-openxlsx::read.xlsx("./RCode/MainlyImpactData/ConvertImpact_Taxonomy.xlsx")%>%
-    filter(src_db==nomDB)
+  imptax<-openxlsx::read.xlsx("./Taxonomies/MostlyImpactData/ConvertImpact_Taxonomy.xlsx")%>%
+    filter(imp_src_db==nomDB)
   # Find where the Desinventar data impact estimates stop 
   vlim<-which(colnames(ImpDB)%in%imptax$VarName)
   # For all columns that correspond to impact estimates, return the data
   ImpDB%<>%reshape2::melt(measure.vars=colnames(ImpDB)[vlim])%>%
-    mutate(VarName=as.character(variable),impvalue=as.numeric(value))%>%
+    mutate(VarName=as.character(variable),imp_value=as.numeric(value))%>%
     dplyr::select(-c(variable,value))%>%
-    left_join(dplyr::select(imptax,-c("src_orgtype","src_org","src_db")),by="VarName")
+    left_join(dplyr::select(imptax,-c("imp_src_orgtype","imp_src_org","imp_src_db")),by="VarName")
   # Spit it out!
   if(dropName) return(ImpDB) else return(dplyr::select(ImpDB,-VarName))
   

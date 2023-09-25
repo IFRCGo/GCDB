@@ -90,7 +90,7 @@ GatherAllImps<-function(lhaz){
   do.call(rbind,lapply(lhaz,function(haz) {
     print(haz)
     impies<-GetImpacts(haz=haz)
-    impies$hazAb<-haz
+    impies$haz_Ab<-haz
     return(impies)
   }))
 }
