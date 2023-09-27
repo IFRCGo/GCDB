@@ -35,6 +35,7 @@ desbaseurl<-"https://www.desinventar.net/DesInventar/download/DI_export_"
 
 GetDessie<-function(iso3,forcer=F){
   iso3%<>%str_to_lower()
+  print(iso3)
   # Don't waste time if the file already exists
   if(file.exists(paste0("./RawData/MostlyImpactData/Desinventar/",iso3,"/DI_export_",iso3,".xml")) & !forcer) return(T)
   # Temporary location to store the zip file
@@ -429,7 +430,7 @@ ReadDessie<-function(iso3, forcer=F){
   # Extract the aggregated data
   if(file.exists(savout) & !forcer) {
     # Keep only the important columns
-    impacts<-ExtImpDev(readRDS(savout))
+    impacts<-readRDS(savout)
   } else {
     xmlly<-xml2::as_list(xml2::read_xml(paste0("./RawData/MostlyImpactData/Desinventar/",iso3,"/DI_export_",iso3,".xml")))
     saveRDS(xmlly,savout)
@@ -444,7 +445,8 @@ ReadDessie<-function(iso3, forcer=F){
   openxlsx::write.xlsx(impacts,paste0("./CleanedData/MostlyImpactData/Desinventar/",iso3,"/",iso3,".xlsx"))
   # If needed, extract the admin boundary data
   if(!file.exists(paste0("./CleanedData/SocioPoliticalData/Desinventar/",iso3,"/ADM_",iso3,".geojson"))){
-    ADMout<-ExtADMDev(xmlly,iso3)
+    ADMout<-xml2::as_list(xml2::read_xml(paste0("./RawData/MostlyImpactData/Desinventar/",iso3,"/DI_export_",iso3,".xml")))%>%
+      ExtADMDev(iso3)
     # Create a folder for the results
     dir.create(paste0("./CleanedData/SocioPoliticalData/Desinventar/",iso3),showWarnings = F,recursive = T)
     # Save out to be read in later on
@@ -616,11 +618,11 @@ Des2tabGCDB<-function(Dessie){
   # Add some of the extra details that are Desinventar-specific
   Dessie$imp_est_type<-"esttype_prim"
   Dessie$src_URL<-paste0(desbaseurl,Dessie$ISO3,".zip")
-  Dessie$spat_srcorg<-Dessie$imp_src_org<-"Local Government Estimate"
+  Dessie$imp_spat_srcorg<-Dessie$imp_src_org<-"Local Government Estimate"
   Dessie$imp_src_db<-"Desinventar"
   Dessie$imp_src_orgtype<-"orgtypegov"
   Dessie$spat_type<-"Polygon"
-  Dessie$spat_ID<-apply(Dessie[,c("level1","level2")],1,function(x) {
+  Dessie$imp_spat_ID<-apply(Dessie[,c("level1","level2")],1,function(x) {
     if(all(is.na(x))) return(NA_character_)
     if(any(is.na(x))) return(x[!is.na(x)])
     paste0(c(ifelse(is.na(x[1]),"",x[1]),
@@ -634,7 +636,7 @@ Des2tabGCDB<-function(Dessie){
   # Correct the labels of the impacts, melting by impact detail
   Dessie%<>%ImpLabs(nomDB = "Desinventar")
   # Create an impact-specific ID
-  Dessie$impsub_ID<-Dessie%>%dplyr::select(c(GCDB_ID,imp_src_db,haz_spec,imp_det,spat_ID))%>%
+  Dessie$impsub_ID<-Dessie%>%dplyr::select(c(GCDB_ID,imp_src_db,haz_spec,imp_det,imp_spat_ID))%>%
     mutate(imp_src_db=stringr::str_remove(stringi::stri_trans_totitle(imp_src_db),pattern = " "))%>%
     apply(1,function(x) paste0(x,collapse = "-"))
   # Add missing columns & reorder the dataframe to fit imp_GCDB object
@@ -666,7 +668,7 @@ GetDesinventar<-function(){
   # Get in tabGCDB format
   impies<-Des2tabGCDB(Dessie)
   # The Desinventar database has many entries per single event, so we take the most recent estimate
-  impies<-impies[nrow(impies):1,]%>%filter(imp_value>0)
+  impies<-impies[nrow(impies):1,]#%>%filter(imp_value>0)
   # Find the duplicated elements
   inds<-impies%>%dplyr::select(impsub_ID)%>%duplicated()
   

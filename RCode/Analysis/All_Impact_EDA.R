@@ -1,7 +1,10 @@
 source("./RCode/Analysis/SpatialAnalysis.R")
 options(scipen = 999)
 
-lhaz<-c("EQ","FL","TC","VO","DR","ET","LS","ST","WF")
+lhaz<-c("EQ","FL","TC","VO","DR","ET","LS","ST","WF","DZ")
+
+# centrams<-c("COL","CRI","PAN","HND")
+centrams<-c("IDN","NPL","PAK","TLS","LKA","MNG","FJI")
 
 # impies<-GatherAllImps(lhaz)
 # saveRDS(impies,"./CleanedData/MostlyImpactData/AllHaz_impies.RData")
@@ -365,9 +368,6 @@ ggsave("RCnot_temporal.png",p,path="./Plots/GCDB_Workshop/",width = 8,height = 5
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%% COUNTRY-SPECIFIC %%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 
-# centrams<-c("COL","CRI","PAN","HND")
-centrams<-c("IDN","NPL","PAK","TLS","LKA","MNG","FJI")
-  
 subbie<-impies%>%filter(ISO3%in%centrams)
 
 p<-subbie%>%filter(!is.na(haz_Ab) & haz_Ab%in%lhaz &
@@ -375,10 +375,10 @@ p<-subbie%>%filter(!is.na(haz_Ab) & haz_Ab%in%lhaz &
                      imp_src_db!="GO-FR")%>%
   group_by(RCnot,haz_Ab,ISO3)%>%reframe(Counts=length(imp_src_db))%>%
   ggplot(aes(x=ISO3,y=Counts,group=haz_Ab))+geom_bar(aes(x=ISO3,y=Counts,fill=haz_Ab),colour="black",stat = "identity")+
-  xlab("Impact Database")+ylab("Number of Impact Records")+#scale_y_log10()+
+  xlab("Country ISO-3 Code")+ylab("Number of Impact Records")+#scale_y_log10()+
   # scale_y_log10(breaks=c(1,10,100,1000,10000,100000,1000000))+
   labs(fill="Data Source")+facet_wrap(~RCnot,scales = "free");p
-ggsave("NS_allhazards_records_notRC.png",p,path="./Plots/GCDB_Workshop/",width = 10,height = 5)  
+ggsave("NS_allhazards_records_notRC_APR.png",p,path="./Plots/GCDB_Workshop/",width = 10,height = 5)  
 
 
 p<-subbie%>%filter(!is.na(haz_Ab) & haz_Ab%in%lhaz &
@@ -387,10 +387,10 @@ p<-subbie%>%filter(!is.na(haz_Ab) & haz_Ab%in%lhaz &
                      imp_src_db!="GO-FR")%>%
   group_by(haz_Ab,ISO3)%>%reframe(Deaths=sum(imp_value))%>%
   ggplot()+geom_bar(aes(x=ISO3,y=Deaths,fill=haz_Ab),colour="black",stat="identity")+
-  xlab("Impact Database")+ylab("Total Deaths")+#scale_y_log10()+
+  xlab("Country ISO-3 Code")+ylab("Total Deaths")+#scale_y_log10()+
   # scale_y_log10(breaks=c(1,10,100,1000,10000,100000,1000000))+
   labs(fill="Data Source"); p #+facet_wrap(~RCnot,scales = "free");p
-ggsave("NS_allhazards_Deaths.png",p,path="./Plots/GCDB_Workshop/",width = 9,height = 8)  
+ggsave("NS_allhazards_Deaths_APR.png",p,path="./Plots/GCDB_Workshop/",width = 9,height = 8)  
 
 
 p<-subbie%>%filter(!is.na(haz_Ab) & haz_Ab%in%lhaz &
@@ -403,7 +403,7 @@ p<-subbie%>%filter(!is.na(haz_Ab) & haz_Ab%in%lhaz &
   scale_y_continuous(breaks = scales::pretty_breaks(n = 5), labels = scales::comma)+
   # scale_y_log10(breaks=c(1,10,100,1000,10000,100000,1000000))+
   labs(fill="Data Source"); p #+facet_wrap(~RCnot,scales = "free");p
-ggsave("NS_allhazards_Cost.png",p,path="./Plots/GCDB_Workshop/",width = 10,height = 7)  
+ggsave("NS_allhazards_Cost_APR.png",p,path="./Plots/GCDB_Workshop/",width = 10,height = 7)  
 
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
@@ -695,6 +695,8 @@ ggsave("FL_spatial_cost_5Yr-RP.png",q,path="./Plots/GCDB_Workshop/",width = 10)
 
 sapply(seq_along(centrams),function(i){
   
+  print(centrams[i])
+  
   iso3<-centrams[i]
   
   cntimps<-impies%>%filter(imp_src_db=="Desinventar" & ISO3==iso3)
@@ -707,13 +709,13 @@ sapply(seq_along(centrams),function(i){
   ADM<-geojsonio::geojson_read(filer, what = "sp")
   
   ADM$Allrecords<-sapply(ADM$ADMcode,function(codie){
-    sum(grepl(codie,cntimps$spat_ID,ignore.case = T))
+    sum(grepl(codie,cntimps$imp_spat_ID,ignore.case = T))
   })
   
   ADM$deathsRP<-sapply(ADM$ADMcode,function(codie){
     output<-tryCatch(cntimps%>%filter(imp_det=="impdetallpeop" & imp_type=="imptypdeat" &
                       ev_sdate>1975 & !is.na(imp_value) &
-                      grepl(codie,spat_ID,ignore.case = T))%>%
+                      grepl(codie,imp_spat_ID,ignore.case = T))%>%
       impRP_calc(),error=function(e) data.frame(impRP=NA,N=NA))
     ifelse(output$N>30,output$impRP,NA)
   })
@@ -721,24 +723,24 @@ sapply(seq_along(centrams),function(i){
   ADM$costRP<-sapply(ADM$ADMcode,function(codie){
     output<-tryCatch(cntimps%>%filter(imp_subcats%in%c("impecotot","impecodirtot") & imp_type=="imptypcost" & 
                                         ev_sdate>1975 & !is.na(imp_value) &
-                                        grepl(codie,spat_ID,ignore.case = T))%>%
+                                        grepl(codie,imp_spat_ID,ignore.case = T))%>%
                        impRP_calc(),error=function(e) data.frame(impRP=NA,N=NA))
     ifelse(output$N>30,output$impRP/1e6,NA)
   })  
     
   # Extract the bounding box of the admin boundaries
   # bbox<-expandBbox(unlist(unname(ExtractBBOXpoly(ADM)[1,2:5])),3)
-  # 
-  # mad_map <- get_stamenmap(bbox,source = "stamen",maptype = "terrain",zoom=8)
-  # 
-  # p<-ggmap(mad_map) + xlab("Longitude") + ylab("Latitude")
+
+  mad_map <- get_stamenmap(expandBbox(ADM@bbox,3),source = "stamen",maptype = "terrain",zoom=5)
+
+  p<-ggmap(mad_map) + xlab("Longitude") + ylab("Latitude")
   
-  q<-p+ADM[ADM$ADMlevel==min(max(ADM$ADMlevel),2),]%>%st_as_sf()%>%ggplot()+
+  q<-ADM[ADM$ADMlevel==min(max(ADM$ADMlevel),2),]%>%st_as_sf()%>%ggplot()+
     geom_sf(aes(fill=Allrecords), color = "grey30", linewidth=0.1)+ #, inherit.aes = FALSE) +
     scale_fill_gradient("No. Records",low="magenta4", high="magenta", trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
   ggsave(paste0("Allrecords_ADM2_",iso3,"_Dessie.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
   
-  q<-p+ADM[ADM$ADMlevel==min(ADM$ADMlevel),]%>%st_as_sf()%>%ggplot()+
+  q<-ADM[ADM$ADMlevel==min(ADM$ADMlevel),]%>%st_as_sf()%>%ggplot()+
     geom_sf(aes(fill=Allrecords), color = "grey30", linewidth=0.1)+ #, inherit.aes = FALSE) +
     scale_fill_gradient("No. Records",low="magenta4", high="magenta", trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
   ggsave(paste0("Allrecords_ADM1_",iso3,"_Dessie.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
@@ -756,7 +758,7 @@ sapply(seq_along(centrams),function(i){
   sapply(lhaz,function(hazzie){
     
     ADM$records<-sapply(ADM$ADMcode,function(codie){
-      sum(grepl(codie,cntimps$spat_ID[cntimps$haz_Ab==hazzie],ignore.case = T))
+      sum(grepl(codie,cntimps$imp_spat_ID[cntimps$haz_Ab==hazzie],ignore.case = T))
     })
     
     q<-p+ADM[ADM$ADMlevel==min(max(ADM$ADMlevel),2),]%>%st_as_sf()%>%ggplot()+
@@ -788,13 +790,15 @@ sapply(seq_along(centrams),function(i){
                 iso3,"/ADM_",iso3,
                 ".geojson")
   
+  if(!file.exists(filer)) return(F)
+  
   ADM<-geojsonio::geojson_read(filer, what = "sp")
   
   ADM1<-aggregate(ADM, by = "ADM1_CODE")
   ADM2<-aggregate(ADM, by = "ADM2_CODE")
   
   ADM2$Allrecords<-sapply(ADM2$ADM2_CODE,function(codie){
-    sum(grepl(codie,cntimps$spat_ID,ignore.case = T))
+    sum(grepl(codie,cntimps$imp_spat_ID,ignore.case = T))
   })
   
   q<-ADM2%>%st_as_sf()%>%ggplot()+
@@ -803,7 +807,7 @@ sapply(seq_along(centrams),function(i){
   ggsave(paste0("Allrecords_ADM2_",iso3,"_EMDAT.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
   
   ADM1$Allrecords<-sapply(ADM1$ADM1_CODE,function(codie){
-    sum(grepl(codie,cntimps$spat_ID,ignore.case = T))
+    sum(grepl(codie,cntimps$imp_spat_ID,ignore.case = T))
   })
   
   q<-ADM1%>%st_as_sf()%>%ggplot()+
@@ -815,7 +819,7 @@ sapply(seq_along(centrams),function(i){
   sapply(lhaz,function(hazzie){
     
     ADM2$records<-sapply(ADM2$ADM2_CODE,function(codie){
-      sum(grepl(codie,cntimps$spat_ID[cntimps$haz_Ab==hazzie],ignore.case = T))
+      sum(grepl(codie,cntimps$imp_spat_ID[cntimps$haz_Ab==hazzie],ignore.case = T))
     })
     
     q<-ADM2%>%st_as_sf()%>%ggplot()+
@@ -824,7 +828,7 @@ sapply(seq_along(centrams),function(i){
     ggsave(paste0(hazzie,"_records_ADM2_",iso3,"_EMDAT.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
     
     ADM1$records<-sapply(ADM1$ADM1_CODE,function(codie){
-      sum(grepl(codie,cntimps$spat_ID[cntimps$haz_Ab==hazzie],ignore.case = T))
+      sum(grepl(codie,cntimps$imp_spat_ID[cntimps$haz_Ab==hazzie],ignore.case = T))
     })
     
     q<-ADM1%>%st_as_sf()%>%ggplot()+

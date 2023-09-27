@@ -25,8 +25,8 @@ col_tabGCDB<-c("GCDB_ID"="character", # GCDB event ID
                "location"="character", # general description of hazard location
                "ISO3"="character", # ISO3-codes
                "Continent"="character", # Local-continent
-               "ev_sdate"="POSIXct", # Start date of the event or the impacting-hazard
-               "ev_fdate"="POSIXct", # Finish date of the event or the impacting-hazard
+               "ev_sdate"="character", # Start date of the event or the impacting-hazard
+               "ev_fdate"="character", # Finish date of the event or the impacting-hazard
                # Add triggering hazard details
                "prim_haz_Ab"="character", # Primary (triggering) hazard 2-letter abbreviation
                "prim_haz_type"="character", # Primary (triggering) hazard  type
@@ -35,8 +35,8 @@ col_tabGCDB<-c("GCDB_ID"="character", # GCDB event ID
                
                # Impact information
                "impsub_ID"="character", # ID of each impact element in the overall event
-               "imp_sdate"="POSIXct", # Start date of the impact estimate (in case it aggregates over a range of dates)
-               "imp_fdate"="POSIXct", # End date of the impact estimate (in case it aggregates over a range of dates)
+               "imp_sdate"="character", # Start date of the impact estimate (in case it aggregates over a range of dates)
+               "imp_fdate"="character", # End date of the impact estimate (in case it aggregates over a range of dates)
                "imp_cats"="character", # Impact category
                "imp_subcats"="character", # Impact subcategory
                "imp_det"="character", # Impact subsubcategory
@@ -52,8 +52,8 @@ col_tabGCDB<-c("GCDB_ID"="character", # GCDB event ID
                
                # Hazard information (can change from impact to impact for the same event)
                "subhaz_ID"="character", # ID of each hazard event in the overall event, e.g. aftershocks or flash floods with cyclone
-               "haz_sdate"="POSIXct", # Start date of the hazard estimate (in case it aggregates over a range of dates)
-               "haz_fdate"="POSIXct", # End date of the hazard estimate (in case it aggregates over a range of dates)
+               "haz_sdate"="character", # Start date of the hazard estimate (in case it aggregates over a range of dates)
+               "haz_fdate"="character", # End date of the hazard estimate (in case it aggregates over a range of dates)
                "haz_Ab"="character", # Abbreviated, simplified name of the hazard
                "haz_type"="character", # Impacting hazard type
                "haz_cluster"="character", # Impacting hazard cluster
@@ -74,7 +74,7 @@ col_tabGCDB<-c("GCDB_ID"="character", # GCDB event ID
                "imp_spat_res"="character", # Spatial resolution of impact estimate
                "imp_spat_srcorg"="character", # URL of the impact estimate
                # Spatial info - hazard
-               "haz_spat_ID"="character", # ID of the spatial object
+               "imp_spat_ID"="character", # ID of the spatial object
                "haz_spat_type"="character", # Spatial object type
                "haz_spat_res"="character", # Spatial resolution of impact estimate
                "haz_spat_srcorg"="character") # Source organisation from where the spatial object comes from

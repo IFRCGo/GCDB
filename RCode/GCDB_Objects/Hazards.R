@@ -46,10 +46,10 @@ col_hazGCDB<-c("GCDB_ID"="character", # GCDB event ID
                "imp_src_org"="character", # Source organisation of hazard data
                "imp_src_orgtype"="character", # Source organisation type
                "src_URL"="character", # URL of the hazard data
-               "spat_ID"="character", # ID of the spatial object
+               "imp_spat_ID"="character", # ID of the spatial object
                "spat_type"="character", # Spatial object type
                "spat_res"="character", # Spatial resolution of hazard data
-               "spat_srcorg"="character",
+               "imp_spat_srcorg"="character",
                "cent_lon"="numeric",
                "cent_lat"="numeric") # Source organisation from where the spatial object comes from
 

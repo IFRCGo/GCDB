@@ -48,10 +48,10 @@ col_impGCDB<-c("GCDB_ID"="character", # GCDB event ID
                "haz_spec"="character", # Impacting specific hazard
                "haz_link"="character", # Associated impactful-hazards to the specific hazard
                "haz_potlink"="character", # Potential other impactful-hazards that may be associated to the specific hazard
-               "spat_ID"="character", # ID of the spatial object
+               "imp_spat_ID"="character", # ID of the spatial object
                "spat_type"="character", # Spatial object type
                "spat_res"="character", # Spatial resolution of impact estimate
-               "spat_srcorg"="character") # Source organisation from where the spatial object comes from
+               "imp_spat_srcorg"="character") # Source organisation from where the spatial object comes from
 
 oblig_impGCDB<-c("GCDB_ID","impsub_ID","ISO3","impcat","impsubcat","imp_units",
                  "imp_type","imp_est_type","imp_src_org","imp_src_orgtype","src_URL",

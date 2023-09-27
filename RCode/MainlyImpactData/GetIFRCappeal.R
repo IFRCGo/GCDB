@@ -112,8 +112,8 @@ CleanGO_app<-function(appeal){
                    imp_src_db="GO-App",
                    imp_src_orgtype="orgtypengo",
                    spat_type="Polygon",
-                   spat_srcorg="IFRC",
-                   spat_ID=NA_character_,
+                   imp_spat_srcorg="IFRC",
+                   imp_spat_ID=NA_character_,
                    spat_res="ADM-0")
   
   appeal$GCDB_ID<-GetGCDB_ID(appeal,haz=appeal$haz_Ab)
@@ -176,12 +176,12 @@ CleanGO_field<-function(fieldr){
                    imp_src_db="GO-FR",
                    imp_src_orgtype="orgtypengo",
                    spat_type="Polygon",
-                   spat_srcorg="IFRC",
-                   spat_ID=NA_character_,
+                   imp_spat_srcorg="IFRC",
+                   imp_spat_ID=NA_character_,
                    spat_res="ADM-0")
   
   districts<-do.call(rbind,lapply(fieldr$districts,function(x) paste0(x,collapse = ",")))
-  fieldr$spat_ID[districts!=""]<-districts[districts!=""]
+  fieldr$imp_spat_ID[districts!=""]<-districts[districts!=""]
   fieldr$spat_res[districts!=""]<-"ADM-1"
   
   fieldr$GCDB_ID<-GetGCDB_ID(fieldr,haz=fieldr$haz_Ab)
