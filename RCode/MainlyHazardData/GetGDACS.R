@@ -282,10 +282,10 @@ convGDACS_GCDB<-function(GDACS){
     "haz_spec"="character", # Impacting specific hazard
     "haz_link"="character", # Associated impactful-hazards to the specific hazard
     "haz_potlink"="character", # Potential other impactful-hazards that may be associated to the specific hazard
-    "spat_ID"="character", # ID of the spatial object
+    "imp_spat_ID"="character", # ID of the spatial object
     "spat_type"="character", # Spatial object type
     "spat_res"="character", # Spatial resolution of impact estimate
-    "spat_srcorg"="character") # Source organisation from where the spatial object comes from
+    "imp_spat_srcorg"="character") # Source organisation from where the spatial object comes from
 }
 
 GetGDACS_GCDB<-function(){
@@ -357,7 +357,7 @@ GetGDACSPoly<-function(GDACS){
     
     
     
-    BigPoly$hazsub_ID<-BigPoly$spat_ID<-paste0(unique())
+    BigPoly$hazsub_ID<-BigPoly$imp_spat_ID<-paste0(unique())
     
     
     GetGCDB_ID(Dessie,haz=unique(GDACS$haz_Ab[ind]))

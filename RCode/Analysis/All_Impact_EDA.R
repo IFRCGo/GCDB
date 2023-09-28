@@ -706,6 +706,8 @@ sapply(seq_along(centrams),function(i){
                 "/ADM_",stringr::str_to_lower(iso3),
                 ".geojson")
   
+  if(!file.exists(filer)) return(F)
+  
   ADM<-geojsonio::geojson_read(filer, what = "sp")
   
   ADM$Allrecords<-sapply(ADM$ADMcode,function(codie){
@@ -761,12 +763,12 @@ sapply(seq_along(centrams),function(i){
       sum(grepl(codie,cntimps$imp_spat_ID[cntimps$haz_Ab==hazzie],ignore.case = T))
     })
     
-    q<-p+ADM[ADM$ADMlevel==min(max(ADM$ADMlevel),2),]%>%st_as_sf()%>%ggplot()+
+    q<-ADM[ADM$ADMlevel==min(max(ADM$ADMlevel),2),]%>%st_as_sf()%>%ggplot()+
       geom_sf(aes(fill=records), color = "grey30", linewidth=0.1)+
       scale_fill_gradient(paste0("No. Records - ",hazzie), high=pal[names(pal)==hazzie], trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
     ggsave(paste0(hazzie,"_records_ADM2_",iso3,"_Dessie.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
     
-    q<-p+ADM[ADM$ADMlevel==min(ADM$ADMlevel),]%>%st_as_sf()%>%ggplot()+
+    q<-ADM[ADM$ADMlevel==min(ADM$ADMlevel),]%>%st_as_sf()%>%ggplot()+
       geom_sf(aes(fill=records), color = "grey30", linewidth=0.1)+
       scale_fill_gradient(paste0("No. Records - ",hazzie),high=pal[names(pal)==hazzie], trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
     ggsave(paste0(hazzie,"_records_ADM1_",iso3,"_Dessie.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
