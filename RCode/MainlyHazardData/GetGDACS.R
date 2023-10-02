@@ -283,9 +283,7 @@ convGDACS_GCDB<-function(GDACS){
   colnames(GDACS)[colnames(GDACS)=="src_URL"]<-"imp_src_URL"
   colnames(GDACS)[colnames(GDACS)=="link"]<-"src_URL"
   # Create the impact and hazard sub-ID for the speciic level, not event level
-  GDACS$imp_sub_ID<-GDACS%>%dplyr::select(c(GCDB_ID,imp_src_db,haz_cluster,haz_spec,imp_det,imp_spat_ID))%>%
-    mutate(imp_src_db=stringr::str_remove(stringi::stri_trans_totitle(imp_src_db),pattern = " "))%>%
-    apply(1,function(x) paste0(x,collapse = "-"))
+  GDACS%<>%GetGCDB_impID()
   # Now for hazards
   GDACS$haz_sub_ID<-GDACS%>%dplyr::select(c(GCDB_ID,haz_src_db,haz_cluster,haz_spec,haz_spat_ID))%>%
     mutate(imp_src_db=stringr::str_remove(stringi::stri_trans_totitle(imp_src_db),pattern = " "))%>%

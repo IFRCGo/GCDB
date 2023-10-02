@@ -110,9 +110,7 @@ GetGIDD<-function(){
   # Correct the labels of the impacts, melting by impact detail
   GIDD%<>%ImpLabs(nomDB = "GIDD")
   # Create an impact-specific ID
-  GIDD$imp_sub_ID<-GIDD%>%dplyr::select(c(GCDB_ID,imp_src_db,haz_spec,imp_det))%>%
-    mutate(imp_src_db=stringr::str_remove(stringi::stri_trans_totitle(imp_src_db),pattern = " "))%>%
-    apply(1,function(x) paste0(x,collapse = "-"))
+  GIDD%<>%GetGCDB_impID()
   # Add missing columns & reorder the dataframe to fit imp_GCDB object
   GIDD%>%AddEmptyColImp()
 }

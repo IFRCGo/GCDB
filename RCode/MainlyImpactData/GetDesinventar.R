@@ -636,9 +636,7 @@ Des2tabGCDB<-function(Dessie){
   # Correct the labels of the impacts, melting by impact detail
   Dessie%<>%ImpLabs(nomDB = "Desinventar")
   # Create an impact-specific ID
-  Dessie$imp_sub_ID<-Dessie%>%dplyr::select(c(GCDB_ID,imp_src_db,haz_spec,imp_det,spat_ID))%>%
-    mutate(imp_src_db=stringr::str_remove(stringi::stri_trans_totitle(imp_src_db),pattern = " "))%>%
-    apply(1,function(x) paste0(x,collapse = "-"))
+  Dessie%<>%GetGCDB_impID()
   # Add missing columns & reorder the dataframe to fit imp_GCDB object
   Dessie%>%AddEmptyColImp()
 }

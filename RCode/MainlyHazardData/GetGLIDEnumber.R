@@ -5,6 +5,14 @@ GLIDEcols<-c("comments","year","docid","latitude","homeless","source","idsource"
 # Skeleton for empty output
 glide_skel<-data.frame(matrix(NA_character_,nrow = 1,ncol = 22)); colnames(glide_skel)<-GLIDEcols
 
+GLIDEHazards<-function(GLIDE){
+  # Read in the GLIDE-HIPS taxonomy conversion dataframe
+  colConv<-openxlsx::read.xlsx("./Taxonomies/MostlyImpactData/GLIDE-HIP.xlsx")
+  # Reduce the translated vector and merge
+  GLIDE%>%left_join(colConv,by = c("haz_Ab"),
+                     relationship="many-to-one")
+} 
+
 GetGLIDEnum<-function(DF,numonly=T){
   # Needs to contain the columns: ev_sdate, ISO3 & haz
   # Make sure dates are not in character format
@@ -42,6 +50,55 @@ GetGLIDEnum<-function(DF,numonly=T){
   return(glides)
 }
 
+modGLIDEmagunits<-function(DF){
+  # Remove any entries that don't contain any numbers
+  DF$haz_maxvalue[DF$haz_maxvalue=="" | str_detect(DF$haz_maxvalue,"[0-9]",T)]<-NA_character_
+  # Ready to store the units of each measurement
+  DF$haz_units<-NA_character_
+  
+  # Let's first work on earthquakes & tsunamis (TS also measured in Richter scale)
+  inds<-!is.na(DF$haz_maxvalue) & DF$haz_Ab%in%c("EQ","TS")
+  # Sometimes they mention the dates of the EQ '5.9 on 12th March and 5.2 on 14th March'
+  tmp<-str_split(DF$haz_maxvalue[inds],"and",simplify = T)
+  for(j in 1:ncol(tmp)) tmp[,j]<-parse_number(str_split(tmp[,j],"on",simplify = T)[,1])
+  # Sometimes they order the numbers in smaller first, we only care about the max
+  DF$haz_maxvalue[inds]<-apply(tmp,1,max,na.rm=T)
+  # And modify the units
+  DF$haz_units[inds]<-"unitsrichter"
+  # Zero magnitude earthquakes make no sense, remove to avoid errors
+  DF$haz_maxvalue[inds & DF$haz_maxvalue=="0"]<-NA
+  
+  # Now tropical cyclones
+  inds<-!is.na(DF$haz_maxvalue) & DF$haz_Ab=="TC"
+  # Anything mentioning category
+  tinds<-inds & ( grepl(paste(c("cat.","category"), 
+                              collapse='|'), DF$haz_maxvalue,ignore.case = T))
+  # Substitute them back in
+  DF$haz_maxvalue[tinds]<-extractnumbers(DF$haz_maxvalue[tinds])
+  # And add the units
+  DF$haz_units[tinds]<-"unitssaffsimp"
+  # Any referring to mph or kph separate now
+  tinds<-inds & ( grepl(paste(c("km/h","kph","m/h","mph","mile/h"), 
+                              collapse='|'), DF$haz_maxvalue,ignore.case = T))
+  # Substitute them back in
+  DF$haz_maxvalue[tinds]<-extractnumbers(DF$haz_maxvalue[tinds])
+  # And add the units
+  DF$haz_units[tinds & ( grepl(paste(c("m/h","mph","mile/h"), 
+                                     collapse='|'), DF$haz_maxvalue,ignore.case = T))]<-"unitsmph"
+  DF$haz_units[tinds & ( grepl(paste(c("km/h","kph"), 
+                                     collapse='|'), DF$haz_maxvalue,ignore.case = T))]<-"unitskph"
+  
+  
+  # Now tornados
+  inds<-!is.na(DF$haz_maxvalue) & DF$haz_Ab=="TO"
+  
+  
+  DF%>%group_by(haz_Ab)%>%reframe(hazm=unique(haz_maxvalue))%>%View()
+  
+  
+  
+}
+
 ExtractFromGLIDE<-function(DF){
   # If you give GLIDE a request that they don't have, they give you the entire database!
   baseurl<-"https://www.glidenumber.net/glide/jsonglideset.jsp?glide=2008-000056"
@@ -72,6 +129,8 @@ ExtractFromGLIDE<-function(DF){
                    "Longitude")
   # Sort out the ISO3 values to remove the NaNs
   out$ISO3[out$ISO3=="---"]<-NA_character_
+  # House keeping
+  out$haz_Ab[out$haz_Ab=="HT"]<-"HW"
   # Make sure the start date is 2 characters
   out$day[nchar(out$day)==1 & !is.na(out$day)]<-
     paste0("0",out$day[nchar(out$day)==1 & !is.na(out$day)])
@@ -89,67 +148,32 @@ ExtractFromGLIDE<-function(DF){
                                                    collapse = "-"),
                                                    whitespace = "-",
                                                    which = 'right'),simplify = T)
-  out%<>%reshape2::melt(measure.vars=c("imptyphomles","imptypdeat","imptypaffe","imptypinju"),
-                        variable.name="imp_type",value.name="imp_value")
-  out$imp_type%<>%as.character()
   # Get the GCDB_ID number
   out$GCDB_ID<-GetGCDB_ID(out)
-  # Get the continent name
-  out%<>%mutate(Continent=convIso3Continent(ISO3))
+  # And the sub IDs
+  out%<>%GetGCDB_impID()
+  # Take the impact estimate columns and convert into the imp_type feature
+  out%<>%reshape2::melt(measure.vars=c("imptyphomles","imptypdeat","imptypaffe","imptypinju"),
+                        variable.name="imp_type",value.name="imp_value")
+  # Instead of as a factor
+  out$imp_type%<>%as.character()
+  # Get the continent name & add on the impact taxonomy layers
+  out%<>%mutate(Continent=convIso3Continent(ISO3),
+                imp_cats="impcatpop",
+                imp_subcats="imptypepopcnt",
+                imp_det="impdetallpeop",
+                imp_units="unitscount",
+                imp_est_type="esttype_prim")
+  # Add the UNDRR-ISC hazard taxonomy
+  out%<>%GLIDEHazards()%>%filter(!is.na(haz_cluster))
+  # Try to extract as much as possible from the estimated magnitude and its units
+  out%<>%modGLIDEmagunits()
   
-  c(# Add triggering hazard details
-    "prim_haz_Ab"="character", # Primary (triggering) hazard 2-letter abbreviation
-    "prim_haz_type"="character", # Primary (triggering) hazard  type
-    "prim_haz_cluster"="character", # Primary (triggering) hazard cluster 
-    "prim_haz_spec"="character", # Primary (triggering) specific hazard 
-    
-    # Impact information
-    "imp_sub_ID"="character", # ID of each impact element in the overall event
-    "imp_sdate"="POSIXct", # Start date of the impact estimate (in case it aggregates over a range of dates)
-    "imp_fdate"="POSIXct", # End date of the impact estimate (in case it aggregates over a range of dates)
-    "imp_cats"="character", # Impact category
-    "imp_subcats"="character", # Impact subcategory
-    "imp_det"="character", # Impact subsubcategory
-    "imp_value"="numeric", # Impact quantity
-    "imp_type"="character", # Impact units
-    "imp_units"="character", # Impact type (e.g. excess mortality, displacement stock)
-    "imp_unitdate"="character", # date associated to the unit (for currencies almost exclusively)
-    "imp_est_type"="character", # Estimate type: primary, secondary, modelled
-    "imp_src_db"="character", # Source database name of impact estimate or the curated estimate
-    "imp_src_org"="character", # Source organisation of impact estimate or the curated estimate
-    "imp_src_orgtype"="character", # Source organisation type
-    "imp_src_URL"="character", # URL of the impact estimate
-    
-    # Hazard information (can change from impact to impact for the same event)
-    "haz_sub_ID"="character", # ID of each hazard event in the overall event, e.g. aftershocks or flash floods with cyclone
-    "haz_sdate"="POSIXct", # Start date of the hazard estimate (in case it aggregates over a range of dates)
-    "haz_fdate"="POSIXct", # End date of the hazard estimate (in case it aggregates over a range of dates)
-    "haz_Ab"="character", # Abbreviated, simplified name of the hazard
-    "haz_type"="character", # Impacting hazard type
-    "haz_cluster"="character", # Impacting hazard cluster
-    "haz_spec"="character", # Impacting specific hazard
-    "haz_link"="character", # Associated impactful-hazards to the specific hazard
-    "haz_potlink"="character", # Potential other impactful-hazards that may be associated to the specific hazard
-    "haz_maxvalue"="numeric", # Maximum intensity or magnitude of the hazard, e.g.  
+  c(
     "haz_units"="character", # Units of the max intensity/magnitude value estimate
-    "haz_est_type"="character", # Estimate type: primary, secondary, modelled
-    "haz_src_db"="character", # Source database name of impact estimate or the curated estimate
-    "haz_src_org"="character", # Source organisation of impact estimate or the curated estimate
-    "haz_src_orgtype"="character", # Source organisation type
-    "haz_src_URL"="character", # URL of the impact estimate
-    
-    # Spatial info - impact
-    "imp_spat_ID"="character", # ID of the spatial object
-    "imp_spat_type"="character", # Spatial object type
-    "imp_spat_res"="character", # Spatial resolution of impact estimate
-    "imp_spat_srcorg"="character", # URL of the impact estimate
-    # Spatial info - hazard
-    "imp_spat_ID"="character", # ID of the spatial object
-    "haz_spat_type"="character", # Spatial object type
-    "haz_spat_res"="character", # Spatial resolution of impact estimate
-    "haz_spat_srcorg"="character") # Source organisation from where the spatial object comes from
+    ) # Source organisation from where the spatial object comes from
   
-  
+  return(out)
 }
 
 

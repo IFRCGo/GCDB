@@ -94,6 +94,14 @@ GetGCDB_ID<-function(DF,haz=NULL) {
   paste0(namerz,"-GCDB")
 }
 
+GetGCDB_impID<-function(impies){
+  impies$imp_sub_ID<-impies%>%dplyr::select(c(GCDB_ID,imp_src_db,haz_spec,imp_det,spat_ID))%>%
+    mutate(imp_src_db=stringr::str_remove(stringi::stri_trans_totitle(imp_src_db),pattern = " "))%>%
+    apply(1,function(x) paste0(x,collapse = "-"))
+  
+  return(impies)
+}
+
 AddEmptyColImp<-function(DF){
   for(i in which(!names(col_tabGCDB)%in%colnames(DF))){
     tmp<-NA
