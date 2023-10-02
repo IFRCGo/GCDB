@@ -19,8 +19,8 @@ add_impGCDBinfo<-function(){
  
 col_impGCDB<-c("GCDB_ID"="character", # GCDB event ID
                "GLIDE"="character", # GLIDE number of impacting-hazard (not necessarily the primary hazard)
-               "impsub_ID"="character", # ID of each impact element in the overall event
-               "subhaz_ID"="character", # ID of each hazard of each impact element in the overall event
+               "imp_sub_ID"="character", # ID of each impact element in the overall event
+               "haz_sub_ID"="character", # ID of each hazard of each impact element in the overall event
                "ev_name_orig"="character", # Name of the event in original language
                "ev_name_en"="character", # Name of the event in english
                "location"="character", # general description of hazard location
@@ -53,7 +53,7 @@ col_impGCDB<-c("GCDB_ID"="character", # GCDB event ID
                "spat_res"="character", # Spatial resolution of impact estimate
                "spat_srcorg"="character") # Source organisation from where the spatial object comes from
 
-oblig_impGCDB<-c("GCDB_ID","impsub_ID","ISO3","impcat","impsubcat","imp_units",
+oblig_impGCDB<-c("GCDB_ID","imp_sub_ID","ISO3","impcat","impsubcat","imp_units",
                  "imp_type","imp_est_type","imp_src_org","imp_src_orgtype","src_URL",
                  "haz_Ab","haz_type","haz_cluster")
 

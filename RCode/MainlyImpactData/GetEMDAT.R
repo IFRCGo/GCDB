@@ -196,7 +196,7 @@ CleanEMDAT<-function(EMDAT){
   # Now get rid of the extra columns of data
   EMDAT%<>%dplyr::select(-which(!colnames(EMDAT)%in%names(col_impGCDB)))
   # Create an impact-specific ID
-  EMDAT$impsub_ID<-EMDAT%>%dplyr::select(c(GCDB_ID,imp_src_db,haz_spec,imp_det,spat_ID))%>%
+  EMDAT$imp_sub_ID<-EMDAT%>%dplyr::select(c(GCDB_ID,imp_src_db,haz_spec,imp_det,spat_ID))%>%
     mutate(imp_src_db=stringr::str_remove(stringi::stri_trans_totitle(imp_src_db),pattern = " "))%>%
     apply(1,function(x) paste0(x,collapse = "-"))
   # Make sure to remove all NA impact estimates

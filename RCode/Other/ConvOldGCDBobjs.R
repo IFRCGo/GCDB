@@ -1,5 +1,5 @@
 ConvertOldGCDBobjs<-function(impies){
-  colnames(impies)[c(4,14:35)]<-c("subhaz_ID",
+  colnames(impies)[c(4,14:35)]<-c("haz_sub_ID",
                              "imp_cats",
                              "imp_subcats",
                              "imp_det",

@@ -121,7 +121,7 @@ CleanGO_app<-function(appeal){
   appeal%<>%ImpLabs(nomDB = "GO-App", dropName = T)
   
   # Create an impact-specific ID
-  appeal$impsub_ID<-appeal%>%dplyr::select(c(GCDB_ID,imp_src_db,haz_spec,imp_det))%>%
+  appeal$imp_sub_ID<-appeal%>%dplyr::select(c(GCDB_ID,imp_src_db,haz_spec,imp_det))%>%
     mutate(imp_src_db=stringr::str_remove(stringi::stri_trans_totitle(imp_src_db),pattern = " "))%>%
     apply(1,function(x) paste0(x,collapse = "-"))
   # Add missing columns & reorder the dataframe to fit imp_GCDB object
@@ -200,7 +200,7 @@ CleanGO_field<-function(fieldr){
   fieldr$imp_src_org[inds]<-"IFRC-Curated Other"
   
   # Create an impact-specific ID
-  fieldr$impsub_ID<-fieldr%>%dplyr::select(c(GCDB_ID,imp_src_db,haz_spec,imp_det))%>%
+  fieldr$imp_sub_ID<-fieldr%>%dplyr::select(c(GCDB_ID,imp_src_db,haz_spec,imp_det))%>%
     mutate(imp_src_db=stringr::str_remove(stringi::stri_trans_totitle(imp_src_db),pattern = " "))%>%
     apply(1,function(x) paste0(x,collapse = "-"))
   # Add missing columns & reorder the dataframe to fit imp_GCDB object

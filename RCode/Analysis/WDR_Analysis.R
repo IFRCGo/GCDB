@@ -45,7 +45,7 @@ geovars<-c("Earthquake","Volcano","LandslideG")
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 #%%%%%%%%%%%%%%%%%%%%%%%%%% INCIDENCE %%%%%%%%%%%%%%%%%%%%%%%%%%%#
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
-EMFull<-impies%>%filter(Year>=2010 & imp_src_db=="EM-DAT" & !duplicated(impsub_ID))%>%
+EMFull<-impies%>%filter(Year>=2010 & imp_src_db=="EM-DAT" & !duplicated(imp_sub_ID))%>%
   group_by(ISO3,Year)%>%
   summarise(ALL_CLIM=sum(haz_type=="haz_typehydromet"),
             Storm=sum(haz_Ab%in%c("ST","TC")),
@@ -69,7 +69,7 @@ EMFull$ALL_CLIM<-rowSums(EMFull[,climvars])
 EMFull$ALL_GEO<-rowSums(EMFull[,geovars])
 EMFull$ALL<-EMFull$ALL_CLIM+EMFull$ALL_GEO
 
-HEFull<-impies%>%filter(Year>=2018 & imp_src_db=="GIDD" & !duplicated(impsub_ID))%>%
+HEFull<-impies%>%filter(Year>=2018 & imp_src_db=="GIDD" & !duplicated(imp_sub_ID))%>%
   group_by(ISO3,Year)%>%
   summarise(ALL_CLIM=sum(haz_type=="haz_typehydromet"),
             Storm=sum(haz_Ab%in%c("ST","TC")),

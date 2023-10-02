@@ -5,7 +5,7 @@ lhaz<-c("EQ","FL","TC","VO","DR","ET","LS","ST","WF")
 
 # impies<-GatherAllImps(lhaz)
 # saveRDS(impies,"./CleanedData/MostlyImpactData/AllHaz_impies.RData")
-impies<-readRDS("./CleanedData/MostlyImpactData/AllHaz_impies.RData")
+impies<-readRDS("./CleanedData/MostlyImpactData/AllHaz_impies_20230928.RData")
 impies%<>%filter(haz_Ab%in%lhaz)
 # Create a variable to separate what is and isn't RC data 
 impies%<>%mutate(RCnot="Not RC",RCnot=replace(RCnot, grepl("GO-",imp_src_db), "RC"))
@@ -447,7 +447,7 @@ ADM <- rworldmap::getMap(resolution='low')
 ADM@data%<>%transmute(ISO3=ISO_A3,Population=POP_EST,GDP=GDP_MD_EST)
 ADM@data%<>%left_join(deathsRP,by="ISO3")
 
-ADM$impRP[ADM$N<30]<-NA
+ADM$impRP[ADM$N<15]<-NA
 
 # Change the projection
 crs_mappy <- "+proj=wintri +x_0=-74 +y_0=0 +datum=WGS84 +no_defs +over" # TRIPEL PROJECTION
@@ -506,7 +506,7 @@ ADM <- rworldmap::getMap(resolution='low')
 ADM@data%<>%transmute(ISO3=ISO_A3,Population=POP_EST,GDP=GDP_MD_EST)
 ADM@data%<>%left_join(costRP,by="ISO3")
 
-ADM$impRP[ADM$N<30]<-NA
+ADM$impRP[ADM$N<15]<-NA
 
 ADM$impRP<-ADM$impRP/1e6
 
@@ -563,8 +563,8 @@ ggsave("allhaz_spatial_cost_5Yr-RP.png",q,path="./Plots/GCDB_Workshop/",width = 
 timeliner<-2023-1975
 
 deathsRP<-do.call(rbind,lapply(unique(impies$ISO3),function(iso3){
-  tryCatch(impies%>%filter(ISO3==iso3,
-                           haz_Ab=="FL",
+  tryCatch(impies%>%filter(ISO3==iso3 &
+                           haz_Ab=="FL" & 
                            imp_det=="impdetallpeop" & imp_type=="imptypdeat" &
                              ev_sdate>1975 & !is.na(imp_value))%>%
              impRP_calc()%>%cbind(data.frame(ISO3=iso3,impact="Deaths",imp_src_db="All")),
@@ -576,7 +576,8 @@ ADM <- rworldmap::getMap(resolution='low')
 ADM@data%<>%transmute(ISO3=ISO_A3,Population=POP_EST,GDP=GDP_MD_EST)
 ADM@data%<>%left_join(deathsRP,by="ISO3")
 
-ADM$impRP[ADM$N<30]<-NA
+ADM$impRP[ADM$N<15]<-NA
+# ADM$impRP<-1e5*ADM$impRP/ADM$Population
 
 # Change the projection
 crs_mappy <- "+proj=wintri +x_0=-74 +y_0=0 +datum=WGS84 +no_defs +over" # TRIPEL PROJECTION
@@ -612,10 +613,10 @@ q<-ggplot()+
                                          colour ="black"),
         plot.title = element_text(hjust = 0.5,face="bold",size=18),
         legend.position = c(0.1, 0.1))+
-  ggtitle("Expected No. Deaths Assoc. 5-Year Return Period")+
+  ggtitle("Expected Deaths 5-Year Return Period")+
   scale_fill_gradient(name = "Total Deaths",guide="legend", trans = "log10",
                       low="magenta4",high="magenta",n.breaks=6);q
-ggsave("FL_spatial_deaths_5Yr-RP.png",q,path="./Plots/GCDB_Workshop/",width = 10)
+ggsave("FL_spatial_deaths_5Yr-RP.png",q,path="./Plots/GCDB_Workshop/",width = 10, height=7)
 
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
@@ -636,7 +637,7 @@ ADM <- rworldmap::getMap(resolution='low')
 ADM@data%<>%transmute(ISO3=ISO_A3,Population=POP_EST,GDP=GDP_MD_EST)
 ADM@data%<>%left_join(costRP,by="ISO3")
 
-ADM$impRP[ADM$N<30]<-NA
+ADM$impRP[ADM$N<15]<-NA
 
 ADM$impRP<-ADM$impRP/1e6
 
@@ -706,14 +707,20 @@ sapply(seq_along(centrams),function(i){
   
   ADM<-geojsonio::geojson_read(filer, what = "sp")
   
+  if(iso3%in%c("NPL","LKA")){
+    ADM<-ADM[nchar(ADM$ADMcode)==9,]
+  } else if(iso3=="PAK"){
+    ADM<-ADM[nchar(ADM$ADMcode)==3,]
+  } 
+  
   ADM$Allrecords<-sapply(ADM$ADMcode,function(codie){
-    sum(grepl(codie,cntimps$spat_ID,ignore.case = T))
+    sum(grepl(codie,cntimps$imp_spat_ID,ignore.case = T))
   })
   
   ADM$deathsRP<-sapply(ADM$ADMcode,function(codie){
     output<-tryCatch(cntimps%>%filter(imp_det=="impdetallpeop" & imp_type=="imptypdeat" &
                       ev_sdate>1975 & !is.na(imp_value) &
-                      grepl(codie,spat_ID,ignore.case = T))%>%
+                      grepl(codie,imp_spat_ID,ignore.case = T))%>%
       impRP_calc(),error=function(e) data.frame(impRP=NA,N=NA))
     ifelse(output$N>30,output$impRP,NA)
   })
@@ -721,7 +728,7 @@ sapply(seq_along(centrams),function(i){
   ADM$costRP<-sapply(ADM$ADMcode,function(codie){
     output<-tryCatch(cntimps%>%filter(imp_subcats%in%c("impecotot","impecodirtot") & imp_type=="imptypcost" & 
                                         ev_sdate>1975 & !is.na(imp_value) &
-                                        grepl(codie,spat_ID,ignore.case = T))%>%
+                                        grepl(codie,imp_spat_ID,ignore.case = T))%>%
                        impRP_calc(),error=function(e) data.frame(impRP=NA,N=NA))
     ifelse(output$N>30,output$impRP/1e6,NA)
   })  
@@ -733,12 +740,12 @@ sapply(seq_along(centrams),function(i){
   # 
   # p<-ggmap(mad_map) + xlab("Longitude") + ylab("Latitude")
   
-  q<-p+ADM[ADM$ADMlevel==min(max(ADM$ADMlevel),2),]%>%st_as_sf()%>%ggplot()+
+  q<-ADM[ADM$ADMlevel==min(max(ADM$ADMlevel),2),]%>%st_as_sf()%>%ggplot()+
     geom_sf(aes(fill=Allrecords), color = "grey30", linewidth=0.1)+ #, inherit.aes = FALSE) +
     scale_fill_gradient("No. Records",low="magenta4", high="magenta", trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
   ggsave(paste0("Allrecords_ADM2_",iso3,"_Dessie.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
   
-  q<-p+ADM[ADM$ADMlevel==min(ADM$ADMlevel),]%>%st_as_sf()%>%ggplot()+
+  q<-ADM[ADM$ADMlevel==min(ADM$ADMlevel),]%>%st_as_sf()%>%ggplot()+
     geom_sf(aes(fill=Allrecords), color = "grey30", linewidth=0.1)+ #, inherit.aes = FALSE) +
     scale_fill_gradient("No. Records",low="magenta4", high="magenta", trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
   ggsave(paste0("Allrecords_ADM1_",iso3,"_Dessie.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
@@ -756,15 +763,15 @@ sapply(seq_along(centrams),function(i){
   sapply(lhaz,function(hazzie){
     
     ADM$records<-sapply(ADM$ADMcode,function(codie){
-      sum(grepl(codie,cntimps$spat_ID[cntimps$haz_Ab==hazzie],ignore.case = T))
+      sum(grepl(codie,cntimps$imp_spat_ID[cntimps$haz_Ab==hazzie],ignore.case = T))
     })
     
-    q<-p+ADM[ADM$ADMlevel==min(max(ADM$ADMlevel),2),]%>%st_as_sf()%>%ggplot()+
+    q<-ADM[ADM$ADMlevel==min(max(ADM$ADMlevel),2),]%>%st_as_sf()%>%ggplot()+
       geom_sf(aes(fill=records), color = "grey30", linewidth=0.1)+
       scale_fill_gradient(paste0("No. Records - ",hazzie), high=pal[names(pal)==hazzie], trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
     ggsave(paste0(hazzie,"_records_ADM2_",iso3,"_Dessie.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
     
-    q<-p+ADM[ADM$ADMlevel==min(ADM$ADMlevel),]%>%st_as_sf()%>%ggplot()+
+    q<-ADM[ADM$ADMlevel==min(ADM$ADMlevel),]%>%st_as_sf()%>%ggplot()+
       geom_sf(aes(fill=records), color = "grey30", linewidth=0.1)+
       scale_fill_gradient(paste0("No. Records - ",hazzie),high=pal[names(pal)==hazzie], trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
     ggsave(paste0(hazzie,"_records_ADM1_",iso3,"_Dessie.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
@@ -794,7 +801,7 @@ sapply(seq_along(centrams),function(i){
   ADM2<-aggregate(ADM, by = "ADM2_CODE")
   
   ADM2$Allrecords<-sapply(ADM2$ADM2_CODE,function(codie){
-    sum(grepl(codie,cntimps$spat_ID,ignore.case = T))
+    sum(grepl(codie,cntimps$imp_spat_ID,ignore.case = T))
   })
   
   q<-ADM2%>%st_as_sf()%>%ggplot()+
@@ -803,7 +810,7 @@ sapply(seq_along(centrams),function(i){
   ggsave(paste0("Allrecords_ADM2_",iso3,"_EMDAT.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
   
   ADM1$Allrecords<-sapply(ADM1$ADM1_CODE,function(codie){
-    sum(grepl(codie,cntimps$spat_ID,ignore.case = T))
+    sum(grepl(codie,cntimps$imp_spat_ID,ignore.case = T))
   })
   
   q<-ADM1%>%st_as_sf()%>%ggplot()+
@@ -815,7 +822,7 @@ sapply(seq_along(centrams),function(i){
   sapply(lhaz,function(hazzie){
     
     ADM2$records<-sapply(ADM2$ADM2_CODE,function(codie){
-      sum(grepl(codie,cntimps$spat_ID[cntimps$haz_Ab==hazzie],ignore.case = T))
+      sum(grepl(codie,cntimps$imp_spat_ID[cntimps$haz_Ab==hazzie],ignore.case = T))
     })
     
     q<-ADM2%>%st_as_sf()%>%ggplot()+
@@ -824,7 +831,7 @@ sapply(seq_along(centrams),function(i){
     ggsave(paste0(hazzie,"_records_ADM2_",iso3,"_EMDAT.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
     
     ADM1$records<-sapply(ADM1$ADM1_CODE,function(codie){
-      sum(grepl(codie,cntimps$spat_ID[cntimps$haz_Ab==hazzie],ignore.case = T))
+      sum(grepl(codie,cntimps$imp_spat_ID[cntimps$haz_Ab==hazzie],ignore.case = T))
     })
     
     q<-ADM1%>%st_as_sf()%>%ggplot()+

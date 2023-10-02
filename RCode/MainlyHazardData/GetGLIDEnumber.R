@@ -1,5 +1,7 @@
 # Names of the output of the GLIDEcols that we want to keep
-GLIDEcols<-c("comments","year","docid","latitude","homeless","source","idsource","killed","affected","duration","number","injured","month","geocode","location","magnitude","time","id","event","day","status","longitude")
+GLIDEcols<-c("comments","year","docid","latitude","homeless","source","idsource",
+             "killed","affected","duration","number","injured","month","geocode",
+             "location","magnitude","time","id","event","day","status","longitude")
 # Skeleton for empty output
 glide_skel<-data.frame(matrix(NA_character_,nrow = 1,ncol = 22)); colnames(glide_skel)<-GLIDEcols
 

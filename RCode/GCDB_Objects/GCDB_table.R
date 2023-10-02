@@ -34,7 +34,7 @@ col_tabGCDB<-c("GCDB_ID"="character", # GCDB event ID
                "prim_haz_spec"="character", # Primary (triggering) specific hazard 
                
                # Impact information
-               "impsub_ID"="character", # ID of each impact element in the overall event
+               "imp_sub_ID"="character", # ID of each impact element in the overall event
                "imp_sdate"="POSIXct", # Start date of the impact estimate (in case it aggregates over a range of dates)
                "imp_fdate"="POSIXct", # End date of the impact estimate (in case it aggregates over a range of dates)
                "imp_cats"="character", # Impact category
@@ -51,7 +51,7 @@ col_tabGCDB<-c("GCDB_ID"="character", # GCDB event ID
                "imp_src_URL"="character", # URL of the impact estimate
                
                # Hazard information (can change from impact to impact for the same event)
-               "subhaz_ID"="character", # ID of each hazard event in the overall event, e.g. aftershocks or flash floods with cyclone
+               "haz_sub_ID"="character", # ID of each hazard event in the overall event, e.g. aftershocks or flash floods with cyclone
                "haz_sdate"="POSIXct", # Start date of the hazard estimate (in case it aggregates over a range of dates)
                "haz_fdate"="POSIXct", # End date of the hazard estimate (in case it aggregates over a range of dates)
                "haz_Ab"="character", # Abbreviated, simplified name of the hazard
@@ -79,7 +79,7 @@ col_tabGCDB<-c("GCDB_ID"="character", # GCDB event ID
                "haz_spat_res"="character", # Spatial resolution of impact estimate
                "haz_spat_srcorg"="character") # Source organisation from where the spatial object comes from
 
-oblig_tabGCDB<-c("GCDB_ID","impsub_ID","ISO3","imp_cats","imp_subcats","imp_units",
+oblig_tabGCDB<-c("GCDB_ID","imp_sub_ID","ISO3","imp_cats","imp_subcats","imp_units",
                  "imp_type","imp_est_type","imp_src_org","imp_src_orgtype","imp_src_URL",
                  "haz_Ab","haz_type","haz_cluster")
 

@@ -219,7 +219,7 @@ FilterGDACS<-function(haz=NULL,syear=2016L,fyear=AsYear(Sys.Date()),list_GDACS=N
       dfGDACS<-rbind(dfGDACS,data.frame(alert=rep(trimws(tolower(tmp$properties$episodealertlevel[j]), "b"),len),
                                         alertscore=rep(tmp$properties$episodealertscore[j],len),
                                         eventid=rep(tmp$properties$eventid,len),
-                                        ev_name_orig=rep(tmp$properties$eventname,len),
+                                        ev_name_en=rep(tmp$properties$eventname,len),
                                         episodeid=rep(tmp$properties$episodeid,len),
                                         link=rep(tmp$properties$url$details,len),
                                         ISO3=dfct$ISO3,
@@ -248,16 +248,31 @@ FilterGDACS<-function(haz=NULL,syear=2016L,fyear=AsYear(Sys.Date()),list_GDACS=N
   
 }
 
+GDACSHazards<-function(GDACS){
+  colConv<-openxlsx::read.xlsx("./Taxonomies/MostlyImpactData/GDACS_HIP.xlsx")
+  # Reduce the translated vector and merge
+  GDACS%<>%left_join(colConv,by = c("haz_Ab"),
+                     relationship="one-to-one")
+}
+
 convGDACS_GCDB<-function(GDACS){
-  
-  GDACS$imp_sdate<-GIDD$imp_unitdate<-GDACS$ev_sdate
-  GDACS$imp_fdate<-GDACS$ev_fdate
-  GDACS$ev_name_en<-GDACS$ev_name_orig
+  # Form the ID for the event
+  GDACS$GCDB_ID<-GetGCDB_ID(GDACS)
+  # Date shifts
+  GDACS$imp_sdate<-GIDD$imp_unitdate<-GDACS$haz_sdate<-GDACS$ev_sdate
+  GDACS$imp_fdate<-GDACS$haz_fdate<-GDACS$ev_fdate
   # Add the continent, then remove the unnecesary layers
   GDACS%<>%mutate(Continent=convIso3Continent(ISO3))%>%
     filter(!is.na(Continent))
   # Add alertscore as the impact value
   GDACS$imp_value<-GDACS$alertscore
+  GDACS$imp_cats<-"impother"
+  GDACS$imp_subcats<-"imptyperisk"
+  GDACS$imp_det<-"impdetalert"
+  GDACS$imp_type<-"imptypalert"
+  GDACS$imp_units<-"unitsgdacsalert"
+  stop("Check hazard_severity in GDACS object")
+  colnames(GDACS)[colnames(GDACS)=="hazard_severity"]<-"haz_maxvalue"
   # This estimate is modelled
   GDACS$imp_est_type<-"esttype_model"
   GDACS$haz_est_type<-"esttype_second"
@@ -265,34 +280,47 @@ convGDACS_GCDB<-function(GDACS){
   GDACS$imp_src_db<-"GDACS"
   GDACS$imp_src_org<-"European Commission"
   GDACS$imp_src_orgtype<-"orgtyperio"
+  colnames(GDACS)[colnames(GDACS)=="src_URL"]<-"imp_src_URL"
   colnames(GDACS)[colnames(GDACS)=="link"]<-"src_URL"
+  # Create the impact and hazard sub-ID for the speciic level, not event level
+  GDACS$imp_sub_ID<-GDACS%>%dplyr::select(c(GCDB_ID,imp_src_db,haz_cluster,haz_spec,imp_det,imp_spat_ID))%>%
+    mutate(imp_src_db=stringr::str_remove(stringi::stri_trans_totitle(imp_src_db),pattern = " "))%>%
+    apply(1,function(x) paste0(x,collapse = "-"))
+  # Now for hazards
+  GDACS$haz_sub_ID<-GDACS%>%dplyr::select(c(GCDB_ID,haz_src_db,haz_cluster,haz_spec,haz_spat_ID))%>%
+    mutate(imp_src_db=stringr::str_remove(stringi::stri_trans_totitle(imp_src_db),pattern = " "))%>%
+    apply(1,function(x) paste0(x,collapse = "-"))
+  # Convert to the UNDRR-ISC hazard taxonomy
+  GDACS%<>%GDACSHazards()
   
   c(
+    # Hazard information (can change from impact to impact for the same event)
+    "haz_maxvalue"="numeric", # Maximum intensity or magnitude of the hazard, e.g.  
+    "haz_units"="character", # Units of the max intensity/magnitude value estimate
+    "haz_src_db"="character", # Source database name of impact estimate or the curated estimate
+    "haz_src_org"="character", # Source organisation of impact estimate or the curated estimate
+    "haz_src_orgtype"="character", # Source organisation type
+    "haz_src_URL"="character", # URL of the impact estimate
     
-    "impsub_ID"="character", # ID of each impact element in the overall event
-    "subhaz_ID"="character", # ID of each hazard of each impact element in the overall event
-    "imp_cats"="character", # Impact category
-    "imp_subcats"="character", # Impact subcategory
-    "imp_det"="character", # Impact subsubcategory
-    "imp_type"="character", # Impact units
-    "imp_units"="character", # Impact unit (e.g. stock or currency)
-    
-    "haz_type"="character", # Impacting hazard type
-    "haz_cluster"="character", # Impacting hazard cluster
-    "haz_spec"="character", # Impacting specific hazard
-    "haz_link"="character", # Associated impactful-hazards to the specific hazard
-    "haz_potlink"="character", # Potential other impactful-hazards that may be associated to the specific hazard
-    "spat_ID"="character", # ID of the spatial object
-    "spat_type"="character", # Spatial object type
-    "spat_res"="character", # Spatial resolution of impact estimate
-    "spat_srcorg"="character") # Source organisation from where the spatial object comes from
+    # Spatial info - impact
+    "imp_spat_ID"="character", # ID of the spatial object
+    "imp_spat_type"="character", # Spatial object type
+    "imp_spat_res"="character", # Spatial resolution of impact estimate
+    "imp_spat_srcorg"="character", # URL of the impact estimate
+    # Spatial info - hazard
+    "haz_spat_ID"="character", # ID of the spatial object
+    "haz_spat_type"="character", # Spatial object type
+    "haz_spat_res"="character", # Spatial resolution of impact estimate
+    "haz_spat_srcorg"="character") # Source organisation from where the spatial object comes from
+  
+    stop()
 }
 
 GetGDACS_GCDB<-function(){
   # Extract the data
   GDACS<-FilterGDACS()
   # Store it out as a imp_GCDB object
-  GDACS%<>%convGDACS_GCDB()
+  GDACS%>%convGDACS_GCDB()
 }
 
 GetGDACSalertscore<-function(dfGDACS=NULL,haz,bbox,sdater,fdater=NULL,isos=NULL){

@@ -634,7 +634,7 @@ Des2tabGCDB<-function(Dessie){
   # Correct the labels of the impacts, melting by impact detail
   Dessie%<>%ImpLabs(nomDB = "Desinventar")
   # Create an impact-specific ID
-  Dessie$impsub_ID<-Dessie%>%dplyr::select(c(GCDB_ID,imp_src_db,haz_spec,imp_det,spat_ID))%>%
+  Dessie$imp_sub_ID<-Dessie%>%dplyr::select(c(GCDB_ID,imp_src_db,haz_spec,imp_det,spat_ID))%>%
     mutate(imp_src_db=stringr::str_remove(stringi::stri_trans_totitle(imp_src_db),pattern = " "))%>%
     apply(1,function(x) paste0(x,collapse = "-"))
   # Add missing columns & reorder the dataframe to fit imp_GCDB object
@@ -668,14 +668,14 @@ GetDesinventar<-function(){
   # The Desinventar database has many entries per single event, so we take the most recent estimate
   impies<-impies[nrow(impies):1,]%>%filter(imp_value>0)
   # Find the duplicated elements
-  inds<-impies%>%dplyr::select(impsub_ID)%>%duplicated()
+  inds<-impies%>%dplyr::select(imp_sub_ID)%>%duplicated()
   
   return(impies[!inds,])
   # Form a GCDB impacts object from EMDAT data (if there is a problem, return an empty tabGCDB object)
   # tryCatch(new("tabGCDB",impies),error=function(e) new("tabGCDB"))
 }
 # tmp<-Dessie[nrow(Dessie):1,]%>%filter(imp_value>0)
-# inds<-tmp%>%dplyr::select(impsub_ID)%>%duplicated()
+# inds<-tmp%>%dplyr::select(imp_sub_ID)%>%duplicated()
 # Dessie<-tmp[!inds,]
 # saveRDS(Dessie,"./CleanedData/MostlyImpactData/Desinventar/subDessie.RData")
 
