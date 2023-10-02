@@ -12,6 +12,7 @@ GetImpacts<-function(){
   # IFRC GO
   impies%<>%rbind(GetGO())
   # GLIDE
+  impies%<>%GetGLIDE()
   # impies$GLIDE[is.na(impies$GLIDE)]<-GetGLIDEnum(impies[is.na(impies$GLIDE)],numonly=T)
   
   return(impies)
