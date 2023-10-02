@@ -35,7 +35,7 @@ col_impGCDB<-c("GCDB_ID"="character", # GCDB event ID
                "imp_det"="character", # Impact subsubcategory
                "imp_value"="numeric", # Impact quantity
                "imp_type"="character", # Impact units
-               "imp_units"="character", # Impact type (e.g. excess mortality, displacement stock)
+               "measunits"="character", # Impact type (e.g. excess mortality, displacement stock)
                "imp_unitdate"="character", # date associated to the unit (for currencies almost exclusively)
                "imp_est_type"="character", # Estimate type: primary, secondary, modelled
                "imp_src_db"="character", # Source database name of impact estimate or the curated estimate
@@ -53,7 +53,7 @@ col_impGCDB<-c("GCDB_ID"="character", # GCDB event ID
                "spat_res"="character", # Spatial resolution of impact estimate
                "spat_srcorg"="character") # Source organisation from where the spatial object comes from
 
-oblig_impGCDB<-c("GCDB_ID","imp_sub_ID","ISO3","impcat","impsubcat","imp_units",
+oblig_impGCDB<-c("GCDB_ID","imp_sub_ID","ISO3","impcat","impsubcat","measunits",
                  "imp_type","imp_est_type","imp_src_org","imp_src_orgtype","src_URL",
                  "haz_Ab","haz_type","haz_cluster")
 

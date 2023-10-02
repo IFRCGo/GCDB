@@ -121,7 +121,7 @@ ggsave("AllHazards_impcats_bar.png",p,path="./Plots/")
 
 minitax1<-taxies%>%filter(list_name=="imp_subcats")%>%
   transmute(imp_subcats=name,label=label)
-minitax2<-taxies%>%filter(list_name=="impacttypes")%>%
+minitax2<-taxies%>%filter(list_name=="imp_type")%>%
   transmute(imp_type=name,label=label)
 tmp<-left_join(left_join(impies,minitax1,by="imp_subcats"),minitax2,by="imp_type")
 tmp$label.y[tmp$label.y=="Internally Displaced Persons (IDPs)"]<-"Internally Displaced (IDPs)"

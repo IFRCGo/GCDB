@@ -113,7 +113,7 @@ PlotImpAgg<-function(ADM,impact="imp_typepopcnt-imptypdeat",loggie=T,bks=NULL,lb
     labeller<-paste0(taxies%>%filter(list_name=="imp_subcats" &
                                        name==str_split(impact,"-",simplify = T)[1])%>%
                        pull(label)," ",
-                     taxies%>%filter(list_name=="impacttypes" &
+                     taxies%>%filter(list_name=="imp_type" &
                                        name==str_split(impact,"-",simplify = T)[2])%>%
                        pull(label))  
   }
@@ -254,7 +254,7 @@ Breaking down the impact estimate classification into further sub-categories, th
 # Combine both the impact subcategories and the actual impact type to get the overall impact
 minitax1<-taxies%>%filter(list_name=="imp_subcats")%>%
   transmute(imp_subcats=name,label=label)
-minitax2<-taxies%>%filter(list_name=="impacttypes")%>%
+minitax2<-taxies%>%filter(list_name=="imp_type")%>%
   transmute(imp_type=name,label=label)
 tmp<-left_join(left_join(impies,minitax1,by="imp_subcats"),minitax2,by="imp_type")
 tmp$label.y[tmp$label.y=="Internally Displaced Persons (IDPs)"]<-"Internally Displaced (IDPs)"
@@ -499,7 +499,7 @@ theme(axis.text.x = element_text(angle = 45, hjust=1))
 
 minitax1<-taxies%>%filter(list_name=="imp_subcats")%>%
   transmute(imp_subcats=name,label=label)
-minitax2<-taxies%>%filter(list_name=="impacttypes")%>%
+minitax2<-taxies%>%filter(list_name=="imp_type")%>%
   transmute(imp_type=name,label=label)
 
 tmp<-left_join(left_join(appeal,minitax1,by="imp_subcats"),minitax2,by="imp_type")
@@ -530,7 +530,7 @@ p<-tmp%>%ggplot()+geom_bar(aes(label,fill=label),colour="black")+
 
 fieldr<-impies%>%filter(imp_src_db=="GO-FR")
 
-minitax<-taxies%>%filter(list_name=="impacttypes")%>%
+minitax<-taxies%>%filter(list_name=="imp_type")%>%
   transmute(imp_type=name,imp_type_detail=label)
 minitax$imp_type_detail<-str_split(minitax$imp_type_detail," \\(",simplify = T)[,1]
 

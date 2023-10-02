@@ -41,7 +41,7 @@ PlotImpAgg<-function(ADM,impact="imp_typepopcnt-imptypdeat",loggie=T,bks=NULL,lb
     labeller<-paste0(taxies%>%filter(list_name=="imp_subcats" &
                                        name==str_split(impact,"-",simplify = T)[1])%>%
                        pull(label)," ",
-                     taxies%>%filter(list_name=="impacttypes" &
+                     taxies%>%filter(list_name=="imp_type" &
                                        name==str_split(impact,"-",simplify = T)[2])%>%
                        pull(label))  
   }
