@@ -25,8 +25,8 @@ col_tabGCDB<-c("GCDB_ID"="character", # GCDB event ID
                "location"="character", # general description of hazard location
                "ISO3"="character", # ISO3-codes
                "Continent"="character", # Local-continent
-               "ev_sdate"="POSIXct", # Start date of the event or the impacting-hazard
-               "ev_fdate"="POSIXct", # Finish date of the event or the impacting-hazard
+               "ev_sdate"="character", # Start date of the event or the impacting-hazard
+               "ev_fdate"="character", # Finish date of the event or the impacting-hazard
                # Add triggering hazard details
                "prim_haz_Ab"="character", # Primary (triggering) hazard 2-letter abbreviation
                "prim_haz_type"="character", # Primary (triggering) hazard  type
@@ -74,7 +74,7 @@ col_tabGCDB<-c("GCDB_ID"="character", # GCDB event ID
                "imp_spat_res"="character", # Spatial resolution of impact estimate
                "imp_spat_srcorg"="character", # URL of the impact estimate
                # Spatial info - hazard
-               "haz_spat_ID"="character", # ID of the spatial object
+               "imp_spat_ID"="character", # ID of the spatial object
                "haz_spat_type"="character", # Spatial object type
                "haz_spat_res"="character", # Spatial resolution of impact estimate
                "haz_spat_srcorg"="character") # Source organisation from where the spatial object comes from

@@ -385,7 +385,7 @@ GetGDACSPoly<-function(GDACS){
     
     
     
-    BigPoly$hazsub_ID<-BigPoly$spat_ID<-paste0(unique())
+    BigPoly$hazsub_ID<-BigPoly$imp_spat_ID<-paste0(unique())
     
     
     GetGCDB_ID(Dessie,haz=unique(GDACS$haz_Ab[ind]))

@@ -21,25 +21,25 @@ PairEMDATspatial<-function(EMDAT,haz="EQ",GAULexist=F){
   # Write out
   write_csv(outer,paste0("./CleanedData/SocioPoliticalData/EMDAT/fully_complete_",haz,".csv"))
   
-  EMDAT$spat_ID<-checkers$ID
+  EMDAT$imp_spat_ID<-checkers$ID
   EMDAT$spat_type<-"polygon"
   EMDAT$spat_orig<-"GAUL"
   
   # If some spatial objects aren't found, try accessing ADM level 1
-  if(sum(is.na(EMDAT$spat_ID))!=0) {
+  if(sum(is.na(EMDAT$imp_spat_ID))!=0) {
     # Which countries to go back over
-    inds<-is.na(EMDAT$spat_ID)
+    inds<-is.na(EMDAT$imp_spat_ID)
     # Try, try and try, try and tryyyyyyyyy, you'll succeed at last
     checkers<-GetGAUL(isoGAUL[inds],lADM=1)
-    EMDAT$spat_ID[inds]<-checkers$ID
+    EMDAT$imp_spat_ID[inds]<-checkers$ID
   }
   # If some spatial objects aren't found, try accessing ADM level 0
-  if(sum(is.na(EMDAT$spat_ID))!=0) {
+  if(sum(is.na(EMDAT$imp_spat_ID))!=0) {
     # Which countries to go back over
-    inds<-is.na(EMDAT$spat_ID)
+    inds<-is.na(EMDAT$imp_spat_ID)
     # Try, try and try, try and tryyyyyyyyy, you'll succeed at last
     checkers<-GetGAUL(isoGAUL[inds],lADM=0)
-    EMDAT$spat_ID[inds]<-checkers$ID
+    EMDAT$imp_spat_ID[inds]<-checkers$ID
   }
   
   return(EMDAT)
@@ -167,11 +167,11 @@ CleanEMDAT<-function(EMDAT){
   # Add some of the extra details that are Desinventar-specific
   EMDAT$imp_est_type<-"esttype_prim"
   EMDAT$src_URL<-"https://public.emdat.be/"
-  EMDAT$spat_srcorg<-EMDAT$imp_src_org<-"CRED - Uni. Louvain"
+  EMDAT$imp_spat_srcorg<-EMDAT$imp_src_org<-"CRED - Uni. Louvain"
   EMDAT$imp_src_db<-"EM-DAT"
   EMDAT$imp_src_orgtype<-"orgtypeacad"
   EMDAT$spat_type<-"Polygon"
-  EMDAT$spat_ID<-apply(EMDAT[,c("Admin1.Code","Admin2.Code")],1,function(x) {
+  EMDAT$imp_spat_ID<-apply(EMDAT[,c("Admin1.Code","Admin2.Code")],1,function(x) {
     if(all(is.na(x))) return(NA_character_)
     if(any(is.na(x))) return(x[!is.na(x)])
     paste0(c(ifelse(is.na(x[1]),"",x[1]),
@@ -194,7 +194,7 @@ CleanEMDAT<-function(EMDAT){
   # Melt the columns and apply the impact categorisation
   EMDAT%<>%ImpLabs(nomDB = "EM-DAT")
   # Now get rid of the extra columns of data
-  EMDAT%<>%dplyr::select(-which(!colnames(EMDAT)%in%names(col_impGCDB)))
+  EMDAT%<>%dplyr::select(-which(!colnames(EMDAT)%in%names(col_tabGCDB)))
   # Create an impact-specific ID
   EMDAT$imp_sub_ID<-EMDAT%>%dplyr::select(c(GCDB_ID,imp_src_db,haz_spec,imp_det,spat_ID))%>%
     mutate(imp_src_db=stringr::str_remove(stringi::stri_trans_totitle(imp_src_db),pattern = " "))%>%

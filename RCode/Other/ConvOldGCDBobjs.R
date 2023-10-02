@@ -22,6 +22,6 @@ ConvertOldGCDBobjs<-function(impies){
                              "imp_spat_type",
                              "imp_spat_res",
                              "imp_spat_srcorg")
-  colnames(impies)[4]
+  colnames(impies)[4]<-"hazsub_ID"
   
 }

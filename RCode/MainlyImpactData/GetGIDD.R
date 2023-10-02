@@ -100,11 +100,11 @@ GetGIDD<-function(){
   # Add some of the extra details that are Desinventar-specific
   GIDD$imp_est_type<-"esttype_prim"
   GIDD$src_URL<-"https://helix-tools-api.idmcdb.org/external-api/gidd/disasters/disaster-export/"
-  GIDD$spat_srcorg<-GIDD$imp_src_org<-"Internal Displacement Monitoring Centre (IDMC)"
+  GIDD$imp_spat_srcorg<-GIDD$imp_src_org<-"Internal Displacement Monitoring Centre (IDMC)"
   GIDD$imp_src_db<-"GIDD"
   GIDD$imp_src_orgtype<-"orgtypengo"
   GIDD$spat_type<-"Polygon"
-  GIDD$spat_ID<-NA_character_
+  GIDD$imp_spat_ID<-NA_character_
   # Admin level resolution
   GIDD$spat_res<-"ADM-0"
   # Correct the labels of the impacts, melting by impact detail

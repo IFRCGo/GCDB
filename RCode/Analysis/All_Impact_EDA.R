@@ -1,7 +1,10 @@
 source("./RCode/Analysis/SpatialAnalysis.R")
 options(scipen = 999)
 
-lhaz<-c("EQ","FL","TC","VO","DR","ET","LS","ST","WF")
+lhaz<-c("EQ","FL","TC","VO","DR","ET","LS","ST","WF","DZ")
+
+# centrams<-c("COL","CRI","PAN","HND")
+centrams<-c("IDN","NPL","PAK","TLS","LKA","MNG","FJI")
 
 # impies<-GatherAllImps(lhaz)
 # saveRDS(impies,"./CleanedData/MostlyImpactData/AllHaz_impies.RData")
@@ -365,9 +368,6 @@ ggsave("RCnot_temporal.png",p,path="./Plots/GCDB_Workshop/",width = 8,height = 5
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%% COUNTRY-SPECIFIC %%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 
-# centrams<-c("COL","CRI","PAN","HND")
-centrams<-c("IDN","NPL","PAK","TLS","LKA","MNG","FJI")
-  
 subbie<-impies%>%filter(ISO3%in%centrams)
 
 p<-subbie%>%filter(!is.na(haz_Ab) & haz_Ab%in%lhaz &
@@ -375,10 +375,10 @@ p<-subbie%>%filter(!is.na(haz_Ab) & haz_Ab%in%lhaz &
                      imp_src_db!="GO-FR")%>%
   group_by(RCnot,haz_Ab,ISO3)%>%reframe(Counts=length(imp_src_db))%>%
   ggplot(aes(x=ISO3,y=Counts,group=haz_Ab))+geom_bar(aes(x=ISO3,y=Counts,fill=haz_Ab),colour="black",stat = "identity")+
-  xlab("Impact Database")+ylab("Number of Impact Records")+#scale_y_log10()+
+  xlab("Country ISO-3 Code")+ylab("Number of Impact Records")+#scale_y_log10()+
   # scale_y_log10(breaks=c(1,10,100,1000,10000,100000,1000000))+
   labs(fill="Data Source")+facet_wrap(~RCnot,scales = "free");p
-ggsave("NS_allhazards_records_notRC.png",p,path="./Plots/GCDB_Workshop/",width = 10,height = 5)  
+ggsave("NS_allhazards_records_notRC_APR.png",p,path="./Plots/GCDB_Workshop/",width = 10,height = 5)  
 
 
 p<-subbie%>%filter(!is.na(haz_Ab) & haz_Ab%in%lhaz &
@@ -387,10 +387,10 @@ p<-subbie%>%filter(!is.na(haz_Ab) & haz_Ab%in%lhaz &
                      imp_src_db!="GO-FR")%>%
   group_by(haz_Ab,ISO3)%>%reframe(Deaths=sum(imp_value))%>%
   ggplot()+geom_bar(aes(x=ISO3,y=Deaths,fill=haz_Ab),colour="black",stat="identity")+
-  xlab("Impact Database")+ylab("Total Deaths")+#scale_y_log10()+
+  xlab("Country ISO-3 Code")+ylab("Total Deaths")+#scale_y_log10()+
   # scale_y_log10(breaks=c(1,10,100,1000,10000,100000,1000000))+
   labs(fill="Data Source"); p #+facet_wrap(~RCnot,scales = "free");p
-ggsave("NS_allhazards_Deaths.png",p,path="./Plots/GCDB_Workshop/",width = 9,height = 8)  
+ggsave("NS_allhazards_Deaths_APR.png",p,path="./Plots/GCDB_Workshop/",width = 9,height = 8)  
 
 
 p<-subbie%>%filter(!is.na(haz_Ab) & haz_Ab%in%lhaz &
@@ -403,7 +403,7 @@ p<-subbie%>%filter(!is.na(haz_Ab) & haz_Ab%in%lhaz &
   scale_y_continuous(breaks = scales::pretty_breaks(n = 5), labels = scales::comma)+
   # scale_y_log10(breaks=c(1,10,100,1000,10000,100000,1000000))+
   labs(fill="Data Source"); p #+facet_wrap(~RCnot,scales = "free");p
-ggsave("NS_allhazards_Cost.png",p,path="./Plots/GCDB_Workshop/",width = 10,height = 7)  
+ggsave("NS_allhazards_Cost_APR.png",p,path="./Plots/GCDB_Workshop/",width = 10,height = 7)  
 
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
@@ -696,6 +696,8 @@ ggsave("FL_spatial_cost_5Yr-RP.png",q,path="./Plots/GCDB_Workshop/",width = 10)
 
 sapply(seq_along(centrams),function(i){
   
+  print(centrams[i])
+  
   iso3<-centrams[i]
   
   cntimps<-impies%>%filter(imp_src_db=="Desinventar" & ISO3==iso3)
@@ -704,6 +706,8 @@ sapply(seq_along(centrams),function(i){
                 stringr::str_to_lower(iso3),
                 "/ADM_",stringr::str_to_lower(iso3),
                 ".geojson")
+  
+  if(!file.exists(filer)) return(F)
   
   ADM<-geojsonio::geojson_read(filer, what = "sp")
   
@@ -735,10 +739,10 @@ sapply(seq_along(centrams),function(i){
     
   # Extract the bounding box of the admin boundaries
   # bbox<-expandBbox(unlist(unname(ExtractBBOXpoly(ADM)[1,2:5])),3)
-  # 
-  # mad_map <- get_stamenmap(bbox,source = "stamen",maptype = "terrain",zoom=8)
-  # 
-  # p<-ggmap(mad_map) + xlab("Longitude") + ylab("Latitude")
+
+  mad_map <- get_stamenmap(expandBbox(ADM@bbox,3),source = "stamen",maptype = "terrain",zoom=5)
+
+  p<-ggmap(mad_map) + xlab("Longitude") + ylab("Latitude")
   
   q<-ADM[ADM$ADMlevel==min(max(ADM$ADMlevel),2),]%>%st_as_sf()%>%ggplot()+
     geom_sf(aes(fill=Allrecords), color = "grey30", linewidth=0.1)+ #, inherit.aes = FALSE) +
@@ -794,6 +798,8 @@ sapply(seq_along(centrams),function(i){
   filer<-paste0("./CleanedData/SocioPoliticalData/EMDAT/",
                 iso3,"/ADM_",iso3,
                 ".geojson")
+  
+  if(!file.exists(filer)) return(F)
   
   ADM<-geojsonio::geojson_read(filer, what = "sp")
   
