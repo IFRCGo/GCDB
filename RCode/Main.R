@@ -6,14 +6,15 @@ GetImpacts<-function(){
   # Desinventar
   impies<-GetDesinventar()
   # EM-DAT
-  impies %<>% rbind(GetEMDAT())
+  impies%<>%rbind(GetEMDAT())
   # GIDD (IDMC)
   impies%<>%rbind(GetGIDD())
   # IFRC GO
   impies%<>%rbind(GetGO())
   # GLIDE
-  impies%<>%GetGLIDE()
-  # impies$GLIDE[is.na(impies$GLIDE)]<-GetGLIDEnum(impies[is.na(impies$GLIDE)],numonly=T)
+  impies%<>%rbind(GetGLIDEimps())
+  # GDACS
+  impies%<>%rbind(GetGDACS())
   
   return(impies)
 }

@@ -88,6 +88,7 @@ GetPackages<-function(packred){
   new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
   if(length(new.packages)>0) install.packages(new.packages, repos='http://cran.us.r-project.org')
   
+  if(length(list.of.packages[!("entity" %in% installed.packages()[,"Package"])])){devtools::install_github("trinker/entity")}
   if(length(list.of.packages[!("ggmap" %in% installed.packages()[,"Package"])])){devtools::install_github("dkahle/ggmap")}
   if(length(list.of.packages[!("GADMTools" %in% installed.packages()[,"Package"])])){devtools::install_github("cran/GADMTools")}
   if(length(list.of.packages[!("ggwordcloud" %in% installed.packages()[,"Package"])])){devtools::install_github("lepennec/ggwordcloud")}

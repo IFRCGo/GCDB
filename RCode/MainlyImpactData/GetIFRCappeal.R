@@ -5,7 +5,7 @@ getGOurl<-function(db="GO-App",token=NULL){
   
   if(db=="GO-App") {db_code<-"appeal"
   } else if(db=="GO-FR") {db_code<-"field_report"
-  } else if(db=="GO-DREF") {db_code<-"dref"
+  } else if(db=="GO-DREF") {db_code<-"dref-final-report"
   } else stop("this IFRC-GO database does not exist")
   
   # Base URL
@@ -111,7 +111,7 @@ CleanGO_app<-function(appeal){
                    imp_src_org="International Federation of Red Cross and Red Crescent Societies (IFRC)",
                    imp_src_db="GO-App",
                    imp_src_orgtype="orgtypengo",
-                   spat_type="Polygon",
+                   imp_spat_type="Polygon",
                    imp_spat_srcorg="IFRC",
                    imp_spat_ID=NA_character_,
                    spat_res="ADM-0")
@@ -173,7 +173,7 @@ CleanGO_field<-function(fieldr){
                    imp_src_org="International Federation of Red Cross and Red Crescent Societies (IFRC)",
                    imp_src_db="GO-FR",
                    imp_src_orgtype="orgtypengo",
-                   spat_type="Polygon",
+                   imp_spat_type="Polygon",
                    imp_spat_srcorg="IFRC",
                    imp_spat_ID=NA_character_,
                    spat_res="ADM-0")
@@ -214,12 +214,11 @@ CleanGO_dref<-function(dref){
   dref$dtype_disp<-dref$disaster_type_details$name
   dref$disaster_type_details<-NULL
 
-  tmp<-dref%>%dplyr::select(-c(national_society_actions,needs_identified,
+  dref%<>%dplyr::select(-c(national_society_actions,needs_identified,
                            modified_by_details,event_map_file,
                            images_file,created_by_details,users_details,
-                           budget_file_details,cover_image_file,
-                           operational_update_details,country_details,
-                           dref_final_report_details))
+                           cover_image_file,
+                           country_details))
 
   tmp%<>%dplyr::select(-c(planned_interventions))
 
@@ -238,7 +237,7 @@ GetGO<-function(token=NULL){
   # Get the DREF data from GO
   # dref<-ExtractGOdata(db="GO-DREF", token = token)
   # Clean it up!
-  # fieldr%<>%CleanGO_dref()
+  # dref%<>%CleanGO_dref()
   # Combine both datasets and output
   rbind(appeal,fieldr)
 }

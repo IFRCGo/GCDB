@@ -103,7 +103,7 @@ GetGIDD<-function(){
   GIDD$imp_spat_srcorg<-GIDD$imp_src_org<-"Internal Displacement Monitoring Centre (IDMC)"
   GIDD$imp_src_db<-"GIDD"
   GIDD$imp_src_orgtype<-"orgtypengo"
-  GIDD$spat_type<-"Polygon"
+  GIDD$imp_spat_type<-"Polygon"
   GIDD$imp_spat_ID<-NA_character_
   # Admin level resolution
   GIDD$spat_res<-"ADM-0"

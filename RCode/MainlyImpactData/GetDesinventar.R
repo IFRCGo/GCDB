@@ -621,7 +621,7 @@ Des2tabGCDB<-function(Dessie){
   Dessie$imp_spat_srcorg<-Dessie$imp_src_org<-"Local Government Estimate"
   Dessie$imp_src_db<-"Desinventar"
   Dessie$imp_src_orgtype<-"orgtypegov"
-  Dessie$spat_type<-"Polygon"
+  Dessie$imp_spat_type<-"Polygon"
   Dessie$imp_spat_ID<-apply(Dessie[,c("level1","level2")],1,function(x) {
     if(all(is.na(x))) return(NA_character_)
     if(any(is.na(x))) return(x[!is.na(x)])

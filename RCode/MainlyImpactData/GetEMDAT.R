@@ -22,7 +22,7 @@ PairEMDATspatial<-function(EMDAT,haz="EQ",GAULexist=F){
   write_csv(outer,paste0("./CleanedData/SocioPoliticalData/EMDAT/fully_complete_",haz,".csv"))
   
   EMDAT$imp_spat_ID<-checkers$ID
-  EMDAT$spat_type<-"polygon"
+  EMDAT$imp_spat_type<-"polygon"
   EMDAT$spat_orig<-"GAUL"
   
   # If some spatial objects aren't found, try accessing ADM level 1
@@ -170,7 +170,7 @@ CleanEMDAT<-function(EMDAT){
   EMDAT$imp_spat_srcorg<-EMDAT$imp_src_org<-"CRED - Uni. Louvain"
   EMDAT$imp_src_db<-"EM-DAT"
   EMDAT$imp_src_orgtype<-"orgtypeacad"
-  EMDAT$spat_type<-"Polygon"
+  EMDAT$imp_spat_type<-"Polygon"
   EMDAT$imp_spat_ID<-apply(EMDAT[,c("Admin1.Code","Admin2.Code")],1,function(x) {
     if(all(is.na(x))) return(NA_character_)
     if(any(is.na(x))) return(x[!is.na(x)])
