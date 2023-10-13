@@ -27,7 +27,7 @@ ImpactAggADM0<-function(impies, haz="EQ"){
   return(ADM)
 }
 
-PlotImpAgg<-function(ADM,impact="imp_typepopcnt-imptypdeat",loggie=T,bks=NULL,lbs=NULL,guidie="colourbar"){
+PlotImpAgg<-function(ADM,impact="imptypepopcnt-imptypdeat",loggie=T,bks=NULL,lbs=NULL,guidie="colourbar"){
   
   ADM@data$tmp<-ADM@data[,impact]
   

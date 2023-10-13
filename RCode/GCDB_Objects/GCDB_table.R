@@ -35,8 +35,8 @@ col_tabGCDB<-c("GCDB_ID"="character", # GCDB event ID
                
                # Impact information
                "imp_sub_ID"="character", # ID of each impact element in the overall event
-               "imp_sdate"="POSIXct", # Start date of the impact estimate (in case it aggregates over a range of dates)
-               "imp_fdate"="POSIXct", # End date of the impact estimate (in case it aggregates over a range of dates)
+               "imp_sdate"="character", # Start date of the impact estimate (in case it aggregates over a range of dates)
+               "imp_fdate"="character", # End date of the impact estimate (in case it aggregates over a range of dates)
                "imp_cats"="character", # Impact category
                "imp_subcats"="character", # Impact subcategory
                "imp_det"="character", # Impact subsubcategory
@@ -52,8 +52,8 @@ col_tabGCDB<-c("GCDB_ID"="character", # GCDB event ID
                
                # Hazard information (can change from impact to impact for the same event)
                "haz_sub_ID"="character", # ID of each hazard event in the overall event, e.g. aftershocks or flash floods with cyclone
-               "haz_sdate"="POSIXct", # Start date of the hazard estimate (in case it aggregates over a range of dates)
-               "haz_fdate"="POSIXct", # End date of the hazard estimate (in case it aggregates over a range of dates)
+               "haz_sdate"="character", # Start date of the hazard estimate (in case it aggregates over a range of dates)
+               "haz_fdate"="character", # End date of the hazard estimate (in case it aggregates over a range of dates)
                "haz_Ab"="character", # Abbreviated, simplified name of the hazard
                "haz_type"="character", # Impacting hazard type
                "haz_cluster"="character", # Impacting hazard cluster
@@ -72,12 +72,16 @@ col_tabGCDB<-c("GCDB_ID"="character", # GCDB event ID
                "imp_spat_ID"="character", # ID of the spatial object
                "imp_spat_type"="character", # Spatial object type
                "imp_spat_res"="character", # Spatial resolution of impact estimate
-               "imp_spat_srcorg"="character", # URL of the impact estimate
+               "imp_spat_resunits"="character", # Spatial resolution units of impact estimate (e.g. ADM level, raster grid)
+               "imp_spat_srcorg"="character", # organisation of the spatial data
+               "imp_spat_srcurl"="character", # URL of the impact estimate
                # Spatial info - hazard
-               "imp_spat_ID"="character", # ID of the spatial object
+               "haz_spat_ID"="character", # ID of the spatial object
                "haz_spat_type"="character", # Spatial object type
                "haz_spat_res"="character", # Spatial resolution of impact estimate
-               "haz_spat_srcorg"="character") # Source organisation from where the spatial object comes from
+               "haz_spat_resunits"="character", # Spatial resolution units of impact estimate (e.g. ADM level, raster grid)
+               "haz_spat_srcorg"="character", # Source organisation from where the spatial object comes from
+               "haz_spat_srcurl"="character") # URL of the impact estimate
 
 oblig_tabGCDB<-c("GCDB_ID","imp_sub_ID","ISO3","imp_cats","imp_subcats","imp_units",
                  "imp_type","imp_est_type","imp_src_org","imp_src_orgtype","imp_src_URL",
@@ -91,12 +95,30 @@ GetGCDB_ID<-function(DF,haz=NULL) {
     dplyr::select(haz_Ab,ev_sdate,ISO3)%>%
     apply(1,function(x) paste0(x,collapse = "-"))
   
-  paste0(namerz,"-GCDB")
+  paste0(namerz,"-GCDB_V1")
+}
+
+stripGCDB_ID<-function(ID){
+  apply(str_split(ID,"-",simplify = T)[,1:4],1,paste0,collapse="-")
 }
 
 GetGCDB_impID<-function(impies){
-  impies$imp_sub_ID<-impies%>%dplyr::select(c(GCDB_ID,imp_src_db,haz_spec,imp_det,imp_spat_ID))%>%
+  if(!any(colnames(impies)=="imp_spat_ID")) impies$imp_spat_ID<-NA_character_
+  
+  impies$imp_sub_ID<-impies%>%dplyr::select(c(GCDB_ID,imp_src_db,imp_det,imp_type,imp_spat_ID))%>%
     mutate(imp_src_db=stringr::str_remove(stringi::stri_trans_totitle(imp_src_db),pattern = " "))%>%
+    apply(1,function(x) paste0(x,collapse = "-"))
+  
+  return(impies)
+}
+
+GetGCDB_hazID<-function(impies){
+  if(!any(colnames(impies)=="haz_spat_ID")) impies$haz_spat_ID<-NA_character_
+  
+  impies$haz_sub_ID<-impies%>%dplyr::select(c(GCDB_ID,haz_src_db,haz_cluster,haz_spec,haz_spat_ID))%>%
+    mutate(haz_src_db=stringr::str_remove(stringi::stri_trans_totitle(haz_src_db),pattern = " "),
+           haz_src_db=stringr::str_remove(stringi::stri_trans_totitle(haz_src_db),pattern = " "),
+           )%>%
     apply(1,function(x) paste0(x,collapse = "-"))
   
   return(impies)

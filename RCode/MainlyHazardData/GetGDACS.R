@@ -165,21 +165,27 @@ SortGDACSiso<-function(country){
 }
 
 severitysplitter<-function(haz,txt){
+  # if(haz=="EQ") {
+  #   sev<-as.numeric(gsub("[^0-9.]", "",  strsplit(txt$severitytext,split = ",")[[1]]))
+  #   return(list(haz_sev=sev[1],haz_sev_add=sev[2],haz_unit="M",haz_add_unit="km"))
+  # } 
   if(haz=="EQ") {
-    sev<-as.numeric(gsub("[^0-9.]", "",  strsplit(txt$severitytext,split = ",")[[1]]))
-    return(list(haz_sev=sev[1],haz_sev_add=sev[2],haz_unit="M",haz_add_unit="km"))
-  } 
-  
-  # if(!is.null(txt$severity) & str_remove(txt$severity," ")!="" & 
-  #    !is.null(txt$severityunit) & str_remove(txt$severityunit," ")!="") 
-    return(list(haz_sev=txt$severity,haz_sev_add=NA_character_,
-                haz_unit=txt$severityunit,haz_add_unit=NA_character_))
+    return(list(haz_maxvalue=txt$severity,
+                haz_units="unitsrichter"))
+  } else if(haz=="TC") {
+    return(list(haz_maxvalue=txt$severity,
+                haz_units="unitskph"))
+  } else if(haz=="DR") {
+    return(list(haz_maxvalue=txt$severity,
+                haz_units="unitskm2"))
+  } else return(list(haz_maxvalue=NA_real_,
+                     haz_units=NA_character_))
 }
 
 GetIntMap<-function(hazard="EQ"){
   if(hazard=="EQ"){
     return(seq(from = 5,to = 9,by = 0.5))
-  } else stop("IIDIPUS NOT READY FOR ALTERNATIVE HAZARDS THAN EARTHQUAKE")
+  } else stop("Unknown hazard in GetIntMap")
 }
 
 FilterGDACS<-function(haz=NULL,syear=2016L,fyear=AsYear(Sys.Date()),list_GDACS=NULL,red=F){
@@ -229,6 +235,8 @@ FilterGDACS<-function(haz=NULL,syear=2016L,fyear=AsYear(Sys.Date()),list_GDACS=N
                                         haz_Ab=rep(tmp$properties$eventtype,len),
                                         hazard_severity=rep(tmp$properties$severitydata$severity,len),
                                         txt,
+                                        haz_src_db=tmp$properties$source,
+                                        haz_src_org=tmp$properties$source,
                                         GLIDE=rep(tmp$properties$glide,len),
                                         geom_type=rep(tmp$geometry$type,len),
                                         cent_lon=rep(tmp$geometry$coordinates[1],len),
@@ -249,17 +257,17 @@ FilterGDACS<-function(haz=NULL,syear=2016L,fyear=AsYear(Sys.Date()),list_GDACS=N
 }
 
 GDACSHazards<-function(GDACS){
-  colConv<-openxlsx::read.xlsx("./Taxonomies/MostlyImpactData/GDACS_HIP.xlsx")
+  colConv<-openxlsx::read.xlsx("./Taxonomies/MostlyImpactData/GDACS-HIP.xlsx")
   # Reduce the translated vector and merge
   GDACS%<>%left_join(colConv,by = c("haz_Ab"),
-                     relationship="one-to-one")
+                     relationship="many-to-one")
 }
 
 convGDACS_GCDB<-function(GDACS){
   # Form the ID for the event
   GDACS$GCDB_ID<-GetGCDB_ID(GDACS)
   # Date shifts
-  GDACS$imp_sdate<-GIDD$imp_unitdate<-GDACS$haz_sdate<-GDACS$ev_sdate
+  GDACS$imp_sdate<-GDACS$imp_unitdate<-GDACS$haz_sdate<-GDACS$ev_sdate
   GDACS$imp_fdate<-GDACS$haz_fdate<-GDACS$ev_fdate
   # Add the continent, then remove the unnecesary layers
   GDACS%<>%mutate(Continent=convIso3Continent(ISO3))%>%
@@ -271,8 +279,6 @@ convGDACS_GCDB<-function(GDACS){
   GDACS$imp_det<-"impdetalert"
   GDACS$imp_type<-"imptypalert"
   GDACS$imp_units<-"unitsgdacsalert"
-  stop("Check hazard_severity in GDACS object")
-  colnames(GDACS)[colnames(GDACS)=="hazard_severity"]<-"haz_maxvalue"
   # This estimate is modelled
   GDACS$imp_est_type<-"esttype_model"
   GDACS$haz_est_type<-"esttype_second"
@@ -280,38 +286,16 @@ convGDACS_GCDB<-function(GDACS){
   GDACS$imp_src_db<-"GDACS"
   GDACS$imp_src_org<-"European Commission"
   GDACS$imp_src_orgtype<-"orgtyperio"
-  colnames(GDACS)[colnames(GDACS)=="src_URL"]<-"imp_src_URL"
-  colnames(GDACS)[colnames(GDACS)=="link"]<-"src_URL"
+  colnames(GDACS)[colnames(GDACS)=="src_URL"]<-"haz_src_URL"
+  colnames(GDACS)[colnames(GDACS)=="link"]<-"imp_src_URL"
+  # Convert to the UNDRR-ISC hazard taxonomy
+  GDACS%<>%GDACSHazards()
   # Create the impact and hazard sub-ID for the speciic level, not event level
   GDACS%<>%GetGCDB_impID()
   # Now for hazards
-  GDACS$haz_sub_ID<-GDACS%>%dplyr::select(c(GCDB_ID,haz_src_db,haz_cluster,haz_spec,haz_spat_ID))%>%
-    mutate(imp_src_db=stringr::str_remove(stringi::stri_trans_totitle(imp_src_db),pattern = " "))%>%
-    apply(1,function(x) paste0(x,collapse = "-"))
-  # Convert to the UNDRR-ISC hazard taxonomy
-  GDACS%<>%GDACSHazards()
-  
-  c(
-    # Hazard information (can change from impact to impact for the same event)
-    "haz_maxvalue"="numeric", # Maximum intensity or magnitude of the hazard, e.g.  
-    "haz_units"="character", # Units of the max intensity/magnitude value estimate
-    "haz_src_db"="character", # Source database name of impact estimate or the curated estimate
-    "haz_src_org"="character", # Source organisation of impact estimate or the curated estimate
-    "haz_src_orgtype"="character", # Source organisation type
-    "haz_src_URL"="character", # URL of the impact estimate
-    
-    # Spatial info - impact
-    "imp_spat_ID"="character", # ID of the spatial object
-    "imp_spat_type"="character", # Spatial object type
-    "imp_spat_res"="character", # Spatial resolution of impact estimate
-    "imp_spat_srcorg"="character", # URL of the impact estimate
-    # Spatial info - hazard
-    "haz_spat_ID"="character", # ID of the spatial object
-    "haz_spat_type"="character", # Spatial object type
-    "haz_spat_res"="character", # Spatial resolution of impact estimate
-    "haz_spat_srcorg"="character") # Source organisation from where the spatial object comes from
-  
-    stop()
+  GDACS%<>%GetGCDB_hazID()
+  # Add the extra columns to make it officially a GCDB object
+  GDACS%>%AddEmptyColImp()
 }
 
 GetGDACS_GCDB<-function(){
@@ -343,14 +327,16 @@ GetGDACSalertscore<-function(dfGDACS=NULL,haz,bbox,sdater,fdater=NULL,isos=NULL)
 
 poly_ccodes<-c("eventid","episodeid","polygonlabel","Class","forecast","fromdate","todate","geometry")
 
-GetGDACSPoly<-function(GDACS){
+GetGDACSspatial<-function(GDACS){
   
   BigPoly<-data.frame()
-  for(ev in unique(GDACS$eventid)){
+  for(ev in unique(GDACS$GCDB_ID)){
     # Find the appropriate elements of the GDACS database
-    ind<-GDACS$eventid==ev
+    ind<-GDACS$GCDB_ID==ev
     # Get the shapefile
-    poly<-suppressWarnings(geojsonsf::geojson_sf(unique(GDACS$geom_link[ind])))
+    poly<-suppressWarnings(geojsonsf::geojson_sf(unique(GDACS$haz_src_URL[ind])))
+    # poly<-as(sf::st_read(URL),"Spatial")
+    
     # Modify per hazard
     if(unique(GDACS$haz_Ab[ind])=="TC"){
       # Take only the three-level wind-speed risk boundaries
@@ -382,8 +368,15 @@ GetGDACSPoly<-function(GDACS){
     
     
     
+    # Here we need to modify the GDACS object to put in the fromdate and todate 
+    # in the form of the haz_sdate and haz_fdate
     
-    BigPoly$hazsub_ID<-BigPoly$imp_spat_ID<-paste0(unique())
+    
+    # Modify the spatial object to allow columns for hazard mag/int/coverage 
+    # and then also the units of measurement too 
+    
+    
+    BigPoly$haz_sub_ID<-BigPoly$imp_spat_ID<-paste0(unique())
     
     
     GetGCDB_ID(Dessie,haz=unique(GDACS$haz_Ab[ind]))
@@ -399,7 +392,7 @@ GetGDACSPoly<-function(GDACS){
   ind<-is.na(BigPoly$forecast)
   BigPoly$forecast[ind]<-F; BigPoly$forecast[!ind]<-T
   # Create a unique ID per shapefile
-  BigPoly$hazsub_ID<-
+  BigPoly$haz_sub_ID<-
   # convert to sp spatial class
   BigPoly%<>%as("Spatial")
   
@@ -412,7 +405,7 @@ GetGDACSPoly<-function(GDACS){
     
     
   # Now left-join to the full GDACS database by 
-  GDACS%<>%left_join(poly@data,by = "eventid")
+  GDACS%<>%left_join(poly@data,by = "GCDB_ID")
   
   return(list(GDACS=GDACS,poly=BigPoly))
 }

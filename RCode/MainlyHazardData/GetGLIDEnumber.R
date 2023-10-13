@@ -115,7 +115,7 @@ GetGLIDEimps<-function(){
                    "docid", # Nope!
                    "Latitude", # Nope!
                    "imptyphomles",
-                   "imp_src_db",
+                   "imp_src_org",
                    "idsource", # Nope!
                    "imptypdeat",
                    "imptypaffe",
@@ -133,9 +133,9 @@ GetGLIDEimps<-function(){
                    "status", # Nope!
                    "Longitude")
   # The source reference isn't well structured, use NLP to extract organisation name
-  GLIDE$imp_src_org<-GLIDE$imp_src_db
+  GLIDE$imp_src_db<-"GLIDE"
   # Set database to be the same as the organisation as we don't know better. Also, housekeeping
-  GLIDE$imp_src_db<-GLIDE$imp_src_org; GLIDE$imp_spat_ID<-NA
+  GLIDE$imp_spat_ID<-NA
   # Sort out the ISO3 values to remove the NaNs
   GLIDE$ISO3[GLIDE$ISO3=="---"]<-NA_character_
   # House keeping
@@ -182,7 +182,6 @@ GetGLIDEimps<-function(){
   # Make it into a GCDB_table-like object
   GLIDE%>%AddEmptyColImp()
 }
-
 
 GetGLIDE<-function(DF){
 

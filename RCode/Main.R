@@ -14,7 +14,7 @@ GetImpacts<-function(){
   # GLIDE
   impies%<>%rbind(GetGLIDEimps())
   # GDACS
-  impies%<>%rbind(GetGDACS())
+  impies%<>%rbind(GetGDACS_GCDB())
   
   return(impies)
 }
