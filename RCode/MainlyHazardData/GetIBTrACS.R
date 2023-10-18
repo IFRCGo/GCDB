@@ -12,4 +12,5 @@ DownloadIBTrACS<-function(){
   unzip(outloc,exdir = str_split(outloc,".zip",simplify = T)[1,1])
 }
 
-IBTrACS<-as(sf::st_read("./RawData/MostlyHazardData/IBTrACS/AllEvents_Lines/IBTrACS.ALL.list.v04r00.lines.shp"),"Spatial")
+# DownloadIBTrACS()
+# IBTrACS<-as(sf::st_read("./RawData/MostlyHazardData/IBTrACS/AllEvents_Lines/IBTrACS.ALL.list.v04r00.lines.shp"),"Spatial")
