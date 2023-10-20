@@ -15,8 +15,8 @@ impies<-rbind(CleanEMDAT(openxlsx::read.xlsx("./Analysis_Results/Kirsten/emdat_p
 
 impies$haz_Ab[impies$haz_Ab%in%c("CW","HW")]<-"ET"
 
-impies$haz_Ab[impies$haz_Ab=="LS" & impies$haz_type=="haz_typehydromet"]<-"LS-HM"
-impies$haz_Ab[impies$haz_Ab=="LS" & impies$haz_type=="haz_typegeohaz"]<-"LS-G"
+impies$haz_Ab[impies$haz_Ab=="LS" & impies$haz_type=="haztypehydromet"]<-"LS-HM"
+impies$haz_Ab[impies$haz_Ab=="LS" & impies$haz_type=="haztypegeohaz"]<-"LS-G"
 # Create a variable to separate what is and isn't RC data 
 # impies%<>%mutate(RCnot="Not RC",RCnot=replace(RCnot, grepl("GO-",imp_src_db), "RC"))
 # Add the year variable
@@ -47,18 +47,18 @@ geovars<-c("Earthquake","Volcano","LandslideG")
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 EMFull<-impies%>%filter(Year>=2010 & imp_src_db=="EM-DAT" & !duplicated(imp_sub_ID))%>%
   group_by(ISO3,Year)%>%
-  summarise(ALL_CLIM=sum(haz_type=="haz_typehydromet"),
+  summarise(ALL_CLIM=sum(haz_type=="haztypehydromet"),
             Storm=sum(haz_Ab%in%c("ST","TC")),
             Flood=sum(haz_Ab=="FL"),
-            LandslideH=sum(haz_Ab=="LS" & haz_type=="haz_typehydromet"),
+            LandslideH=sum(haz_Ab=="LS" & haz_type=="haztypehydromet"),
             Drought=sum(haz_Ab=="DR"),
             Wildfire=sum(haz_Ab=="WF"),
             ExtrTemp=sum(haz_Ab%in%c("ET","CW","HW")),
-            ALL_GEO=sum(haz_type=="haz_typegeohaz"),
+            ALL_GEO=sum(haz_type=="haztypegeohaz"),
             Earthquake=sum(haz_Ab=="EQ"),
             Volcano=sum(haz_Ab=="VC"),
-            LandslideG=sum(haz_Ab=="LS" & haz_type=="haz_typegeohaz"),
-            ALL=sum(haz_type%in%c("haz_typehydromet","haz_typegeohaz")),
+            LandslideG=sum(haz_Ab=="LS" & haz_type=="haztypegeohaz"),
+            ALL=sum(haz_type%in%c("haztypehydromet","haztypegeohaz")),
             .groups="drop")
 EMFull<-WDR%>%dplyr::select(1:5)%>%
   left_join(EMFull,by=join_by(ISO3,Year),relationship="one-to-one")
@@ -71,18 +71,18 @@ EMFull$ALL<-EMFull$ALL_CLIM+EMFull$ALL_GEO
 
 HEFull<-impies%>%filter(Year>=2018 & imp_src_db=="GIDD" & !duplicated(imp_sub_ID))%>%
   group_by(ISO3,Year)%>%
-  summarise(ALL_CLIM=sum(haz_type=="haz_typehydromet"),
+  summarise(ALL_CLIM=sum(haz_type=="haztypehydromet"),
             Storm=sum(haz_Ab%in%c("ST","TC")),
             Flood=sum(haz_Ab=="FL"),
-            LandslideH=sum(haz_Ab=="LS" & haz_type=="haz_typehydromet"),
+            LandslideH=sum(haz_Ab=="LS" & haz_type=="haztypehydromet"),
             Drought=sum(haz_Ab=="DR"),
             Wildfire=sum(haz_Ab=="WF"),
             ExtrTemp=sum(haz_Ab%in%c("ET","CW","HW")),
-            ALL_GEO=sum(haz_type=="haz_typegeohaz"),
+            ALL_GEO=sum(haz_type=="haztypegeohaz"),
             Earthquake=sum(haz_Ab=="EQ"),
             Volcano=sum(haz_Ab=="VC"),
-            LandslideG=sum(haz_Ab=="LS" & haz_type=="haz_typegeohaz"),
-            ALL=sum(haz_type%in%c("haz_typehydromet","haz_typegeohaz")),
+            LandslideG=sum(haz_Ab=="LS" & haz_type=="haztypegeohaz"),
+            ALL=sum(haz_type%in%c("haztypehydromet","haztypegeohaz")),
             .groups="drop")
 HEFull<-WDR%>%dplyr::select(1:5)%>%
   left_join(HEFull,by=join_by(ISO3,Year),relationship="one-to-one")
@@ -141,18 +141,18 @@ RegIncFull%<>%rbind(global)%>%arrange(Year)
 FatFull<-impies%>%filter(Year>=2010 & imp_src_db%in%c("EM-DAT","GIDD") &
                          imp_det=="impdetallpeop" & imp_type=="imptypdeat")%>%
   group_by(ISO3,Year)%>%
-  summarise(ALL_CLIM=sum(imp_value[haz_type=="haz_typehydromet"]),
+  summarise(ALL_CLIM=sum(imp_value[haz_type=="haztypehydromet"]),
             Storm=sum(imp_value[haz_Ab%in%c("ST","TC")]),
             Flood=sum(imp_value[haz_Ab=="FL"]),
-            LandslideH=sum(imp_value[haz_Ab=="LS" & haz_type=="haz_typehydromet"]),
+            LandslideH=sum(imp_value[haz_Ab=="LS" & haz_type=="haztypehydromet"]),
             Drought=sum(imp_value[haz_Ab=="DR"]),
             Wildfire=sum(imp_value[haz_Ab=="WF"]),
             ExtrTemp=sum(imp_value[haz_Ab%in%c("ET","CW","HW")]),
-            ALL_GEO=sum(imp_value[haz_type=="haz_typegeohaz"]),
+            ALL_GEO=sum(imp_value[haz_type=="haztypegeohaz"]),
             Earthquake=sum(imp_value[haz_Ab=="EQ"]),
             Volcano=sum(imp_value[haz_Ab=="VC"]),
-            LandslideG=sum(imp_value[haz_Ab=="LS" & haz_type=="haz_typegeohaz"]),
-            ALL=sum(imp_value[haz_type%in%c("haz_typehydromet","haz_typegeohaz")]),
+            LandslideG=sum(imp_value[haz_Ab=="LS" & haz_type=="haztypegeohaz"]),
+            ALL=sum(imp_value[haz_type%in%c("haztypehydromet","haztypegeohaz")]),
             .groups="drop")
 FatFull<-WDR%>%dplyr::select(1:5)%>%left_join(FatFull)
 
@@ -169,18 +169,18 @@ FatFull$ALL<-FatFull$ALL_CLIM+FatFull$ALL_GEO
 IDPFull<-impies%>%filter(Year>=2018 & imp_src_db=="GIDD" &
                            imp_det=="impdetallpeop" & imp_type=="imptypidp")%>%
   group_by(ISO3,Year)%>%
-  summarise(ALL_CLIM=sum(imp_value[haz_type=="haz_typehydromet"]),
+  summarise(ALL_CLIM=sum(imp_value[haz_type=="haztypehydromet"]),
             Storm=sum(imp_value[haz_Ab%in%c("ST","TC")]),
             Flood=sum(imp_value[haz_Ab=="FL"]),
-            LandslideH=sum(imp_value[haz_Ab=="LS" & haz_type=="haz_typehydromet"]),
+            LandslideH=sum(imp_value[haz_Ab=="LS" & haz_type=="haztypehydromet"]),
             Drought=sum(imp_value[haz_Ab=="DR"]),
             Wildfire=sum(imp_value[haz_Ab=="WF"]),
             ExtrTemp=sum(imp_value[haz_Ab%in%c("ET","CW","HW")]),
-            ALL_GEO=sum(imp_value[haz_type=="haz_typegeohaz"]),
+            ALL_GEO=sum(imp_value[haz_type=="haztypegeohaz"]),
             Earthquake=sum(imp_value[haz_Ab=="EQ"]),
             Volcano=sum(imp_value[haz_Ab=="VC"]),
-            LandslideG=sum(imp_value[haz_Ab=="LS" & haz_type=="haz_typegeohaz"]),
-            ALL=sum(imp_value[haz_type%in%c("haz_typehydromet","haz_typegeohaz")]),
+            LandslideG=sum(imp_value[haz_Ab=="LS" & haz_type=="haztypegeohaz"]),
+            ALL=sum(imp_value[haz_type%in%c("haztypehydromet","haztypegeohaz")]),
             .groups="drop")
 IDPFull<-WDR%>%dplyr::select(1:5)%>%left_join(IDPFull)
 
@@ -200,18 +200,18 @@ IDPFull$ALL<-IDPFull$ALL_CLIM+IDPFull$ALL_GEO
 AFFFull<-impies%>%filter(Year>=2010 & imp_src_db=="EM-DAT" &
                            imp_det=="impdetallpeop" & imp_type=="imptypaffe")%>%
   group_by(ISO3,Year)%>%
-  summarise(ALL_CLIM=sum(imp_value[haz_type=="haz_typehydromet"]),
+  summarise(ALL_CLIM=sum(imp_value[haz_type=="haztypehydromet"]),
             Storm=sum(imp_value[haz_Ab%in%c("ST","TC")]),
             Flood=sum(imp_value[haz_Ab=="FL"]),
-            LandslideH=sum(imp_value[haz_Ab=="LS" & haz_type=="haz_typehydromet"]),
+            LandslideH=sum(imp_value[haz_Ab=="LS" & haz_type=="haztypehydromet"]),
             Drought=sum(imp_value[haz_Ab=="DR"]),
             Wildfire=sum(imp_value[haz_Ab=="WF"]),
             ExtrTemp=sum(imp_value[haz_Ab%in%c("ET","CW","HW")]),
-            ALL_GEO=sum(imp_value[haz_type=="haz_typegeohaz"]),
+            ALL_GEO=sum(imp_value[haz_type=="haztypegeohaz"]),
             Earthquake=sum(imp_value[haz_Ab=="EQ"]),
             Volcano=sum(imp_value[haz_Ab=="VC"]),
-            LandslideG=sum(imp_value[haz_Ab=="LS" & haz_type=="haz_typegeohaz"]),
-            ALL=sum(imp_value[haz_type%in%c("haz_typehydromet","haz_typegeohaz")]),
+            LandslideG=sum(imp_value[haz_Ab=="LS" & haz_type=="haztypegeohaz"]),
+            ALL=sum(imp_value[haz_type%in%c("haztypehydromet","haztypegeohaz")]),
             .groups="drop")
 AFFFull<-WDR%>%dplyr::select(1:5)%>%left_join(AFFFull)
 
@@ -228,18 +228,18 @@ AFFFull$ALL<-AFFFull$ALL_CLIM+AFFFull$ALL_GEO
 COSFull<-impies%>%filter(Year>=2010 & imp_src_db=="EM-DAT" &
                            imp_det=="impdetinfloccur" & imp_type=="imptypcost")%>%
   group_by(ISO3,Year)%>%
-  summarise(ALL_CLIM=sum(imp_value[haz_type=="haz_typehydromet"]),
+  summarise(ALL_CLIM=sum(imp_value[haz_type=="haztypehydromet"]),
             Storm=sum(imp_value[haz_Ab%in%c("ST","TC")]),
             Flood=sum(imp_value[haz_Ab=="FL"]),
-            LandslideH=sum(imp_value[haz_Ab=="LS" & haz_type=="haz_typehydromet"]),
+            LandslideH=sum(imp_value[haz_Ab=="LS" & haz_type=="haztypehydromet"]),
             Drought=sum(imp_value[haz_Ab=="DR"]),
             Wildfire=sum(imp_value[haz_Ab=="WF"]),
             ExtrTemp=sum(imp_value[haz_Ab%in%c("ET","CW","HW")]),
-            ALL_GEO=sum(imp_value[haz_type=="haz_typegeohaz"]),
+            ALL_GEO=sum(imp_value[haz_type=="haztypegeohaz"]),
             Earthquake=sum(imp_value[haz_Ab=="EQ"]),
             Volcano=sum(imp_value[haz_Ab=="VC"]),
-            LandslideG=sum(imp_value[haz_Ab=="LS" & haz_type=="haz_typegeohaz"]),
-            ALL=sum(imp_value[haz_type%in%c("haz_typehydromet","haz_typegeohaz")]),
+            LandslideG=sum(imp_value[haz_Ab=="LS" & haz_type=="haztypegeohaz"]),
+            ALL=sum(imp_value[haz_type%in%c("haztypehydromet","haztypegeohaz")]),
             .groups="drop")
 COSFull<-WDR%>%dplyr::select(1:5)%>%left_join(COSFull)
 
@@ -262,7 +262,7 @@ openxlsx::write.xlsx(COSFull,"./Analysis_Results/Kirsten/Cost.xlsx")
 
 impies%>%filter(Year>=2010 & imp_src_db=="EM-DAT")%>%
   group_by(Year)%>%
-  reframe(Percentage=100*sum(haz_type=="haz_typehydromet")/(sum(haz_type=="haz_typegeohaz")+sum(haz_type=="haz_typehydromet")))%>%
+  reframe(Percentage=100*sum(haz_type=="haztypehydromet")/(sum(haz_type=="haztypegeohaz")+sum(haz_type=="haztypehydromet")))%>%
   ggplot()+geom_point(aes(Year,Percentage))
 
 impies%>%filter(Year>=2010 & imp_src_db=="EM-DAT" & 
@@ -281,7 +281,7 @@ impies%>%filter(Year>2010 & imp_src_db=="EM-DAT" &
                                include.lowest = T,right=F))%>%
   filter(!is.na(YearGroup))%>%
   group_by(YearGroup)%>%
-  reframe(Percentage=100*sum(haz_type=="haz_typehydromet")/(sum(haz_type=="haz_typegeohaz")+sum(haz_type=="haz_typehydromet")))%>%
+  reframe(Percentage=100*sum(haz_type=="haztypehydromet")/(sum(haz_type=="haztypegeohaz")+sum(haz_type=="haztypehydromet")))%>%
   ggplot()+geom_point(aes(YearGroup,Percentage))+
 
 impies%>%filter(Year>2010 & imp_src_db=="EM-DAT" &
@@ -290,7 +290,7 @@ impies%>%filter(Year>2010 & imp_src_db=="EM-DAT" &
   #                              include.lowest = T,right=F))%>%
   # filter(!is.na(YearGroup))%>%
   group_by(Year)%>%
-  reframe(Percentage=100*sum(haz_type=="haz_typehydromet")/(sum(haz_type=="haz_typegeohaz")+sum(haz_type=="haz_typehydromet")))%>%
+  reframe(Percentage=100*sum(haz_type=="haztypehydromet")/(sum(haz_type=="haztypegeohaz")+sum(haz_type=="haztypehydromet")))%>%
   ggplot()+geom_point(aes(Year,Percentage))
 
 impies%>%filter(Year>2010 & imp_src_db=="EM-DAT" & ISO3%in%isoEQ &
@@ -299,7 +299,7 @@ impies%>%filter(Year>2010 & imp_src_db=="EM-DAT" & ISO3%in%isoEQ &
   #                              include.lowest = T,right=F))%>%
   # filter(!is.na(YearGroup))%>%
   group_by(Year)%>%
-  reframe(Percentage=100*sum(haz_type=="haz_typehydromet")/(sum(haz_type=="haz_typegeohaz")+sum(haz_type=="haz_typehydromet")))%>%
+  reframe(Percentage=100*sum(haz_type=="haztypehydromet")/(sum(haz_type=="haztypegeohaz")+sum(haz_type=="haztypehydromet")))%>%
   ggplot()+geom_point(aes(Year,Percentage))
 
 
@@ -309,7 +309,7 @@ impies%>%filter(Year>=2000 & ISO3%in%isoEQ &
   #                              include.lowest = T,right=F))%>%
   # filter(!is.na(YearGroup))%>%
   group_by(Year)%>%
-  reframe(Percentage=100*sum(haz_type=="haz_typehydromet")/(sum(haz_type=="haz_typegeohaz")+sum(haz_type=="haz_typehydromet")))%>%
+  reframe(Percentage=100*sum(haz_type=="haztypehydromet")/(sum(haz_type=="haztypegeohaz")+sum(haz_type=="haztypehydromet")))%>%
   ggplot()+geom_point(aes(Year,Percentage))
 
 
@@ -320,7 +320,7 @@ impies%>%filter(Year>2010 & ISO3%in%isoEQ &
   #                              include.lowest = T,right=F))%>%
   # filter(!is.na(YearGroup))%>%
   group_by(Year)%>%
-  reframe(Percentage=100*sum(imp_value[haz_type=="haz_typehydromet"])/(sum(imp_value[haz_type=="haz_typegeohaz"])+sum(imp_value[haz_type=="haz_typehydromet"])))%>%
+  reframe(Percentage=100*sum(imp_value[haz_type=="haztypehydromet"])/(sum(imp_value[haz_type=="haztypegeohaz"])+sum(imp_value[haz_type=="haztypehydromet"])))%>%
   ggplot()+geom_point(aes(as.factor(Year),Percentage))
 
 impies%>%filter(Year>=2000 & ISO3%in%isoEQ &
@@ -329,7 +329,7 @@ impies%>%filter(Year>=2000 & ISO3%in%isoEQ &
   #                              include.lowest = T,right=F))%>%
   # filter(!is.na(YearGroup))%>%
   group_by(Year)%>%
-  reframe(Percentage=100*sum(imp_value[haz_type=="haz_typehydromet"])/(sum(imp_value[haz_type=="haz_typegeohaz"])+sum(imp_value[haz_type=="haz_typehydromet"])))%>%
+  reframe(Percentage=100*sum(imp_value[haz_type=="haztypehydromet"])/(sum(imp_value[haz_type=="haztypegeohaz"])+sum(imp_value[haz_type=="haztypehydromet"])))%>%
   ggplot()+geom_point(aes(as.factor(Year),Percentage))
 
 impies%>%filter(Year>=2000 & ISO3%in%isoEQ &
@@ -338,7 +338,7 @@ impies%>%filter(Year>=2000 & ISO3%in%isoEQ &
   #                              include.lowest = T,right=F))%>%
   # filter(!is.na(YearGroup))%>%
   group_by(Year)%>%
-  reframe(Percentage=100*sum(imp_value[haz_type=="haz_typehydromet"])/(sum(imp_value[haz_type=="haz_typegeohaz"])+sum(imp_value[haz_type=="haz_typehydromet"])))%>%
+  reframe(Percentage=100*sum(imp_value[haz_type=="haztypehydromet"])/(sum(imp_value[haz_type=="haztypegeohaz"])+sum(imp_value[haz_type=="haztypehydromet"])))%>%
   ggplot()+geom_point(aes(as.factor(Year),Percentage))
 
 brks<-seq.int(2000,2023,by=5)
@@ -349,7 +349,7 @@ impies%>%filter(ISO3%in%isoEQ &
                                include.lowest = T,right=F))%>%
   filter(!is.na(YearGroup))%>%
   group_by(YearGroup)%>%
-  reframe(Percentage=100*sum(imp_value[haz_type=="haz_typehydromet"])/(sum(imp_value[haz_type=="haz_typegeohaz"])+sum(imp_value[haz_type=="haz_typehydromet"])))%>%
+  reframe(Percentage=100*sum(imp_value[haz_type=="haztypehydromet"])/(sum(imp_value[haz_type=="haztypegeohaz"])+sum(imp_value[haz_type=="haztypehydromet"])))%>%
   ggplot()+geom_point(aes(YearGroup,Percentage))
 
 
@@ -362,8 +362,8 @@ p<-impies%>%filter(Year>1990 & Year<2023 & ISO3%in%isoEQ &
   #                              include.lowest = T,right=F))%>%
   # filter(!is.na(YearGroup))%>%
   group_by(imp_src_db,Year)%>%
-  # reframe(Percentage=sum(imp_value[haz_type=="haz_typehydromet"],na.rm = T)/(sum(imp_value[haz_type=="haz_typegeohaz"],na.rm = T)+sum(imp_value[haz_type=="haz_typehydromet"],na.rm = T)))%>%
-  reframe(Percentage=sum(haz_type=="haz_typehydromet",na.rm = T)/(sum(haz_type=="haz_typegeohaz",na.rm = T)+sum(haz_type=="haz_typehydromet",na.rm = T)))%>%
+  # reframe(Percentage=sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)/(sum(imp_value[haz_type=="haztypegeohaz"],na.rm = T)+sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)))%>%
+  reframe(Percentage=sum(haz_type=="haztypehydromet",na.rm = T)/(sum(haz_type=="haztypegeohaz",na.rm = T)+sum(haz_type=="haztypehydromet",na.rm = T)))%>%
   ggplot(aes(group=imp_src_db))+geom_point(aes(Year,Percentage,colour=imp_src_db),alpha=0.5)+
   geom_smooth(aes(Year,Percentage,colour=imp_src_db),alpha=0.1,method = "glm", method.args = list(family = "binomial"),se = FALSE)+
   ylab("Proportion")+ylim(c(0.75,0.97))+labs(colour="Database")+
@@ -378,8 +378,8 @@ p<-impies%>%filter(Year>1990 & Year<2023 & ISO3%in%isoEQ &
   #                              include.lowest = T,right=F))%>%
   # filter(!is.na(YearGroup))%>%
   group_by(imp_src_db,Year)%>%
-  # reframe(Percentage=sum(imp_value[haz_type=="haz_typehydromet"],na.rm = T)/(sum(imp_value[haz_type=="haz_typegeohaz"],na.rm = T)+sum(imp_value[haz_type=="haz_typehydromet"],na.rm = T)))%>%
-  reframe(Percentage=sum(haz_type=="haz_typehydromet",na.rm = T)/(sum(haz_type=="haz_typegeohaz",na.rm = T)+sum(haz_type=="haz_typehydromet",na.rm = T)))%>%
+  # reframe(Percentage=sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)/(sum(imp_value[haz_type=="haztypegeohaz"],na.rm = T)+sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)))%>%
+  reframe(Percentage=sum(haz_type=="haztypehydromet",na.rm = T)/(sum(haz_type=="haztypegeohaz",na.rm = T)+sum(haz_type=="haztypehydromet",na.rm = T)))%>%
   ggplot(aes(group=imp_src_db))+geom_point(aes(Year,Percentage,colour=imp_src_db),alpha=0.5)+
   geom_smooth(aes(Year,Percentage,colour=imp_src_db),alpha=0.1,method = "glm", method.args = list(family = "binomial"),se = FALSE)+
   ylab("Proportion")+ylim(c(0.75,0.97))+labs(colour="Database")+
@@ -397,8 +397,8 @@ p<-impies%>%filter(Year>1990 & Year<2023 & #ISO3%in%isoEQ &
   #                              include.lowest = T,right=F))%>%
   # filter(!is.na(YearGroup))%>%
   group_by(imp_src_db,Year)%>%
-  reframe(Percentage=sum(imp_value[haz_type=="haz_typehydromet"],na.rm = T)/(sum(imp_value[haz_type=="haz_typegeohaz"],na.rm = T)+sum(imp_value[haz_type=="haz_typehydromet"],na.rm = T)))%>%
-  # reframe(Percentage=sum(haz_type=="haz_typehydromet",na.rm = T)/(sum(haz_type=="haz_typegeohaz",na.rm = T)+sum(haz_type=="haz_typehydromet",na.rm = T)))%>%
+  reframe(Percentage=sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)/(sum(imp_value[haz_type=="haztypegeohaz"],na.rm = T)+sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)))%>%
+  # reframe(Percentage=sum(haz_type=="haztypehydromet",na.rm = T)/(sum(haz_type=="haztypegeohaz",na.rm = T)+sum(haz_type=="haztypehydromet",na.rm = T)))%>%
   ggplot(aes(group=imp_src_db))+geom_point(aes(Year,Percentage,colour=imp_src_db))+
   geom_smooth(aes(Year,Percentage,colour=imp_src_db),alpha=0.1,method = "glm", method.args = list(family = "binomial"),se = FALSE)+
   ylab("Proportion")+ylim(c(0.75,0.97))+labs(colour="Database")+
@@ -414,8 +414,8 @@ p<-impies%>%filter(Year>1990 & Year<2023 & #ISO3%in%isoEQ &
   #                              include.lowest = T,right=F))%>%
   # filter(!is.na(YearGroup))%>%
   group_by(imp_src_db,Year)%>%
-  reframe(Percentage=sum(imp_value[haz_type=="haz_typehydromet"],na.rm = T)/(sum(imp_value[haz_type=="haz_typegeohaz"],na.rm = T)+sum(imp_value[haz_type=="haz_typehydromet"],na.rm = T)))%>%
-  # reframe(Percentage=sum(haz_type=="haz_typehydromet",na.rm = T)/(sum(haz_type=="haz_typegeohaz",na.rm = T)+sum(haz_type=="haz_typehydromet",na.rm = T)))%>%
+  reframe(Percentage=sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)/(sum(imp_value[haz_type=="haztypegeohaz"],na.rm = T)+sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)))%>%
+  # reframe(Percentage=sum(haz_type=="haztypehydromet",na.rm = T)/(sum(haz_type=="haztypegeohaz",na.rm = T)+sum(haz_type=="haztypehydromet",na.rm = T)))%>%
   ggplot(aes(group=imp_src_db))+geom_point(aes(Year,Percentage,colour=imp_src_db))+
   # geom_smooth(aes(Year,Percentage,colour=imp_src_db),alpha=0.1,method = "glm", method.args = list(family = "binomial"),se = T)+
   ylab("Proportion")+labs(colour="Database")+
@@ -430,8 +430,8 @@ p<-impies%>%filter(Year>1990 & Year<2023 & #ISO3%in%isoEQ &
   #                              include.lowest = T,right=F))%>%
   # filter(!is.na(YearGroup))%>%
   group_by(imp_src_db,Year)%>%
-  reframe(Percentage=sum(haz_type=="haz_typegeohaz",na.rm = T))%>%
-  # reframe(Percentage=sum(haz_type=="haz_typehydromet",na.rm = T)/(sum(haz_type=="haz_typegeohaz",na.rm = T)+sum(haz_type=="haz_typehydromet",na.rm = T)))%>%
+  reframe(Percentage=sum(haz_type=="haztypegeohaz",na.rm = T))%>%
+  # reframe(Percentage=sum(haz_type=="haztypehydromet",na.rm = T)/(sum(haz_type=="haztypegeohaz",na.rm = T)+sum(haz_type=="haztypehydromet",na.rm = T)))%>%
   ggplot(aes(group=imp_src_db))+geom_point(aes(Year,Percentage,colour=imp_src_db))+
   geom_smooth(aes(Year,Percentage,colour=imp_src_db),alpha=0.1,method = "lm",se = FALSE)+
   ylab("Proportion")+labs(colour="Database")+
@@ -440,28 +440,28 @@ p<-impies%>%filter(Year>1990 & Year<2023 & #ISO3%in%isoEQ &
 
 p<-impies%>%filter(Year>1990 & Year<2023 & !is.na(haz_Ab) & haz_Ab!="GL" & #ISO3%in%isoEQ & 
                      # imp_det=="impdetallpeop" & imp_type=="imptypdeat" &
-                     imp_src_db!="GO-FR")%>%
+                     imp_src_db!="GO-FR" & haz_Ab%in%lhaz)%>%
   # mutate(YearGroup = cut(Year,breaks = brks,
   #                              include.lowest = T,right=F))%>%
   # filter(!is.na(YearGroup))%>%
   group_by(haz_Ab,imp_src_db,Year)%>%
-  # reframe(Percentage=sum(imp_value[haz_type=="haz_typehydromet"],na.rm = T)/(sum(imp_value[haz_type=="haz_typegeohaz"],na.rm = T)+sum(imp_value[haz_type=="haz_typehydromet"],na.rm = T)))%>%
+  # reframe(Percentage=sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)/(sum(imp_value[haz_type=="haztypegeohaz"],na.rm = T)+sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)))%>%
   reframe(Count=length(haz_type))%>%
   ggplot()+geom_point(aes(Year,Count,colour=imp_src_db))+
   geom_smooth(aes(Year,Count,colour=imp_src_db),alpha=0.1,se = FALSE)+
-  ylab("Proportion")+labs(colour="Hazard")+scale_y_log10()+
-  ggtitle("Proportion of Hydro-Met Hazard Events")+theme(plot.title = element_text(hjust = 0.5))+
+  ylab("No. Events")+labs(colour="Hazard")+scale_y_log10()+
+  ggtitle("Number Hazard Events")+theme(plot.title = element_text(hjust = 0.5))+
   facet_wrap(~haz_Ab,scales = "free_y");p
 
 
 p<-impies%>%filter(Year>1990 & Year<2023 & !is.na(haz_Ab) & haz_Ab!="GL" & #ISO3%in%isoEQ & 
                   imp_det=="impdetallpeop" & imp_type=="imptypdeat" &
-                  imp_src_db!="GO-FR")%>%
+                  imp_src_db!="GO-FR" & haz_Ab%in%lhaz)%>%
   # mutate(YearGroup = cut(Year,breaks = brks,
   #                              include.lowest = T,right=F))%>%
   # filter(!is.na(YearGroup))%>%
   group_by(haz_Ab,imp_src_db,Year)%>%
-  # reframe(Percentage=sum(imp_value[haz_type=="haz_typehydromet"],na.rm = T)/(sum(imp_value[haz_type=="haz_typegeohaz"],na.rm = T)+sum(imp_value[haz_type=="haz_typehydromet"],na.rm = T)))%>%
+  # reframe(Percentage=sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)/(sum(imp_value[haz_type=="haztypegeohaz"],na.rm = T)+sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)))%>%
   reframe(Count=sum(imp_value,na.rm = T))%>%
   ggplot()+geom_point(aes(Year,Count,colour=imp_src_db))+
   geom_smooth(aes(Year,Count,colour=imp_src_db),alpha=0.1,se = FALSE)+
@@ -478,7 +478,7 @@ p<-impies%>%filter(Year>1990 & Year<2023 & !is.na(haz_Ab) & haz_Ab!="GL" & #ISO3
   #                              include.lowest = T,right=F))%>%
   # filter(!is.na(YearGroup))%>%
   group_by(haz_Ab,Year)%>%
-  # reframe(Percentage=sum(imp_value[haz_type=="haz_typehydromet"],na.rm = T)/(sum(imp_value[haz_type=="haz_typegeohaz"],na.rm = T)+sum(imp_value[haz_type=="haz_typehydromet"],na.rm = T)))%>%
+  # reframe(Percentage=sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)/(sum(imp_value[haz_type=="haztypegeohaz"],na.rm = T)+sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)))%>%
   reframe(Count=sum(imp_value,na.rm = T))%>%
   ggplot()+geom_point(aes(Year,Count,colour=haz_Ab))+
   geom_smooth(aes(Year,Count,colour=haz_Ab),alpha=0.1,se = FALSE)+
@@ -495,7 +495,7 @@ p<-impies%>%filter(Year>1990 & Year<2023 & !is.na(haz_Ab) & haz_Ab!="GL" & #ISO3
                          include.lowest = T,right=F))%>%
   filter(!is.na(YearGroup))%>%
   group_by(imp_src_db,haz_Ab,YearGroup)%>%
-  # reframe(Percentage=sum(imp_value[haz_type=="haz_typehydromet"],na.rm = T)/(sum(imp_value[haz_type=="haz_typegeohaz"],na.rm = T)+sum(imp_value[haz_type=="haz_typehydromet"],na.rm = T)))%>%
+  # reframe(Percentage=sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)/(sum(imp_value[haz_type=="haztypegeohaz"],na.rm = T)+sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)))%>%
   reframe(Count=sum(imp_value,na.rm = T))%>%
   ggplot(group=imp_src_db)+geom_point(aes(YearGroup,Count,colour=imp_src_db))+
   # geom_line(aes(YearGroup,Count,colour=imp_src_db))+
@@ -505,12 +505,12 @@ p<-impies%>%filter(Year>1990 & Year<2023 & !is.na(haz_Ab) & haz_Ab!="GL" & #ISO3
   facet_wrap(~haz_Ab,scales = "free_y");p
 
 p<-impies%>%filter(Year>1990 & Year<2023 & !is.na(haz_Ab) & haz_Ab!="GL" & #ISO3%in%isoEQ & 
-                  imp_src_db!="GO-FR")%>%
+                  imp_src_db!="GO-FR" & haz_Ab%in%lhaz)%>%
   # mutate(YearGroup = cut(Year,breaks = seq.int(1990,2020,3),
   #                        include.lowest = T,right=F))%>%
   # filter(!is.na(YearGroup))%>%
   group_by(imp_src_db,haz_Ab,Year)%>%
-  # reframe(Percentage=sum(imp_value[haz_type=="haz_typehydromet"],na.rm = T)/(sum(imp_value[haz_type=="haz_typegeohaz"],na.rm = T)+sum(imp_value[haz_type=="haz_typehydromet"],na.rm = T)))%>%
+  # reframe(Percentage=sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)/(sum(imp_value[haz_type=="haztypegeohaz"],na.rm = T)+sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)))%>%
   reframe(Count=length(imp_value))%>%
   ggplot(group=imp_src_db)+geom_point(aes(Year,Count,colour=imp_src_db))+
   # geom_line(aes(Year,Count,colour=imp_src_db))+
@@ -524,10 +524,10 @@ ggsave("./Analysis_Results/Kirsten/Log_No-Events_haz_db.png",p)
 
 
 
-p<-impies%>%filter(Year>1990 & Year<2023 & !is.na(haz_Ab) & haz_Ab!="GL" & #ISO3%in%isoEQ & 
+7p<-impies%>%filter(Year>1990 & Year<2023 & !is.na(haz_Ab) & haz_Ab!="GL" & #ISO3%in%isoEQ & 
                   imp_det=="impdetallpeop" & imp_type=="imptypdeat" &
-                  imp_src_db!="GO-FR")%>%
-  # reframe(Percentage=sum(imp_value[haz_type=="haz_typehydromet"],na.rm = T)/(sum(imp_value[haz_type=="haz_typegeohaz"],na.rm = T)+sum(imp_value[haz_type=="haz_typehydromet"],na.rm = T)))%>%
+                  imp_src_db!="GO-FR" & haz_Ab%in%lhaz)%>%
+  # reframe(Percentage=sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)/(sum(imp_value[haz_type=="haztypegeohaz"],na.rm = T)+sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)))%>%
   ggplot()+geom_point(aes(as.Date(ev_sdate),imp_value,colour=imp_src_db),alpha=0.2)+
   geom_smooth(aes(as.Date(ev_sdate),imp_value,colour=imp_src_db),alpha=0.1,se = FALSE,size=2)+
   ylab("Number of Deaths")+labs(colour="Database")+scale_y_log10()+
@@ -540,15 +540,39 @@ ggsave("./Analysis_Results/Kirsten/Log-ObsFatalities_haz_db.png",p)
 
 
 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
+#%%%%%%%%%%%%%%%%%% STATISTICAL SIGNIFICANCE %%%%%%%%%%%%%%%%%%%%#
+#%%%%%%%%%%%%%%%%%%%%% FOR CLIMATE CHANGE %%%%%%%%%%%%%%%%%%%%%%%#
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 
+propy<-impies%>%filter(Year>1990 & Year<2023 & ISO3%in%isoEQ &
+                         !(imp_src_db=="GIDD" & Year<2015) &
+                         !duplicated(imp_sub_ID) &
+                         !imp_src_db%in%c("GO-FR","GO-App","GDACS"))%>%
+  group_by(imp_src_db,Year)%>%
+  reframe(Percentage=sum(haz_type=="haztypehydromet",na.rm = T)/
+            (sum(haz_type=="haztypegeohaz",na.rm = T)+sum(haz_type=="haztypehydromet",na.rm = T)),
+          Counts=length(haz_type))%>%ungroup()%>%group_by(imp_src_db)%>%
+  mutate(Weights=Counts/max(Counts))
 
+propy$LogWeights<-log10(propy$Counts)/log10(max(propy$Counts))
 
+# Unweighted
+fixest::feglm(Percentage ~ Year | imp_src_db,family = "binomial",data = propy)%>%summary()
+# Weighted by log-count values
+fixest::feglm(Percentage ~ Year | imp_src_db,family = "binomial",data = propy, weights = propy$LogWeights)%>%summary()
+# Weighted by database-normalised count values (not log)
+fixest::feglm(Percentage ~ Year | imp_src_db,family = "binomial",data = propy, weights = propy$Weights)%>%summary()
 
+# Check the plot to see the count numbers
+propy%>%ggplot()+geom_point(aes(Year,Counts,colour=imp_src_db,size=Weights)) + scale_y_log10()
+# Also plot the proportions
+propy%>%ggplot()+geom_point(aes(Year,Percentage,colour=imp_src_db,size=Weights))
 
-
-
-
-
+# Now let's predict some values with the analysis
+modelly<-fixest::feglm(Percentage ~ Year | imp_src_db,family = "binomial",data = propy, weights = propy$Weights)
+# Prediction for 2022
+predict(modelly,data.frame(imp_src_db="GIDD",Year=2022))
 
 
 

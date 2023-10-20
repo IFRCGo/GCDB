@@ -554,11 +554,11 @@ PostModTransies<-function(colConv){
   colConv$haz[grepl("cyclone & flood",colConv$event_en,ignore.case = T)]<-"TC,FL"
   
   # hazard Types
-  colConv$haz_type[colConv$haz%in%c("FL","ST","TC","DR","ET","SN","CW","HW","SS")]<-"haz_typehydromet"
-  colConv$haz_type[colConv$haz%in%c("EQ","LS","TS","VO","AV")]<-"haz_typegeohaz"
-  colConv$haz_type[colConv$haz=="WF"]<-"haz_typeenviron"
-  colConv$haz_type[colConv$haz=="EP"]<-"haz_typebio"
-  colConv$haz_type[grepl("cyclone & flood",colConv$event_en,ignore.case = T)]<-"haz_typehydromet"
+  colConv$haz_type[colConv$haz%in%c("FL","ST","TC","DR","ET","SN","CW","HW","SS")]<-"haztypehydromet"
+  colConv$haz_type[colConv$haz%in%c("EQ","LS","TS","VO","AV")]<-"haztypegeohaz"
+  colConv$haz_type[colConv$haz=="WF"]<-"haztypeenviron"
+  colConv$haz_type[colConv$haz=="EP"]<-"haztypebio"
+  colConv$haz_type[grepl("cyclone & flood",colConv$event_en,ignore.case = T)]<-"haztypehydromet"
   
   # Hazard clusters
   colConv$haz_cluster[colConv$haz=="DR"]<-"hazhmprecip,hazhmtemp"

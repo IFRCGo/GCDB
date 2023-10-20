@@ -26,8 +26,9 @@ GDACSconvDis<-function(d_type){
   
 }
 
-GetGDACS_API<-function(haz=NULL,syear=2016,fyear=2020,alertlist=NULL){
+GetGDACS_API<-function(haz=NULL,syear=2016,fyear=NULL,alertlist=NULL){
   
+  if(is.null(fyear)) fyear<-AsYear(Sys.Date())
   # stop("Check first whether the file exists on the computer")
   
   loc<-"https://www.gdacs.org/gdacsapi/api/events/geteventlist/SEARCH?eventlist="
@@ -188,8 +189,9 @@ GetIntMap<-function(hazard="EQ"){
   } else stop("Unknown hazard in GetIntMap")
 }
 
-FilterGDACS<-function(haz=NULL,syear=2016L,fyear=AsYear(Sys.Date()),list_GDACS=NULL,red=F){
+FilterGDACS<-function(haz=NULL,syear=2016L,fyear=NULL,list_GDACS=NULL,red=F){
   
+  if(is.null(fyear)) fyear<-AsYear(Sys.Date())
   if(is.null(list_GDACS)) list_GDACS<-GetGDACS_API(haz,syear,fyear)
   
   # Filter countries
@@ -267,7 +269,7 @@ convGDACS_GCDB<-function(GDACS){
   # Form the ID for the event
   GDACS$GCDB_ID<-GetGCDB_ID(GDACS)
   # Date shifts
-  GDACS$imp_sdate<-GDACS$imp_unitdate<-GDACS$haz_sdate<-GDACS$ev_sdate
+  GDACS$imp_sdate<-GDACS$imp_unitdate<-GDACS$haz_sdate<-as.character(GDACS$ev_sdate)
   GDACS$imp_fdate<-GDACS$haz_fdate<-GDACS$ev_fdate
   # Add the continent, then remove the unnecesary layers
   GDACS%<>%mutate(Continent=convIso3Continent(ISO3))%>%

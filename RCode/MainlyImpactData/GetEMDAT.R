@@ -48,11 +48,11 @@ PairEMDATspatial<-function(EMDAT,haz="EQ",GAULexist=F){
 
 # PostModEMDAT<-function(colConv){
 #   # hazard Types
-#   colConv$haz_type[colConv$hazEM%in%c("FL","ST","TC","DR","ET","SN","CW","HW","SS")]<-"haz_typehydromet"
-#   colConv$haz_type[colConv$hazEM%in%c("EQ","LS","TS","VO","AV")]<-"haz_typegeohaz"
-#   colConv$haz_type[colConv$hazEM=="WF"]<-"haz_typeenviron"
-#   colConv$haz_type[colConv$hazEM=="EP"]<-"haz_typebio"
-#   colConv$haz_type[grepl("cyclone & flood",colConv$Disaster.Subtype,ignore.case = T)]<-"haz_typehydromet"
+#   colConv$haz_type[colConv$hazEM%in%c("FL","ST","TC","DR","ET","SN","CW","HW","SS")]<-"haztypehydromet"
+#   colConv$haz_type[colConv$hazEM%in%c("EQ","LS","TS","VO","AV")]<-"haztypegeohaz"
+#   colConv$haz_type[colConv$hazEM=="WF"]<-"haztypeenviron"
+#   colConv$haz_type[colConv$hazEM=="EP"]<-"haztypebio"
+#   colConv$haz_type[grepl("cyclone & flood",colConv$Disaster.Subtype,ignore.case = T)]<-"haztypehydromet"
 #   
 #   # Hazard clusters
 #   colConv$haz_cluster[colConv$hazEM=="DR"]<-"hazhmprecip,hazhmtemp"

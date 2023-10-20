@@ -35,7 +35,7 @@ pal <- c(
 
 p<-impies%>%filter(imp_det=="impdetallpeop" & imp_type=="imptypdeat" &
                      Year>1970 & imp_value>0 & imp_src_db=="EM-DAT" &
-                     haz_type!="haz_typeenviron")%>%
+                     haz_type!="haztypeenviron")%>%
   mutate(YearWindow=cut(Year, breaks=seq.int(1970,2020,by=10),labels=as.character(seq.int(1975,2020,by=10))))%>%
   group_by(imp_src_db,haz_type,YearWindow,ISO3)%>%
   summarise(imp_value=mean(imp_value))%>%
@@ -46,7 +46,7 @@ p<-impies%>%filter(imp_det=="impdetallpeop" & imp_type=="imptypdeat" &
 
 tmp<-impies%>%filter(imp_det=="impdetallpeop" & imp_type=="imptypdeat" &
                        Year>1970 & imp_value>0 & imp_src_db=="EM-DAT" &
-                       haz_type!="haz_typeenviron")
+                       haz_type!="haztypeenviron")
 
 sapply(1975:2022, function(yeary){
   quantile(tmp$imp_value[tmp$Year<=yeary & tmp$Year>=yeary-5],
@@ -55,7 +55,7 @@ sapply(1975:2022, function(yeary){
 
 p<-impies%>%filter(imp_det=="impdetbuild" & imp_type=="imptypdama" &
                      Year>1970 & imp_value>0 & Year<2023 &
-                     haz_type!="haz_typeenviron")%>%
+                     haz_type!="haztypeenviron")%>%
   group_by(imp_src_db,haz_type,Year,ISO3)%>%
   summarise(impval=mean(imp_value))%>%
   ggplot()+geom_point(aes(Year, impval, colour=haz_type))+
@@ -69,7 +69,7 @@ p<-impies%>%filter(impies$imp_cats=="impcatfineco" &
                    imp_type%in%c("imptypcost","imptypaidreqifrc") &
                      imp_det%in%c("impdetaidgen","impdetinfloccur","impdetusdunsure") &
                      Year>1970 & Year<2023 & imp_value>0 & 
-                     haz_type!="haz_typeenviron")%>%
+                     haz_type!="haztypeenviron")%>%
   ggplot()+geom_point(aes(Year, imp_value, colour=haz_type))+
   geom_smooth(aes(Year, imp_value, colour=haz_type))+
   scale_y_log10()+

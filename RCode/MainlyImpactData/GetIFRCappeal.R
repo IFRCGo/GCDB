@@ -28,10 +28,10 @@ ExtractGOdata<-function(db="GO-App", token = NULL){
 
 PostModGO<-function(colConv){
   # hazard Types
-  colConv$haz_type[colConv$haz_Ab%in%c("FL","ST","TC","DR","ET","SN","CW","HW","SS")]<-"haz_typehydromet"
-  colConv$haz_type[colConv$haz_Ab%in%c("EQ","LS","TS","VO","AV")]<-"haz_typegeohaz"
-  colConv$haz_type[colConv$haz_Ab=="WF"]<-"haz_typeenviron"
-  colConv$haz_type[colConv$haz_Ab=="EP"]<-"haz_typebio"
+  colConv$haz_type[colConv$haz_Ab%in%c("FL","ST","TC","DR","ET","SN","CW","HW","SS")]<-"haztypehydromet"
+  colConv$haz_type[colConv$haz_Ab%in%c("EQ","LS","TS","VO","AV")]<-"haztypegeohaz"
+  colConv$haz_type[colConv$haz_Ab=="WF"]<-"haztypeenviron"
+  colConv$haz_type[colConv$haz_Ab=="EP"]<-"haztypebio"
   
   # Hazard clusters
   colConv$haz_cluster[colConv$haz_Ab=="DR"]<-"hazhmprecip,hazhmtemp"

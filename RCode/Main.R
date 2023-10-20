@@ -4,17 +4,28 @@ source("./RCode/Setup/GetPackages.R")
 # Extract the impact databases, focussing specifically on the provided hazard
 GetImpacts<-function(){
   # Desinventar
+  print("Getting Desinventar data")
   impies<-GetDesinventar()
   # EM-DAT
+  print("Getting EM-DAT data")
   impies%<>%rbind(GetEMDAT())
   # GIDD (IDMC)
+  print("Getting GIDD data")
   impies%<>%rbind(GetGIDD())
   # IFRC GO
+  print("Getting IFRC-GO data")
   impies%<>%rbind(GetGO())
   # GLIDE
+  print("Getting GLIDE data")
   impies%<>%rbind(GetGLIDEimps())
   # GDACS
+  print("Getting GDACS data")
   impies%<>%rbind(GetGDACS_GCDB())
+  # Extras
+  impies$Year<-AsYear(impies$ev_sdate)
+  impies$haz_Ab[impies$haz_Ab%in%c("CW","HW")]<-"ET"
+  impies$haz_Ab[impies$haz_Ab=="LS" & impies$haz_type=="haztypehydromet"]<-"LS-HM"
+  impies$haz_Ab[impies$haz_Ab=="LS" & impies$haz_type=="haztypegeohaz"]<-"LS-G"
   
   return(impies)
 }
