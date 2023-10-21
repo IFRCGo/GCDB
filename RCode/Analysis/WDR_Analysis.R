@@ -573,6 +573,8 @@ propy%>%ggplot()+geom_point(aes(Year,Percentage,colour=imp_src_db,size=Weights))
 modelly<-fixest::feglm(Percentage ~ Year | imp_src_db,family = "binomial",data = propy, weights = propy$Weights)
 # Prediction for 2022
 predict(modelly,data.frame(imp_src_db="GIDD",Year=2022))
+# Prediction for 1990
+predict(modelly,data.frame(imp_src_db="GIDD",Year=1990))
 
 
 

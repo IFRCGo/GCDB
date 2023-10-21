@@ -77,7 +77,7 @@ GetPackages<-function(packred){
                         'Rmpi', 'openxlsx', 'ecochange','googlesheets4', 'bookdown')
   
   if(!packred) list.of.packages<-c(list.of.packages,
-                                   "codetools","latex2exp",
+                                   "codetools","latex2exp","fixest",
                                    "rJava","OpenStreetMap","osmdata",
                                    "tidyRSS","geojsonR", "tiff", "gstat",
                                    "FactoMineR","factoextra","xtable",
