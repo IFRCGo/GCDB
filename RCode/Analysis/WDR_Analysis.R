@@ -524,7 +524,7 @@ ggsave("./Analysis_Results/Kirsten/Log_No-Events_haz_db.png",p)
 
 
 
-7p<-impies%>%filter(Year>1990 & Year<2023 & !is.na(haz_Ab) & haz_Ab!="GL" & #ISO3%in%isoEQ & 
+p<-impies%>%filter(Year>1990 & Year<2023 & !is.na(haz_Ab) & haz_Ab!="GL" & #ISO3%in%isoEQ & 
                   imp_det=="impdetallpeop" & imp_type=="imptypdeat" &
                   imp_src_db!="GO-FR" & haz_Ab%in%lhaz)%>%
   # reframe(Percentage=sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)/(sum(imp_value[haz_type=="haztypegeohaz"],na.rm = T)+sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)))%>%
