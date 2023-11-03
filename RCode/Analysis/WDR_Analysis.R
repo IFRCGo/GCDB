@@ -1,6 +1,9 @@
 source("./RCode/Setup/GetPackages.R")
 
-WDR<-openxlsx::read.xlsx("./Analysis_Results/Kirsten/WDR_country_data-2023_HP_full.xlsx",sheet = 9,startRow = 5)%>%
+wdrfile<-"./Analysis_Results/Kirsten/WDR_country_data-2023_HP_full.xlsx"
+# "./Analysis_Results/Kirsten/WDR_country_data-2023_HP_full.xlsx"
+
+WDR<-openxlsx::read.xlsx(wdrfile,sheet = 9,startRow = 5)%>%
   dplyr::select(1:5)
 # skeleton<-WDR%>%filter(Year==2010)%>%dplyr::select(1:4)
 # WDR%<>%rbind(skeleton%>%mutate(Year=2023))
@@ -9,7 +12,7 @@ ISOS<-unique(WDR$ISO3)
 
 lhaz<-c("EQ","FL","TC","VO","DR","ET","LS","ST","WF","CW","HW")
 
-impies<-rbind(CleanEMDAT(openxlsx::read.xlsx("./Analysis_Results/Kirsten/emdat_public_2023_09_14_query_uid-xKzgpi.xlsx",startRow = 7)),
+impies<-rbind(CleanEMDAT(openxlsx::read.xlsx("./Analysis_Results/Kirsten/public_emdat_custom_request_2023-11-03_7c5bf33d-052f-4795-a290-bb4554a476b6.xlsx",startRow = 1)),
               GetGIDD())
 # impies<-readRDS("./Analysis_Results/Kirsten/impies_20230910.RData")
 
@@ -50,14 +53,14 @@ EMFull<-impies%>%filter(Year>=2010 & imp_src_db=="EM-DAT" & !duplicated(imp_sub_
   summarise(ALL_CLIM=sum(haz_type=="haztypehydromet"),
             Storm=sum(haz_Ab%in%c("ST","TC")),
             Flood=sum(haz_Ab=="FL"),
-            LandslideH=sum(haz_Ab=="LS" & haz_type=="haztypehydromet"),
+            LandslideH=sum(haz_Ab=="LS-HM" & haz_type=="haztypehydromet"),
             Drought=sum(haz_Ab=="DR"),
             Wildfire=sum(haz_Ab=="WF"),
             ExtrTemp=sum(haz_Ab%in%c("ET","CW","HW")),
             ALL_GEO=sum(haz_type=="haztypegeohaz"),
             Earthquake=sum(haz_Ab=="EQ"),
-            Volcano=sum(haz_Ab=="VC"),
-            LandslideG=sum(haz_Ab=="LS" & haz_type=="haztypegeohaz"),
+            Volcano=sum(haz_Ab=="VO"),
+            LandslideG=sum(haz_Ab=="LS-G" & haz_type=="haztypegeohaz"),
             ALL=sum(haz_type%in%c("haztypehydromet","haztypegeohaz")),
             .groups="drop")
 EMFull<-WDR%>%dplyr::select(1:5)%>%
@@ -74,14 +77,14 @@ HEFull<-impies%>%filter(Year>=2018 & imp_src_db=="GIDD" & !duplicated(imp_sub_ID
   summarise(ALL_CLIM=sum(haz_type=="haztypehydromet"),
             Storm=sum(haz_Ab%in%c("ST","TC")),
             Flood=sum(haz_Ab=="FL"),
-            LandslideH=sum(haz_Ab=="LS" & haz_type=="haztypehydromet"),
+            LandslideH=sum(haz_Ab=="LS-HM" & haz_type=="haztypehydromet"),
             Drought=sum(haz_Ab=="DR"),
             Wildfire=sum(haz_Ab=="WF"),
             ExtrTemp=sum(haz_Ab%in%c("ET","CW","HW")),
             ALL_GEO=sum(haz_type=="haztypegeohaz"),
             Earthquake=sum(haz_Ab=="EQ"),
-            Volcano=sum(haz_Ab=="VC"),
-            LandslideG=sum(haz_Ab=="LS" & haz_type=="haztypegeohaz"),
+            Volcano=sum(haz_Ab=="VO"),
+            LandslideG=sum(haz_Ab=="LS-G" & haz_type=="haztypegeohaz"),
             ALL=sum(haz_type%in%c("haztypehydromet","haztypegeohaz")),
             .groups="drop")
 HEFull<-WDR%>%dplyr::select(1:5)%>%
@@ -144,14 +147,14 @@ FatFull<-impies%>%filter(Year>=2010 & imp_src_db%in%c("EM-DAT","GIDD") &
   summarise(ALL_CLIM=sum(imp_value[haz_type=="haztypehydromet"]),
             Storm=sum(imp_value[haz_Ab%in%c("ST","TC")]),
             Flood=sum(imp_value[haz_Ab=="FL"]),
-            LandslideH=sum(imp_value[haz_Ab=="LS" & haz_type=="haztypehydromet"]),
+            LandslideH=sum(imp_value[haz_Ab=="LS-HM" & haz_type=="haztypehydromet"]),
             Drought=sum(imp_value[haz_Ab=="DR"]),
             Wildfire=sum(imp_value[haz_Ab=="WF"]),
             ExtrTemp=sum(imp_value[haz_Ab%in%c("ET","CW","HW")]),
             ALL_GEO=sum(imp_value[haz_type=="haztypegeohaz"]),
             Earthquake=sum(imp_value[haz_Ab=="EQ"]),
-            Volcano=sum(imp_value[haz_Ab=="VC"]),
-            LandslideG=sum(imp_value[haz_Ab=="LS" & haz_type=="haztypegeohaz"]),
+            Volcano=sum(imp_value[haz_Ab=="VO"]),
+            LandslideG=sum(imp_value[haz_Ab=="LS-G" & haz_type=="haztypegeohaz"]),
             ALL=sum(imp_value[haz_type%in%c("haztypehydromet","haztypegeohaz")]),
             .groups="drop")
 FatFull<-WDR%>%dplyr::select(1:5)%>%left_join(FatFull)
@@ -172,14 +175,14 @@ IDPFull<-impies%>%filter(Year>=2018 & imp_src_db=="GIDD" &
   summarise(ALL_CLIM=sum(imp_value[haz_type=="haztypehydromet"]),
             Storm=sum(imp_value[haz_Ab%in%c("ST","TC")]),
             Flood=sum(imp_value[haz_Ab=="FL"]),
-            LandslideH=sum(imp_value[haz_Ab=="LS" & haz_type=="haztypehydromet"]),
+            LandslideH=sum(imp_value[haz_Ab=="LS-HM" & haz_type=="haztypehydromet"]),
             Drought=sum(imp_value[haz_Ab=="DR"]),
             Wildfire=sum(imp_value[haz_Ab=="WF"]),
             ExtrTemp=sum(imp_value[haz_Ab%in%c("ET","CW","HW")]),
             ALL_GEO=sum(imp_value[haz_type=="haztypegeohaz"]),
             Earthquake=sum(imp_value[haz_Ab=="EQ"]),
-            Volcano=sum(imp_value[haz_Ab=="VC"]),
-            LandslideG=sum(imp_value[haz_Ab=="LS" & haz_type=="haztypegeohaz"]),
+            Volcano=sum(imp_value[haz_Ab=="VO"]),
+            LandslideG=sum(imp_value[haz_Ab=="LS-G" & haz_type=="haztypegeohaz"]),
             ALL=sum(imp_value[haz_type%in%c("haztypehydromet","haztypegeohaz")]),
             .groups="drop")
 IDPFull<-WDR%>%dplyr::select(1:5)%>%left_join(IDPFull)
@@ -203,14 +206,14 @@ AFFFull<-impies%>%filter(Year>=2010 & imp_src_db=="EM-DAT" &
   summarise(ALL_CLIM=sum(imp_value[haz_type=="haztypehydromet"]),
             Storm=sum(imp_value[haz_Ab%in%c("ST","TC")]),
             Flood=sum(imp_value[haz_Ab=="FL"]),
-            LandslideH=sum(imp_value[haz_Ab=="LS" & haz_type=="haztypehydromet"]),
+            LandslideH=sum(imp_value[haz_Ab=="LS-HM" & haz_type=="haztypehydromet"]),
             Drought=sum(imp_value[haz_Ab=="DR"]),
             Wildfire=sum(imp_value[haz_Ab=="WF"]),
             ExtrTemp=sum(imp_value[haz_Ab%in%c("ET","CW","HW")]),
             ALL_GEO=sum(imp_value[haz_type=="haztypegeohaz"]),
             Earthquake=sum(imp_value[haz_Ab=="EQ"]),
-            Volcano=sum(imp_value[haz_Ab=="VC"]),
-            LandslideG=sum(imp_value[haz_Ab=="LS" & haz_type=="haztypegeohaz"]),
+            Volcano=sum(imp_value[haz_Ab=="VO"]),
+            LandslideG=sum(imp_value[haz_Ab=="LS-G" & haz_type=="haztypegeohaz"]),
             ALL=sum(imp_value[haz_type%in%c("haztypehydromet","haztypegeohaz")]),
             .groups="drop")
 AFFFull<-WDR%>%dplyr::select(1:5)%>%left_join(AFFFull)
@@ -231,14 +234,14 @@ COSFull<-impies%>%filter(Year>=2010 & imp_src_db=="EM-DAT" &
   summarise(ALL_CLIM=sum(imp_value[haz_type=="haztypehydromet"]),
             Storm=sum(imp_value[haz_Ab%in%c("ST","TC")]),
             Flood=sum(imp_value[haz_Ab=="FL"]),
-            LandslideH=sum(imp_value[haz_Ab=="LS" & haz_type=="haztypehydromet"]),
+            LandslideH=sum(imp_value[haz_Ab=="LS-HM" & haz_type=="haztypehydromet"]),
             Drought=sum(imp_value[haz_Ab=="DR"]),
             Wildfire=sum(imp_value[haz_Ab=="WF"]),
             ExtrTemp=sum(imp_value[haz_Ab%in%c("ET","CW","HW")]),
             ALL_GEO=sum(imp_value[haz_type=="haztypegeohaz"]),
             Earthquake=sum(imp_value[haz_Ab=="EQ"]),
-            Volcano=sum(imp_value[haz_Ab=="VC"]),
-            LandslideG=sum(imp_value[haz_Ab=="LS" & haz_type=="haztypegeohaz"]),
+            Volcano=sum(imp_value[haz_Ab=="VO"]),
+            LandslideG=sum(imp_value[haz_Ab=="LS-G" & haz_type=="haztypegeohaz"]),
             ALL=sum(imp_value[haz_type%in%c("haztypehydromet","haztypegeohaz")]),
             .groups="drop")
 COSFull<-WDR%>%dplyr::select(1:5)%>%left_join(COSFull)
@@ -249,6 +252,37 @@ COSFull$ALL_CLIM<-rowSums(COSFull[,climvars])
 COSFull$ALL_GEO<-rowSums(COSFull[,geovars])
 COSFull$ALL<-COSFull$ALL_CLIM+COSFull$ALL_GEO
 
+#%%%%%%%%%%%%%%%%%%%% CLIMATE PROGRAMMING %%%%%%%%%%%%%%%%%%%%%#
+# Country names copied directly out of https://www.ifrc.org/sites/default/files/2022-11/2022-IFRC-Global-climate-resilience-platform-Brochure.pdf
+climprog<-data.frame(CP=TRUE,Country=
+                       c("Angola", "Benin", "Burkina Faso", "Burundi", "Central African Republic", "Chad", "Comoros", "Congo ", 
+                       "Côte d’Ivoire", "Democratic Republic of the Congo", "Ethiopia ", " Equatorial Guinea ", " Ghana ", "Guinea-Bissau ", " Kenya ", " Lesotho ", " Liberia ", " Madagascar ", " Malawi ", " Mali ", " Mauritania ", 
+                       "Mozambique ", " Namibia ", " Niger ", " Nigeria ", " Sao Tome & Principe ", " Sierra Leone ", " Somalia ", 
+                       "South Africa", " South Sudan ", " Sudan ", " Tanzania ", " Togo", " Tongo ", " Uganda ", " Zimbabwe ", " Zambia",
+                     "Antigua and Barbuda ", " Argentina ", " Belize ", " Bolivia ", " Colombia ", " Costa Rica ", " Cuba ", 
+                     " Dominican Republic ", " Ecuador ", " El Salvador ", " Grenada ", " Guatemala ", " Guyana ", " Haiti ", " Honduras ", " Jamaica ", 
+                     "Nicaragua ", " Panama ", " Paraguay ", " Peru ", " The Bahamas ", " Trinidad and Tobago ", " Uruguay",
+                     "Afghanistan ", " Bangladesh ", " Cook Islands ", " Federated State of Micronesia ", " India ", " Indonesia ", 
+                     "Maldives ", " Mongolia ", " Myanmar ", " Nepal ", " Pakistan ", " Palau ", " Philippines ", 
+                     " Republic of the Marshall Islands ", " Samoa ", " Solomon Islands ", " Sri Lanka ", 
+                     " The Democratic People’s Republic of Korea ", " Timor-Leste ", " Tuvalu ", " Vanuatu ", " Viet Nam",
+                     "Albania ", " Bosnia and Herzegovina ", " Kazakhstan ", " Kyrgystan ", " Serbia ", " Tajikistan ", "Turkmenistan ", " Uzbekistan",
+                     "Algeria ", " Egypt ", " Iran ", " Iraq ", " Jordan ", " Lebanon ", " Libya ", " Palestine ", " Syria ", " Yemen"))
+# Tidy this up a little
+climprog$Country%<>%stringi::stri_trim_both()
+# Add the ISO codes
+climprog$ISO3<-convCountryIso3(climprog$Country)
+# Clean up manually any codes that didn't seem to go through (Tongo and Kyrgyzstan - they misspelt the latter)
+climprog$Country[is.na(climprog$ISO3)]
+# [1] "Tongo"     "Kyrgystan"
+# So clean them up!
+climprog$ISO3[is.na(climprog$ISO3)]<-c("TON","KGZ")
+# Join to the full ISO code list for the WDR
+climprog<-left_join(data.frame(ISO3=unique(openxlsx::read.xlsx(wdrfile,sheet = 6,startRow = 6)%>%
+                                             dplyr::select(2)%>%pull(ISO))),climprog)
+# Set the values
+climprog$CP<-factor(is.na(climprog$CP),labels = c("YES","NO"))
+
 #%%%%%%%%%%%%%%%%%%%%%%%%% WRITE-OUT %%%%%%%%%%%%%%%%%%%%%%%%%%#
 
 openxlsx::write.xlsx(IncFull,"./Analysis_Results/Kirsten/Indicence.xlsx")
@@ -257,6 +291,7 @@ openxlsx::write.xlsx(FatFull,"./Analysis_Results/Kirsten/Fatalities.xlsx")
 openxlsx::write.xlsx(IDPFull,"./Analysis_Results/Kirsten/IDPs.xlsx")
 openxlsx::write.xlsx(AFFFull,"./Analysis_Results/Kirsten/Affected.xlsx")
 openxlsx::write.xlsx(COSFull,"./Analysis_Results/Kirsten/Cost.xlsx")
+openxlsx::write.xlsx(climprog,"./Analysis_Results/Kirsten/ClimateProgram.xlsx")
 
 #%%%%%%%%%%%%%%%%%%%%%% REPORT FIGURES %%%%%%%%%%%%%%%%%%%%%%%%#
 

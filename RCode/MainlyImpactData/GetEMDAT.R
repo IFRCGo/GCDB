@@ -97,6 +97,39 @@ EMDATHazards<-function(EMDAT){
   EMDAT$Disaster.Type%<>%str_to_lower()
   EMDAT$Disaster.Subtype%<>%str_to_lower()
   # Read in the EMDAT-HIPS taxonomy conversion dataframe
+  colConv<-openxlsx::read.xlsx("./Taxonomies/MostlyImpactData/EMDAT_HIP_new.xlsx")
+  colConv$Disaster.Subgroup%<>%str_to_lower()
+  colConv$Disaster.Type%<>%str_to_lower()
+  colConv$Disaster.Subtype%<>%str_to_lower()
+  # Reduce the translated vector and merge
+  EMDAT%<>%left_join(colConv,by = c("Disaster.Subgroup","Disaster.Type","Disaster.Subtype"),
+                     relationship="many-to-one")
+  # Convert EMDAT hazard categorisation to the HIPS!
+  # if(haz=="EQ"){
+  #   # Actual linked hazards
+  #   EMDAT$haz_link<-NA_character_
+  #   # Modify EMDAT dataframe, line by line
+  #   for(i in 1:nrow(colConv)){
+  #     # Primary associated hazard
+  #     ind<-!is.na(EMDAT$Associated.Dis) & EMDAT$Associated.Dis==colConv$Disaster.Subtype[i]
+  #     EMDAT$haz_link[ind]<-colConv$haz_spec[i]
+  #     # Secondary associated hazard
+  #     ind<-!is.na(EMDAT$Associated.Dis2) & EMDAT$Associated.Dis2==colConv$Disaster.Subtype[i]
+  #     EMDAT$haz_link[ind]<-paste0(EMDAT$haz_link[ind],paste0(",",colConv$haz_spec[i]))
+  #   }
+  #   # Potential linked hazards
+  #   EMDAT$haz_potlink<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
+  #   EMDAT$haz_potlink[EMDAT$Disaster.Subtype=="Tsunami"]<-paste0(c("GH0001","GH0002","GH0003","GH0004","GH0005","GH0007"),collapse = ",")
+  EMDAT%<>%dplyr::select(-c(Disaster.Subtype,Disaster.Subgroup,Disaster.Type,
+                            Disaster.Group,Associated.Types))
+    
+} 
+  
+EMDATHazards_old<-function(EMDAT){
+  EMDAT$Disaster.Subgroup%<>%str_to_lower()
+  EMDAT$Disaster.Type%<>%str_to_lower()
+  EMDAT$Disaster.Subtype%<>%str_to_lower()
+  # Read in the EMDAT-HIPS taxonomy conversion dataframe
   colConv<-openxlsx::read.xlsx("./Taxonomies/MostlyImpactData/EMDAT_HIP.xlsx")
   colConv$Disaster.Subgroup%<>%str_to_lower()
   colConv$Disaster.Type%<>%str_to_lower()
@@ -120,22 +153,20 @@ EMDATHazards<-function(EMDAT){
   #   # Potential linked hazards
   #   EMDAT$haz_potlink<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
   #   EMDAT$haz_potlink[EMDAT$Disaster.Subtype=="Tsunami"]<-paste0(c("GH0001","GH0002","GH0003","GH0004","GH0005","GH0007"),collapse = ",")
-  EMDAT%<>%dplyr::select(-c(Disaster.Subtype,Disaster.Subsubtype,
-                            Disaster.Subgroup,Disaster.Type,Disaster.Group,
-                            Associated.Dis,Associated.Dis2))
-    
-} 
+  EMDAT%<>%dplyr::select(-c(Disaster.Subtype,Disaster.Subgroup,Disaster.Type,
+                            Disaster.Group,Associated.Dis,Associated.Dis2))
   
+} 
 
 CleanEMDAT<-function(EMDAT){
   # Replace empty values
-  EMDAT[EMDAT=="Source:"]<-NA
+  # EMDAT[EMDAT=="Source:"]<-NA
   # Some of the column names are messed up due to presence of non-letters
-  colnames(EMDAT)[c(22,40:45)]<-
+  colnames(EMDAT)[c(20,37:42)]<-
     c("AID.Contribution","Reconstruction.Costs","Reconstruction.Costs.Adjusted",
       "Insured.Damages","Insured.Damages.Adjusted","Total.Damages","Total.Damages.Adjusted")
   # Also, make sure to convert to the full value in US dollars
-  for(i in c(22,40:45)) EMDAT[,i]<-1000*as.numeric(EMDAT[,i])
+  for(i in c(20,37:42)) EMDAT[,i]<-1000*as.numeric(EMDAT[,i])
   # For dates with no start day, make it the middle of the month
   EMDAT$Start.Day[is.na(EMDAT$Start.Day)]<-15
   # Make sure the start date is 2 characters
@@ -161,6 +192,94 @@ CleanEMDAT<-function(EMDAT){
   # Remove everything we dont need
   EMDAT%<>%dplyr::select(-c(Start.Day,Start.Month,Start.Year,
                             End.Day,End.Month,End.Year,
+                            Country,Region))
+  # Column renaming
+  colnames(EMDAT)[colnames(EMDAT)=="Event.Name"]<-"ev_name_en"; colnames(EMDAT)[colnames(EMDAT)=="Location"]<-"location"; colnames(EMDAT)[colnames(EMDAT)=="ISO"]<-"ISO3"
+  # Add some of the extra details that are Desinventar-specific
+  EMDAT$imp_est_type<-"esttype_prim"
+  EMDAT$src_URL<-"https://public.emdat.be/"
+  EMDAT$imp_spat_srcorg<-EMDAT$imp_src_org<-"CRED - Uni. Louvain"
+  EMDAT$imp_src_db<-"EM-DAT"
+  EMDAT$imp_src_orgtype<-"orgtypeacad"
+  EMDAT$imp_spat_type<-"Polygon"
+  stop("EMDAT imp_spat_ID needs sorting out")
+  # EMDAT$imp_spat_ID<-apply(EMDAT[,c("Admin1.Code","Admin2.Code")],1,function(x) {
+  #   if(all(is.na(x))) return(NA_character_)
+  #   if(any(is.na(x))) return(x[!is.na(x)])
+  #   paste0(c(ifelse(is.na(x[1]),"",x[1]),
+  #            ifelse(is.na(x[2]),"",x[2])),
+  #          collapse = ",")
+  # },simplify = T)
+  # Admin level resolution
+  EMDAT$spat_res<-"ADM-0"
+  EMDAT$spat_res[grepl(x = EMDAT$Admin.Units,"adm1_")]<-"ADM-1" 
+  EMDAT$spat_res[grepl(x = EMDAT$Admin.Units,"adm2_")]<-"ADM-2"
+  # Link to the hazard taxonomy from HIPS
+  EMDAT%<>%EMDATHazards()
+  
+  if(nrow(EMDAT)==0) return(EMDAT)
+  # Some GLIDE numbers don't have an associated hazard...
+  ind<-!is.na(EMDAT$Glide) & nchar(EMDAT$Glide)==11
+  stop("sort out EMDAT GLIDE numbers - 'External.IDs'")
+  
+  
+  EMDAT$GLIDE<-EMDAT$External.IDs
+  EMDAT$Glide[ind]<-paste0(EMDAT$haz_Ab[ind],"-",EMDAT$Glide[ind])
+  # Ensure column name aligns with imp_GCDB object
+  colnames(EMDAT)[colnames(EMDAT)=="Glide"]<-"GLIDE"
+  
+  
+  
+  
+  
+  # Generate the GCDB ID
+  EMDAT$GCDB_ID<-GetGCDB_ID(EMDAT)
+  # Melt the columns and apply the impact categorisation
+  EMDAT%<>%ImpLabs(nomDB = "EM-DAT")
+  # Now get rid of the extra columns of data
+  EMDAT%<>%dplyr::select(-which(!colnames(EMDAT)%in%names(col_tabGCDB)))
+  # Create an impact-specific ID
+  EMDAT%<>%GetGCDB_impID()
+  # Make sure to remove all NA impact estimates
+  EMDAT%<>%filter(!is.na(imp_value))
+  # Add missing columns & reorder the dataframe to fit imp_GCDB object
+  EMDAT%>%AddEmptyColImp()
+}
+
+CleanEMDAT_old<-function(EMDAT){
+  # Replace empty values
+  EMDAT[EMDAT=="Source:"]<-NA
+  # Some of the column names are messed up due to presence of non-letters
+  colnames(EMDAT)[c(22,40:45)]<-
+    c("AID.Contribution","Reconstruction.Costs","Reconstruction.Costs.Adjusted",
+      "Insured.Damages","Insured.Damages.Adjusted","Total.Damages","Total.Damages.Adjusted")
+  # Also, make sure to convert to the full value in US dollars
+  for(i in c(22,40:45)) EMDAT[,i]<-1000*as.numeric(EMDAT[,i])
+  # For dates with no start day, make it the middle of the month
+  EMDAT$Start.Day[is.na(EMDAT$Start.Day)]<-15
+  # Make sure the start date is 2 characters
+  EMDAT$Start.Day[nchar(EMDAT$Start.Day)==1 & !is.na(EMDAT$Start.Day)]<-
+    paste0("0",EMDAT$Start.Day[nchar(EMDAT$Start.Day)==1 & !is.na(EMDAT$Start.Day)])
+  # Make sure the start month is 2 characters
+  EMDAT$Start.Month[nchar(EMDAT$Start.Month)==1 & !is.na(EMDAT$Start.Month)]<-
+    paste0("0",EMDAT$Start.Month[nchar(EMDAT$Start.Month)==1 & !is.na(EMDAT$Start.Month)])
+  # Make sure the end date is 2 characters
+  EMDAT$End.Day[nchar(EMDAT$End.Day)==1 & !is.na(EMDAT$End.Day)]<-
+    paste0("0",EMDAT$End.Day[nchar(EMDAT$End.Day)==1 & !is.na(EMDAT$End.Day)])
+  # Make sure the end month is 2 characters
+  EMDAT$End.Month[nchar(EMDAT$End.Month)==1 & !is.na(EMDAT$End.Month)]<-
+    paste0("0",EMDAT$End.Month[nchar(EMDAT$End.Month)==1 & !is.na(EMDAT$End.Month)])
+  # Start date in one
+  EMDAT$imp_sdate<-EMDAT$ev_sdate<-EMDAT$imp_unitdate<-sapply(1:nrow(EMDAT),function(i) paste0(c(EMDAT$Start.Year[i],
+                                                                                                 EMDAT$Start.Month[i],
+                                                                                                 EMDAT$Start.Day[i]),collapse = "-"),simplify = T)
+  # End date in one
+  EMDAT$imp_fdate<-EMDAT$ev_fdate<-sapply(1:nrow(EMDAT),function(i) paste0(c(EMDAT$End.Year[i],
+                                                                             EMDAT$End.Month[i],
+                                                                             EMDAT$End.Day[i]),collapse = "-"),simplify = T)
+  # Remove everything we dont need
+  EMDAT%<>%dplyr::select(-c(Start.Day,Start.Month,Start.Year,
+                            End.Day,End.Month,End.Year,
                             Year,Country,Region))
   # Column renaming
   colnames(EMDAT)[colnames(EMDAT)=="Event.Name"]<-"ev_name_en"; colnames(EMDAT)[colnames(EMDAT)=="Location"]<-"location"; colnames(EMDAT)[colnames(EMDAT)=="ISO"]<-"ISO3"
@@ -181,7 +300,7 @@ CleanEMDAT<-function(EMDAT){
   # Admin level resolution
   EMDAT$spat_res<-"ADM-0"; EMDAT$spat_res[!is.na(EMDAT$Admin1.Code)]<-"ADM-1"; EMDAT$spat_res[!is.na(EMDAT$Admin2.Code)]<-"ADM-2"
   # Link to the hazard taxonomy from HIPS
-  EMDAT%<>%EMDATHazards()
+  EMDAT%<>%EMDATHazards_old()
   
   if(nrow(EMDAT)==0) return(EMDAT)
   # Some GLIDE numbers don't have an associated hazard...
@@ -203,16 +322,25 @@ CleanEMDAT<-function(EMDAT){
   EMDAT%>%AddEmptyColImp()
 }
 
-GetEMDAT<-function(){
+GetEMDAT<-function(new_format=T){
   # EMDAT file
   # filez<-paste0("./RawData/MostlyImpactData/EMDAT/emdat_public_",haz,"_20230526.xlsx")
   filez<-paste0("./CleanedData/MostlyImpactData/EMDAT/emdat_public_2023_09_22_query_uid-tUnheR.xlsx")
   # If nothing found
   if(!file.exists(filez)) return(data.frame())
   # Extract the hazard-specific EMDAT data
-  EMDAT<-openxlsx::read.xlsx(filez,startRow = 7)
-  # Clean it up and get it in the right format
-  EMDAT%<>%CleanEMDAT()
+  if(new_format){
+    # Read in the file
+    EMDAT<-openxlsx::read.xlsx(filez)
+    # Clean it up and get it in the right format
+    EMDAT%<>%CleanEMDAT()
+  } else {
+    # Read in the file
+    EMDAT<-openxlsx::read.xlsx(filez,startRow = 7)
+    # Clean it up and get it in the right format
+    EMDAT%<>%CleanEMDAT_old()
+  }
+  
   # Make sure that the spatial data required actually exists
   # EMDAT%<>%PairEMDATspatial(haz=haz)
   # Form a GCDB impacts object from EMDAT data (if there is a problem, return an empty impGCDB object)
