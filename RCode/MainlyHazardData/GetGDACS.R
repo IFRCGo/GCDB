@@ -36,27 +36,22 @@ GetGDACS_API<-function(haz=NULL,syear=2016,fyear=NULL,alertlist=NULL){
   if(is.null(haz)) haz<-c("DR","TC","TS","FL","VO","EQ")
   if(is.null(alertlist)) alertlist<-c("red","orange","green")
   
-  GDACS_yrs<-syear:fyear
-  # ev<-paste(l_ev, collapse = ";")
+  if(fyear>=AsYear(Sys.Date())) fdate<-paste0(Sys.Date(),"+00:00") else fdate<-paste0(fyear,"-12-31+00:00")
+  
   list_GDACS<-list()
   for (alert in alertlist){
     GDACS<-data.frame()
     for (ev in haz){
       eGDACS<-data.frame()
-      for (year in GDACS_yrs){
-        
-        url<-paste0(loc,ev,"&year=",year,"&alertlevel=",alert)
-        tGDACS<-try(FROM_GeoJson(url_file_string = url),silent = T) 
-        if(!typeof(tGDACS)=="list"){
-          print(paste0("Warning: GetGDACSsummary data API GET for : ",url))
-          next
-        }
-        tGDACS<-tGDACS$features
-        print(paste0("Retrieved ",length(tGDACS)," events from ",url))
-        list_GDACS<-c(list_GDACS,tGDACS)
-
+      url<-paste0(loc,ev,"&fromdate=",syear,"-01-01+00:00&todate=",fdate,"&alertlevel=",alert)
+      tGDACS<-try(FROM_GeoJson(url_file_string = url),silent = T) 
+      if(!typeof(tGDACS)=="list"){
+        print(paste0("Warning: GetGDACSsummary data API GET for : ",url))
+        next
       }
-
+      tGDACS<-tGDACS$features
+      print(paste0("Retrieved ",length(tGDACS)," events from ",url))
+      list_GDACS<-c(list_GDACS,tGDACS)
     }
     
   }
@@ -227,7 +222,8 @@ FilterGDACS<-function(haz=NULL,syear=2016L,fyear=NULL,list_GDACS=NULL,red=F){
       dfGDACS<-rbind(dfGDACS,data.frame(alert=rep(trimws(tolower(tmp$properties$episodealertlevel[j]), "b"),len),
                                         alertscore=rep(tmp$properties$episodealertscore[j],len),
                                         eventid=rep(tmp$properties$eventid,len),
-                                        ev_name_en=rep(tmp$properties$eventname,len),
+                                        ev_name=rep(tmp$properties$name,len),
+                                        ev_name_lang=rep("lang_eng",len),
                                         episodeid=rep(tmp$properties$episodeid,len),
                                         link=rep(tmp$properties$url$details,len),
                                         ISO3=dfct$ISO3,
@@ -252,9 +248,9 @@ FilterGDACS<-function(haz=NULL,syear=2016L,fyear=NULL,list_GDACS=NULL,red=F){
   
   if(red) dfGDACS%>%dplyr::select(c(alertscore,hazard_severity,ISO3,sdate,fdate,long,lat))%>%return
   
-  dfGDACS$GCDB_ID<-GetGCDB_ID(dfGDACS)
+  dfGDACS$event_ID<-GetMonty_ID(dfGDACS)
   
-  return(dfGDACS)
+  return(dfGDACS%>%distinct())
   
 }
 
@@ -267,13 +263,13 @@ GDACSHazards<-function(GDACS){
 
 convGDACS_GCDB<-function(GDACS){
   # Form the ID for the event
-  GDACS$GCDB_ID<-GetGCDB_ID(GDACS)
+  GDACS$event_ID<-GetMonty_ID(GDACS)
   # Date shifts
   GDACS$imp_sdate<-GDACS$imp_unitdate<-GDACS$haz_sdate<-as.character(GDACS$ev_sdate)
   GDACS$imp_fdate<-GDACS$haz_fdate<-GDACS$ev_fdate
   # Add the continent, then remove the unnecesary layers
-  GDACS%<>%mutate(Continent=convIso3Continent(ISO3))%>%
-    filter(!is.na(Continent))
+  GDACS%<>%mutate(region=convIso3Continent(ISO3))%>%
+    filter(!is.na(region))
   # Add alertscore as the impact value
   GDACS$imp_value<-GDACS$alertscore
   GDACS$imp_cats<-"impother"
@@ -297,7 +293,7 @@ convGDACS_GCDB<-function(GDACS){
   # Now for hazards
   GDACS%<>%GetGCDB_hazID()
   # Add the extra columns to make it officially a GCDB object
-  GDACS%>%AddEmptyColImp()
+  GDACS%>%AddEmptyColImp()%>%distinct()
 }
 
 GetGDACS_GCDB<-function(){
@@ -332,9 +328,9 @@ poly_ccodes<-c("eventid","episodeid","polygonlabel","Class","forecast","fromdate
 GetGDACSspatial<-function(GDACS){
   
   BigPoly<-data.frame()
-  for(ev in unique(GDACS$GCDB_ID)){
+  for(ev in unique(GDACS$event_ID)){
     # Find the appropriate elements of the GDACS database
-    ind<-GDACS$GCDB_ID==ev
+    ind<-GDACS$event_ID==ev
     # Get the shapefile
     poly<-suppressWarnings(geojsonsf::geojson_sf(unique(GDACS$haz_src_URL[ind])))
     # poly<-as(sf::st_read(URL),"Spatial")
@@ -381,7 +377,7 @@ GetGDACSspatial<-function(GDACS){
     BigPoly$haz_sub_ID<-BigPoly$imp_spat_ID<-paste0(unique())
     
     
-    GetGCDB_ID(Dessie,haz=unique(GDACS$haz_Ab[ind]))
+    GetMonty_ID(Dessie,haz=unique(GDACS$haz_Ab[ind]))
     
     
     
@@ -407,7 +403,7 @@ GetGDACSspatial<-function(GDACS){
     
     
   # Now left-join to the full GDACS database by 
-  GDACS%<>%left_join(poly@data,by = "GCDB_ID")
+  GDACS%<>%left_join(poly@data,by = "event_ID")
   
   return(list(GDACS=GDACS,poly=BigPoly))
 }

@@ -91,7 +91,7 @@ CleanGO_app<-function(appeal){
   appeal%<>%GOHazards(); appeal$dtype<-NULL
   
   appeal$ISO3<-appeal$country$iso3
-  appeal$Continent<-convIso3Continent(appeal$ISO3)
+  appeal$region<-convIso3Continent(appeal$ISO3)
 
   appeal$country<-appeal$region<-NULL
   
@@ -100,8 +100,9 @@ CleanGO_app<-function(appeal){
   appeal$start_date<-str_split(appeal$start_date,"T",simplify = T)[,1]
   appeal$end_date<-str_split(appeal$end_date,"T",simplify = T)[,1]
   
-  appeal%<>%mutate(ISO3=ISO3,Continent=Continent,
-                   ev_name_en=name,location=name,
+  appeal%<>%mutate(ISO3=ISO3,region=region,
+                   ev_name=name,location=name,
+                   ev_name_lang="lang_eng",
                    imp_sdate=as.character(as.Date(created_at)),imp_fdate=as.character(as.Date(modified_at)),
                    ev_sdate=as.character(as.Date(start_date)),ev_fdate=as.character(as.Date(end_date)),
                    # ev_sdate=as.character(as.Date(created_at)),ev_fdate=as.character(as.Date(created_at)),
@@ -116,7 +117,7 @@ CleanGO_app<-function(appeal){
                    imp_spat_ID=NA_character_,
                    spat_res="ADM-0")
   
-  appeal$GCDB_ID<-GetGCDB_ID(appeal,haz=appeal$haz_Ab)
+  appeal$event_ID<-GetMonty_ID(appeal,haz=appeal$haz_Ab)
   
   appeal%<>%ImpLabs(nomDB = "GO-App", dropName = T)
   
@@ -157,14 +158,16 @@ CleanGO_field<-function(fieldr){
   
   fieldr$ISO3<-sapply(1:length(fieldr$countries), function(i) paste0(fieldr$countries[[i]]$iso3,collapse = ","), simplify = T)
   fieldr%<>%filter(ISO3!="")
-  fieldr$Continent<-sapply(1:length(fieldr$countries), function(i) median(convIso3Continent(fieldr$countries[[i]]$iso3)), simplify = T)
+  fieldr$region<-sapply(1:length(fieldr$countries), function(i) median(convIso3Continent(fieldr$countries[[i]]$iso3)), simplify = T)
   
-  fieldr$ev_name_en<-fieldr$location<-
+  fieldr$ev_name<-fieldr$location<-
     sapply(1:length(fieldr$countries), function(i) paste0(fieldr$countries[[i]]$name,collapse = ","), simplify = T)
+  
+  fieldr$ev_name_lang="lang_eng"
   
   fieldr$country<-fieldr$region<-NULL
   
-  fieldr%<>%mutate(ISO3=ISO3,Continent=Continent,
+  fieldr%<>%mutate(ISO3=ISO3,region=region,
                    imp_sdate=as.character(as.Date(created_at)),imp_fdate=as.character(as.Date(updated_at)),
                    ev_sdate=as.character(as.Date(start_date)),ev_fdate=as.character(as.Date(report_date)),
                    imp_unitdate=as.character(as.Date(report_date)),
@@ -182,7 +185,7 @@ CleanGO_field<-function(fieldr){
   fieldr$imp_spat_ID[districts!=""]<-districts[districts!=""]
   fieldr$spat_res[districts!=""]<-"ADM-1"
   
-  fieldr$GCDB_ID<-GetGCDB_ID(fieldr,haz=fieldr$haz_Ab)
+  fieldr$event_ID<-GetMonty_ID(fieldr,haz=fieldr$haz_Ab)
   
   fieldr$countries<-fieldr$event<-fieldr$actions_taken<-fieldr$districts<-fieldr$regions<-fieldr$external_partners<-fieldr$supported_activities<-NULL
   

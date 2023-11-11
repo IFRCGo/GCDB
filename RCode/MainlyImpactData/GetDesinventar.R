@@ -609,12 +609,13 @@ Des2tabGCDB<-function(Dessie){
   # Extract only the relevant hazards
   Dessie%<>%DesHazards()
   # Rename the event name
-  colnames(Dessie)[colnames(Dessie)=="event"]<-"ev_name_orig"
+  colnames(Dessie)[colnames(Dessie)=="event"]<-"ev_name"
+  Dessie$ev_name_lang<-"lang_xxx"
   # Add the continent, then remove the unnecesary layers
-  Dessie%<>%mutate(Continent=convIso3Continent(ISO3))%>%
-    dplyr::select(-c(date,level0,name0))%>%filter(!is.na(Continent))
+  Dessie%<>%mutate(region=convIso3Continent(ISO3))%>%
+    dplyr::select(-c(date,level0,name0))%>%filter(!is.na(region))
   # Generate GCDB event ID
-  Dessie$GCDB_ID<-GetGCDB_ID(Dessie)
+  Dessie$event_ID<-GetMonty_ID(Dessie)
   # Add some of the extra details that are Desinventar-specific
   Dessie$imp_est_type<-"esttype_prim"
   Dessie$src_URL<-paste0(desbaseurl,Dessie$ISO3,".zip")

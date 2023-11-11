@@ -82,7 +82,7 @@ ImpactAggADM0<-function(impies, haz="EQ"){
   impies$impact<-sapply(1:nrow(impies),function(i) paste0(impies$imp_subcats[i],"-",impies$imp_type[i]),simplify = T)
   
   ADM@data$N<-sapply(ADM@data$ISO3, function(is){
-    length(unique(impies$GCDB_ID[impies$ISO3==is]))
+    length(unique(impies$event_ID[impies$ISO3==is]))
   },simplify = T)
   
   for(imp in unique(impies$impact)){
@@ -343,7 +343,7 @@ implot<-c("Total Population Deaths","Total Population Injured",
           "Total Population Internally Displaced (IDPs)","Other")
 
 p<-out%>%filter(!is.na(PAGER) & label%in%implot)%>%
-  group_by(GCDB_ID,label,PAGER)%>%
+  group_by(event_ID,label,PAGER)%>%
   summarise(intensity=max(intensity),imp_value=max(imp_value))%>%
   ggplot()+geom_boxplot(aes(PAGER,imp_value,fill=PAGER),colour="black")+
   xlab("PAGER Alert")+scale_y_log10()+
@@ -422,7 +422,7 @@ We are also interested in seeing whether the maximum earthquake hazard intensity
 
 ```{r intdeat, fig.cap="Number of deaths against earthquake intensity (MMI) for the matched hazards in the GCDB",echo=F, results='hide', warning=F, message=F}
 
-p<-out%>%group_by(GCDB_ID,imp_det,imp_type)%>%summarise(intensity=max(intensity),imp_value=max(imp_value))%>%
+p<-out%>%group_by(event_ID,imp_det,imp_type)%>%summarise(intensity=max(intensity),imp_value=max(imp_value))%>%
     filter(imp_det=="impdetallpeop" & imp_type=="imptypdeat")%>%
     ggplot()+geom_point(aes(intensity,imp_value))+
     xlab("Earthquake Intensity [MMI]")+scale_y_log10()+
@@ -436,7 +436,7 @@ However, to show one example where a correlation may be visible, figure \@ref(fi
 
 ```{r intaid, fig.cap="Disaster aid allocated against earthquake intensity (MMI) for the matched hazards in the GCDB",echo=F, results='hide', warning=F, message=F}
 
-p<-out%>%group_by(GCDB_ID,imp_det,imp_type)%>%summarise(intensity=max(intensity),imp_value=max(imp_value))%>%
+p<-out%>%group_by(event_ID,imp_det,imp_type)%>%summarise(intensity=max(intensity),imp_value=max(imp_value))%>%
     filter(imp_det=="impdetaidgen" & imp_type=="imptypcost")%>%
     ggplot()+geom_point(aes(intensity,imp_value))+
     xlab("Earthquake Intensity [MMI]")+scale_y_log10()+
@@ -536,15 +536,15 @@ minitax$imp_type_detail<-str_split(minitax$imp_type_detail," \\(",simplify = T)[
 
 fieldr%<>%left_join(minitax,by="imp_type")
 
-fieldr%<>%filter(!(is.na(GCDB_ID) | is.na(imp_det) | is.na(imp_type)))
+fieldr%<>%filter(!(is.na(event_ID) | is.na(imp_det) | is.na(imp_type)))
 
 fieldr%<>%filter(imp_src_db=="GO-FR")%>%
   arrange(imp_fdate)%>%
-  group_by(GCDB_ID,imp_det,imp_type)%>%
-  mutate(Count=length(fieldr$GCDB_ID[fieldr$GCDB_ID==unique(GCDB_ID) &
+  group_by(event_ID,imp_det,imp_type)%>%
+  mutate(Count=length(fieldr$event_ID[fieldr$event_ID==unique(event_ID) &
                                       fieldr$imp_det==unique(imp_det) &
                                       fieldr$imp_type==unique(imp_type)]),
-         whichmax=which.max(fieldr$imp_value[fieldr$GCDB_ID==unique(GCDB_ID) &
+         whichmax=which.max(fieldr$imp_value[fieldr$event_ID==unique(event_ID) &
                                                  fieldr$imp_det==unique(imp_det) &
                                                  fieldr$imp_type==unique(imp_type)]))
 

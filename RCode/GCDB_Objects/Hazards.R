@@ -17,7 +17,7 @@ add_hazGCDBinfo<-function(){
        org_sec="Information Management - Geneva, CH")
 }
  
-col_hazGCDB<-c("GCDB_ID"="character", # GCDB event ID
+col_hazGCDB<-c("event_ID"="character", # GCDB event ID
                "GLIDE"="character", # GLIDE number of hazard (not necessarily the primary hazard)
                "hazsub_ID"="character", # ID of each hazard element in the overall event
                "ev_name_orig"="character", # Name of the event in original language
@@ -53,11 +53,11 @@ col_hazGCDB<-c("GCDB_ID"="character", # GCDB event ID
                "cent_lon"="numeric",
                "cent_lat"="numeric") # Source organisation from where the spatial object comes from
 
-oblig_hazGCDB<-c("GCDB_ID","hazsub_ID","ISO3",
+oblig_hazGCDB<-c("event_ID","hazsub_ID","ISO3",
                  "est_type","imp_src_org","imp_src_orgtype","src_URL",
                  "haz_sev","haz_unit","haz_Ab","haz_type","haz_cluster")
 
-GetGCDB_ID<-function(DF,haz=NULL) {
+GetMonty_ID<-function(DF,haz=NULL) {
   # In case a specific hazard is fed in
   if(!is.null(haz)) DF%<>%mutate(haz_Ab=haz)
   # Generate the names from the dataframe

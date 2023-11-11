@@ -29,19 +29,19 @@ GIDD<-readxl::read_xlsx("../../CleanedData/MostlyImpactData/IDMC/GIDD-IDMC.xlsx"
 GIDD%<>%filter(`Hazard Sub Type`=="Earthquake")%>%mutate(sdate=`Date of Event (start)`)%>%dplyr::select(-`Date of Event (start)`)
 
 # Simple merge
-SimMerg<-EMDAT%>%dplyr::select(ISO,Continent,Year,sdate,fdate)
+SimMerg<-EMDAT%>%dplyr::select(ISO,region,Year,sdate,fdate)
 SimMerg<-Dessie%>%dplyr::select(ISO3,sdate,fdate)%>%
-  transmute(ISO=ISO3,Continent=convIso3Continent(ISO3),Year=AsYear(sdate),
+  transmute(ISO=ISO3,region=convIso3Continent(ISO3),Year=AsYear(sdate),
             sdate=sdate,fdate=fdate)%>%
   rbind(SimMerg)
 SimMerg<-GIDD%>%dplyr::select(ISO3,Year,sdate)%>%
-  transmute(ISO=ISO3,Continent=convIso3Continent(ISO3),Year=Year,
+  transmute(ISO=ISO3,region=convIso3Continent(ISO3),Year=Year,
             sdate=as.character(sdate),fdate=as.character(sdate))%>%
   rbind(SimMerg)
 
 SimMerg$Year%<>%as.numeric()
 SimMerg$ISO%<>%stringr::str_to_upper()
-SimMerg%<>%filter(!is.na(SimMerg$Continent))
+SimMerg%<>%filter(!is.na(SimMerg$region))
 
 p<-SimMerg%>%filter(Year<2023)%>%
   group_by(Year)%>%reframe(Count=length(Year))%>%
@@ -57,8 +57,8 @@ p<-SimMerg%>%filter(Year<2023 & Year>1900)%>%
   theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Earthquakes Only");p
 ggsave("../../Plots/Impact_Only/NoEQs_Year_1900on.png",p,width = 7,height = 5)
 
-p<-SimMerg%>%filter(!is.na(Continent))%>%mutate(Continent=factor(Continent))%>%
-  ggplot(aes(Continent))+geom_bar(aes(fill=Continent))+
+p<-SimMerg%>%filter(!is.na(region))%>%mutate(region=factor(region))%>%
+  ggplot(aes(region))+geom_bar(aes(fill=region))+
   ylab("Number of Recorded Events")+
   theme(plot.title = element_text(hjust = 0.5)) + ggtitle("Earthquakes Only");p
 ggsave("../../Plots/Impact_Only/EQs_Continent.png",p,width = 7,height = 5)

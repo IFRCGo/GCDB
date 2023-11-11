@@ -627,7 +627,9 @@ predict(modelly,data.frame(imp_src_db="GO-App",Year=2022))
 
 
 #%%%% PERCENTAGE OF FUNDING ALLOCATED VS REQUESTED %%%%%#
-percies<-impies%>%filter(Year>1990 & Year<2023 & 
+appeal<-CleanGO_app(ExtractGOdata(db = "GO-App", token = token))
+
+percies<-appeal%>%filter(Year>1990 & Year<2023 & 
                   imp_src_db=="GO-App")%>%
   reframe(Year=Year[imp_type=="imptypaidreqifrc"],Percentage=(imp_value[imp_type=="imptypaidallifrc"]/
             (imp_value[imp_type=="imptypaidallifrc"]+imp_value[imp_type=="imptypaidreqifrc"]))  )
@@ -655,7 +657,7 @@ appeal%>%filter(Year>2000 & Year<2023 &
 appeal%>%mutate(Year=AsYear(ev_sdate))%>%
   filter(Year>2000 & imp_src_db=="GO-App" & !is.na(haz_type))%>%
   mutate(Climate=!is.na(haz_type) & haz_type=="haztypehydromet")%>%
-  group_by(Year,GCDB_ID,Climate,.add=T)%>%
+  group_by(Year,event_ID,Climate,.add=T)%>%
   reframe(ALL=sum(imp_value[imp_type=="imptypaidallifrc"],na.rm = T), 
           REQ=sum(imp_value[imp_type=="imptypaidreqifrc"],na.rm = T),
           TAR=sum(imp_value[imp_type=="imptyptarg"],na.rm = T))%>%ungroup()%>%
@@ -674,7 +676,7 @@ appeal%>%mutate(Year=AsYear(ev_sdate))%>%
 percies<-appeal%>%mutate(Year=AsYear(ev_sdate))%>%
   filter(Year>2000 & imp_src_db=="GO-App" & !is.na(haz_type))%>%
   mutate(Climate=!is.na(haz_type) & haz_type=="haztypehydromet")%>%
-  group_by(Year,GCDB_ID,Climate,.add=T)%>%
+  group_by(Year,event_ID,Climate,.add=T)%>%
   reframe(ALL=sum(imp_value[imp_type=="imptypaidallifrc"],na.rm = T), 
           REQ=sum(imp_value[imp_type=="imptypaidreqifrc"],na.rm = T),
           TAR=sum(imp_value[imp_type=="imptyptarg"],na.rm = T))%>%ungroup()%>%
@@ -700,30 +702,50 @@ cumFunding<-appeal%>%filter(Year>2000 & !is.na(haz_type))%>%
   group_by(Climate,imp_type)%>%
   mutate(cumFunding=cumsum(cumFunding))
 
-p<-cumFunding%>%filter(Year<2023 & Year>2005 & imp_type=="imptypaidallifrc")%>%
+p<-cumFunding%>%filter(Year<2023 & Year>2005 & imp_type!="imptyptarg")%>%
   ggplot()+geom_line(aes(Date,cumFunding,colour=Climate))+
-  xlab("Year")+ylab("Cumulative Funding Allocated")+labs(colour="Climate-Related");p
-ggsave("Cumulative_AllocFund_ClimWeath-vs-All.png",p,path="./Plots/",width = 8, height=5)
+  xlab("Year")+ylab("Cumulative Funding Allocated")+labs(colour="Climate-Related")+
+  facet_wrap(~imp_type);p
+ggsave("Cumulative_AllocFund_ClimWeath-vs-All_imp_type.png",p,path="./Plots/",width = 8, height=5)
 
 cumFunding$Days<-as.numeric(cumFunding$Date-min(cumFunding$Date))
 
-cFunds<-cumFunding%>%filter(imp_type=="imptypaidreqifrc" & Climate & Year>2005 & Year<2023)
-tmp<-cumFunding%>%filter(imp_type=="imptypaidreqifrc" & !Climate)
+# ALLOCATED FUNDING
+AcFunds<-cumFunding%>%filter(imp_type=="imptypaidallifrc" & Climate & Year>2005 & Year<2023)
+tmp<-cumFunding%>%filter(imp_type=="imptypaidallifrc" & !Climate)
 
-cFunds$cumFundingNonClim<-interp1(tmp$Days,tmp$cumFunding,cFunds$Days,method="linear")
+AcFunds$cumFundingNonClim<-interp1(tmp$Days,tmp$cumFunding,AcFunds$Days,method="linear")
 
-cFunds%>%ggplot()+
+AcFunds%>%ggplot()+
   geom_point(aes(Days,cumFunding),colour="red")+
   geom_point(aes(Days,cumFundingNonClim),colour="blue")
 
-cFunds%>%ggplot()+
+AcFunds%>%ggplot()+
   geom_point(aes(Date,cumFunding),colour="red")+
   geom_point(aes(Date,cumFundingNonClim),colour="blue")
 
-p<-cFunds%>%mutate(Percentage=100*cumFunding/(cumFunding+cumFundingNonClim))%>%
+p<-AcFunds%>%mutate(Percentage=100*cumFunding/(cumFunding+cumFundingNonClim))%>%
   ggplot()+geom_line(aes(Date,Percentage))+ #ylim(c(0,100))+
-  ggtitle("% Alloc. Funds to Climate & Weather")+theme(plot.title = element_text(hjust = 0.5));p
+  ggtitle("% Allocated Funds to Climate & Weather")+theme(plot.title = element_text(hjust = 0.5));p
 ggsave("Perc_AllocFund_ClimWeath-vs-All.png",p,path="./Plots/",width = 7, height=5)
+
+# REQUESTED FUNDING
+RcFunds<-cumFunding%>%filter(imp_type=="imptypaidreqifrc" & Climate & Year>2005 & Year<2023)
+tmp<-cumFunding%>%filter(imp_type=="imptypaidreqifrc" & !Climate)
+
+RcFunds$cumFundingNonClim<-interp1(tmp$Days,tmp$cumFunding,RcFunds$Days,method="linear")
+
+q<-RcFunds%>%mutate(Percentage=100*cumFunding/(cumFunding+cumFundingNonClim))%>%
+  ggplot()+geom_line(aes(Date,Percentage))+ #ylim(c(0,100))+
+  ggtitle("% Requested Funds to Climate & Weather")+theme(plot.title = element_text(hjust = 0.5));q
+ggsave("Perc_AllocFund_ClimWeath-vs-All.png",q,path="./Plots/",width = 7, height=5)
+
+# BOTH TOGETHER
+cFunds<-rbind(RcFunds,AcFunds)%>%mutate(Percentage=100*cumFunding/(cumFunding+cumFundingNonClim))
+cFunds$Funding<-factor(cFunds$imp_type,labels=c("Requested","Allocated"))
+p<-cFunds%>%ggplot()+geom_line(aes(Date,Percentage,colour=Funding))+
+  ggtitle("% Emergency Appeal Funds to Climate & Weather")+theme(plot.title = element_text(hjust = 0.5));p
+ggsave("Perc_Alloc-vs-Req_Fund_ClimWeath-vs-All.png",p,path="./Plots/",width = 7, height=5)
 
 # Save out
 outer<-cFunds%>%mutate(Percentage=100*cumFunding/(cumFunding+cumFundingNonClim))%>%
@@ -766,7 +788,7 @@ tmp%>%
 
 
 
-propy<-impies%>%mutate(ev_sdate=as.Date(ev_sdate), Year=AsYear(ev_sdate))%>%
+propy<-appeal%>%mutate(ev_sdate=as.Date(ev_sdate), Year=AsYear(ev_sdate))%>%
   filter(Year>1990 & Year<2023 & 
                          # !(imp_src_db=="GIDD" & AsYear(ev_sdate)<2015) &
                          !duplicated(imp_sub_ID) &

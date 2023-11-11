@@ -141,7 +141,7 @@ MatchUSGS<-function(impies,noextract=F){
   # Check for duplicated entries
   inds<-!duplicated(impies); inds[is.na(inds)]<-F
   # Don't unecessarily spam USGS
-  indind<-!impies%>%dplyr::select(GCDB_ID)%>%duplicated & inds
+  indind<-!impies%>%dplyr::select(event_ID)%>%duplicated & inds
   # Extended boundary boxes of countries
   bbies<-GenerateExpBBOX(unique(impies$ISO3[indind]),
                          expPartin=T,reducer=T,expFact=5)
@@ -149,7 +149,7 @@ MatchUSGS<-function(impies,noextract=F){
   impies%<>%filter(ISO3%in%bbies$ISO3CD)
   # Extract the boundary
   out<-do.call(rbind,lapply(which(indind),function(i) {
-    print(impies$GCDB_ID[i])
+    print(impies$event_ID[i])
     subbb<-bbies%>%filter(ISO3CD==impies$ISO3[i])%>%dplyr::select(-c(ISO3CD,i))
     
     outin<-do.call(rbind,lapply(1:nrow(subbb),function(j){
@@ -194,26 +194,26 @@ MatchUSGS<-function(impies,noextract=F){
   out%<>%filter(intensity>4.5 & !is.na(USGSid))
   # Now download the hell out of everythiiiiing! Thanks USGS, spam away!
   out$downloaded<-sapply(1:nrow(out),function(i){
-    print(out$GCDB_ID[i])
-    if(file.exists(paste0("./CleanedData/MostlyHazardData/EQ/",out$GCDB_ID[i],"_",out$USGSid[i],".RData"))){
+    print(out$event_ID[i])
+    if(file.exists(paste0("./CleanedData/MostlyHazardData/EQ/",out$event_ID[i],"_",out$USGSid[i],".RData"))){
       print("Already there!")
       return(T)
     }
     hazzy<-tryCatch(GetUSGS_id(out$USGSid[i],titlz=paste0("./RawData/MostlyHazardData/EQ/"),I0=4.5,minmag=5,earlysort=T),error=function(e) NULL)
     if(is.null(hazzy)) return(F)
     print("success")
-    saveRDS(hazzy,paste0("./CleanedData/MostlyHazardData/EQ/",out$GCDB_ID[i],"_",out$USGSid[i],".RData"))
+    saveRDS(hazzy,paste0("./CleanedData/MostlyHazardData/EQ/",out$event_ID[i],"_",out$USGSid[i],".RData"))
     return(T)
   })
   # Save out, just in case!
   saveRDS(out,"./RawData/MatchedEQ_hazimp_2D_20230627.RData")
   # out$overlap<-parallel::mclapply((1:nrow(out))[out$downloaded],function(i){
-  #   print(out$GCDB_ID[i])
-  #   if(!file.exists(paste0("./CleanedData/MostlyHazardData/EQ/",out$GCDB_ID[i],"_",out$USGSid[i],".RData"))){
+  #   print(out$event_ID[i])
+  #   if(!file.exists(paste0("./CleanedData/MostlyHazardData/EQ/",out$event_ID[i],"_",out$USGSid[i],".RData"))){
   #     print("File not found")
   #     return(F)
   #   }
-  #   hazzy<-readRDS(paste0("./CleanedData/MostlyHazardData/EQ/",out$GCDB_ID[i],"_",out$USGSid[i],".RData"))
+  #   hazzy<-readRDS(paste0("./CleanedData/MostlyHazardData/EQ/",out$event_ID[i],"_",out$USGSid[i],".RData"))
   #   bbox<-hazzy@bbox; bbox[]
   #   return(bbox_overlap(bbox,out[i,c("mnlo","mnla","mxlo","mxla")]))
   # },mc.cores = ceiling(parallel::detectCores()/2))

@@ -80,13 +80,13 @@ imp_subcats%in%c("impecodirtot","impecoaid") &
   imp_type%in%c("imptypaidreqifrc","imptypcost") &
 
 
-p<-impies%>%group_by(haz_Ab)%>%reframe(Count=length(unique(GCDB_ID)))%>%arrange(desc(Count))%>%
+p<-impies%>%group_by(haz_Ab)%>%reframe(Count=length(unique(event_ID)))%>%arrange(desc(Count))%>%
   ggplot()+geom_bar(aes(x=haz_Ab,y=Count,fill=haz_Ab),colour="black",stat = "identity")+
   xlab("Hazard")+ylab("Number of Impact Records")+
   scale_fill_manual("Hazard",values = pal,limits = names(pal));p
 ggsave("AllHazards_bar.png",p,path="./Plots/",width = 10,height = 8)  
 
-p<-impies%>%group_by(imp_src_db,spat_res)%>%reframe(Count=length(unique(GCDB_ID)))%>%
+p<-impies%>%group_by(imp_src_db,spat_res)%>%reframe(Count=length(unique(event_ID)))%>%
   ggplot()+geom_bar(aes(x=imp_src_db,y=Count,fill=spat_res),colour="black",stat="identity")+
   xlab("Impact Database")+ylab("Number of Impact Records")+
   labs(fill="Spatial Resolution");p
@@ -157,7 +157,7 @@ ggsave("AllHazards_spatial.png",p,path="./Plots/",width = 13,height = 7)
 impies$Year<-AsYear(impies$ev_sdate)
 
 p<-impies%>%filter(Year>1950 & Year<2024 & haz_Ab!="LS")%>%
-  group_by(Year,haz_Ab)%>%reframe(Count=length(unique(GCDB_ID)))%>%
+  group_by(Year,haz_Ab)%>%reframe(Count=length(unique(event_ID)))%>%
   filter(Count>0)%>%
   ggplot()+geom_point(aes(Year,Count,colour=haz_Ab))+
   scale_y_log10(n.breaks=5)+scale_x_continuous(n.breaks=15)+
@@ -170,7 +170,7 @@ impies$Climate[impies$haz_Ab=="LS"]<-NA
 
 temp<-impies%>%filter(Year>1900 & Year<2024 & haz_Ab!="LS")%>%
   group_by(Year,Climate)%>%
-  reframe(Count=length(unique(GCDB_ID)))
+  reframe(Count=length(unique(event_ID)))
 
 p<-data.frame(Year=unique(temp$Year),Ratio=sapply(unique(temp$Year),function(Y){
   clim<-temp$Climate & temp$Year==Y
@@ -205,7 +205,7 @@ p<-PlotImpAgg(EQ,loggie = F)+
 ggsave("EQ_spatial_deaths.png",p,path="./Plots/",width = 13,height = 7)
 
 p<-impies%>%filter(Year>1950 & Year<2024 & haz_Ab!="LS" & imp_src_db!="GO-FR")%>%
-  group_by(Year,imp_src_db)%>%reframe(Count=length(unique(GCDB_ID)))%>%
+  group_by(Year,imp_src_db)%>%reframe(Count=length(unique(event_ID)))%>%
   filter(Count>0)%>%
   ggplot()+geom_point(aes(Year,Count,colour=imp_src_db))+
   scale_x_continuous(n.breaks=15)+
@@ -217,7 +217,7 @@ p<-impies%>%filter(Year>1952 & Year<2023 &
                      haz_Ab%in%c("EQ","VO") & 
                      imp_src_db!="GO-FR")%>%
   group_by(Year,imp_src_db)%>%
-  reframe(Count=length(unique(GCDB_ID)))%>%
+  reframe(Count=length(unique(event_ID)))%>%
   # filter(Count>0)%>%
   ggplot()+geom_point(aes(Year,Count,colour=imp_src_db))+
   # geom_line(aes(Year,Count,colour=imp_src_db))+
@@ -232,7 +232,7 @@ p<-impies%>%filter(Year>1952 & Year<2023 &
                      haz_Ab%in%c("EQ","VO") & 
                      imp_src_db!="GO-FR")%>%
   group_by(Year = findInterval(Year, seq(min(Year), max(Year), 5)),imp_src_db)%>%
-  reframe(Count=length(unique(GCDB_ID)))%>%
+  reframe(Count=length(unique(event_ID)))%>%
   mutate(Year=(Year-1)*5+1952.5)%>%
   # filter(Count>0)%>%
   ggplot()+geom_point(aes(Year,Count,colour=imp_src_db))+
@@ -299,7 +299,7 @@ p<-impies%>%filter(haz_Ab%in%names(pal))%>%
 ggsave("AllHazards_records_bar.png",p,path="./Plots/GCDB_Workshop/",width = 10,height = 8)  
 
 p<-impies%>%filter(Year>1950 & Year<2024 & haz_Ab!="LS" & haz_Ab%in%names(pal))%>%
-  group_by(Year,haz_Ab)%>%reframe(Count=length(unique(GCDB_ID)))%>%
+  group_by(Year,haz_Ab)%>%reframe(Count=length(unique(event_ID)))%>%
   filter(Count>0)%>%
   ggplot()+geom_point(aes(Year,Count,colour=haz_Ab))+
   scale_y_log10(n.breaks=5)+scale_x_continuous(n.breaks=15)+
@@ -358,7 +358,7 @@ ggsave("AllHazards_Records_bar_Gocomp.png",p,path="./Plots/GCDB_Workshop/",width
 
 
 p<-impies%>%filter(Year>1950 & Year<2024 & imp_src_db!="GO-FR")%>%
-  group_by(Year,RCnot)%>%reframe(Count=length(unique(GCDB_ID)))%>%
+  group_by(Year,RCnot)%>%reframe(Count=length(unique(event_ID)))%>%
   filter(Count>0)%>%
   ggplot()+geom_point(aes(Year,Count,colour=RCnot))+
   scale_y_log10(n.breaks=5)+scale_x_continuous(n.breaks=15)+

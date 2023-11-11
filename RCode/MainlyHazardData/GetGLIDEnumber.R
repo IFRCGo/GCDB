@@ -41,7 +41,7 @@ GetGLIDEnum<-function(DF,numonly=T){
   # For those that returned an error...
   inds<-glides$number=="NA-NA"
   # Replace them with 
-  glides$number[inds]<-DF[inds,]%>%GetGCDB_ID()
+  glides$number[inds]<-DF[inds,]%>%GetMonty_ID()
   # and let it be known when it is a glide number, too!
   glides$number[!inds]<-paste0(glides$number[!inds],"-GLIDE")
   # If we only care about the GLIDE number
@@ -110,7 +110,7 @@ GetGLIDEimps<-function(){
   GLIDE<-rjson::fromJSON(file = baseurl)[[1]]; 
   GLIDE<-do.call(rbind,lapply(1:length(GLIDE),function(i) as.data.frame(GLIDE[[i]])))
   # Now let's treat this as a source of impact estimates!
-  colnames(GLIDE)<-c("ev_name_en",
+  colnames(GLIDE)<-c("ev_name",
                    "Year",
                    "docid", # Nope!
                    "Latitude", # Nope!
@@ -132,6 +132,7 @@ GetGLIDEimps<-function(){
                    "day",
                    "status", # Nope!
                    "Longitude")
+  GLIDE$ev_name_lang<-"lang_eng"
   # The source reference isn't well structured, use NLP to extract organisation name
   GLIDE$imp_src_db<-"GLIDE"
   # Set database to be the same as the organisation as we don't know better. Also, housekeeping
@@ -157,8 +158,8 @@ GetGLIDEimps<-function(){
                                                    collapse = "-"),
                                                    whitespace = "-",
                                                    which = 'right'),simplify = T)
-  # Get the GCDB_ID number
-  GLIDE$GCDB_ID<-GetGCDB_ID(GLIDE)
+  # Get the event_ID number
+  GLIDE$event_ID<-GetMonty_ID(GLIDE)
   # Add the UNDRR-ISC hazard taxonomy
   GLIDE%<>%GLIDEHazards()%>%filter(!is.na(haz_cluster))
   # Take the impact estimate columns and convert into the imp_type feature
@@ -167,7 +168,7 @@ GetGLIDEimps<-function(){
   # Instead of as a factor
   GLIDE$imp_type%<>%as.character()
   # Get the continent name & add on the impact taxonomy layers
-  GLIDE%<>%mutate(Continent=convIso3Continent(ISO3),
+  GLIDE%<>%mutate(region=convIso3Continent(ISO3),
                 imp_cats="impcatpop",
                 imp_subcats="imptypepopcnt",
                 imp_det="impdetallpeop",

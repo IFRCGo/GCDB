@@ -91,12 +91,13 @@ GetGIDD<-function(){
   # Modify date names
   GIDD$imp_sdate<-GIDD$imp_fdate<-GIDD$ev_sdate<-GIDD$ev_fdate<-GIDD$imp_unitdate<-as.character(GIDD$DateofEvent)
   # Rename the event name
-  colnames(GIDD)[colnames(GIDD)=="EventName"]<-"ev_name_en"
+  colnames(GIDD)[colnames(GIDD)=="EventName"]<-"ev_name"
+  GIDD$ev_name_lang<-"lang_eng"
   # Add the continent, then remove the unnecesary layers
-  GIDD%<>%mutate(Continent=convIso3Continent(ISO3))%>%
-    filter(!is.na(Continent))
+  GIDD%<>%mutate(region=convIso3Continent(ISO3))%>%
+    filter(!is.na(region))
   # Generate GCDB event ID
-  GIDD$GCDB_ID<-GetGCDB_ID(GIDD)
+  GIDD$event_ID<-GetMonty_ID(GIDD)
   # Add some of the extra details that are Desinventar-specific
   GIDD$imp_est_type<-"esttype_prim"
   GIDD$src_URL<-"https://helix-tools-api.idmcdb.org/external-api/gidd/disasters/disaster-export/"
@@ -125,11 +126,11 @@ GetGIDD<-function(){
 # out%<>%arrange(desc(imp_value))
 # 
 # checker<-sapply(1:nrow(out),function(i){
-#   print(out$GCDB_ID[i])
+#   print(out$event_ID[i])
 #   hazzy<-GetUSGS_id(out$USGSid[i],titlz=paste0("./RawData/MostlyHazardData/EQ/"),I0=4.5,minmag=5,earlysort=T)
 #   if(is.null(hazzy)) return(F)
 #   print("success")
-#   saveRDS(hazzy,paste0("./CleanedData/MostlyHazardData/EQ/",out$GCDB_ID[i],"_",out$USGSid[i],".RData"))
+#   saveRDS(hazzy,paste0("./CleanedData/MostlyHazardData/EQ/",out$event_ID[i],"_",out$USGSid[i],".RData"))
 #   return(T)
 # })
 # # 

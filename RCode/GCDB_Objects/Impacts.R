@@ -17,7 +17,7 @@ add_impGCDBinfo<-function(){
        org_sec="Information Management - Geneva, CH")
 }
  
-col_impGCDB<-c("GCDB_ID"="character", # GCDB event ID
+col_impGCDB<-c("event_ID"="character", # GCDB event ID
                "GLIDE"="character", # GLIDE number of impacting-hazard (not necessarily the primary hazard)
                "imp_sub_ID"="character", # ID of each impact element in the overall event
                "haz_sub_ID"="character", # ID of each hazard of each impact element in the overall event
@@ -53,7 +53,7 @@ col_impGCDB<-c("GCDB_ID"="character", # GCDB event ID
                "spat_res"="character", # Spatial resolution of impact estimate
                "imp_spat_srcorg"="character") # Source organisation from where the spatial object comes from
 
-oblig_impGCDB<-c("GCDB_ID","imp_sub_ID","ISO3","impcat","impsubcat","measunits",
+oblig_impGCDB<-c("event_ID","imp_sub_ID","ISO3","impcat","impsubcat","measunits",
                  "imp_type","imp_est_type","imp_src_org","imp_src_orgtype","src_URL",
                  "haz_Ab","haz_type","haz_cluster")
 

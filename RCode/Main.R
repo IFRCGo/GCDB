@@ -26,7 +26,7 @@ GetImpacts<-function(){
   impies$haz_Ab[impies$haz_Ab%in%c("CW","HW")]<-"ET"
   impies$haz_Ab[impies$haz_Ab=="LS" & impies$haz_type=="haztypehydromet"]<-"LS-HM"
   impies$haz_Ab[impies$haz_Ab=="LS" & impies$haz_type=="haztypegeohaz"]<-"LS-G"
-  
+  impies$ev_ISO3s<-impies$imp_ISO3s
   return(impies)
 }
 
@@ -56,7 +56,7 @@ MatchImpHaz<-function(impies,haz="EQ"){
 }
 
 saveGCDB<-function(GCDBy){
-  saveRDS(GCDBy,paste0("./CleanedData/GCDB/",GCDBy$info$GCDB_ID))
+  saveRDS(GCDBy,paste0("./CleanedData/GCDB/",GCDBy$info$event_ID))
   return(T)
 }
 
@@ -64,20 +64,20 @@ saveGCDB<-function(GCDBy){
 # this function forms the GCDB objects required
 FormGCDBevents<-function(impies,cores=1){
   # Parallelise it and output the check directly
-  do.call(rbind,mclapply(impies$GCDB_ID, function(id){
+  do.call(rbind,mclapply(impies$event_ID, function(id){
     # Extract geospatial hazard data
     # (can be multiple impacts, multiple hazards, multiple impact types & multiple hazard types)
-    GCDBy<-tryCatch(PairImpHaz(impies=impies[impies$GCDB_ID==id,]),error=function(e) NA)
+    GCDBy<-tryCatch(PairImpHaz(impies=impies[impies$event_ID==id,]),error=function(e) NA)
     # Check to see if all went well, if not, return fail
-    if(class(GCDBy)!="GCDB") return(data.frame(GCDB_ID=id,checker=F))
+    if(class(GCDBy)!="GCDB") return(data.frame(event_ID=id,checker=F))
     # Extract geospatial impact data (e.g. aggregated admin boundaries)
-    GCDBy<-tryCatch(PairImpPoly(GCDBy=GCDBy,impies=impies[impies$GCDB_ID==id,]),error=function(e) NA)
+    GCDBy<-tryCatch(PairImpPoly(GCDBy=GCDBy,impies=impies[impies$event_ID==id,]),error=function(e) NA)
     # All-or-nothing approach: the impact polygon data should not fail!!!
-    if(class(GCDBy)!="GCDB") return(data.frame(GCDB_ID=id,checker=F))
+    if(class(GCDBy)!="GCDB") return(data.frame(event_ID=id,checker=F))
     # Store it out! Bespoke function, returning TRUE if not problems saving out
     checker<-saveGCDB(GCDBy)
     
-    return(data.frame(GCDB_ID=id,checker=checker))
+    return(data.frame(event_ID=id,checker=checker))
   },mc.cores=cores))
 
 }

@@ -23,7 +23,8 @@ ExtractGFDmeta<-function(metaGFD){
   # Now export only the variables we want
   out%>%transmute(GLIDE=glide_index,
                   ev_sdate=ev_sdate,ev_fdate=ev_fdate,
-                  ev_name_en=paste0(dfo_main_cause," in ",cc,", ",AsYear(ev_sdate)))
+                  ev_name=paste0(dfo_main_cause," in ",cc,", ",AsYear(ev_sdate)),
+                  ev_name_lang="lang_eng")
 }
 # Code to extract and absorb GFD event into an ODD object
 # Automatically extract data from GFD database using Google Earth Engine (you will almost certainly need either Python or Java wrapper functions)
@@ -37,7 +38,7 @@ GetGFDautoAPI<-function(bbox,sdate,fdate=NULL,I0=0){ # This should have the same
   # Extract the event names
   metties<-ExtractGFDmeta(metaGFD)
   # Get the continents
-  metties$continent<-sapply(1:nrow(metties),function(i){
+  metties$region<-sapply(1:nrow(metties),function(i){
     isos<-c(str_remove_all(str_split(metties$cc[i],",",simplify = T)," "))
     conties<-sort(unique(convIso3Continent(isos))) #; conties[conties!="Not Classified"]
     if(length(conties[!is.na(conties) & conties!="Not Classified"]>1)) conties<-conties[!is.na(conties) & conties!="Not Classified"]

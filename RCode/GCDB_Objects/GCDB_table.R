@@ -4,27 +4,22 @@ library(methods)
 ############### (Global Crisis Data Bank - Tabular Object) #############
 #######################################################################
 # FIELDS:
-#   - obj_info: GCDB-specific info about version, product info, etc
-#   - impacts: data frame of impacts and relevant information
-# METHODS:
-#   - Not much!
-#######################################################################
-
+# Version info
 add_tabGCDBinfo<-function(){
   list(obj_version="1.0",
        product="Global Crisis Data Bank",
        org="IFRC",
        org_sec="Information Management - Geneva, CH")
 }
- 
+# risk data-related fields
                # Basic event-level information
-col_tabGCDB<-c("GCDB_ID"="character", # GCDB event ID
+col_tabGCDB<-c("event_ID"="character", # GCDB event ID
                "GLIDE"="character", # GLIDE number of impacting-hazard (not necessarily the primary hazard)
-               "ev_name_orig"="character", # Name of the event in original language
-               "ev_name_en"="character", # Name of the event in english
+               "ev_name"="character", # Name of the event in any language
+               "ev_name_lang"="character", # Language that the event name is written in (ISO 639-2 standard code)
                "location"="character", # general description of hazard location
                "ISO3"="character", # ISO3-codes
-               "Continent"="character", # Local-continent
+               "region"="character", # Local-continent/region/multi-country grouping
                "ev_sdate"="character", # Start date of the event or the impacting-hazard
                "ev_fdate"="character", # Finish date of the event or the impacting-hazard
                # Add triggering hazard details
@@ -82,12 +77,12 @@ col_tabGCDB<-c("GCDB_ID"="character", # GCDB event ID
                "haz_spat_resunits"="character", # Spatial resolution units of impact estimate (e.g. ADM level, raster grid)
                "haz_spat_srcorg"="character", # Source organisation from where the spatial object comes from
                "haz_spat_srcurl"="character") # URL of the impact estimate
-
-oblig_tabGCDB<-c("GCDB_ID","imp_sub_ID","ISO3","imp_cats","imp_subcats","imp_units",
+# Required fields
+oblig_tabGCDB<-c("event_ID","imp_sub_ID","ISO3","imp_cats","imp_subcats","imp_units",
                  "imp_type","imp_est_type","imp_src_org","imp_src_orgtype","imp_src_URL",
                  "haz_Ab","haz_type","haz_cluster")
-
-GetGCDB_ID<-function(DF,haz=NULL) {
+# METHODS:
+GetMonty_ID<-function(DF,haz=NULL) {
   # In case a specific hazard is fed in
   if(!is.null(haz)) DF%<>%mutate(haz_Ab=haz)
   # Generate the names from the dataframe
@@ -98,14 +93,14 @@ GetGCDB_ID<-function(DF,haz=NULL) {
   paste0(namerz,"-GCDB_V1")
 }
 
-stripGCDB_ID<-function(ID){
+stripevent_ID<-function(ID){
   apply(str_split(ID,"-",simplify = T)[,1:4],1,paste0,collapse="-")
 }
 
 GetGCDB_impID<-function(impies){
   if(!any(colnames(impies)=="imp_spat_ID")) impies$imp_spat_ID<-NA_character_
   
-  impies$imp_sub_ID<-impies%>%dplyr::select(c(GCDB_ID,imp_src_db,imp_det,imp_type,imp_spat_ID))%>%
+  impies$imp_sub_ID<-impies%>%dplyr::select(c(event_ID,imp_src_db,imp_det,imp_type,imp_spat_ID))%>%
     mutate(imp_src_db=stringr::str_remove(stringi::stri_trans_totitle(imp_src_db),pattern = " "))%>%
     apply(1,function(x) paste0(x,collapse = "-"))
   
@@ -115,7 +110,7 @@ GetGCDB_impID<-function(impies){
 GetGCDB_hazID<-function(impies){
   if(!any(colnames(impies)=="haz_spat_ID")) impies$haz_spat_ID<-NA_character_
   
-  impies$haz_sub_ID<-impies%>%dplyr::select(c(GCDB_ID,haz_src_db,haz_cluster,haz_spec,haz_spat_ID))%>%
+  impies$haz_sub_ID<-impies%>%dplyr::select(c(event_ID,haz_src_db,haz_cluster,haz_spec,haz_spat_ID))%>%
     mutate(haz_src_db=stringr::str_remove(stringi::stri_trans_totitle(haz_src_db),pattern = " "),
            haz_src_db=stringr::str_remove(stringi::stri_trans_totitle(haz_src_db),pattern = " "),
            )%>%

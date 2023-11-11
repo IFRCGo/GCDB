@@ -2,6 +2,10 @@
 # dir<-directory<- "/home/hamishwp/Documents/BEAST/Coding/IFRC/GCDB/"
 # Set the working directory from your environment variables
 # setwd(directory)
+# Which version of the Montandon database are we using?
+Monty_version<-"Montandon V1.00"
+# Which version of the Montandon JSON schema are we using?
+Monty_JSONschema<-"Monty Schema V1.00"
 # Do you want only the reduced packages or all? Choose via packred
 packred<-F
 # Google Earth Engine User Details

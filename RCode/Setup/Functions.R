@@ -862,7 +862,7 @@ ImpactAggADM0<-function(impies, haz="EQ"){
   impies$impact<-sapply(1:nrow(impies),function(i) paste0(impies$imp_subcats[i],"-",impies$imp_type[i]),simplify = T)
   
   ADM@data$N<-sapply(ADM@data$ISO3, function(is){
-    length(unique(impies$GCDB_ID[impies$ISO3==is]))
+    length(unique(impies$event_ID[impies$ISO3==is]))
   },simplify = T)
   
   for(imp in unique(impies$impact)){
