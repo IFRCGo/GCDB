@@ -24,8 +24,6 @@ GetImpacts<-function(){
   # Extras
   impies$Year<-AsYear(impies$ev_sdate)
   impies$haz_Ab[impies$haz_Ab%in%c("CW","HW")]<-"ET"
-  impies$haz_Ab[impies$haz_Ab=="LS" & impies$haz_type=="haztypehydromet"]<-"LS-HM"
-  impies$haz_Ab[impies$haz_Ab=="LS" & impies$haz_type=="haztypegeohaz"]<-"LS-G"
   impies$ev_ISO3s<-impies$imp_ISO3s
   return(impies)
 }

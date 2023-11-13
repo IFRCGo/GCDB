@@ -14,7 +14,7 @@ GLIDEHazards<-function(GLIDE){
 } 
 
 GetGLIDEnum<-function(DF,numonly=T){
-  # Needs to contain the columns: ev_sdate, ISO3 & haz
+  # Needs to contain the columns: ev_sdate, ev_ISO3s & haz
   # Make sure dates are not in character format
   DF$ev_sdate%<>%as.Date()
   # Abbreviated hazard taxonomy
@@ -22,7 +22,7 @@ GetGLIDEnum<-function(DF,numonly=T){
   # Fetch the different GLIDE numbers, individually
   glides<-do.call(rbind,lapply(1:nrow(DF),function(i){
     baseurl<-"https://www.glidenumber.net/glide/jsonglideset.jsp?level1="
-    URL<-paste0(baseurl,DF$ISO3[i],
+    URL<-paste0(baseurl,DF$ev_ISO3s[i],
            "&fromyear=",AsYear(DF$ev_sdate[i]-5),
            "&frommonth=",AsMonth(DF$ev_sdate[i]-5),
            "&fromday=",AsDay(DF$ev_sdate[i]-5),
@@ -37,15 +37,18 @@ GetGLIDEnum<-function(DF,numonly=T){
     tryCatch(as.data.frame(out[[ind]]),error=function(e) glide_skel)
   }))
   # Convert to the proper GLIDE number, including the ISO3 country code
-  glides$number<-apply(glides[,c("geocode","number")],1,function(x) paste0(x,collapse = "-"))
+  glides$ext_IDs<-apply(glides[,c("geocode","number")],1,function(x) paste0(x,collapse = "-"))
   # For those that returned an error...
-  inds<-glides$number=="NA-NA"
+  inds<-glides$ext_IDs=="NA-NA"
   # Replace them with 
-  glides$number[inds]<-DF[inds,]%>%GetMonty_ID()
+  glides$ext_IDs[inds]<-DF[inds,]%>%GetMonty_ID()
   # and let it be known when it is a glide number, too!
-  glides$number[!inds]<-paste0(glides$number[!inds],"-GLIDE")
+  glides$ext_IDs[!inds]<-paste0(glides$ext_IDs[!inds],"-GLIDE")
+  # Let it be known that this is a GLIDE ID number
+  glides$ext_ID_dbs<-"GLIDE"
+  glides$ext_ID_orgs<-"Asian Disaster Reduction Center (ADRC)"
   # If we only care about the GLIDE number
-  if(numonly) return(glides$number)
+  if(numonly) return(glides$ext_IDs)
   
   return(glides)
 }
@@ -123,7 +126,7 @@ GetGLIDEimps<-function(){
                    "GLIDE",
                    "imptypinju",
                    "month",
-                   "ISO3",
+                   "imp_ISO3s",
                    "location",
                    "haz_maxvalue",
                    "time", # Nope!
@@ -138,7 +141,7 @@ GetGLIDEimps<-function(){
   # Set database to be the same as the organisation as we don't know better. Also, housekeeping
   GLIDE$imp_spat_ID<-NA
   # Sort out the ISO3 values to remove the NaNs
-  GLIDE$ISO3[GLIDE$ISO3=="---"]<-NA_character_
+  GLIDE$imp_ISO3s[GLIDE$imp_ISO3s=="---"]<-NA_character_
   # House keeping
   GLIDE$haz_Ab[GLIDE$haz_Ab=="HT"]<-"HW"
   # Make sure the start date is 2 characters
@@ -154,7 +157,7 @@ GetGLIDEimps<-function(){
   # End date of event
   GLIDE$ev_fdate<-GLIDE$imp_fdate<-GLIDE$haz_fdate<-as.character(as.Date(GLIDE$ev_sdate)+GLIDE$duration)
   # Modify the GLIDE number to be what it is known by
-  GLIDE$GLIDE<-sapply(1:nrow(GLIDE),function(i) trimws(paste0(c(GLIDE$haz_Ab[i],GLIDE$GLIDE[i],ifelse(is.na(GLIDE$ISO3[i]),"",GLIDE$ISO3[i])),
+  GLIDE$GLIDE<-sapply(1:nrow(GLIDE),function(i) trimws(paste0(c(GLIDE$haz_Ab[i],GLIDE$GLIDE[i],ifelse(is.na(GLIDE$imp_ISO3s[i]),"",GLIDE$imp_ISO3s[i])),
                                                    collapse = "-"),
                                                    whitespace = "-",
                                                    which = 'right'),simplify = T)
@@ -168,9 +171,9 @@ GetGLIDEimps<-function(){
   # Instead of as a factor
   GLIDE$imp_type%<>%as.character()
   # Get the continent name & add on the impact taxonomy layers
-  GLIDE%<>%mutate(region=convIso3Continent(ISO3),
-                imp_cats="impcatpop",
-                imp_subcats="imptypepopcnt",
+  GLIDE%<>%mutate(region=convIso3Continent(imp_ISO3s),
+                imp_cat="impcatpop",
+                imp_subcat="imptypepopcnt",
                 imp_det="impdetallpeop",
                 imp_units="unitscount",
                 imp_est_type="esttype_prim")

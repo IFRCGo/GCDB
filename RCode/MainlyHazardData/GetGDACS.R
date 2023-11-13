@@ -226,7 +226,7 @@ FilterGDACS<-function(haz=NULL,syear=2016L,fyear=NULL,list_GDACS=NULL,red=F){
                                         ev_name_lang=rep("lang_eng",len),
                                         episodeid=rep(tmp$properties$episodeid,len),
                                         link=rep(tmp$properties$url$details,len),
-                                        ISO3=dfct$ISO3,
+                                        imp_ISO3s=dfct$ISO3,
                                         country=dfct$country,
                                         ev_sdate=rep(as.Date(as.POSIXct(tmp$properties$fromdate),format = "%Y%m%d"),len),
                                         ev_fdate=rep(as.Date(as.POSIXct(tmp$properties$todate),format = "%Y%m%d"),len),
@@ -235,7 +235,9 @@ FilterGDACS<-function(haz=NULL,syear=2016L,fyear=NULL,list_GDACS=NULL,red=F){
                                         txt,
                                         haz_src_db=tmp$properties$source,
                                         haz_src_org=tmp$properties$source,
-                                        GLIDE=rep(tmp$properties$glide,len),
+                                        ext_IDs=rep(tmp$properties$glide,len),
+                                        ext_ID_dbs="GLIDE",
+                                        ext_ID_orgs="Asian Disaster Reduction Center (ADRC)",
                                         geom_type=rep(tmp$geometry$type,len),
                                         cent_lon=rep(tmp$geometry$coordinates[1],len),
                                         cent_lat=rep(tmp$geometry$coordinates[2],len),
@@ -246,7 +248,7 @@ FilterGDACS<-function(haz=NULL,syear=2016L,fyear=NULL,list_GDACS=NULL,red=F){
   
   dfGDACS$alertscore[dfGDACS$alertscore<0]<-0
   
-  if(red) dfGDACS%>%dplyr::select(c(alertscore,hazard_severity,ISO3,sdate,fdate,long,lat))%>%return
+  if(red) dfGDACS%>%dplyr::select(c(alertscore,hazard_severity,imp_ISO3s,sdate,fdate,long,lat))%>%return
   
   dfGDACS$event_ID<-GetMonty_ID(dfGDACS)
   
@@ -268,12 +270,12 @@ convGDACS_GCDB<-function(GDACS){
   GDACS$imp_sdate<-GDACS$imp_unitdate<-GDACS$haz_sdate<-as.character(GDACS$ev_sdate)
   GDACS$imp_fdate<-GDACS$haz_fdate<-GDACS$ev_fdate
   # Add the continent, then remove the unnecesary layers
-  GDACS%<>%mutate(region=convIso3Continent(ISO3))%>%
+  GDACS%<>%mutate(region=convIso3Continent(imp_ISO3s))%>%
     filter(!is.na(region))
   # Add alertscore as the impact value
   GDACS$imp_value<-GDACS$alertscore
-  GDACS$imp_cats<-"impother"
-  GDACS$imp_subcats<-"imptyperisk"
+  GDACS$imp_cat<-"impother"
+  GDACS$imp_subcat<-"imptyperisk"
   GDACS$imp_det<-"impdetalert"
   GDACS$imp_type<-"imptypalert"
   GDACS$imp_units<-"unitsgdacsalert"
@@ -317,7 +319,7 @@ GetGDACSalertscore<-function(dfGDACS=NULL,haz,bbox,sdater,fdater=NULL,isos=NULL)
   dfGDACS%>%filter(sdate>=sdater & fdate<=fdater & 
            long>=bbox[1] & long<=bbox[3] & lat>=bbox[2] & lat<=bbox[4])%>%
     arrange(desc(alertscore))
-  if(!is.null(isos)) dfGDACS%<>%filter(ISO3 %in% isos)
+  if(!is.null(isos)) dfGDACS%<>%filter(imp_ISO3s %in% isos)
   
   dfGDACS%>%arrange(desc(alertscore))%>%pull(alertscore)%>%return
   

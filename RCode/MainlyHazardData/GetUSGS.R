@@ -143,14 +143,14 @@ MatchUSGS<-function(impies,noextract=F){
   # Don't unecessarily spam USGS
   indind<-!impies%>%dplyr::select(event_ID)%>%duplicated & inds
   # Extended boundary boxes of countries
-  bbies<-GenerateExpBBOX(unique(impies$ISO3[indind]),
+  bbies<-GenerateExpBBOX(unique(impies$imp_ISO3s[indind]),
                          expPartin=T,reducer=T,expFact=5)
   # Filter out the countries that don't have boundary boxes
-  impies%<>%filter(ISO3%in%bbies$ISO3CD)
+  impies%<>%filter(imp_ISO3s%in%bbies$ISO3CD)
   # Extract the boundary
   out<-do.call(rbind,lapply(which(indind),function(i) {
     print(impies$event_ID[i])
-    subbb<-bbies%>%filter(ISO3CD==impies$ISO3[i])%>%dplyr::select(-c(ISO3CD,i))
+    subbb<-bbies%>%filter(ISO3CD==impies$imp_ISO3s[i])%>%dplyr::select(-c(ISO3CD,i))
     
     outin<-do.call(rbind,lapply(1:nrow(subbb),function(j){
       # Try to find the event using the USGS search function
@@ -173,10 +173,10 @@ MatchUSGS<-function(impies,noextract=F){
       usinf<-do.call(rbind,lapply(1:length(tmp$features),
                                   function(j) tryCatch(metaUSGS(tmp$features[[j]]),
                                                        error=function(e) USGSskelly)))
-      usinf$ISO3<-impies$ISO3[i]; usinf$i<-i
+      usinf$imp_ISO3s<-impies$imp_ISO3s[i]; usinf$i<-i
       usinf$mnlo<-subbb$mnlo[j]; usinf$mnla<-subbb$mnla[j]; usinf$mxlo<-subbb$mxlo[j]; usinf$mxla<-subbb$mxla[j]
       
-      return(merge(usinf,impies[i,],by="ISO3"))
+      merge(usinf,impies[i,],by="imp_ISO3s")%>%mutate(haz_ISO3s=imp_ISO3s)%>%return()
     }))
     
     if(sum(!is.na(outin$USGSid))>0) print("success")

@@ -129,7 +129,7 @@ Monty$`$defs`$Event_obj<-list(
           openCodelist=FALSE,
           enum=taxies%>%filter(list_name=="lang_ISO639-2_alpha3")%>%pull(name)%>%unique()%>%c()
         ),
-        all_ext_IDs=list(
+        ext_IDs=list(
           title="External IDs",
           description="List of ID codes that are used by external organisations (outside of the Montandon) to uniquely identify the hazard event. For example, GLIDE numbers.",
           type="array",
@@ -144,7 +144,7 @@ Monty$`$defs`$Event_obj<-list(
       description="Event ID information and names of the event in different languages.",
       type="object",
       properties=list(
-        ISO3s=list(
+        ev_ISO3s=list(
           title="Country ISO3 Codes",
           description="List of countries affected, by ISO3 code.",
           type="array",
@@ -166,7 +166,7 @@ Monty$`$defs`$Event_obj<-list(
           uniqueItems=TRUE
         )
       ),
-      required=list("ISO3s")
+      required=list("ev_ISO3s")
     ),
     temporal=list(
       title="Time-Related Data",
@@ -363,21 +363,21 @@ Monty$`$defs`$Impact_obj=list(
       description="Description of the categorisation of the impact estimate with respect to the IFRC Impact Information Profiles (IIPs).",
       type="object",
       properties=list(
-        imp_cats=list(
+        imp_cat=list(
           title="Impact Category",
           description="The most concise categorisation of the impacts, into four categories: population, environmental, infrastructure and economy.",
           type="string",
           codelist="ImpactInformationProfiles.csv",
           openCodelist=FALSE,
-          enum=taxies%>%filter(list_name=="imp_cats")%>%pull(name)%>%unique()%>%c()
+          enum=taxies%>%filter(list_name=="imp_cat")%>%pull(name)%>%unique()%>%c()
         ),
-        imp_subcats=list(
+        imp_subcat=list(
           title="Impact Sub-Category",
           description="The sub-category of impact, which breaks down further from the very condensed four categories into more descriptive sub-categories, but doesn't go all the way into the specific assets or population demographics that could have been impacted by the hazard.",
           type="string",
           codelist="ImpactInformationProfiles.csv",
           openCodelist=FALSE,
-          enum=taxies%>%filter(list_name=="imp_subcats")%>%pull(name)%>%unique()%>%c()
+          enum=taxies%>%filter(list_name=="imp_subcat")%>%pull(name)%>%unique()%>%c()
         ),
         imp_det=list(
           title="Impact Detail",
@@ -671,7 +671,7 @@ Monty$`$defs`$SpatialImpact_obj=list(
       description="Information that is directly related to the spatial data itself, such as the form: raster, point, line or polygon.",
       type="object",
       properties=list(
-        imp_ISOs=list(
+        imp_ISO3s=list(
           title="Country ISO3 Codes",
           description="List of countries affected, by ISO3 code.",
           type="array",
@@ -721,7 +721,7 @@ Monty$`$defs`$SpatialImpact_obj=list(
           pattern="^(ESRI:|EPSG:)[0-9]+$"
         )
       ),
-      required=list("imp_ISOs","imp_spat_scale","imp_spat_type","imp_spat_res","imp_spat_resunits")
+      required=list("imp_ISO3s","imp_spat_scale","imp_spat_type","imp_spat_res","imp_spat_resunits")
     ),
     source=list(
       title="Source Information of Impact Spatial Data",
@@ -812,7 +812,7 @@ Monty$`$defs`$SpatialHazard_obj=list(
       description="Information that is directly related to the spatial data itself, such as the countries associated to the area, or the data form: raster, point, line or polygon.",
       type="object",
       properties=list(
-        haz_ISOs=list(
+        haz_ISO3s=list(
           title="Country ISO3 Codes",
           description="List of countries affected, by ISO3 code.",
           type="array",
@@ -868,7 +868,7 @@ Monty$`$defs`$SpatialHazard_obj=list(
           `$ref`="#/$defs/MeasUnits_obj"
         )
       ),
-      required=list("haz_ISOs","haz_spat_scale","haz_spat_type","haz_spat_fileread","haz_spat_res","haz_spat_resunits")
+      required=list("haz_ISO3s","haz_spat_scale","haz_spat_type","haz_spat_fileread","haz_spat_res","haz_spat_resunits")
     ),
     source=list(
       title="Source Information of Hazard Spatial Data",
@@ -959,9 +959,9 @@ Monty$`$defs`$ExtIDs_obj=list(
   allOf=list("Ext_IDs"),
   type="object",
   properties=list(
-    Ext_ID=list(type="string"),
-    ID_srcdb=list(type="string"),
-    ID_srcorg=list(type="string")
+    ext_ID=list(type="string"),
+    ext_ID_db=list(type="string"),
+    ext_ID_org=list(type="string")
   ),
   minLength=1
 )
@@ -1014,8 +1014,8 @@ Monty_JSONtext<-str_replace_all(str_trim(Monty_JSONtext),
 IIPtext<-taxies%>%filter(list_name=="imp_det")%>%group_by(name)%>%
   reframe(linkie=link_group,
           texter=paste0('{"if":{"properties": {"imp_det": { "const": "',name,
-                        '" }}},"then": {"properties": {"imp_subcats": { "const": "',linkie,
-                        '" },"imp_cats": { "const": "',taxies%>%filter(list_name=="imp_subcats" & name==linkie)%>%pull(link_group),
+                        '" }}},"then": {"properties": {"imp_subcat": { "const": "',linkie,
+                        '" },"imp_cat": { "const": "',taxies%>%filter(list_name=="imp_subcat" & name==linkie)%>%pull(link_group),
                         '" }}}}'))%>%
   pull(texter)%>%paste0(collapse = ",")
 IIPtext<-paste0('"allOf": [',IIPtext,']')
@@ -1039,7 +1039,7 @@ Monty_JSONtext<-str_replace_all(str_trim(Monty_JSONtext),
 ### Constrain the GLIDE numbers ###
 Monty_JSONtext<-str_replace_all(str_trim(Monty_JSONtext),
                                 '\"allOf\":\\[\"Ext_IDs\"\\]', 
-                                '"allOf": [{"if":{"properties": {"ID_srcdb": { "const": "GLIDE" }}},"then": {"properties": {"Ext_ID": { "type": "string", "pattern": "^[A-Z]{2}-\\d{4}-\\d{6}-[A-Z]{3}$", "uniqueItems": true }}}}]')
+                                '"allOf": [{"if":{"properties": {"ext_ID_db": { "const": "GLIDE" }}},"then": {"properties": {"Ext_ID": { "type": "string", "pattern": "^[A-Z]{2}-\\d{4}-\\d{6}-[A-Z]{3}$", "uniqueItems": true }}}}]')
 #@@@@@@@@@@@@@@ UNCONSTRAINED TAXONOMIES @@@@@@@@@@@@@@#
 Monty$`$defs`$Event_obj$properties$principal_hazard<-
   Monty$`$defs`$Event_obj$properties$principal_hazard[2:length(Monty$`$defs`$Event_obj$properties$principal_hazard)]

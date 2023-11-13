@@ -90,8 +90,8 @@ CleanGO_app<-function(appeal){
   
   appeal%<>%GOHazards(); appeal$dtype<-NULL
   
-  appeal$ISO3<-appeal$country$iso3
-  appeal$region<-convIso3Continent(appeal$ISO3)
+  appeal$imp_ISO3s<-appeal$country$iso3
+  appeal$region<-convIso3Continent(appeal$imp_ISO3s)
 
   appeal$country<-appeal$region<-NULL
   
@@ -100,7 +100,7 @@ CleanGO_app<-function(appeal){
   appeal$start_date<-str_split(appeal$start_date,"T",simplify = T)[,1]
   appeal$end_date<-str_split(appeal$end_date,"T",simplify = T)[,1]
   
-  appeal%<>%mutate(ISO3=ISO3,region=region,
+  appeal%<>%mutate(imp_ISO3s=imp_ISO3s,region=region,
                    ev_name=name,location=name,
                    ev_name_lang="lang_eng",
                    imp_sdate=as.character(as.Date(created_at)),imp_fdate=as.character(as.Date(modified_at)),
@@ -156,8 +156,8 @@ CleanGO_field<-function(fieldr){
            fieldr$other_num_affected[i])
   },simplify = T)
   
-  fieldr$ISO3<-sapply(1:length(fieldr$countries), function(i) paste0(fieldr$countries[[i]]$iso3,collapse = ","), simplify = T)
-  fieldr%<>%filter(ISO3!="")
+  fieldr$imp_ISO3s<-sapply(1:length(fieldr$countries), function(i) paste0(fieldr$countries[[i]]$iso3,collapse = ","), simplify = T)
+  fieldr%<>%filter(imp_ISO3s!="")
   fieldr$region<-sapply(1:length(fieldr$countries), function(i) median(convIso3Continent(fieldr$countries[[i]]$iso3)), simplify = T)
   
   fieldr$ev_name<-fieldr$location<-
@@ -167,7 +167,7 @@ CleanGO_field<-function(fieldr){
   
   fieldr$country<-fieldr$region<-NULL
   
-  fieldr%<>%mutate(ISO3=ISO3,region=region,
+  fieldr%<>%mutate(imp_ISO3s=imp_ISO3s,region=region,
                    imp_sdate=as.character(as.Date(created_at)),imp_fdate=as.character(as.Date(updated_at)),
                    ev_sdate=as.character(as.Date(start_date)),ev_fdate=as.character(as.Date(report_date)),
                    imp_unitdate=as.character(as.Date(report_date)),

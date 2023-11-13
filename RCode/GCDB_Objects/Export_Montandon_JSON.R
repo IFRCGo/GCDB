@@ -1,4 +1,12 @@
-ExpMonty<-function(impies,hazzies){
+# Function to convert from a string delimited by 'delim' to a character vector
+ParseMonty<-function(veccie, listy=T, delim=delim){
+  parsy<-unlist(str_split(veccie,delim))
+  stop("Include uniqueness somewhere?")
+  if(listy) return(list(parsy)) else return(parsy)
+}
+
+# Note we don't use dplyr or magrittr here as they are slow AF
+ExpMonty<-function(impies,hazzies,delim=delim){
   # Read in the JSON Schema template
   skelly<-jsonlite::fromJSON("./Taxonomies/Montandon_JSON-Example.json")
   # First, setup the version info
@@ -11,34 +19,42 @@ ExpMonty<-function(impies,hazzies){
   event_Level<-skelly$event_Level; impact_Data<-skelly$impact_Data; hazard_Data<-skelly$hazard_Data
   # Now, for each event in the impies database, generate a JSON file
   for(ev in unique(impies$event_ID))
-    subimp<-impies%>%filter(event_ID==ev)
-    subhaz<-hazzies%>%filter(event_ID==ev)
+    stop("Write code to make sure that no commas or colons are used in any of the strings, to avoid csv parsing")
+    subimp<-impies[event_ID==ev,]
+    subhaz<-hazzies[event_ID==ev,]
     ########################## Event level information #########################
     # IDs & linkages
     event_Level$ID_linkage$event_ID<-ev
-    event_Level$ID_linkage$ev_name<-subimp%>%
-      pull(ev_name)%>%paste0(collapse = ",")
-    event_Level$ID_linkage$ev_name_lang<-subimp%>%
-      pull(ev_name_lang)%>%paste0(collapse = ",")
-    stop("Swap for Ext_IDs")
-    event_Level$ID_linkage$all_ext_IDs<-list(unique(subimp%>%pull(all_ext_IDs),
-                                                      hazimp%>%pull(haz_ext_IDs,linkhaz_ext_IDs)))
+    # If any of the event names are given in english, we use that name, and otherwise default to the first name in the object and it's corresponding language
+    # This is done simply to facilitate our job when validating the JSON object and to maximise the readability for the target audience
+    if(any(subimp$ev_name_lang=="lang_eng")) {
+      event_Level$ID_linkage$ev_name<-paste0(subimp$ev_name[subimp$ev_name_lang=="lang_eng"],collapse = '"," ')
+      event_Level$ID_linkage$ev_name_lang<-"lang_eng"
+    } else {
+      event_Level$ID_linkage$ev_name<-subimp$ev_name[1]
+      event_Level$ID_linkage$ev_name_lang<-subimp$ev_name_lang[1]
+    }
+    stop("Should this really be done here and not beforehand?")
+    event_Level$ID_linkage$ext_IDs<-
+      data.frame(ext_ID=ParseMonty(c(subimp$ext_IDs,hazimp[,c("haz_ext_IDs","linkhaz_ext_IDs")]),listy = F),
+                 ext_ID_db=ParseMonty(c(subimp$ext_ID_dbs,hazimp[,c("haz_ext_IDdbs","linkhaz_ext_IDdbs")]),listy = F),
+                 ext_ID_org=ParseMonty(c(subimp$ext_ID_orgs,hazimp[,c("haz_ext_IDorgs","linkhaz_ext_IDorgs")]),listy = F))%>%
+      distinct()
     # Spatial
-    stop("Create ev_ISO3s & replace ISO3 with imp_ISO3s/haz_ISO3s in impies and hazzies")
-    stop(" separate out the ISO3s from collapsed data.frame format into single entities in list")
-    stop("same for Regions/Continents")
-    stop("for delimiter, use ':' and not ',' for ISO3s and regions")
-    event_Level$spatial$ISO3s<-list(unique(subimp%>%pull(ev_ISO3s,imp_ISO3s),
-                                                  hazimp%>%pull(haz_ISO3s)))
-    event_Level$spatial$gen_location<-paste0(unique(subimp%>%pull(location),
-                                                         hazimp%>%pull(location)),collapse=", ")
-    event_Level$spatial$Regions<-list(unique(subimp%>%pull(Region),
-                                                    hazimp%>%pull(Region)))
+    stop("ev_ISO3s and regions should have been defined a long time beforehand! Don't define it here")
+    event_Level$spatial$ev_ISO3s<-sort(unique(ParseMonty(c(subimp[,c("ev_ISO3s","imp_ISO3s")],
+                                              hazimp$haz_ISO3s))))
+    event_Level$spatial$gen_location<-paste0(unique(subimp$location,
+                                                    hazimp$location),collapse='"," ')
+    event_Level$spatial$regions<-sort(unique(ParseMonty(c(subimp$region,hazimp$region))))
+    stop("This min-max date stuff should absolutely not be done here: prevent inconsistencies between the two databases!")
+    stop("Translate between the time-zones to adjust everything to be the same (UTC 0?)")
     # Temporal
-    event_Level$temporal$ev_sdate<-as.character(min(subimp%>%pull(ev_sdate)%>%as.Date(),
-                                                           subhaz%>%pull(ev_sdate)%>%as.Date()))
-    event_Level$temporal$ev_fdate<-as.character(max(subimp%>%pull(ev_fdate)%>%as.Date(),
-                                                           subhaz%>%pull(ev_fdate)%>%as.Date()))
+    event_Level$temporal<-subimp[j,names(event_Level$temporal)]
+      # as.character(min(subimp%>%pull(ev_sdate)%>%as.Date(),
+      #                                                      subhaz%>%pull(ev_sdate)%>%as.Date()))
+      # as.character(max(subimp%>%pull(ev_fdate)%>%as.Date(),
+      #                                                      subhaz%>%pull(ev_fdate)%>%as.Date()))
     # Principal hazard classification
     stop("does prpl_haz_Ab or the others actually exist in impies? think not")
     stop("modal won't work if there is nothing in prpl_haz_...")
@@ -46,26 +62,34 @@ ExpMonty<-function(impies,hazzies){
     event_Level$principal_hazard$prpl_haz_type<-subimp%>%pull(prpl_haz_type)%>%modal()
     event_Level$principal_hazard$prpl_haz_cluster<-subimp%>%pull(prpl_haz_cluster)%>%modal()
     event_Level$principal_hazard$prpl_haz_spec<-subimp%>%pull(prpl_haz_spec)%>%modal()
-    
     stop("sort out the names used for the imp_sub_ID: remove commas in ISO3s and haz_spec")
     ########################## Impact level information ########################
-    for(im in unique(subimp$imp_sub_ID)){
-      # Separate out each entry
-      subsubimp<-subimp%>%filter(imp_sub_ID==im)
-      # Quick check, just in case
-      if(nrow(subsubimp)!=1) stop("Error in the subsubimp element of the impact data")
-      
+    for(j in 1:nrow(subimp)){
+      # IDs and linkage information
       impact_Data$ID_linkage$event_ID<-ev
-      impact_Data$ID_linkage$imp_sub_ID<-im
+      impact_Data$ID_linkage$imp_sub_ID<-subimp$imp_sub_ID[j]
       stop("Separate out the different haz_sub_IDs from the variable in impies")
-      impact_Data$ID_linkage$haz_sub_ID<-list(subsubimp%>%pull(haz_sub_ID))
-      # Source
-      impact_Data$source$imp_src_db<-subsubimp%>%pull()
-      stop("imp_src_orgatt needs sorting out!")
-      stop("imp_src_lic needs sorting out!")
-      stop("imp_cats and imp_subcats rename to remove the 's' at the end")
+      impact_Data$ID_linkage$haz_sub_ID<-ParseMonty(subimp$haz_sub_ID[j])
+      # Source information of the impact data
+      impact_Data$source<-subimp[j,names(impact_Data$source)]
+      # Impact estimates
+      impact_Data$impact_estimate<-subimp[j,names(impact_Data$impact_estimate)]
+      # Impact categorisation according to taxonomy
+      impact_Data$impact_taxonomy<-subimp[j,names(impact_Data$impact_taxonomy)]
+      # Temporal information
+      stop("Add time zone information on the temporal data?")
+      impact_Data$temporal<-subimp[j,names(impact_Data$temporal)]
+      # Spatial data of the impact estimate
+      stop("For each value in spatial instance, add the colindex and rowindex")
+      stop("Make sure that the ordering of spatial corresponds to that of im")
+      indies<-str_split_1(subimp$imp_spat_ID,delim)
+      for(spsp in indies){
+        impact_Data$spatial[[j]]$ID_linkage<-
+        impact_Data$spatial[[j]]$spatial_info<-
+        impact_Data$spatial[[j]]$source<-
+      }
     }
-    stop("Need to modify the haz_sub_ID variable in the impies database to allow for multiple IDs, dlimited by ':'")
+    stop("Need to modify the haz_sub_ID variable in the impies database to allow for multiple IDs, delimited by ':'")
     ########################## Hazard level information ########################
     for(hz in unique(subhaz$haz_sub_ID)){
       # Separate out each entry

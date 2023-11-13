@@ -194,7 +194,7 @@ CleanEMDAT<-function(EMDAT){
                             End.Day,End.Month,End.Year,
                             Country,Region))
   # Column renaming
-  colnames(EMDAT)[colnames(EMDAT)=="Event.Name"]<-"ev_name"; colnames(EMDAT)[colnames(EMDAT)=="Location"]<-"location"; colnames(EMDAT)[colnames(EMDAT)=="ISO"]<-"ISO3"
+  colnames(EMDAT)[colnames(EMDAT)=="Event.Name"]<-"ev_name"; colnames(EMDAT)[colnames(EMDAT)=="Location"]<-"location"; colnames(EMDAT)[colnames(EMDAT)=="ISO"]<-"imp_ISO3s"
   EMDAT$ev_name_lang<-"lang_eng"
   # Add some of the extra details that are Desinventar-specific
   EMDAT$imp_est_type<-"esttype_prim"
@@ -283,7 +283,7 @@ CleanEMDAT_old<-function(EMDAT){
                             End.Day,End.Month,End.Year,
                             Year,Country,Region))
   # Column renaming
-  colnames(EMDAT)[colnames(EMDAT)=="Event.Name"]<-"ev_name_en"; colnames(EMDAT)[colnames(EMDAT)=="Location"]<-"location"; colnames(EMDAT)[colnames(EMDAT)=="ISO"]<-"ISO3"
+  colnames(EMDAT)[colnames(EMDAT)=="Event.Name"]<-"ev_name_en"; colnames(EMDAT)[colnames(EMDAT)=="Location"]<-"location"; colnames(EMDAT)[colnames(EMDAT)=="ISO"]<-"imp_ISO3s"
   # Add some of the extra details that are Desinventar-specific
   EMDAT$imp_est_type<-"esttype_prim"
   EMDAT$src_URL<-"https://public.emdat.be/"
@@ -308,7 +308,9 @@ CleanEMDAT_old<-function(EMDAT){
   ind<-!is.na(EMDAT$Glide) & nchar(EMDAT$Glide)==11
   EMDAT$Glide[ind]<-paste0(EMDAT$haz_Ab[ind],"-",EMDAT$Glide[ind])
   # Ensure column name aligns with imp_GCDB object
-  colnames(EMDAT)[colnames(EMDAT)=="Glide"]<-"GLIDE"
+  colnames(EMDAT)[colnames(EMDAT)=="Glide"]<-"ext_IDs"
+  EMDAT$ext_ID_dbs<-"GLIDE"
+  EMDAT$ext_ID_orgs<-"Asian Disaster Reduction Center (ADRC)"
   # Generate the GCDB ID
   EMDAT$event_ID<-GetMonty_ID(EMDAT)
   # Melt the columns and apply the impact categorisation

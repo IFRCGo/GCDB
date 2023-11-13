@@ -634,7 +634,7 @@ convIso3Country<-function(iso3){
                            destination = "country.name",warn = F)
 }
 
-convIso3Continent<-function(iso3){
+convIso3Continent<-function(iso3,delim=delim){
   # Access the file that contains all the relevant continent taxonomies
   filer<-"./Taxonomies/IsoContinentRegion.xlsx"
   if(!file.exists(filer)){
@@ -644,7 +644,14 @@ convIso3Continent<-function(iso3){
   # continents<-countrycode::countrycode(sourcevar = iso3,
   #                                      origin = "iso3c",
   #                                      destination = "continent",warn = F)
-  left_join(data.frame(ISO3=iso3),readxl::read_xlsx(filer)%>%transmute(ISO3=`ISO Code`,continent=`UN Region`),by="ISO3")$continent
+  
+  # Check if more than one ISOC code was provided
+  ISO3s<-str_split_1(iso3,delim)
+  # For each ISO3C code, extract the region, remove repeated regions and then collapse it into one single string
+  sapply(1:length(ISO3s),function(i) {
+    left_join(data.frame(ISO3=ISO3s[i]),readxl::read_xlsx(filer)%>%transmute(ISO3=`ISO Code`,continent=`UN Region`),by="ISO3")$continent
+  },simplify=T)%>%unique()%>%sort()%>%paste0(collapse = delim)
+  
 }
 
 convIso3Continent_alt<-function(iso3){
@@ -859,7 +866,7 @@ ImpactAggADM0<-function(impies, haz="EQ"){
   
   impies%<>%filter(!(is.na(imp_det) | is.na(imp_type))) 
   
-  impies$impact<-sapply(1:nrow(impies),function(i) paste0(impies$imp_subcats[i],"-",impies$imp_type[i]),simplify = T)
+  impies$impact<-sapply(1:nrow(impies),function(i) paste0(impies$imp_subcat[i],"-",impies$imp_type[i]),simplify = T)
   
   ADM@data$N<-sapply(ADM@data$ISO3, function(is){
     length(unique(impies$event_ID[impies$ISO3==is]))
@@ -890,7 +897,7 @@ PlotImpAgg<-function(ADM,impact="imptypepopcnt-imptypdeat",loggie=T,bks=NULL,lbs
     # Extract the correct label for the legend
     taxies<-openxlsx::read.xlsx("./ImpactInformationProfiles.xlsx")
     # 
-    labeller<-paste0(taxies%>%filter(list_name=="imp_subcats" &
+    labeller<-paste0(taxies%>%filter(list_name=="imp_subcat" &
                                        name==str_split(impact,"-",simplify = T)[1])%>%
                        pull(label)," ",
                      taxies%>%filter(list_name=="imp_type" &

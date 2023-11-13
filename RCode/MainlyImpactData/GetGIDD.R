@@ -93,8 +93,10 @@ GetGIDD<-function(){
   # Rename the event name
   colnames(GIDD)[colnames(GIDD)=="EventName"]<-"ev_name"
   GIDD$ev_name_lang<-"lang_eng"
+  # Rename ISO3 variable
+  colnames(GIDD)[colnames(GIDD)=="ISO3"]<-imp_ISO3s
   # Add the continent, then remove the unnecesary layers
-  GIDD%<>%mutate(region=convIso3Continent(ISO3))%>%
+  GIDD%<>%mutate(region=convIso3Continent(imp_ISO3s))%>%
     filter(!is.na(region))
   # Generate GCDB event ID
   GIDD$event_ID<-GetMonty_ID(GIDD)

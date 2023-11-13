@@ -14,11 +14,13 @@ add_tabGCDBinfo<-function(){
 # risk data-related fields
                # Basic event-level information
 col_tabGCDB<-c("event_ID"="character", # GCDB event ID
-               "GLIDE"="character", # GLIDE number of impacting-hazard (not necessarily the primary hazard)
+               "ext_IDs"="character", # external ID numbers, such as the GLIDE number of impacting-hazard (note: not necessarily the primary hazard)
+               "ext_ID_dbs"="character", # Source database of the external ID
+               "ext_ID_orgs"="character", # Source organisation of the external ID
                "ev_name"="character", # Name of the event in any language
                "ev_name_lang"="character", # Language that the event name is written in (ISO 639-2 standard code)
                "location"="character", # general description of hazard location
-               "ISO3"="character", # ISO3-codes
+               "ev_ISO3s"="character", # ISO3-codes
                "region"="character", # Local-continent/region/multi-country grouping
                "ev_sdate"="character", # Start date of the event or the impacting-hazard
                "ev_fdate"="character", # Finish date of the event or the impacting-hazard
@@ -29,11 +31,12 @@ col_tabGCDB<-c("event_ID"="character", # GCDB event ID
                "prim_haz_spec"="character", # Primary (triggering) specific hazard 
                
                # Impact information
+               "imp_ISO3s"="character", # country ISO3-C codes for the impact data
                "imp_sub_ID"="character", # ID of each impact element in the overall event
                "imp_sdate"="character", # Start date of the impact estimate (in case it aggregates over a range of dates)
                "imp_fdate"="character", # End date of the impact estimate (in case it aggregates over a range of dates)
-               "imp_cats"="character", # Impact category
-               "imp_subcats"="character", # Impact subcategory
+               "imp_cat"="character", # Impact category
+               "imp_subcat"="character", # Impact subcategory
                "imp_det"="character", # Impact subsubcategory
                "imp_value"="numeric", # Impact quantity
                "imp_type"="character", # Impact units
@@ -44,8 +47,15 @@ col_tabGCDB<-c("event_ID"="character", # GCDB event ID
                "imp_src_org"="character", # Source organisation of impact estimate or the curated estimate
                "imp_src_orgtype"="character", # Source organisation type
                "imp_src_URL"="character", # URL of the impact estimate
+               "imp_src_dbdesc"="character", # General database description
+               "imp_src_orgatt"="character", # Attribution of the data to the source organisation (e.g. host, curator, etc)
+               "imp_src_addinfo"="character", # Additional information about the impact source
+               "imp_src_email"="character", # Email address of the source organisation
+               "imp_src_phone"="character", # Phone number of the source organisation
+               "imp_src_lic"="character", # licenses of the data from the provided organisation
                
                # Hazard information (can change from impact to impact for the same event)
+               "haz_ISO3s"="character", # country ISO3-C codes for the hazard data
                "haz_sub_ID"="character", # ID of each hazard event in the overall event, e.g. aftershocks or flash floods with cyclone
                "haz_sdate"="character", # Start date of the hazard estimate (in case it aggregates over a range of dates)
                "haz_fdate"="character", # End date of the hazard estimate (in case it aggregates over a range of dates)
@@ -62,6 +72,12 @@ col_tabGCDB<-c("event_ID"="character", # GCDB event ID
                "haz_src_org"="character", # Source organisation of impact estimate or the curated estimate
                "haz_src_orgtype"="character", # Source organisation type
                "haz_src_URL"="character", # URL of the impact estimate
+               "haz_ext_IDs"="character", # external IDs related to the hazard data, such as GLIDE numbers
+               "haz_ext_IDdbs"="character", # source database name of the external ID
+               "haz_ext_IDorgs"="character", # source organisation of the external ID
+               "linkhaz_ext_IDs"="character", # external IDs related to the linked hazard data, such as GLIDE numbers
+               "linkhaz_ext_IDdbs"="character", # source database name of the linked external ID
+               "linkhaz_ext_IDorgs"="character", # source organisation of the linked external ID
                
                # Spatial info - impact
                "imp_spat_ID"="character", # ID of the spatial object
@@ -70,15 +86,22 @@ col_tabGCDB<-c("event_ID"="character", # GCDB event ID
                "imp_spat_resunits"="character", # Spatial resolution units of impact estimate (e.g. ADM level, raster grid)
                "imp_spat_srcorg"="character", # organisation of the spatial data
                "imp_spat_srcurl"="character", # URL of the impact estimate
+               "imp_spat_colIDs"="character",
+               "imp_spat_rowIDs"="character",
+               "imp_spat_fileloc"="character",
+               
                # Spatial info - hazard
                "haz_spat_ID"="character", # ID of the spatial object
                "haz_spat_type"="character", # Spatial object type
                "haz_spat_res"="character", # Spatial resolution of impact estimate
                "haz_spat_resunits"="character", # Spatial resolution units of impact estimate (e.g. ADM level, raster grid)
                "haz_spat_srcorg"="character", # Source organisation from where the spatial object comes from
-               "haz_spat_srcurl"="character") # URL of the impact estimate
+               "haz_spat_srcurl"="character", # URL of the impact estimate
+               "haz_spat_colIDs"="character",
+               "haz_spat_rowIDs"="character",
+               "haz_spat_fileloc"="character")
 # Required fields
-oblig_tabGCDB<-c("event_ID","imp_sub_ID","ISO3","imp_cats","imp_subcats","imp_units",
+oblig_tabGCDB<-c("event_ID","imp_sub_ID","ev_ISO3s","imp_cat","imp_subcat","imp_det","imp_units",
                  "imp_type","imp_est_type","imp_src_org","imp_src_orgtype","imp_src_URL",
                  "haz_Ab","haz_type","haz_cluster")
 # METHODS:
@@ -87,7 +110,7 @@ GetMonty_ID<-function(DF,haz=NULL) {
   if(!is.null(haz)) DF%<>%mutate(haz_Ab=haz)
   # Generate the names from the dataframe
   namerz<-DF%>%
-    dplyr::select(haz_Ab,ev_sdate,ISO3)%>%
+    dplyr::select(haz_Ab,ev_sdate,ev_ISO3s)%>%
     apply(1,function(x) paste0(x,collapse = "-"))
   
   paste0(namerz,"-GCDB_V1")

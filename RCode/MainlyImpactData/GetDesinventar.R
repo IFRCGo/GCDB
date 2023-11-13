@@ -492,7 +492,7 @@ DesHazards<-function(Dessie){
 
 # Function to produce the Excel spreadsheet that can be used to translate the hazards
 SpitDesTrans<-function(Dessie){
-  out<-Dessie%>%group_by(ISO3)%>%reframe(event=unique(event))
+  out<-Dessie%>%group_by(ev_ISO3s)%>%reframe(event=unique(event))
   out$event%<>%str_to_lower()
   out%<>%filter(!duplicated(out$event))
   # Try to automatically translate them using DeepL
@@ -501,11 +501,11 @@ SpitDesTrans<-function(Dessie){
   # Translate it!
   colConv<-do.call(rbind,lapply(1:nrow(out),function(i){
     trtr<-tryCatch(deeplr::translate2(out$event[i],auth_key = deepl_token,get_detect = T),error=function(e) NULL)
-    if(is.null(trtr)) return(data.frame(ISO3=out$ISO3[i],event=out$event[i],event_en=NA,src_lang=NA))
+    if(is.null(trtr)) return(data.frame(ev_ISO3s=out$ev_ISO3s[i],event=out$event[i],event_en=NA,src_lang=NA))
     # Output the expected language from DeepL
     src_lang<-deep_langs$name[deep_langs$language==trtr$source_lang]
     # Output it
-    data.frame(ISO3=out$ISO3[i],event=out$event[i],event_en=trtr$translation,src_lang=src_lang)
+    data.frame(ev_ISO3s=out$ev_ISO3s[i],event=out$event[i],event_en=trtr$translation,src_lang=src_lang)
   }))
   # Save it out
   openxlsx::write.xlsx(colConv,"./Taxonomies/MostlyImpactData/Desinventar_HIP.xlsx")
@@ -612,13 +612,13 @@ Des2tabGCDB<-function(Dessie){
   colnames(Dessie)[colnames(Dessie)=="event"]<-"ev_name"
   Dessie$ev_name_lang<-"lang_xxx"
   # Add the continent, then remove the unnecesary layers
-  Dessie%<>%mutate(region=convIso3Continent(ISO3))%>%
+  Dessie%<>%mutate(region=convIso3Continent(imp_ISO3s))%>%
     dplyr::select(-c(date,level0,name0))%>%filter(!is.na(region))
   # Generate GCDB event ID
   Dessie$event_ID<-GetMonty_ID(Dessie)
   # Add some of the extra details that are Desinventar-specific
   Dessie$imp_est_type<-"esttype_prim"
-  Dessie$src_URL<-paste0(desbaseurl,Dessie$ISO3,".zip")
+  Dessie$src_URL<-paste0(desbaseurl,Dessie$imp_ISO3s,".zip")
   Dessie$imp_spat_srcorg<-Dessie$imp_src_org<-"Local Government Estimate"
   Dessie$imp_src_db<-"Desinventar"
   Dessie$imp_src_orgtype<-"orgtypegov"
@@ -660,7 +660,7 @@ GetDesinventar<-function(){
     # Extract impact data
     out<-openxlsx::read.xlsx(paste0("./CleanedData/MostlyImpactData/Desinventar/",filez[i]))
     # Add the country
-    out$ISO3<-stringr::str_to_upper(isos[i])
+    out$imp_ISO3s<-stringr::str_to_upper(isos[i])
     
     return(out)
   }))
@@ -692,12 +692,12 @@ GetDesinventar<-function(){
 
 # chk<-sapply(DesIsos, function(is) WrangleDessie(is),simplify = T)
 # chk<-mclapply(DesIsos, function(is) WrangleDessie(str_to_lower(is)),mc.cores = 10)
-# chk<-unlist(mclapply(unique(na.omit(impies$ISO3)), 
+# chk<-unlist(mclapply(unique(na.omit(impies$imp_ISO3s)), 
 #               function(is) tryCatch(GetDessie(is,forcer=T),
 #                                     error=function(e) F),
 #               mc.cores = 10))
 # 
-# chk<-mclapply(unique(na.omit(impies$ISO3))[chk], 
+# chk<-mclapply(unique(na.omit(impies$imp_ISO3s))[chk], 
 #               function(is) tryCatch(ReadDessie(is,forcer=T),
 #                                     error=function(e) F),
 #               mc.cores = 10)
