@@ -49,7 +49,7 @@ ExpMonty<-function(evvies,impies,hazzies,delim=delim){
                                               hazimp$haz_ISO3s))))
     event_Level$spatial$gen_location<-paste0(unique(subimp$location,
                                                     hazimp$location),collapse='"," ')
-    event_Level$spatial$regions<-sort(unique(ParseMonty(c(subimp$region,hazimp$region))))
+    event_Level$spatial$regions<-sort(unique(ParseMonty(c(subimp$regions,hazimp$regions))))
     stop("This min-max date stuff should absolutely not be done here: prevent inconsistencies between the two databases!")
     stop("Translate between the time-zones to adjust everything to be the same (UTC 0?)")
     # Temporal
@@ -58,12 +58,12 @@ ExpMonty<-function(evvies,impies,hazzies,delim=delim){
       #                                                      subhaz%>%pull(ev_sdate)%>%as.Date()))
       # as.character(max(subimp%>%pull(ev_fdate)%>%as.Date(),
       #                                                      subhaz%>%pull(ev_fdate)%>%as.Date()))
-    # Principal hazard classification
+    # Hazard classifications
     stop("does all_hazs_Ab or the others actually exist in impies? think not")
-    event_Level$principal_hazard$all_hazs_Ab<-subimp$all_hazs_Ab
-    event_Level$principal_hazard$all_hazs_type<-subimp$all_hazs_type
-    event_Level$principal_hazard$all_hazs_cluster<-subimp$all_hazs_cluster
-    event_Level$principal_hazard$all_hazs_spec<-subimp$all_hazs_spec
+    event_Level$allhaz_class$all_hazs_Ab<-subimp$all_hazs_Ab
+    event_Level$allhaz_class$all_hazs_type<-subimp$all_hazs_type
+    event_Level$allhaz_class$all_hazs_cluster<-subimp$all_hazs_cluster
+    event_Level$allhaz_class$all_hazs_spec<-subimp$all_hazs_spec
     stop("sort out the names used for the imp_sub_ID: remove commas in ISO3s and haz_spec")
     ########################## Impact level information ########################
     for(j in 1:nrow(subimp)){

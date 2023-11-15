@@ -1,3 +1,4 @@
+source("./RCode/Setup/GetPackages.R")
 # For any tips on learning JSON Schemas, check this link out:
 # https://json-schema.org/learn/glossary
 
@@ -5,6 +6,9 @@
 RDLS<-jsonlite::fromJSON("https://docs.riskdatalibrary.org/en/0__2__0/rdls_schema.json")
 # Get the taxonomy data
 taxies<-openxlsx::read.xlsx("./ImpactInformationProfiles.xlsx")
+# Country codes and associated regions
+counties<-openxlsx::read.xlsx("./Taxonomies/IsoContinentRegion.xlsx")%>%
+  filter(!is.na(Country))
 # Transfer over to Montandon class schema
 Monty<-RDLS
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
@@ -78,6 +82,377 @@ Monty$properties$hazard_Data<-list(
   items=list(`$ref`="#/$defs/Hazard_obj"),
   uniqueItems=TRUE
 )
+
+
+
+
+
+
+
+
+
+
+
+
+stop("Need to add all of the taxonomy arrays below into the example, making sure they are complete and not just sampled from")
+stop("Sort out, and then take the unique values")
+stop("Then remove all of the extra variables assigned within the main 4 object instances, such as org_type")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ TAXONOMIES @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#
+Monty$properties$taxonomies<-list(
+  title="Montandon Taxonomy Codes",
+  description="The full list of required taxonomy codes necessary to interpret the data",
+  type="object",
+  properties=list(
+    ISO_info=list(
+      title="Country and Region Information",
+      description="Information concerning the country, such as ISO3C code, country name, region, continent, etc.",
+      type="array",
+      items=list(
+        type="object",
+        properties=list(
+          ISO3=list(
+            title="ISO3 Character Code",
+            description="The character-based three letter country code with respect to the alpha-3 ISO 3166-1 standard",
+            type="string",
+            codelist="IsoContinentRegion.csv",
+            openCodelist=FALSE,
+            enum=counties$ISO.Code
+          ),
+          country=list(
+            title="Country Name",
+            description="The country name",
+            type="string",
+            codelist="IsoContinentRegion.csv",
+            openCodelist=FALSE,
+            enum=counties$Country
+          ),
+          region_UN=list(
+            title="UN-Defined Region",
+            description="The region, as defined by the UN",
+            type="string",
+            codelist="IsoContinentRegion.csv",
+            openCodelist=FALSE,
+            enum=counties$UN.Region
+          ),
+          region_WB=list(
+            title="World Bank-Defined Region",
+            description="The region, as defined by the World Bank",
+            type="string",
+            codelist="IsoContinentRegion.csv",
+            openCodelist=FALSE,
+            enum=counties$World.Bank.Regions
+          ),
+          continent=list(
+            title="Continent",
+            description="The continent",
+            type="string",
+            codelist="IsoContinentRegion.csv",
+            openCodelist=FALSE,
+            enum=convIso3Continent_alt(counties$ISO.Code)
+          ),
+          subregion_UN=list(
+            title="UN-Defined Sub-Region",
+            description="The sub-region, as defined by the UN",
+            type="string",
+            codelist="IsoContinentRegion.csv",
+            openCodelist=FALSE,
+            enum=counties$UN.Sub.Region
+          ),
+          income_WB=list(
+            title="Country Income Group",
+            description="The country income group, as defined by the World Bank",
+            type="string",
+            codelist="IsoContinentRegion.csv",
+            openCodelist=FALSE,
+            enum=counties$World.Bank.Income.Groups
+          )
+        )
+      )
+    ),
+    imp_class=list(
+      title="Impact Taxonomy",
+      description="The taxonomy of the different impact categorisations",
+      type="array",
+      items=list(
+        type="object",
+        properties=list(
+          imp_det_code=list(
+            title="Impact Detail Code",
+            description="The code of the impact detail",
+            type="string",
+            codelist="ImpactInformationProfiles.csv",
+            openCodelist=FALSE,
+            enum=taxies%>%filter(list_name=="imp_det")%>%pull(name)
+          ),
+          imp_det_lab=list(
+            title="Impact Detail Label",
+            description="The label or full name of the impact detail",
+            type="string",
+            codelist="ImpactInformationProfiles.csv",
+            openCodelist=FALSE,
+            enum=taxies%>%filter(list_name=="imp_det")%>%pull(label)
+          ),
+          imp_subcat_code=list(
+            title="Impact Sub-Category Code",
+            description="The code for the impact sub-category",
+            type="string",
+            codelist="ImpactInformationProfiles.csv",
+            openCodelist=FALSE,
+            enum=taxies%>%filter(list_name=="imp_det")%>%pull(link_group)
+          ),
+          imp_subcat_lab=list(
+            title="Impact Sub-Category Label",
+            description="The label or full name of the impact sub-category",
+            type="string",
+            codelist="ImpactInformationProfiles.csv",
+            openCodelist=FALSE,
+            enum=left_join(taxies[taxies$list_name=="imp_det",2:4],
+                           taxies[taxies$list_name=="imp_subcats",2:4],
+                           by=c("link_group"="name"))%>%pull(label.y)
+          ),
+          imp_cat_code=list(
+            title="Impact Category Code",
+            description="The code of the impact category",
+            type="string",
+            codelist="ImpactInformationProfiles.csv",
+            openCodelist=FALSE,
+            enum=taxies%>%filter(list_name=="imp_det")%>%pull(link_maingroup)
+          ),
+          imp_cat_lab=list(
+            title="Impact Category Label",
+            description="The label or full name of the impact category",
+            type="string",
+            codelist="ImpactInformationProfiles.csv",
+            openCodelist=FALSE,
+            enum=left_join(left_join(taxies[taxies$list_name=="imp_det",2:4],
+                                     taxies[taxies$list_name=="imp_subcats",2:4],
+                                     by=c("link_group"="name")),
+                           taxies[taxies$list_name=="imp_cats",2:3],
+                           by=c("link_group.y"="name"))%>%pull(label)
+          ),
+        )
+      )
+    ),
+    haz_class=list(
+      title="Hazard Taxonomy",
+      description="The taxonomy of the different hazard categorisations",
+      type="array",
+      items=list(
+        type="object",
+        properties=list(
+          haz_spec_code=list(
+            title="Specific Hazard Code",
+            description="The coded name of the specific hazard",
+            type="string",
+            codelist="ImpactInformationProfiles.csv",
+            openCodelist=FALSE,
+            enum=taxies%>%filter(list_name=="hazardsubsubtypes")%>%pull(name)
+          ),
+          haz_spec_lab=list(
+            title="Specific Hazard Name",
+            description="The name of the specific hazard",
+            type="string",
+            codelist="ImpactInformationProfiles.csv",
+            openCodelist=FALSE,
+            enum=taxies%>%filter(list_name=="hazardsubsubtypes")%>%pull(label)
+          ),
+          haz_cluster_code=list(
+            title="Hazard Cluster Code",
+            description="The coded name of the hazard cluster",
+            type="string",
+            codelist="ImpactInformationProfiles.csv",
+            openCodelist=FALSE,
+            enum=taxies%>%filter(list_name=="hazardsubsubtypes")%>%pull(link_group)
+          ),
+          haz_cluster_lab=list(
+            title="Hazard Cluster Name",
+            description="The name of the hazard cluster",
+            type="string",
+            codelist="ImpactInformationProfiles.csv",
+            openCodelist=FALSE,
+            enum=left_join(taxies[taxies$list_name=="hazardsubsubtypes",2:4],
+                           taxies[taxies$list_name=="hazardsubtypes",2:4],
+                           by=c("link_group"="name"))%>%pull(label.y)
+          ),
+          haz_type_code=list(
+            title="Hazard Type Code",
+            description="The coded name of the hazard type",
+            type="string",
+            codelist="ImpactInformationProfiles.csv",
+            openCodelist=FALSE,
+            enum=taxies%>%filter(list_name=="hazardsubsubtypes")%>%pull(link_maingroup)
+          ),
+          haz_type_lab=list(
+            title="Hazard Type Label",
+            description="The name of the hazard type",
+            type="string",
+            codelist="ImpactInformationProfiles.csv",
+            openCodelist=FALSE,
+            enum=left_join(left_join(taxies[taxies$list_name=="hazardsubsubtypes",2:4],
+                                     taxies[taxies$list_name=="hazardsubtypes",2:4],
+                                     by=c("link_group"="name")),
+                           taxies[taxies$list_name=="hazardtypes",2:3],
+                           by=c("link_group.y"="name"))%>%pull(label)
+          )
+        )
+      )
+    ),
+    src_info=list(
+      title="Source Information",
+      description="The list of all source information relevant to this specific dataset.",
+      type="array",
+      items=list(
+        type="object",
+        properties=list(
+          src_org_code=list(
+            title="Organisation Coded Name",
+            description="The organisation coded name.",
+            type="string"
+          ), 
+          src_org_lab=list(
+            title="Organisation Label Name",
+            description="The organisation name, in the format '<name> (<acronym>)'.",
+            type="string"
+          ), 
+          src_org_typecode=list(
+            title="Organisation Type Code",
+            description="The code name of the organisation type. See the taxonomy for organisation type under 'organtypes'.",
+            `$ref`="#/$defs/SrcOrgType_obj"
+          ),
+          src_org_typelab=list(
+            title="Organisation Type Label",
+            description="The label name of the organisation type. See the taxonomy for organisation type under 'organtypes'.",
+            type="string",
+            codelist="ImpactInformationProfiles.csv",
+            openCodelist=FALSE,
+            enum=taxies%>%filter(list_name=="organtypes")%>%pull(label)
+          ),
+          src_org_email=list(
+            title="Impact Data Source Contact Email",
+            description="Email address of the source organisation that hosts the impact data estimate.",
+            type="string",
+            format="email"
+          ),
+          src_org_phone=list(
+            title="Impact Data Source Contact Phone Number",
+            description="Telephone number of the source organisation that hosts the impact data estimate. Note that this must be provided as a string, not as a numeric or integer.",
+            type="string",
+            pattern="^\\+(?:[0-9]?){6,14}[0-9]$",
+            minLength=6,
+            maxLength=12
+          ),
+          src_db_code=list(
+            title="Database Coded Name",
+            description="The coded name of the database.",
+            type="string"
+          ),
+          src_db_name=list(
+            title="Database Label Name",
+            description="The label name of the database.",
+            type="string"
+          ),
+          src_db_lic=list(
+            title="Database License Information",
+            description="Information concerning the license and proprietary information for the database.",
+            type="string"
+          ),
+          src_db_URL=list(
+            title="Impact Data Source URL",
+            description="The website URL where the impact estimate was published",
+            type="string",
+            format="iri"
+          ),
+          src_addinfo=list(
+            title="Impact Data Source Additional Information",
+            description="Any additional comments or information about the dataset or the source organisation.",
+            type="string"
+          )
+        )
+      )
+    ),
+    units_info=list(
+      allOf=list("unitstax"),
+      title="Units Taxonomy",
+      description="The full list of taxonomies of the units.",
+      type="array",
+      items=list(
+        type="object",
+        properties=list(
+          unit_codes=list(
+            title="Unit Code",
+            description="The coded name of the unit.",
+            `$ref`="#/$defs/MeasUnits_obj"
+          ), 
+          units=list(
+            title="Unit Name",
+            description="The label name of the unit.",
+            type="string",
+            codelist="ImpactInformationProfiles.csv",
+            openCodelist=TRUE,
+            enum=taxies%>%filter(list_name=="measunits")%>%pull(label)
+          ),
+          unit_groups=list(
+            title="Unit Group",
+            description="The hierarchical group that the unit belongs to.",
+            type="string",
+            codelist="ImpactInformationProfiles.csv",
+            openCodelist=TRUE,
+            enum=taxies%>%filter(list_name=="measunitgroups")%>%pull(label)
+          )
+        )
+      )
+    )
+  )
+)
+
+
+
+
+
+
+
+
+# Esttype and other miscellaneous coded-label taxonomies, including gridcov, spatialcoverage, spatfilesoft and lang_ISO639-2_alpha2
+
+# Need to also add the labels and not just codes for each hazard and impact taxonomy class!
+
+# Get rid of all the orgtype stuff, phone number, email address, etc, but make sure to leave the attribution variable in
+
+# Remove constraints and instead apply taxonomies as relational datasets through extra fields, not objects
+
+# Make sure of things like src_org_typelab matching only src_org_typecode, unit_codes, etc
+
+
+# Sources field/object?
+# Thus, need to create variables called ..._dbcode and ..._dbname
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #@@@@@@@@@@@@@@@@@@@@@@ EXPOSURE-LEVEL PROPERTIES @@@@@@@@@@@@@@@@@@@@@@@#
 # Monty$properties$Exposure<-list(
 # title="Exposure Data",
@@ -157,8 +532,8 @@ Monty$`$defs`$Event_obj<-list(
           type="string",
           description="Brief character description of where the event took place, this is unimportant but could be used to check the spatial-information of the data at a later stage"
         ),
-        Regions=list(
-          title="Continents or Regions",
+        regions=list(
+          title="Continents or regions",
           description="List of continents or regions affected",
           type="array",
           items=list(type="string"),
@@ -186,31 +561,34 @@ Monty$`$defs`$Event_obj<-list(
       ),
       required=list("ev_sdate","ev_fdate")
     ),
-    principal_hazard=list(
+    allhaz_class=list(
       allOf=list("all_hazs_spec"),
-      title="Taxonomy of Principal Hazard",
-      description="Classification of the principal hazard associated to the event, with respect to the UNDRR-ISC 2020 Hazard Information Profiles report. Note that we define 'principal' hazard here as not necessarily the first hazard to arrive, but the hazard that the event is most likely to be attributed to. For example, a cyclone event might result in flooding, heatwaves, thunderstorms, etc, but the principal event would remain a cyclone.",
-      type="object",
-      properties=list(
-        all_hazs_Ab=list(
-          title="Abbreviated Hazard ID",
-          description="Two-letter abbreviated ID for the principal hazard. For example, floods would be 'FL' and earthquakes 'EQ'. These abbreviations are pre-determined and standardised, and should be found online.",
-          `$ref`="#/$defs/HazAb_obj"
-        ), 
-        all_hazs_type=list(
-          title="Principal Hazard Type",
-          description="The most concise categorisation of the hazards, into eight categories. Please see the UNDRR-ISC 2020 Hazard Information Profiles report for more information.",
-          `$ref`="#/$defs/HazType_obj"
-        ),
-        all_hazs_cluster=list(
-          title="Principal Hazard Cluster",
-          description="The second layer in the categorisation of the hazards. Please see the UNDRR-ISC 2020 Hazard Information Profiles report for more information.",
-          `$ref`="#/$defs/HazCluster_obj"
-        ),
-        all_hazs_spec=list(
-          title="Principal Specific Hazard",
-          description="The specific hazard is the final layer in the categorisation of the hazards. Please see the UNDRR-ISC 2020 Hazard Information Profiles report for more information.",
-          `$ref`="#/$defs/HazSpec_obj"
+      title="Taxonomy of All Hazards",
+      description="Classification of the hazards associated to the event, with respect to the UNDRR-ISC 2020 Hazard Information Profiles report.",
+      type="array",
+      items=list(
+        type="object",
+        properties=list(
+          all_hazs_Ab=list(
+            title="Abbreviated Hazard ID",
+            description="Two-letter abbreviated ID for the hazards. For example, floods would be 'FL' and earthquakes 'EQ'. These abbreviations are pre-determined and standardised, and should be found online.",
+            `$ref`="#/$defs/HazAb_obj"
+          ), 
+          all_hazs_type=list(
+            title="All Hazard Types",
+            description="The most concise categorisation of the hazards, into eight categories. Please see the UNDRR-ISC 2020 Hazard Information Profiles report for more information.",
+            `$ref`="#/$defs/HazType_obj"
+          ),
+          all_hazs_cluster=list(
+            title="All Hazard Clusters",
+            description="The second layer in the categorisation of the hazards. Please see the UNDRR-ISC 2020 Hazard Information Profiles report for more information.",
+            `$ref`="#/$defs/HazCluster_obj"
+          ),
+          all_hazs_spec=list(
+            title="All Specific Hazards",
+            description="The specific hazards is the final layer in the categorisation of the hazards. Please see the UNDRR-ISC 2020 Hazard Information Profiles report for more information.",
+            `$ref`="#/$defs/HazSpec_obj"
+          )
         )
       )
     )
@@ -968,6 +1346,7 @@ Monty$`$defs`$ExtIDs_obj=list(
 
 #@@@@@@@@@@@@@@@@@@@@@@@ Misc @@@@@@@@@@@@@@@@@@@@@@@@#
 Monty$`$defs`$Date_obj=list(
+  title="Date in UTC+00:00",
   type="string",
   format="date",
   pattern="^[012]{1}\\d{3}-[01]{1}\\d{1}-[0123]{1}\\d{1}$"
@@ -1041,8 +1420,8 @@ Monty_JSONtext<-str_replace_all(str_trim(Monty_JSONtext),
                                 '\"allOf\":\\[\"Ext_IDs\"\\]', 
                                 '"allOf": [{"if":{"properties": {"ext_ID_db": { "const": "GLIDE" }}},"then": {"properties": {"Ext_ID": { "type": "string", "pattern": "^[A-Z]{2}-\\d{4}-\\d{6}-[A-Z]{3}$", "uniqueItems": true }}}}]')
 #@@@@@@@@@@@@@@ UNCONSTRAINED TAXONOMIES @@@@@@@@@@@@@@#
-Monty$`$defs`$Event_obj$properties$principal_hazard<-
-  Monty$`$defs`$Event_obj$properties$principal_hazard[2:length(Monty$`$defs`$Event_obj$properties$principal_hazard)]
+Monty$`$defs`$Event_obj$properties$allhaz_class<-
+  Monty$`$defs`$Event_obj$properties$allhaz_class[2:length(Monty$`$defs`$Event_obj$properties$allhaz_class)]
 Monty$`$defs`$Hazard_obj$properties$hazard_taxonomy<-
   Monty$`$defs`$Hazard_obj$properties$hazard_taxonomy[2:length(Monty$`$defs`$Hazard_obj$properties$hazard_taxonomy)]
 Monty$`$defs`$Impact_obj$properties$impact_taxonomy<-
@@ -1063,15 +1442,12 @@ write(jsonlite::toJSON(Monty,pretty = T,auto_unbox=T),
 #@@@@@@@@@@@@@@@@@@@ READ IN EXAMPLE @@@@@@@@@@@@@@@@@@#
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#
 ex_Monty<-jsonlite::fromJSON("./Taxonomies/Montandon_JSON-Example.json")
-
+stop("Add the full taxonomy arrays")
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 #%%%%%%%%%%%%%%%%%%%%%%%%% VALIDATION ROUTINES %%%%%%%%%%%%%%%%%%%%%%%%%%#
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 # Provided an example of the JSON metadata, we can test to see whether it is valid or not
 # jsonvalidate::json_validator(example, Monty)
-
-
-
 
 
 

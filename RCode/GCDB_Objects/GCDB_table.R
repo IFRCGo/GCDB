@@ -21,7 +21,7 @@ col_tabGCDB<-c("event_ID"="character", # GCDB event ID
                "ev_name_lang"="character", # Language that the event name is written in (ISO 639-2 standard code)
                "location"="character", # general description of hazard location
                "ev_ISO3s"="character", # ISO3-codes
-               "region"="character", # Local-continent/region/multi-country grouping
+               "regions"="character", # Local-continent/region/multi-country grouping
                "ev_sdate"="character", # Start date of the event or the impacting-hazard
                "ev_fdate"="character", # Finish date of the event or the impacting-hazard
                # Add triggering hazard details
