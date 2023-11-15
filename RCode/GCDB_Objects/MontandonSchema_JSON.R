@@ -187,27 +187,27 @@ Monty$`$defs`$Event_obj<-list(
       required=list("ev_sdate","ev_fdate")
     ),
     principal_hazard=list(
-      allOf=list("prpl_haz_spec"),
+      allOf=list("all_hazs_spec"),
       title="Taxonomy of Principal Hazard",
       description="Classification of the principal hazard associated to the event, with respect to the UNDRR-ISC 2020 Hazard Information Profiles report. Note that we define 'principal' hazard here as not necessarily the first hazard to arrive, but the hazard that the event is most likely to be attributed to. For example, a cyclone event might result in flooding, heatwaves, thunderstorms, etc, but the principal event would remain a cyclone.",
       type="object",
       properties=list(
-        prpl_haz_Ab=list(
+        all_hazs_Ab=list(
           title="Abbreviated Hazard ID",
           description="Two-letter abbreviated ID for the principal hazard. For example, floods would be 'FL' and earthquakes 'EQ'. These abbreviations are pre-determined and standardised, and should be found online.",
           `$ref`="#/$defs/HazAb_obj"
         ), 
-        prpl_haz_type=list(
+        all_hazs_type=list(
           title="Principal Hazard Type",
           description="The most concise categorisation of the hazards, into eight categories. Please see the UNDRR-ISC 2020 Hazard Information Profiles report for more information.",
           `$ref`="#/$defs/HazType_obj"
         ),
-        prpl_haz_cluster=list(
+        all_hazs_cluster=list(
           title="Principal Hazard Cluster",
           description="The second layer in the categorisation of the hazards. Please see the UNDRR-ISC 2020 Hazard Information Profiles report for more information.",
           `$ref`="#/$defs/HazCluster_obj"
         ),
-        prpl_haz_spec=list(
+        all_hazs_spec=list(
           title="Principal Specific Hazard",
           description="The specific hazard is the final layer in the categorisation of the hazards. Please see the UNDRR-ISC 2020 Hazard Information Profiles report for more information.",
           `$ref`="#/$defs/HazSpec_obj"
@@ -1026,15 +1026,15 @@ Monty_JSONtext<-str_replace_all(str_trim(Monty_JSONtext),
 ### Principal hazard taxonomy ###
 PHIPtext<-taxies%>%filter(list_name=="hazardsubsubtypes")%>%group_by(name)%>%
   reframe(linkie=link_group,
-          texter=paste0('{"if":{"properties": {"prpl_haz_spec": { "const": "',name,
-                        '" }}},"then": {"properties": {"prpl_haz_cluster": { "const": "',linkie,
-                        '" },"prpl_haz_type": { "const": "',taxies%>%filter(list_name=="hazardsubtypes" & name==linkie)%>%pull(link_group),
+          texter=paste0('{"if":{"properties": {"all_hazs_spec": { "const": "',name,
+                        '" }}},"then": {"properties": {"all_hazs_cluster": { "const": "',linkie,
+                        '" },"all_hazs_type": { "const": "',taxies%>%filter(list_name=="hazardsubtypes" & name==linkie)%>%pull(link_group),
                         '" }}}}'))%>%
   pull(texter)%>%paste0(collapse = ",")
 PHIPtext<-paste0('"allOf": [',PHIPtext,']')
 # Replace this text in JSON
 Monty_JSONtext<-str_replace_all(str_trim(Monty_JSONtext),
-                '\"allOf\":\\[\"prpl_haz_spec\"\\]', 
+                '\"allOf\":\\[\"all_hazs_spec\"\\]', 
                 PHIPtext)
 ### Constrain the GLIDE numbers ###
 Monty_JSONtext<-str_replace_all(str_trim(Monty_JSONtext),

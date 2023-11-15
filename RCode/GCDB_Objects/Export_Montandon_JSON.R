@@ -6,7 +6,7 @@ ParseMonty<-function(veccie, listy=T, delim=delim){
 }
 
 # Note we don't use dplyr or magrittr here as they are slow AF
-ExpMonty<-function(impies,hazzies,delim=delim){
+ExpMonty<-function(evvies,impies,hazzies,delim=delim){
   # Read in the JSON Schema template
   skelly<-jsonlite::fromJSON("./Taxonomies/Montandon_JSON-Example.json")
   # First, setup the version info
@@ -18,7 +18,7 @@ ExpMonty<-function(impies,hazzies,delim=delim){
   # Temporary objects for each round
   event_Level<-skelly$event_Level; impact_Data<-skelly$impact_Data; hazard_Data<-skelly$hazard_Data
   # Now, for each event in the impies database, generate a JSON file
-  for(ev in unique(impies$event_ID))
+  for(ev in unique(evvies$event_ID))
     stop("Write code to make sure that no commas or colons are used in any of the strings, to avoid csv parsing")
     subimp<-impies[event_ID==ev,]
     subhaz<-hazzies[event_ID==ev,]
@@ -27,14 +27,17 @@ ExpMonty<-function(impies,hazzies,delim=delim){
     event_Level$ID_linkage$event_ID<-ev
     # If any of the event names are given in english, we use that name, and otherwise default to the first name in the object and it's corresponding language
     # This is done simply to facilitate our job when validating the JSON object and to maximise the readability for the target audience
-    if(any(subimp$ev_name_lang=="lang_eng")) {
-      event_Level$ID_linkage$ev_name<-paste0(subimp$ev_name[subimp$ev_name_lang=="lang_eng"],collapse = '"," ')
-      event_Level$ID_linkage$ev_name_lang<-"lang_eng"
-    } else {
-      event_Level$ID_linkage$ev_name<-subimp$ev_name[1]
-      event_Level$ID_linkage$ev_name_lang<-subimp$ev_name_lang[1]
-    }
+    stop("This should be done before, defining evvies object")
+    event_Level$ID_linkage<-evvies[,c("ev_name","ev_name_lang")]
+    # if(any(subimp$ev_name_lang=="lang_eng")) {
+    #   event_Level$ID_linkage$ev_name<-paste0(subimp$ev_name[subimp$ev_name_lang=="lang_eng"],collapse = '"," ')
+    #   event_Level$ID_linkage$ev_name_lang<-"lang_eng"
+    # } else {
+    #   event_Level$ID_linkage$ev_name<-subimp$ev_name[1]
+    #   event_Level$ID_linkage$ev_name_lang<-subimp$ev_name_lang[1]
+    # }
     stop("Should this really be done here and not beforehand?")
+    event_Level$ID_linkage$ext_IDs<-evvies$ext_IDs
     event_Level$ID_linkage$ext_IDs<-
       data.frame(ext_ID=ParseMonty(c(subimp$ext_IDs,hazimp[,c("haz_ext_IDs","linkhaz_ext_IDs")]),listy = F),
                  ext_ID_db=ParseMonty(c(subimp$ext_ID_dbs,hazimp[,c("haz_ext_IDdbs","linkhaz_ext_IDdbs")]),listy = F),
@@ -56,12 +59,11 @@ ExpMonty<-function(impies,hazzies,delim=delim){
       # as.character(max(subimp%>%pull(ev_fdate)%>%as.Date(),
       #                                                      subhaz%>%pull(ev_fdate)%>%as.Date()))
     # Principal hazard classification
-    stop("does prpl_haz_Ab or the others actually exist in impies? think not")
-    stop("modal won't work if there is nothing in prpl_haz_...")
-    event_Level$principal_hazard$prpl_haz_Ab<-subimp%>%pull(prpl_haz_Ab)%>%modal()
-    event_Level$principal_hazard$prpl_haz_type<-subimp%>%pull(prpl_haz_type)%>%modal()
-    event_Level$principal_hazard$prpl_haz_cluster<-subimp%>%pull(prpl_haz_cluster)%>%modal()
-    event_Level$principal_hazard$prpl_haz_spec<-subimp%>%pull(prpl_haz_spec)%>%modal()
+    stop("does all_hazs_Ab or the others actually exist in impies? think not")
+    event_Level$principal_hazard$all_hazs_Ab<-subimp$all_hazs_Ab
+    event_Level$principal_hazard$all_hazs_type<-subimp$all_hazs_type
+    event_Level$principal_hazard$all_hazs_cluster<-subimp$all_hazs_cluster
+    event_Level$principal_hazard$all_hazs_spec<-subimp$all_hazs_spec
     stop("sort out the names used for the imp_sub_ID: remove commas in ISO3s and haz_spec")
     ########################## Impact level information ########################
     for(j in 1:nrow(subimp)){
