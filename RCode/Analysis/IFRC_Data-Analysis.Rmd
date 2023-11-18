@@ -1,0 +1,179 @@
+---
+title: "DREF & EA Analysis"
+author: "Hamish Patten and Justin Ginnetti"
+date: "`r Sys.Date()`"
+output:
+  prettydoc::html_pretty:
+    theme: HPSTR
+    highlight: github
+    css: styles.css
+    toc: true
+---
+
+<style type="text/css">
+h1.title {
+  font-size: 50px;
+  color: White;
+  text-align: center;
+}
+h3.subtitle {
+  font-size: 30px;
+  color: Grey;
+  text-align: center;
+}
+.table-hover > tbody > tr:hover { 
+  background-color: #f7f7e6;
+}
+.main-container {
+  width: 80%;
+    max-width: unset;
+  }
+</style>
+
+
+<div style= "float:left; position:relative; top:-100px;margin-bottom:-100px;margin-left:-10px;">
+
+
+```{r setup, include=FALSE, echo=F, warning=F}
+knitr::opts_chunk$set(echo = TRUE)
+# Change the working directory
+knitr::opts_knit$set(root.dir = '/home/hamishwp/Documents/Coding/IFRC/GCDB', 
+                     base.dir = '/home/hamishwp/Documents/Coding/IFRC/GCDB')
+# knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
+setwd('/home/hamishwp/Documents/Coding/IFRC/GCDB')
+# Turn off the messgaes and don't show any code, ever
+knitr::opts_chunk$set(message=F, echo=F)
+# Load the necessary scripts and packages
+source("./RCode/Setup/GetPackages.R")
+library(kableExtra)
+
+cleanGO_dref_excel<-function(dref){
+  # Firstly, drop all irrelevant columns
+  dref%<>%dplyr::select("Appeal.ID","Appeal.Type","Country","Disaster.Definition",
+                        "Disaster.Name","Total.Approved.(CHF)","Date.of.Disaster/Trigger.Date",
+                        "Date.of.Appeal.request.from.NS","Date.of.Appeal.request.from.Regions",
+                        "Date.of.Approval.in.HQ.(start.date)","End.Date.of.Operation",
+                        "Affected.People", "Targeted.People", "Average.cost.per.person", 
+                        "Beneficiaries.Asssisted","Female.Assisted","Male.Asissted")  
+  # Sort all date information:
+  dref%<>%mutate_at(c("Date.of.Disaster/Trigger.Date","Date.of.Appeal.request.from.NS",
+                      "Date.of.Appeal.request.from.Regions",
+                      "Date.of.Approval.in.HQ.(start.date)","End.Date.of.Operation"),
+                    ConvDateExcel)
+  
+  colnames(dref)
+  
+  dref$ISO3<-convCountryIso3(dref$Country)
+  dref$continent<-convIso3Continent_alt(dref$ISO3)
+  
+  dref%<>%rename()
+  
+  return(dref)
+}
+
+CleanGO_app<-function(appeal){
+  # Make sure the disaster classification data is present
+  appeal$dtype<-appeal$dtype$name
+  # ISO3C code & Continent
+  appeal$ISO3<-appeal$country$iso3
+  appeal$continent<-convIso3Continent_alt(appeal$ISO3)
+
+  appeal%<>%dplyr::select(c("dtype","atype_display","code","num_beneficiaries",
+                            "amount_requested","amount_funded","start_date",
+                            "end_date","region","ISO3"))
+  
+  appeal%<>%mutate_at(c("start_date","end_date"),as.Date)
+  appeal$Appeal.Type<-"EA"
+  
+  appeal%<>%rename(Appeal.ID=code,Disaster.Definition=dtype, 
+                   Beneficiaries.Assisted=num_beneficiaries,
+                   `Total.Approved.(CHF)`=amount_funded)
+  
+  return(appeal)
+    
+}
+
+
+# Extract the appeal data
+appeal<-ExtractGOdata(db = "GO-App", token = token)%>%CleanGO_app()
+# Extract the matched DREF, i-DREF and EA data
+dref<-openxlsx::read.xlsx("./RawData/MostlyImpactData/IFRC/DREF_MasterDataset_v1.1 2.xlsx","ALL_DATA")%>%
+  cleanGO_dref_excel()
+# Combined data
+allData<-rbind(appeal%>%dplyr::select(c("start_date","end_date","Disaster.Definition","Appeal.ID","Total.Approved.(CHF)","ISO3","Appeal.Type")),
+               dref%>%mutate(start_date=`Date.of.Disaster/Trigger.Date`,
+                             end_date=`End.Date.of.Operation`)%>%
+                 dplyr::select(c("start_date","end_date","Disaster.Definition","Appeal.ID","Total.Approved.(CHF)","ISO3","Appeal.Type")))
+
+# Need to combine it all
+
+```
+
+\
+\
+\
+
+# Introduction
+By extracting data on DREF, i-DREF and EA records, we can analyse the trends in the data. Such analysis can involve differences between countries in terms of number of events where funding was requested, differences in time, differences in the number of reportings between hazards, and so on. Note that our DREF database only covers between 2008 to late 2023. However, the Emergency Appeals database includes every event as far back as the early 20th century. We hope you enjoy this little analysis!
+
+This analysis will require several steps. First, we will analyse the data completeness, showing how many missing values are present in each variable (such as the assisted male or female population). This is important to see whether anything is particularly missing, to allow us to consider dropping certain variables from our analysis. 
+
+# Data Completeness
+The
+```{r cars}
+dataComplete<-data.frame(Variable=colnames(dref),
+           Percentage_Complete=100-apply(dref,2,function(x) round(100*sum(is.na(x))/length(x),2)))%>%
+  arrange(desc(Percentage_Complete))
+row.names(dataComplete)<-NULL
+kable(dataComplete, escape = F,booktabs = T, digits=3,col.names=c("Column Name","Completeness (%)"),caption = 'Table of the completeness of each column.')
+```
+
+How about elements that are in both the DREF and EA data?
+
+```{r}
+
+```
+
+
+# Spatial & Country Trends
+
+## Events Reported
+
+## Targetted People 
+
+## Approved Funding
+
+## Disaster Types
+
+## Return Periods
+
+### Comparison to other databases (Normalised)
+
+# Temporal Trends
+
+## Annual
+
+## Seasonal
+
+## El-nino & La Nina
+
+## Time-to-End (End.Date.of.Operation)
+
+# EA - DREF Comparison
+
+# Hazard Trends
+
+# Allocation Trends
+
+## Favourite Hazards (req vs alloc per hazard)
+
+
+
+
+
+
+
+
+
+
+

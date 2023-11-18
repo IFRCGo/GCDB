@@ -1,7 +1,7 @@
 
 token <- paste("Token", go_token)
 
-getGOurl<-function(db="GO-App",token=NULL){
+getGOurl<-function(db="GO-App",token=NULL, results=T){
   
   if(db=="GO-App") {db_code<-"appeal"
   } else if(db=="GO-FR") {db_code<-"field_report"
@@ -17,13 +17,15 @@ getGOurl<-function(db="GO-App",token=NULL){
     # Extract the content
     json <- httr::content(req, as = "text", encoding = "UTF-8")
     # Convert from JSON to R list or tibble output
-    return(jsonlite::fromJSON(json)$results)
-  } else return(jsonlite::fromJSON(url)$results)
+    json%<>%jsonlite::fromJSON()
+  } else json<-jsonlite::fromJSON(url)
+  
+  if(results) return(json$results) else return(json)
 }
 
-ExtractGOdata<-function(db="GO-App", token = NULL){
+ExtractGOdata<-function(db="GO-App", token = NULL, results=T){
   options(timeout = max(10000, getOption("timeout")))
-  getGOurl(db=db,token)
+  getGOurl(db=db,token,results)
 }
 
 PostModGO<-function(colConv){
@@ -91,25 +93,25 @@ CleanGO_app<-function(appeal){
   appeal%<>%GOHazards(); appeal$dtype<-NULL
   
   appeal$imp_ISO3s<-appeal$country$iso3
-  appeal$region<-convIso3Continent(appeal$imp_ISO3s)
+  appeal$region<-convIso3Continent_alt(appeal$imp_ISO3s)
 
-  appeal$country<-appeal$region<-NULL
+  appeal$country<-NULL
   
   appeal$created_at<-str_split(appeal$created_at," ",simplify = T)[,1]
   appeal$modified_at<-str_split(appeal$modified_at," ",simplify = T)[,1]
   appeal$start_date<-str_split(appeal$start_date,"T",simplify = T)[,1]
   appeal$end_date<-str_split(appeal$end_date,"T",simplify = T)[,1]
   
-  appeal%<>%mutate(imp_ISO3s=imp_ISO3s,region=region,
+  appeal%<>%mutate(imp_ISO3s=imp_ISO3s,ev_ISO3s=imp_ISO3s,region=region,
                    ev_name=name,location=name,
                    ev_name_lang="lang_eng",
                    imp_sdate=as.character(as.Date(created_at)),imp_fdate=as.character(as.Date(modified_at)),
                    ev_sdate=as.character(as.Date(start_date)),ev_fdate=as.character(as.Date(end_date)),
                    # ev_sdate=as.character(as.Date(created_at)),ev_fdate=as.character(as.Date(created_at)),
                    imp_unitdate=as.character(as.Date(modified_at)),
-                   imp_est_type="esttype_prim",
                    src_URL="https://goadmin.ifrc.org/api/v2/appeal",
-                   imp_src_org="International Federation of Red Cross and Red Crescent Societies (IFRC)",
+                   imp_src_orglab="International Federation of Red Cross and Red Crescent Societies (IFRC)",
+                   imp_src_orgcode="IFRC",
                    imp_src_db="GO-App",
                    imp_src_orgtype="orgtypengo",
                    imp_spat_type="Polygon",
@@ -124,7 +126,7 @@ CleanGO_app<-function(appeal){
   # Create an impact-specific ID
   appeal%<>%GetGCDB_impID()
   # Add missing columns & reorder the dataframe to fit imp_GCDB object
-  appeal%<>%AddEmptyColImp()
+  # appeal%<>%AddEmptyColImp()
   
   # appeal$GLIDE<-GetGLIDEnum(appeal)
   
@@ -171,9 +173,9 @@ CleanGO_field<-function(fieldr){
                    imp_sdate=as.character(as.Date(created_at)),imp_fdate=as.character(as.Date(updated_at)),
                    ev_sdate=as.character(as.Date(start_date)),ev_fdate=as.character(as.Date(report_date)),
                    imp_unitdate=as.character(as.Date(report_date)),
-                   imp_est_type="Primary",
                    src_URL="https://goadmin.ifrc.org/api/v2/field_reports",
-                   imp_src_org="International Federation of Red Cross and Red Crescent Societies (IFRC)",
+                   imp_src_orglab="International Federation of Red Cross and Red Crescent Societies (IFRC)",
+                   imp_src_orgcode="IFRC",
                    imp_src_db="GO-FR",
                    imp_src_orgtype="orgtypengo",
                    imp_spat_type="Polygon",
@@ -212,7 +214,37 @@ CleanGO_field<-function(fieldr){
   
 }
 
+cleanGO_dref_excel<-function(dref){
+  # Firstly, drop all irrelevant columns
+  dref%<>%dplyr::select("Appeal.ID","Appeal.Type","Country","Disaster.Definition",
+                        "Disaster.Name","Total.Approved.(CHF)","Date.of.Disaster/Trigger.Date",
+                        "Date.of.Appeal.request.from.NS","Date.of.Appeal.request.from.Regions",
+                        "Date.of.Approval.in.HQ.(start.date)","End.Date.of.Operation",
+                        "Affected.People", "Targeted.People", "Average.cost.per.person", 
+                        "Beneficiaries.Asssisted","Female.Assisted","Male.Asissted")  
+  # Sort all date information:
+  dref%<>%mutate_at(c("Date.of.Disaster/Trigger.Date","Date.of.Appeal.request.from.NS",
+                      "Date.of.Appeal.request.from.Regions","Review.start.date",
+                      "Date.of.Approval.in.HQ.(start.date)","End.Date.of.Operation"),
+                    ConvDateExcel)
+  
+  return(dref)
+}
+
 CleanGO_dref<-function(dref){
+  # # Firstly, drop all irrelevant columns
+  # dref%<>%dplyr::select("Appeal.ID","Appeal.Type","Country","Disaster.Definition",
+  #                "Disaster.Name","Total.Approved.(CHF)","Date.of.Disaster/Trigger.Date",
+  #                "Date.of.Appeal.request.from.NS","Date.of.Appeal.request.from.Regions",
+  #                "Date.of.Approval.in.HQ.(start.date)","End.Date.of.Operation",
+  #                "Affected.People", "Targeted.People", "Average.cost.per.person", 
+  #                "Beneficiaries.Asssisted","Female.Assisted","Male.Asissted")  
+  # # Sort all date information:
+  # dref%<>%mutate_at(c("Date.of.Disaster/Trigger.Date","Date.of.Appeal.request.from.NS",
+  #                     "Date.of.Appeal.request.from.Regions","Review.start.date",
+  #                     "Date.of.Approval.in.HQ.(start.date)","End.Date.of.Operation"),
+  #                   ConvDateExcel)
+  
   dref$dtype<-dref$disaster_type_details$id
   dref$dtype_disp<-dref$disaster_type_details$name
   dref$disaster_type_details<-NULL
@@ -228,6 +260,99 @@ CleanGO_dref<-function(dref){
   colnames(tmp)
 }
 
+convGOApp_Monty<-function(appeal){
+  # Clean using the old GCDB structure
+  appeal%<>%CleanGO_app()
+  # Load the Monty JSON template
+  appMonty<-jsonlite::fromJSON("./Taxonomies/Montandon_JSON-Example.json")
+  #@@@@@ Impact-level data @@@@@#
+  ID_linkage<-Add_ImIDlink_Monty(
+    appeal%>%dplyr::select(event_ID,imp_sub_ID,haz_sub_ID)
+  )
+  
+  source<-data.frame(imp_src_db="GO-App",
+                     imp_src_URL="https://goadmin.ifrc.org/api/v2/appeal",
+                     imp_src_org="IFRC")
+  
+  impact_estimate<-appeal%>%
+    dplyr::select(imp_value,imp_type,imp_units,imp_est_type,imp_unitdate)
+  
+  impact_taxonomy<-appeal%>%
+    dplyr::select(imp_det,imp_cat,imp_subcat)
+  
+  temporal<-appeal%>%dplyr::select(imp_sdate,imp_fdate)
+  
+  spatial<-list(
+    ID_linkage=Add_ImSpatID_Monty(data.frame(
+      imp_spat_ID="GO-ADM0-World-shp",
+      imp_spat_fileloc="https://go-user-library.ifrc.org/maps",
+      imp_spat_colname="iso3",
+      imp_spat_rowname=appeal$imp_ISO3s
+    )),
+    spatial_info=data.frame(
+      
+    ),
+    source=data.frame()
+  )
+    
+  "https://ifrcorg.sharepoint.com/sites/IFRCSharing/Shared%20Documents/Forms/AllItems.aspx?ga=1&id=%2Fsites%2FIFRCSharing%2FShared%20Documents%2FInformation%20Management%20Team%2FGIS%2FGO%20Geospatial%20Layers%20sharing%2FGO%2Dcountry%2Dshp%2Fworld%2Fworld&viewid=a0df7b8d%2Dd671%2D4c77%2Da464%2D720655a5403e"
+  "https://go-user-library.ifrc.org/maps"
+  
+  # Gather it all and store it in the template!
+  appMonty$impact_Data<-data.frame(
+    ID_linkage=ID_linkage,
+    source=source,
+    impact_estimate=impact_estimate,
+    impact_taxonomy=impact_taxonomy,
+    temporal=temporal,
+    spatial=spatial
+  )
+  
+  
+  #@@@@@ Event-level data @@@@@#
+  # IDs
+  ID_linkage<-Add_EvIDlink_Monty(
+    appeal%>%dplyr::select(event_ID, ev_name, ev_name_lang, code, imp_src_db, imp_src_org)%>%
+      rename(ext_ID=code,ext_ID_db=imp_src_db,ext_ID_org=imp_src_org)
+  )
+  # Spatial
+  Spatial
+  
+  
+  
+  
+  # Gather it all and store it in the template!
+  appMonty$event_Level<-data.frame(
+    ID_linkage=ID_linkage,
+    temporal=temporal,
+    spatial=spatial,
+    allhaz_class=allhaz_class
+  )
+  
+  
+  #@@@@@ Hazard-level data @@@@@#
+  # Nothing to put here as we haven't linked any hazard data yet
+  appMonty$hazard_Data<-list()
+  
+  
+  #@@@@@ Source Data In Taxonomy Field @@@@@#
+  appMonty$taxonomies$src_info<-data.frame(
+    src_org_code="IFRC",
+    src_org_lab="International Federation of Red Cross and Red Crescent Societies (IFRC)",
+    src_org_typecode="orgtypengo",
+    src_org_typelab="Non Governmental Organisation",
+    src_org_email="im@ifrc.org",
+    src_db_code="GO-App",
+    src_db_lab="IFRC Emergency Appeals Database",
+    src_db_attr="custodian",
+    src_db_lic="Creative Commons Attribution 3.0 International License",
+    src_db_URL="https://goadmin.ifrc.org/api/v2/appeal",
+    src_addinfo=""
+  )
+  
+  return(appMonty)
+}
+
 GetGO<-function(token=NULL){
   # Get the Emergency Appeal data from GO
   appeal<-ExtractGOdata(db = "GO-App", token = token)
@@ -239,6 +364,7 @@ GetGO<-function(token=NULL){
   fieldr%<>%CleanGO_field()
   # Get the DREF data from GO
   # dref<-ExtractGOdata(db="GO-DREF", token = token)
+  # dref<-openxlsx::read.xlsx("./RawData/MostlyImpactData/IFRC/DREF_MasterDataset_v1.1 2.xlsx","ALL_DATA")
   # Clean it up!
   # dref%<>%CleanGO_dref()
   # Combine both datasets and output

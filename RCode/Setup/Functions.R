@@ -23,6 +23,10 @@ AsDay<-function(date){
   # return(as.numeric(format(as.Date(date),"%d")))
 }
 
+ConvDateExcel<-function(dater){
+  as.Date(dater, origin = "1899-12-30")
+}
+
 # Used to save output files by date and time for model validation comparison in time
 DateTimeString<-function(){
   return(gsub(gsub(Sys.time(),pattern = " ", replacement = "_"),pattern = ":",replacement = ""))
@@ -646,7 +650,7 @@ convIso3Continent<-function(iso3,delim=delim){
   #                                      destination = "continent",warn = F)
   
   # Check if more than one ISOC code was provided
-  ISO3s<-str_split_1(iso3,delim)
+  ISO3s<-unlist(str_split(iso3,delim))
   # For each ISO3C code, extract the region, remove repeated regions and then collapse it into one single string
   sapply(1:length(ISO3s),function(i) {
     left_join(data.frame(ISO3=ISO3s[i]),readxl::read_xlsx(filer)%>%transmute(ISO3=`ISO Code`,continent=`UN Region`),by="ISO3")$continent
