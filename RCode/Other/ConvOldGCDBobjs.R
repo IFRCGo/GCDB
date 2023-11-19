@@ -19,7 +19,7 @@ ConvertOldGCDBobjs<-function(impies){
                              "haz_link",
                              "haz_potlink",
                              "imp_spat_ID",
-                             "imp_spat_type",
+                             "imp_spat_covcode",
                              "imp_spat_res",
                              "imp_spat_srcorg")
   colnames(impies)[4]<-"hazsub_ID"

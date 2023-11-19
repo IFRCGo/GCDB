@@ -81,7 +81,7 @@ col_tabGCDB<-c("event_ID"="character", # GCDB event ID
                
                # Spatial info - impact
                "imp_spat_ID"="character", # ID of the spatial object
-               "imp_spat_type"="character", # Spatial object type
+               "imp_spat_covcode"="character", # Spatial object type
                "imp_spat_res"="character", # Spatial resolution of impact estimate
                "imp_spat_resunits"="character", # Spatial resolution units of impact estimate (e.g. ADM level, raster grid)
                "imp_spat_srcorg"="character", # organisation of the spatial data
@@ -92,7 +92,7 @@ col_tabGCDB<-c("event_ID"="character", # GCDB event ID
                
                # Spatial info - hazard
                "haz_spat_ID"="character", # ID of the spatial object
-               "haz_spat_type"="character", # Spatial object type
+               "haz_spat_covcode"="character", # Spatial object type
                "haz_spat_res"="character", # Spatial resolution of impact estimate
                "haz_spat_resunits"="character", # Spatial resolution units of impact estimate (e.g. ADM level, raster grid)
                "haz_spat_srcorg"="character", # Source organisation from where the spatial object comes from
@@ -140,6 +140,11 @@ GetGCDB_hazID<-function(impies){
     apply(1,function(x) paste0(x,collapse = "-"))
   
   return(impies)
+}
+
+GetGCDB_spatID<-function(impies){
+  impies%>%dplyr::select(imp_spat_srcorg,imp_spat_srcdb,imp_spat_covcode,imp_spat_res,imp_spat_resunits)%>%
+    apply(1,function(x) paste0(x,collapse = "-"))
 }
 
 AddEmptyColImp<-function(DF){

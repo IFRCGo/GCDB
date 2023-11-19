@@ -912,7 +912,7 @@ ExtractTC<-function(url){
   polydata<-data.frame()
   for (i in 1:length(tmp$features)){
     
-    if(!(tmp$features[[i]]$geometry$type%in%c("Polygon") & tmp$features[[i]]$properties$Class%in%c("Poly_Green","Poly_Orange","Poly_Red"))) next
+    if(!(tmp$features[[i]]$geometry$type%in%c("spat_polygon") & tmp$features[[i]]$properties$Class%in%c("Poly_Green","Poly_Orange","Poly_Red"))) next
     
     lennie<-length(tmp$features[[i]]$geometry$coordinates[,2])
     

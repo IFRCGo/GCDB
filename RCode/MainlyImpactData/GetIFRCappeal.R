@@ -109,15 +109,20 @@ CleanGO_app<-function(appeal){
                    ev_sdate=as.character(as.Date(start_date)),ev_fdate=as.character(as.Date(end_date)),
                    # ev_sdate=as.character(as.Date(created_at)),ev_fdate=as.character(as.Date(created_at)),
                    imp_unitdate=as.character(as.Date(modified_at)),
-                   src_URL="https://goadmin.ifrc.org/api/v2/appeal",
+                   imp_src_URL="https://goadmin.ifrc.org/api/v2/appeal",
                    imp_src_orglab="International Federation of Red Cross and Red Crescent Societies (IFRC)",
-                   imp_src_orgcode="IFRC",
+                   imp_src_org="IFRC",
                    imp_src_db="GO-App",
                    imp_src_orgtype="orgtypengo",
-                   imp_spat_type="Polygon",
+                   imp_spat_covcode="spat_polygon",
+                   imp_spat_res=0,
+                   imp_spat_resunits="adminlevel",
+                   imp_spat_fileread="spatfstanshp",
+                   imp_spat_crs="EPSG:4326",
                    imp_spat_srcorg="IFRC",
-                   imp_spat_ID=NA_character_,
-                   spat_res="ADM-0")
+                   imp_spat_srcdb="GO-Maps",
+                   imp_spat_URL="https://go-user-library.ifrc.org/maps",
+                   imp_spat_ID=NA_character_)
   
   appeal$event_ID<-GetMonty_ID(appeal,haz=appeal$haz_Ab)
   
@@ -125,10 +130,15 @@ CleanGO_app<-function(appeal){
   
   # Create an impact-specific ID
   appeal%<>%GetGCDB_impID()
+  appeal$imp_spat_ID<-GetGCDB_spatID(appeal)
   # Add missing columns & reorder the dataframe to fit imp_GCDB object
   # appeal%<>%AddEmptyColImp()
   
   # appeal$GLIDE<-GetGLIDEnum(appeal)
+  
+  # Make sure to remove repeated entries for when they update them
+  appeal%<>%mutate(aid=as.integer(aid))%>%arrange(desc(aid))%>%
+    filter(!duplicated(imp_sub_ID))%>%arrange(aid)
   
   return(appeal)
   
@@ -173,15 +183,20 @@ CleanGO_field<-function(fieldr){
                    imp_sdate=as.character(as.Date(created_at)),imp_fdate=as.character(as.Date(updated_at)),
                    ev_sdate=as.character(as.Date(start_date)),ev_fdate=as.character(as.Date(report_date)),
                    imp_unitdate=as.character(as.Date(report_date)),
-                   src_URL="https://goadmin.ifrc.org/api/v2/field_reports",
+                   imp_src_URL="https://goadmin.ifrc.org/api/v2/field_reports",
                    imp_src_orglab="International Federation of Red Cross and Red Crescent Societies (IFRC)",
-                   imp_src_orgcode="IFRC",
+                   imp_src_org="IFRC",
                    imp_src_db="GO-FR",
                    imp_src_orgtype="orgtypengo",
-                   imp_spat_type="Polygon",
+                   imp_spat_covcode="spat_polygon",
+                   imp_spat_res=0,
+                   imp_spat_resunits="adminlevel",
+                   imp_spat_fileread="spatfstanshp",
+                   imp_spat_crs="EPSG:4326",
                    imp_spat_srcorg="IFRC",
-                   imp_spat_ID=NA_character_,
-                   spat_res="ADM-0")
+                   imp_spat_srcdb="GO-Maps",
+                   imp_spat_URL="https://go-user-library.ifrc.org/maps",
+                   imp_spat_ID=NA_character_)
   
   districts<-do.call(rbind,lapply(fieldr$districts,function(x) paste0(x,collapse = ",")))
   fieldr$imp_spat_ID[districts!=""]<-districts[districts!=""]
@@ -194,6 +209,7 @@ CleanGO_field<-function(fieldr){
   fieldr%<>%ImpLabs(nomDB = "GO-FR", dropName = F)
   # Correct for some entries being government or 'other' estimates
   # Make sure that government estimates are saved separately
+  stop("What's all this crap?")
   inds<-grepl(fieldr$VarName,pattern = "gov_num")
   fieldr$imp_src_orgtype[inds]<-"orgtypegov"
   fieldr$imp_src_org[inds]<-"IFRC-Curated Government"
@@ -204,6 +220,7 @@ CleanGO_field<-function(fieldr){
   
   # Create an impact-specific ID
   fieldr%<>%GetGCDB_impID()
+  fieldr$imp_spat_ID<-GetGCDB_spatID(fieldr)
   # Add missing columns & reorder the dataframe to fit imp_GCDB object
   fieldr%<>%AddEmptyColImp()
   
@@ -266,74 +283,84 @@ convGOApp_Monty<-function(appeal){
   # Load the Monty JSON template
   appMonty<-jsonlite::fromJSON("./Taxonomies/Montandon_JSON-Example.json")
   #@@@@@ Impact-level data @@@@@#
+  # IDs
   ID_linkage<-Add_ImIDlink_Monty(
-    appeal%>%dplyr::select(event_ID,imp_sub_ID,haz_sub_ID)
+    appeal%>%mutate(haz_sub_ID=NA_character_)%>%
+      dplyr::select(event_ID,imp_sub_ID,haz_sub_ID)
   )
-  
-  source<-data.frame(imp_src_db="GO-App",
-                     imp_src_URL="https://goadmin.ifrc.org/api/v2/appeal",
-                     imp_src_org="IFRC")
-  
+  # Sources for impact data
+  source<-data.frame(imp_src_db=rep("GO-App",nrow(ID_linkage)),
+                     imp_src_URL=rep("https://goadmin.ifrc.org/api/v2/appeal",nrow(ID_linkage)),
+                     imp_src_org=rep("IFRC",nrow(ID_linkage)))
+  # impact estimates
   impact_estimate<-appeal%>%
-    dplyr::select(imp_value,imp_type,imp_units,imp_est_type,imp_unitdate)
-  
-  impact_taxonomy<-appeal%>%
-    dplyr::select(imp_det,imp_cat,imp_subcat)
-  
+    dplyr::select(imp_det,imp_value,imp_type,imp_units,imp_est_type,imp_unitdate)
+  # Add temporal information
   temporal<-appeal%>%dplyr::select(imp_sdate,imp_fdate)
-  
-  spatial<-list(
-    ID_linkage=Add_ImSpatID_Monty(data.frame(
+  # Spatial data relevant to the impact estimates
+  # multiple-entry rows: imp_spat_rowname,imp_spat_colname,imp_ISO3s,imp_spat_res,imp_spat_fileread
+  spatial<-Add_ImSpatAll_Monty(
+    ID_linkage=data.frame(
+      imp_sub_ID=appeal$imp_sub_ID,
       imp_spat_ID="GO-ADM0-World-shp",
       imp_spat_fileloc="https://go-user-library.ifrc.org/maps",
       imp_spat_colname="iso3",
       imp_spat_rowname=appeal$imp_ISO3s
-    )),
-    spatial_info=data.frame(
-      
     ),
-    source=data.frame()
+    spatial_info=appeal%>%dplyr::select(
+      imp_ISO3s,
+      imp_spat_covcode,
+      imp_spat_res,
+      imp_spat_resunits,
+      imp_spat_fileread,
+      imp_spat_crs
+    ),
+    source=appeal%>%dplyr::select(
+      imp_spat_srcdb,
+      imp_spat_URL,
+      imp_spat_srcorg
+    )
   )
-    
-  "https://ifrcorg.sharepoint.com/sites/IFRCSharing/Shared%20Documents/Forms/AllItems.aspx?ga=1&id=%2Fsites%2FIFRCSharing%2FShared%20Documents%2FInformation%20Management%20Team%2FGIS%2FGO%20Geospatial%20Layers%20sharing%2FGO%2Dcountry%2Dshp%2Fworld%2Fworld&viewid=a0df7b8d%2Dd671%2D4c77%2Da464%2D720655a5403e"
-  "https://go-user-library.ifrc.org/maps"
   
   # Gather it all and store it in the template!
-  appMonty$impact_Data<-data.frame(
-    ID_linkage=ID_linkage,
-    source=source,
-    impact_estimate=impact_estimate,
-    impact_taxonomy=impact_taxonomy,
-    temporal=temporal,
-    spatial=spatial
-  )
-  
+  # (I know this is hideous, but I don't understand how JSON files can have lists that are also S3 data.frames)
+  appMonty$impact_Data<-data.frame(imp_sub_ID=appeal$imp_sub_ID)
+  appMonty$impact_Data$ID_linkage=ID_linkage
+  appMonty$impact_Data$source=source
+  appMonty$impact_Data$impact_estimate=impact_estimate
+  appMonty$impact_Data$temporal=temporal
+  appMonty$impact_Data$spatial=spatial
+  appMonty$impact_Data$imp_sub_ID<-NULL
   
   #@@@@@ Event-level data @@@@@#
   # IDs
   ID_linkage<-Add_EvIDlink_Monty(
-    appeal%>%dplyr::select(event_ID, ev_name, ev_name_lang, code, imp_src_db, imp_src_org)%>%
+    appeal%>%dplyr::select(event_ID, ev_name, code, imp_src_db, imp_src_org)%>%
       rename(ext_ID=code,ext_ID_db=imp_src_db,ext_ID_org=imp_src_org)
   )
   # Spatial
-  Spatial
-  
-  
-  
-  
-  # Gather it all and store it in the template!
-  appMonty$event_Level<-data.frame(
-    ID_linkage=ID_linkage,
-    temporal=temporal,
-    spatial=spatial,
-    allhaz_class=allhaz_class
+  spatial<-Add_EvSpat_Monty(
+    appeal%>%dplyr::select(event_ID,imp_ISO3s,location)%>%
+    rename(ev_ISO3s=imp_ISO3s,gen_location=location)
   )
-  
-  
+  # temporal
+  temporal<-Add_EvTemp_Monty(
+    appeal%>%dplyr::select(event_ID,imp_sdate,imp_fdate,ev_sdate,ev_fdate)
+  )
+  # Hazards
+  allhaz_class<-Add_HazTax_Monty(
+    appeal%>%dplyr::select(event_ID, haz_Ab, haz_spec)
+  )
+  # Gather it all and store it in the template!
+  appMonty$event_Level<-data.frame(ev=ID_linkage$event_ID)
+  appMonty$event_Level$ID_linkage<-ID_linkage
+  appMonty$event_Level$temporal<-temporal
+  appMonty$event_Level$spatial<-spatial
+  appMonty$event_Level$allhaz_class<-allhaz_class
+  appMonty$event_Level$ev<-NULL
   #@@@@@ Hazard-level data @@@@@#
   # Nothing to put here as we haven't linked any hazard data yet
   appMonty$hazard_Data<-list()
-  
   
   #@@@@@ Source Data In Taxonomy Field @@@@@#
   appMonty$taxonomies$src_info<-data.frame(
@@ -349,7 +376,16 @@ convGOApp_Monty<-function(appeal){
     src_db_URL="https://goadmin.ifrc.org/api/v2/appeal",
     src_addinfo=""
   )
+  # Add the source info for the spatial data too!
+  appMonty$taxonomies$src_info%<>%rbind(appMonty$taxonomies$src_info%>%
+    mutate(src_db_code="GO-Maps",
+           src_db_lab="IFRC-GO ADM-0 Maps",
+           src_db_URL="https://go-user-library.ifrc.org/maps"))
   
+  # Write it out just for keep-sake
+  write(jsonlite::toJSON(appMonty,pretty = T,auto_unbox=T),
+        "./CleanedData/MostlyImpactData/IFRC/Appeal_20231119.json")
+    
   return(appMonty)
 }
 

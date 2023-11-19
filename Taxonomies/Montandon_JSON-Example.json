@@ -1,7 +1,7 @@
 {
   "monty_Info": {
     "class_version": "Monty Schema V1.00",
-    "db_pubdate": "2023-11-18",
+    "db_pubdate": "2023-11-19",
     "helpful_resources": [
       {
         "title": "Global Crisis Data Bank - Concept Note",
@@ -18,68 +18,61 @@
   "event_Level": [
     {
       "ID_linkage": {
-        "event_ID": "ABCDEF",
-        "ev_name": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
-        "ev_name_lang": "lang_oci",
+        "event_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
+        "ev_name": "ABCDEFGHIJKLMN",
         "ext_IDs": [
           {
-            "ext_ID": "ABCDEFGHIJKLMNOPQRSTUV",
-            "ext_ID_db": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
-            "ext_ID_org": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC"
+            "ext_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+            "ext_ID_db": "ABCDEFGHIJKLMNOPQRSTUVWXY",
+            "ext_ID_org": "ABCDEFGHIJKLMNOPQRSTUVW"
           }
         ]
       },
       "spatial": {
-        "ev_ISO3s": "WUV",
-        "gen_location": "ABCDEFGHIJKLMNOP",
-        "regions": "ABCDEFGHIJKLMNOPQRSTU"
+        "ev_ISO3s": "IEU",
+        "gen_location": "ABCD"
       },
       "temporal": {
-        "ev_sdate": "1844-16-13",
-        "ev_fdate": "0377-12-24"
+        "ev_sdate": "2963-03-23",
+        "ev_fdate": "1886-14-20"
       },
-      "allhaz_class": [
-        {
-          "all_hazs_Ab": "TK",
-          "all_hazs_type": "haztypeextraterr",
-          "all_hazs_cluster": "hazhmmarine",
-          "all_hazs_spec": "CHO012"
-        },
-        {
-          "all_hazs_Ab": "IP",
-          "all_hazs_type": "haztypehydromet",
-          "all_hazs_cluster": "haztechindfail",
-          "all_hazs_spec": "CHO012"
-        }
-      ]
+      "allhaz_class": []
     },
     {
       "ID_linkage": {
-        "event_ID": "ABCDEFGHIJKLMNOPQRS",
-        "ev_name": "ABCDEFGHIJKLMNOPQRSTUV",
-        "ev_name_lang": "lang_sio",
+        "event_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "ev_name": "ABCDEFGHIJKLM",
         "ext_IDs": [
           {
-            "ext_ID": "ABCDEFGHIJKLMNO",
-            "ext_ID_db": "ABCDEFGHIJKLMNOPQR",
-            "ext_ID_org": "ABCDEF"
+            "ext_ID": "ABCDE",
+            "ext_ID_db": "ABCDEF",
+            "ext_ID_org": "ABCDEFGHIJKLMNOPQR"
           }
         ]
       },
       "spatial": {
-        "ev_ISO3s": "LBT",
-        "gen_location": "ABCDEF",
-        "regions": "ABCDEFGHIJKLMNOPQRSTUVWX"
+        "ev_ISO3s": "UUZ",
+        "gen_location": "ABCDEFGHIJKLMNOP"
       },
       "temporal": {
-        "ev_sdate": "2798-04-28",
-        "ev_fdate": "2383-15-25"
+        "ev_sdate": "2400-05-32",
+        "ev_fdate": "0641-02-25"
       },
       "allhaz_class": [
         {
-          "all_hazs_Ab": "AN",
-          "all_hazs_type": "haztypegeohaz",
-          "all_hazs_cluster": "hazgeoother",
+          "all_hazs_Ab": "LW",
+          "all_hazs_spec": "CHO012"
+        },
+        {
+          "all_hazs_Ab": "JT",
+          "all_hazs_spec": "CHO012"
+        },
+        {
+          "all_hazs_Ab": "XI",
+          "all_hazs_spec": "CHO012"
+        },
+        {
+          "all_hazs_Ab": "YJ",
           "all_hazs_spec": "CHO012"
         }
       ]
@@ -87,468 +80,284 @@
     {
       "ID_linkage": {
         "event_ID": "ABCDE",
-        "ev_name": "ABCDEFGHIJKLMNOPQRS",
-        "ev_name_lang": "lang_fao",
+        "ev_name": "ABCDEFGHIJKL",
         "ext_IDs": [
           {
-            "ext_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
-            "ext_ID_db": "ABCDEFGHIJKLMNOPQRS",
-            "ext_ID_org": "ABCD"
+            "ext_ID": "ABCDEFGHIJKLMNOPQRST",
+            "ext_ID_db": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+            "ext_ID_org": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC"
           }
         ]
       },
       "spatial": {
-        "ev_ISO3s": "VSR",
-        "gen_location": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-        "regions": "ABCDEFGHIJKLMNOP"
+        "ev_ISO3s": "ZZK",
+        "gen_location": "ABCDEFGHIJKLMN"
       },
       "temporal": {
-        "ev_sdate": "1472-06-08",
-        "ev_fdate": "2347-07-06"
+        "ev_sdate": "1906-10-05",
+        "ev_fdate": "0406-08-05"
       },
-      "allhaz_class": []
-    }
-  ],
-  "impact_Data": [
-    {
-      "ID_linkage": {
-        "event_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
-        "imp_sub_ID": "ABCDEFGHIJKLMNOPQ",
-        "haz_sub_ID": ["ABCDEFGHIJKLMNOPQRSTUVWXYZA", "ABCDEFGHIJKLMNOPQ", "ABCDEFGHIJKLMNOPQRSTUVWXY", "ABCDEFGHIJKLMNOPQRSTUVWXYZA", "ABCDEFGHIJKLMNOPQ"]
-      },
-      "source": {
-        "imp_src_db": "ABCDEFGHIJKL",
-        "imp_src_URL": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
-        "imp_src_org": "ABCDEFGHIJKLMNOPQRSTUVWX"
-      },
-      "impact_estimate": {
-        "imp_value": 0,
-        "imp_type": "imptypextdisp",
-        "imp_units": "unitISO4217C-BEF",
-        "imp_est_type": "esttype_second",
-        "imp_unitdate": "0719-01-17"
-      },
-      "impact_taxonomy": {
-        "imp_det": "impdeteduc",
-        "imp_cat": "ABCDEFGH",
-        "imp_subcat": "ABCDE"
-      },
-      "temporal": {
-        "imp_sdate": "0503-06-19",
-        "imp_fdate": "2420-02-08"
-      },
-      "spatial": [
+      "allhaz_class": [
         {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCDE",
-            "imp_spat_fileloc": "ABCDEFGHIJKLMN",
-            "imp_spat_colname": ["ABCDEFGHIJKL", "ABCDEFGHIJKLMNOPQRSTUVWX"],
-            "imp_spat_rowname": ["ABCD", "ABCDEFGHIJKLMNOPQRSTUVWXYZAB"]
-          },
-          "spatial_info": {
-            "imp_ISO3s": "DED",
-            "imp_spat_scale": "sub-national",
-            "imp_spat_type": "points",
-            "imp_spat_res": 0,
-            "imp_spat_resunits": "spatresother",
-            "imp_spat_fileread": "spatfstangeot",
-            "imp_spat_crs": "ESRI:1"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCDEFGHIJKLMNOPQRSTUVWXY",
-            "imp_spat_URL": "ABCDEFGHIJKL",
-            "imp_spat_srcorg": "ABCDEFGHIJKLMNOPQR"
-          }
+          "all_hazs_Ab": "PP",
+          "all_hazs_spec": "CHO012"
         },
         {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCDEFGHI",
-            "imp_spat_fileloc": "ABCDEFGHIJKLMNOPQRSTUVW",
-            "imp_spat_colname": ["ABCDE", "ABCDEFGHIJKLMNOPQ", "ABCD"],
-            "imp_spat_rowname": "ABCDEFGHIJKLMNOPQR"
-          },
-          "spatial_info": {
-            "imp_ISO3s": "NNS",
-            "imp_spat_scale": "multi-national",
-            "imp_spat_type": "raster",
-            "imp_spat_res": 0,
-            "imp_spat_resunits": "arcmins",
-            "imp_spat_fileread": "spatfstangeot",
-            "imp_spat_crs": "ESRI:48"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCDEFGHIJKLMNOPQR",
-            "imp_spat_URL": "ABCDEFGHIJKLMNOPQRSTUVWX",
-            "imp_spat_srcorg": "ABCDEFGHIJKLMNOPQRS"
-          }
+          "all_hazs_Ab": "CD",
+          "all_hazs_spec": "CHO012"
+        },
+        {
+          "all_hazs_Ab": "CL",
+          "all_hazs_spec": "CHO012"
+        },
+        {
+          "all_hazs_Ab": "BZ",
+          "all_hazs_spec": "CHO012"
+        },
+        {
+          "all_hazs_Ab": "RL",
+          "all_hazs_spec": "CHO012"
+        },
+        {
+          "all_hazs_Ab": "DT",
+          "all_hazs_spec": "CHO012"
         }
       ]
     },
     {
       "ID_linkage": {
-        "event_ID": "ABCDEFGHIJKLMNOPQRSTUVWXY",
-        "imp_sub_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
-        "haz_sub_ID": "ABCDEFGHIJKLMNOPQRST"
+        "event_ID": "ABCDEFG",
+        "ev_name": "ABCDEFGHIJKLMN",
+        "ext_IDs": []
       },
-      "source": {
-        "imp_src_db": "ABCDEFGHIJKLMNOPQRSTUVWXY",
-        "imp_src_URL": "ABCDEFGHIJKLMNOPQ",
-        "imp_src_org": "ABCDEFGHI"
-      },
-      "impact_estimate": {
-        "imp_value": 0,
-        "imp_type": "imptyphomles",
-        "imp_units": "unitISO4217C-DOP",
-        "imp_est_type": "esttype_model",
-        "imp_unitdate": "0073-09-10"
-      },
-      "impact_taxonomy": {
-        "imp_det": "impdetelder",
-        "imp_cat": "ABCDEFGHIJKLMNOPQRST",
-        "imp_subcat": "ABCDEFGHIJKLMNO"
+      "spatial": {
+        "ev_ISO3s": "KXV",
+        "gen_location": "ABCDEFG"
       },
       "temporal": {
-        "imp_sdate": "2936-08-26",
-        "imp_fdate": "2156-04-11"
+        "ev_sdate": "1088-01-04",
+        "ev_fdate": "0154-04-34"
       },
-      "spatial": []
-    },
-    {
-      "ID_linkage": {
-        "event_ID": "ABCDEFGHIJKLMNOPQRSTUVW",
-        "imp_sub_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
-        "haz_sub_ID": ["ABCDEFGHIJKLMNOPQRSTUVWXY", "ABCDEFGHIJKLMNOPQRSTUVWX", "ABCDEFGHIJKLMNOP"]
-      },
-      "source": {
-        "imp_src_db": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
-        "imp_src_URL": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-        "imp_src_org": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC"
-      },
-      "impact_estimate": {
-        "imp_value": 0,
-        "imp_type": "imptypcost",
-        "imp_units": "unitsPg",
-        "imp_est_type": "esttype_model",
-        "imp_unitdate": "0462-19-30"
-      },
-      "impact_taxonomy": {
-        "imp_det": "impdetinfloccur",
-        "imp_cat": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
-        "imp_subcat": "ABCD"
-      },
-      "temporal": {
-        "imp_sdate": "0361-17-38",
-        "imp_fdate": "2133-01-35"
-      },
-      "spatial": [
+      "allhaz_class": [
         {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCDEFGHIJKLM",
-            "imp_spat_fileloc": "ABCDEFGHIJKLMN",
-            "imp_spat_colname": "ABCDEFGHIJKLMNOPQRSTUVWX",
-            "imp_spat_rowname": "ABCDEFGH"
-          },
-          "spatial_info": {
-            "imp_ISO3s": "PXI",
-            "imp_spat_scale": "sub-national",
-            "imp_spat_type": "points",
-            "imp_spat_res": 0,
-            "imp_spat_resunits": "spatresunknown",
-            "imp_spat_fileread": "spatfstangeot",
-            "imp_spat_crs": "EPSG:885177"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCD",
-            "imp_spat_URL": "ABCDEFGHIJKLMNOPQRS",
-            "imp_spat_srcorg": "ABCDEFGHIJKLMNOPQRSTU"
-          }
-        }
-      ]
-    },
-    {
-      "ID_linkage": {
-        "event_ID": "ABCDEFGHIJKLMNOPQRSTUVW",
-        "imp_sub_ID": "ABCDEFGHIJKLMN",
-        "haz_sub_ID": []
-      },
-      "source": {
-        "imp_src_db": "ABCDEFGHIJKLMNOPQR",
-        "imp_src_URL": "ABCDEFGHIJKLMNO",
-        "imp_src_org": "ABCDE"
-      },
-      "impact_estimate": {
-        "imp_value": 0,
-        "imp_type": "imptypdeat",
-        "imp_units": "unitISO4217C-XPD",
-        "imp_est_type": "esttype_prim",
-        "imp_unitdate": "0360-03-01"
-      },
-      "impact_taxonomy": {
-        "imp_det": "impdetloccur",
-        "imp_cat": "ABCDEFGHIJKLMNOPQRSTUVWX",
-        "imp_subcat": "ABCDEFGHIJKLMNOPQRSTUVWXY"
-      },
-      "temporal": {
-        "imp_sdate": "1606-18-28",
-        "imp_fdate": "0711-15-02"
-      },
-      "spatial": [
-        {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCDEFGHIJKLMNOPQRSTUVWX",
-            "imp_spat_fileloc": "ABCDEFGHIJKLM",
-            "imp_spat_colname": [],
-            "imp_spat_rowname": ["ABCDEFGHIJKLMNOPQRSTUVWXY", "ABCDEFGHI"]
-          },
-          "spatial_info": {
-            "imp_ISO3s": "OKP",
-            "imp_spat_scale": "sub-national",
-            "imp_spat_type": "polygons",
-            "imp_spat_res": 0,
-            "imp_spat_resunits": "metres",
-            "imp_spat_fileread": "spatfstanshp",
-            "imp_spat_crs": "ESRI:9"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCDE",
-            "imp_spat_URL": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
-            "imp_spat_srcorg": "ABCDEFGHIJKLMNOPQRSTUVW"
-          }
-        },
-        {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCDEFGHIJKLMNOP",
-            "imp_spat_fileloc": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-            "imp_spat_colname": "ABCDEFGHIJKLMNOP",
-            "imp_spat_rowname": ["ABCDEFGHIJKLMN", "ABCDEFGHIJKLMNOPQ"]
-          },
-          "spatial_info": {
-            "imp_ISO3s": "HTV",
-            "imp_spat_scale": "national",
-            "imp_spat_type": "points",
-            "imp_spat_res": 0,
-            "imp_spat_resunits": "degrees",
-            "imp_spat_fileread": "spatfstantiff",
-            "imp_spat_crs": "ESRI:932"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCDEFGHIJKLMNOPQRSTUVWXY",
-            "imp_spat_URL": "ABCDEF",
-            "imp_spat_srcorg": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB"
-          }
-        },
-        {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCDEFGHIJKLMNOPQR",
-            "imp_spat_fileloc": "ABCDE",
-            "imp_spat_colname": [],
-            "imp_spat_rowname": "ABCDEFGHIJKLMNOPQ"
-          },
-          "spatial_info": {
-            "imp_ISO3s": "WNI",
-            "imp_spat_scale": "multi-national",
-            "imp_spat_type": "lines",
-            "imp_spat_res": 0,
-            "imp_spat_resunits": "degrees",
-            "imp_spat_fileread": "spatfstangeot",
-            "imp_spat_crs": "ESRI:0"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCDEFGHIJKLMNO",
-            "imp_spat_URL": "ABCD",
-            "imp_spat_srcorg": "ABCDEFGHIJKLMNOPQRSTUVW"
-          }
-        },
-        {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCDEFGHIJKLMNOPQ",
-            "imp_spat_fileloc": "ABCDEF",
-            "imp_spat_colname": [],
-            "imp_spat_rowname": "ABCDEFGHIJKLMNOPQRSTUVWX"
-          },
-          "spatial_info": {
-            "imp_ISO3s": "KTK",
-            "imp_spat_scale": "national",
-            "imp_spat_type": "raster",
-            "imp_spat_res": 0,
-            "imp_spat_resunits": "degrees",
-            "imp_spat_fileread": "spatfstangeot",
-            "imp_spat_crs": "ESRI:0"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCDEFGHIJK",
-            "imp_spat_URL": "ABCDEFGHIJKLMNOPQRSTUVWXY",
-            "imp_spat_srcorg": "ABCDEFGHIJKLMNOPQRSTUV"
-          }
-        }
-      ]
-    },
-    {
-      "ID_linkage": {
-        "event_ID": "ABCDEFGHIJK",
-        "imp_sub_ID": "ABCDEFGHIJKLMNOPQRSTUV",
-        "haz_sub_ID": "ABCDEFGHIJKLM"
-      },
-      "source": {
-        "imp_src_db": "ABCDEFGHIJKLMNOPQR",
-        "imp_src_URL": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
-        "imp_src_org": "ABCDEFGHIJKLMNOPQRSTUVW"
-      },
-      "impact_estimate": {
-        "imp_value": 0,
-        "imp_type": "imptypdama",
-        "imp_units": "unitsatm",
-        "imp_est_type": "esttype_second",
-        "imp_unitdate": "2307-08-07"
-      },
-      "impact_taxonomy": {
-        "imp_det": "impdetelder",
-        "imp_cat": "ABCDEFGHIJKLMNO",
-        "imp_subcat": "ABCDEFGHIJKLMNOP"
-      },
-      "temporal": {
-        "imp_sdate": "0972-04-26",
-        "imp_fdate": "2463-17-31"
-      },
-      "spatial": [
-        {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCDEFGHIJKLMNOPQRST",
-            "imp_spat_fileloc": "ABCDEFGHIJKLMNOPQRS",
-            "imp_spat_colname": "ABCDEFGH",
-            "imp_spat_rowname": []
-          },
-          "spatial_info": {
-            "imp_ISO3s": "BER",
-            "imp_spat_scale": "national",
-            "imp_spat_type": "polygons",
-            "imp_spat_res": 0,
-            "imp_spat_resunits": "arcsecs",
-            "imp_spat_fileread": "spatfstangeot",
-            "imp_spat_crs": "ESRI:1"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCDEFGHI",
-            "imp_spat_URL": "ABCDEFGHIJKLMNOPQR",
-            "imp_spat_srcorg": "ABCDEFGHIJKLMNOPQRSTUV"
-          }
+          "all_hazs_Ab": "TE",
+          "all_hazs_spec": "CHO012"
         }
       ]
     },
     {
       "ID_linkage": {
         "event_ID": "ABCDEFGHI",
-        "imp_sub_ID": "ABCDEFGHI",
-        "haz_sub_ID": ["ABCDE", "ABCDEFGHIJKL", "ABCD", "ABCDEFGHIJKLMNOPQRSTUVWX"]
+        "ev_name": "ABCDEFGHIJKLMNOPQRST",
+        "ext_IDs": [
+          {
+            "ext_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
+            "ext_ID_db": "ABCDEFGHIJKLMNOPQRST",
+            "ext_ID_org": "ABCDEFG"
+          }
+        ]
+      },
+      "spatial": {
+        "ev_ISO3s": "UTG",
+        "gen_location": "ABCDEFGHIJKLMNOP"
+      },
+      "temporal": {
+        "ev_sdate": "2348-01-00",
+        "ev_fdate": "0888-00-17"
+      },
+      "allhaz_class": [
+        {
+          "all_hazs_Ab": "AZ",
+          "all_hazs_spec": "CHO012"
+        },
+        {
+          "all_hazs_Ab": "CE",
+          "all_hazs_spec": "CHO012"
+        }
+      ]
+    },
+    {
+      "ID_linkage": {
+        "event_ID": "ABCDEFGHIJKLM",
+        "ev_name": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
+        "ext_IDs": [
+          {
+            "ext_ID": "ABCDEFGHIJKL",
+            "ext_ID_db": "ABCDEFGHIJKLMNOPQRST",
+            "ext_ID_org": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC"
+          }
+        ]
+      },
+      "spatial": {
+        "ev_ISO3s": "CYT",
+        "gen_location": "ABCDEFGHIJKLM"
+      },
+      "temporal": {
+        "ev_sdate": "2433-10-15",
+        "ev_fdate": "0850-13-37"
+      },
+      "allhaz_class": [
+        {
+          "all_hazs_Ab": "FI",
+          "all_hazs_spec": "CHO012"
+        }
+      ]
+    }
+  ],
+  "impact_Data": [
+    {
+      "ID_linkage": {
+        "event_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
+        "imp_sub_ID": "ABCDEFGHIJKLMNOPQRSTUV",
+        "haz_sub_ID": []
       },
       "source": {
-        "imp_src_db": "ABCDEFGHIJKLMNOP",
-        "imp_src_URL": "ABCDEFGHIJKLMNOPQRSTUV",
-        "imp_src_org": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC"
+        "imp_src_db": "ABCD",
+        "imp_src_URL": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "imp_src_org": "ABCDEFGHIJKLMNOPQRS"
       },
       "impact_estimate": {
         "imp_value": 0,
         "imp_type": "imptypcost",
-        "imp_units": "unitISO4217C-UAH",
-        "imp_est_type": "esttype_second",
-        "imp_unitdate": "1801-01-25"
-      },
-      "impact_taxonomy": {
-        "imp_det": "impdetbuild",
-        "imp_cat": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
-        "imp_subcat": "ABCDEFGHIJKLMNOPQRSTU"
+        "imp_units": "unitsmm_per_sec2",
+        "imp_est_type": "esttype_prim",
+        "imp_det": "impdetglobdate",
+        "imp_unitdate": "0868-07-13"
       },
       "temporal": {
-        "imp_sdate": "0594-04-31",
-        "imp_fdate": "0583-08-11"
+        "imp_sdate": "0343-08-07",
+        "imp_fdate": "2489-01-11"
       },
       "spatial": [
         {
           "ID_linkage": {
-            "imp_spat_ID": "ABCDEFGHIJKLMNO",
-            "imp_spat_fileloc": "ABCDEFGHIJKLMNOPQ",
-            "imp_spat_colname": "ABCDEFGHIJKLMNOPQRSTUVWXY",
-            "imp_spat_rowname": []
+            "imp_spat_ID": "ABCD",
+            "imp_spat_fileloc": "ABCDEFGHIJKLMNOPQR",
+            "imp_spat_colname": "ABCDEFGHIJKLMNOPQRS",
+            "imp_spat_rowname": ["ABCDEFGHIJKLMNO", "ABCDEFGH"]
           },
           "spatial_info": {
-            "imp_ISO3s": "ZTB",
-            "imp_spat_scale": "sub-national",
-            "imp_spat_type": "raster",
+            "imp_ISO3s": "SHH",
+            "imp_spat_covcode": "spat_raster",
             "imp_spat_res": 0,
-            "imp_spat_resunits": "spatrespoints",
-            "imp_spat_fileread": "spatfstanshp",
-            "imp_spat_crs": "ESRI:53"
+            "imp_spat_resunits": "adminlevel",
+            "imp_spat_fileread": "spatfstantiff",
+            "imp_spat_crs": "ESRI:8"
           },
           "source": {
-            "imp_spat_srcdb": "ABCDEFGHIJ",
+            "imp_spat_srcdb": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
             "imp_spat_URL": "ABCDEFGHIJKLMNOPQRST",
-            "imp_spat_srcorg": "ABCDEFGHI"
+            "imp_spat_srcorg": "ABCDEFGHIJKLMNOPQRST"
           }
         },
         {
           "ID_linkage": {
-            "imp_spat_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
-            "imp_spat_fileloc": "ABCDE",
-            "imp_spat_colname": ["ABCDEFGHIJKLMNOPQRSTUVWX", "ABCDEFGHIJKLMNO"],
-            "imp_spat_rowname": "ABCDEFGHIJKLMNOPQRSTUVWXYZA"
+            "imp_spat_ID": "ABCDEFGHIJKLMNOPQRST",
+            "imp_spat_fileloc": "ABCDEFGH",
+            "imp_spat_colname": ["ABCDEFGHIJKLMN", "ABCDEFGHIJKLMNOPQRSTUVWXYZAB", "ABCDEFGHIJKLMN", "ABCDEFGHIJ", "ABCDEFGHIJKLMNOPQR"],
+            "imp_spat_rowname": "ABCDEFGHIJKLMNOPQRSTUVW"
           },
           "spatial_info": {
-            "imp_ISO3s": "KFT",
-            "imp_spat_scale": "multi-national",
-            "imp_spat_type": "raster",
+            "imp_ISO3s": "MZM",
+            "imp_spat_covcode": "spat_lines",
             "imp_spat_res": 0,
-            "imp_spat_resunits": "arcsecs",
-            "imp_spat_fileread": "spatfstanshp",
-            "imp_spat_crs": "EPSG:4"
+            "imp_spat_resunits": "spatrespoints",
+            "imp_spat_fileread": "spatfstantiff",
+            "imp_spat_crs": "ESRI:24"
           },
           "source": {
-            "imp_spat_srcdb": "ABCDEFGHIJKLMNOPQ",
-            "imp_spat_URL": "ABCDEFGHIJKLM",
+            "imp_spat_srcdb": "ABCDEFGHIJKLMNOPQRST",
+            "imp_spat_URL": "ABCDEFGHIJKLMNO",
+            "imp_spat_srcorg": "ABCDE"
+          }
+        },
+        {
+          "ID_linkage": {
+            "imp_spat_ID": "ABCDEFGHIJKLMNO",
+            "imp_spat_fileloc": "ABCDEFGHIJKL",
+            "imp_spat_colname": ["ABCDEFGHIJKLMNOPQRSTU", "ABCDEF"],
+            "imp_spat_rowname": ["ABCDEFGHIJKLMNOPQRSTUV", "ABCDEFGHIJ", "ABCD", "ABCDEFGHIJKLMNOP", "ABCDEFGHIJKLMNOPQRSTUVWXYZA", "ABCDEFGH", "ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
+          },
+          "spatial_info": {
+            "imp_ISO3s": "RRJ",
+            "imp_spat_covcode": "spat_raster",
+            "imp_spat_res": 0,
+            "imp_spat_resunits": "spatresother",
+            "imp_spat_fileread": "spatfstanshp",
+            "imp_spat_crs": "ESRI:82"
+          },
+          "source": {
+            "imp_spat_srcdb": "ABCDEFGHIJK",
+            "imp_spat_URL": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
+            "imp_spat_srcorg": "ABCDEFGHIJ"
+          }
+        }
+      ]
+    },
+    {
+      "ID_linkage": {
+        "event_ID": "ABCDEFGHIJKLMNOPQR",
+        "imp_sub_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
+        "haz_sub_ID": ["ABCDEFGHIJKLMNOPQRSTUVWXYZABC", "ABCDEFGHIJKLMNOPQRS", "ABCDEFGHIJKL", "ABCDEFGHIJKLMNOPQRSTU"]
+      },
+      "source": {
+        "imp_src_db": "ABCDEFGHIJKLMN",
+        "imp_src_URL": "ABCDEFGHIJKLM",
+        "imp_src_org": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB"
+      },
+      "impact_estimate": {
+        "imp_value": 0,
+        "imp_type": "imptyphomles",
+        "imp_units": "unitsus_tbsp",
+        "imp_est_type": "esttype_model",
+        "imp_det": "impdethosp",
+        "imp_unitdate": "0606-18-26"
+      },
+      "temporal": {
+        "imp_sdate": "0196-14-03",
+        "imp_fdate": "2105-15-06"
+      },
+      "spatial": [
+        {
+          "ID_linkage": {
+            "imp_spat_ID": "ABCDEFGHIJ",
+            "imp_spat_fileloc": "ABCDEFGHIJK",
+            "imp_spat_colname": ["ABCDEFGHIJKLMNOPQ", "ABCDEFGHIJKLMNOPQRSTUVWXYZA", "ABCDEFGHIJKLMNOPQR"],
+            "imp_spat_rowname": []
+          },
+          "spatial_info": {
+            "imp_ISO3s": "MJL",
+            "imp_spat_covcode": "spat_raster",
+            "imp_spat_res": 0,
+            "imp_spat_resunits": "adminlevel",
+            "imp_spat_fileread": "spatfstangeot",
+            "imp_spat_crs": "EPSG:818"
+          },
+          "source": {
+            "imp_spat_srcdb": "ABCDEFGHIJKLMNOPQRSTUVWXY",
+            "imp_spat_URL": "ABCDEF",
             "imp_spat_srcorg": "ABCDEFGHIJKLMNOPQRSTUVWX"
           }
         },
         {
           "ID_linkage": {
-            "imp_spat_ID": "ABCDEFGHIJKLMNO",
-            "imp_spat_fileloc": "ABCDE",
-            "imp_spat_colname": ["ABCDEFGHI", "ABCDEFGHIJKLMNOPQRSTUVWXYZABC", "ABCDEFGHIJKLM", "ABCDEFGHIJKLMNOPQRSTUVWXYZABC", "ABCDEF", "ABCDEFGHIJK", "ABCDEFGHIJKL", "ABCDEFGHIJKLMNOPQRSTUV"],
-            "imp_spat_rowname": []
+            "imp_spat_ID": "ABCDEFGHIJKLMNOPQRS",
+            "imp_spat_fileloc": "ABCDEFGHIJKLMNOPQRSTUVWXY",
+            "imp_spat_colname": ["ABCDEFGHI", "ABCDEFGHIJKLMNOPQRS", "ABCDEFGHIJKLMNOPQR"],
+            "imp_spat_rowname": ["ABCDEFG", "ABCDEFGHIJKLMNO", "ABCDEF", "ABCDEFGHIJKLMNOPQRSTUV"]
           },
           "spatial_info": {
-            "imp_ISO3s": "FHD",
-            "imp_spat_scale": "sub-national",
-            "imp_spat_type": "points",
+            "imp_ISO3s": "JON",
+            "imp_spat_covcode": "spat_raster",
             "imp_spat_res": 0,
-            "imp_spat_resunits": "adminlevel",
-            "imp_spat_fileread": "spatfstantiff",
-            "imp_spat_crs": "EPSG:53"
+            "imp_spat_resunits": "spatresother",
+            "imp_spat_fileread": "spatfstangeot",
+            "imp_spat_crs": "EPSG:6"
           },
           "source": {
-            "imp_spat_srcdb": "ABCDEFGHIJKLMN",
-            "imp_spat_URL": "ABCDEFGHIJKLMNOPQRSTUVWX",
-            "imp_spat_srcorg": "ABCDEFG"
-          }
-        },
-        {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCD",
-            "imp_spat_fileloc": "ABCDEFGHIJKLMNOPQRS",
-            "imp_spat_colname": "ABCDEFGHIJKLMNOPQRST",
-            "imp_spat_rowname": ["ABCDEFGHIJKLM", "ABCDEFGHIJKLMNOPQRST", "ABCDEFGHIJKLMNOPQRSTUVWXYZAB"]
-          },
-          "spatial_info": {
-            "imp_ISO3s": "XTJ",
-            "imp_spat_scale": "multi-national",
-            "imp_spat_type": "points",
-            "imp_spat_res": 0,
-            "imp_spat_resunits": "spatreslines",
-            "imp_spat_fileread": "spatfstantiff",
-            "imp_spat_crs": "ESRI:3"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCDEFGHI",
-            "imp_spat_URL": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-            "imp_spat_srcorg": "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            "imp_spat_srcdb": "ABCDEFGHIJKLM",
+            "imp_spat_URL": "ABCDEFGHIJKLMNOPQRST",
+            "imp_spat_srcorg": "ABCDEFGH"
           }
         }
       ]
@@ -556,681 +365,370 @@
     {
       "ID_linkage": {
         "event_ID": "ABCDEFGHIJKLMNOPQRSTUV",
-        "imp_sub_ID": "ABCDEFGHIJKL",
-        "haz_sub_ID": "ABCDEFGHIJKLMNOPQRSTU"
+        "imp_sub_ID": "ABCDEFGHIJKLMNOPQRSTU",
+        "haz_sub_ID": ["ABCDE", "ABCDEFGHIJKLMNOPQRSTUVWXYZABC"]
       },
       "source": {
-        "imp_src_db": "ABCDEFGHIJKLMNOPQRSTUVWX",
-        "imp_src_URL": "ABCDEFGHI",
-        "imp_src_org": "ABCDEFGH"
+        "imp_src_db": "ABCDEFGHI",
+        "imp_src_URL": "ABCDEFGHIJKLMNOPQRSTUVWX",
+        "imp_src_org": "ABCDEFGHIJKLMNOPQRS"
       },
       "impact_estimate": {
         "imp_value": 0,
-        "imp_type": "imptypevac",
-        "imp_units": "unitsW",
-        "imp_est_type": "esttype_model",
-        "imp_unitdate": "0251-10-06"
-      },
-      "impact_taxonomy": {
+        "imp_type": "imptypidp",
+        "imp_units": "unitISO4217C-SZL",
+        "imp_est_type": "esttype_second",
         "imp_det": "impdetinfloccur",
-        "imp_cat": "ABCDEFGHIJKLMNOPQRSTUVWX",
-        "imp_subcat": "ABCDEFGHIJKLMNOPQ"
+        "imp_unitdate": "0754-11-17"
       },
       "temporal": {
-        "imp_sdate": "1939-00-11",
-        "imp_fdate": "0216-04-15"
-      },
-      "spatial": [
-        {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
-            "imp_spat_fileloc": "ABCDEFGHIJKLMNOPQRSTUV",
-            "imp_spat_colname": [],
-            "imp_spat_rowname": ["ABCDEFGH", "ABCDEFGHIJKLMN", "ABCDEF"]
-          },
-          "spatial_info": {
-            "imp_ISO3s": "LWM",
-            "imp_spat_scale": "national",
-            "imp_spat_type": "raster",
-            "imp_spat_res": 0,
-            "imp_spat_resunits": "spatresunknown",
-            "imp_spat_fileread": "spatfstangeot",
-            "imp_spat_crs": "EPSG:00311845"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCDEFGHIJKLMNOPQRSTUVWX",
-            "imp_spat_URL": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
-            "imp_spat_srcorg": "ABCDEFGHIJKLMNO"
-          }
-        },
-        {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCDEFGHIJKLMNOPQRSTUVWX",
-            "imp_spat_fileloc": "ABCDE",
-            "imp_spat_colname": [],
-            "imp_spat_rowname": "ABCDEFGHIJKLMNOPQRST"
-          },
-          "spatial_info": {
-            "imp_ISO3s": "XEO",
-            "imp_spat_scale": "national",
-            "imp_spat_type": "raster",
-            "imp_spat_res": 0,
-            "imp_spat_resunits": "spatresunknown",
-            "imp_spat_fileread": "spatfstanshp",
-            "imp_spat_crs": "ESRI:63"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCDEFGHIJKLMN",
-            "imp_spat_URL": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
-            "imp_spat_srcorg": "ABCDEFGHIJKL"
-          }
-        }
-      ]
-    },
-    {
-      "ID_linkage": {
-        "event_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
-        "imp_sub_ID": "ABCDEFG",
-        "haz_sub_ID": ["ABCDEFGHIJKLMNOPQRSTUVWXYZABC", "ABCDEFGHIJKLMNOPQRS", "ABCDEFGHIJ"]
-      },
-      "source": {
-        "imp_src_db": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
-        "imp_src_URL": "ABCDEFGHIJKLMNOPQRSTUVWXY",
-        "imp_src_org": "ABCDEFGHIJKL"
-      },
-      "impact_estimate": {
-        "imp_value": 0,
-        "imp_type": "imptypeemshel",
-        "imp_units": "unitISO4217C-XBC",
-        "imp_est_type": "esttype_prim",
-        "imp_unitdate": "2545-11-34"
-      },
-      "impact_taxonomy": {
-        "imp_det": "impdetglobdate",
-        "imp_cat": "ABCDEF",
-        "imp_subcat": "ABCDEFGHIJKLM"
-      },
-      "temporal": {
-        "imp_sdate": "1688-05-36",
-        "imp_fdate": "1227-13-00"
+        "imp_sdate": "0695-19-31",
+        "imp_fdate": "0230-13-38"
       },
       "spatial": [
         {
           "ID_linkage": {
             "imp_spat_ID": "ABCDEFGH",
-            "imp_spat_fileloc": "ABCDEFGHIJKLMNOPQR",
+            "imp_spat_fileloc": "ABCDEFGHIJKLM",
             "imp_spat_colname": [],
-            "imp_spat_rowname": ["ABCDEFGHIJKLMNOPQRS", "ABCDEFGHIJKLM", "ABCDEFGHIJKLMNOPQ", "ABCDEF"]
+            "imp_spat_rowname": "ABCDEFGHIJKLMNOPQRSTU"
           },
           "spatial_info": {
-            "imp_ISO3s": "JNZ",
-            "imp_spat_scale": "sub-national",
-            "imp_spat_type": "raster",
+            "imp_ISO3s": "ODC",
+            "imp_spat_covcode": "spat_lines",
             "imp_spat_res": 0,
-            "imp_spat_resunits": "othershape",
-            "imp_spat_fileread": "spatfstanshp",
-            "imp_spat_crs": "EPSG:9"
+            "imp_spat_resunits": "adminlevel",
+            "imp_spat_fileread": "spatfstangeot",
+            "imp_spat_crs": "EPSG:75"
           },
           "source": {
             "imp_spat_srcdb": "ABCD",
-            "imp_spat_URL": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-            "imp_spat_srcorg": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB"
+            "imp_spat_URL": "ABCDE",
+            "imp_spat_srcorg": "ABCDEFGHI"
           }
         },
         {
           "ID_linkage": {
-            "imp_spat_ID": "ABCDEFGHIJKLMNOPQRST",
-            "imp_spat_fileloc": "ABCDEFGHIJKLMNOPQRSTUVW",
+            "imp_spat_ID": "ABCDEFGHIJKLMNOPQ",
+            "imp_spat_fileloc": "ABCDEFGHIJKL",
+            "imp_spat_colname": [],
+            "imp_spat_rowname": ["ABCDEFGHIJKL", "ABCDEFGHIJKLMNOPQRSTUVWXYZABC", "ABCDEFGHIJKLMNOPQRSTUVW", "ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
+          },
+          "spatial_info": {
+            "imp_ISO3s": "SXO",
+            "imp_spat_covcode": "spat_points",
+            "imp_spat_res": 0,
+            "imp_spat_resunits": "othershape",
+            "imp_spat_fileread": "spatfstangeot",
+            "imp_spat_crs": "EPSG:599"
+          },
+          "source": {
+            "imp_spat_srcdb": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
+            "imp_spat_URL": "ABCDEFGHIJKLMN",
+            "imp_spat_srcorg": "ABCDEFGHIJKLMNOPQ"
+          }
+        },
+        {
+          "ID_linkage": {
+            "imp_spat_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
+            "imp_spat_fileloc": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
             "imp_spat_colname": [],
             "imp_spat_rowname": []
           },
           "spatial_info": {
-            "imp_ISO3s": "DRP",
-            "imp_spat_scale": "national",
-            "imp_spat_type": "raster",
+            "imp_ISO3s": "ULZ",
+            "imp_spat_covcode": "spat_lines",
+            "imp_spat_res": 0,
+            "imp_spat_resunits": "adminlevel",
+            "imp_spat_fileread": "spatfstangeot",
+            "imp_spat_crs": "EPSG:7303"
+          },
+          "source": {
+            "imp_spat_srcdb": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
+            "imp_spat_URL": "ABCDEFGHIJKLMNOPQRSTUVWXY",
+            "imp_spat_srcorg": "ABCDEFGHIJKLMNOPQRSTUVW"
+          }
+        },
+        {
+          "ID_linkage": {
+            "imp_spat_ID": "ABCDEFGHIJKLMNOPQRSTU",
+            "imp_spat_fileloc": "ABCD",
+            "imp_spat_colname": ["ABCDEFGHIJKLM", "ABCDEFGHIJKLMNOPQRSTUV", "ABCDEFGH", "ABCDEFGHIJKLMNOPQRSTUVW", "ABCDEFGHIJKLMNOPQR"],
+            "imp_spat_rowname": []
+          },
+          "spatial_info": {
+            "imp_ISO3s": "PRD",
+            "imp_spat_covcode": "spat_polygon",
+            "imp_spat_res": 0,
+            "imp_spat_resunits": "adminlevel",
+            "imp_spat_fileread": "spatfstangeot",
+            "imp_spat_crs": "ESRI:3095"
+          },
+          "source": {
+            "imp_spat_srcdb": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
+            "imp_spat_URL": "ABCDEFGHIJKLM",
+            "imp_spat_srcorg": "ABCDEFGHIJKLM"
+          }
+        },
+        {
+          "ID_linkage": {
+            "imp_spat_ID": "ABCDEFGHIJKLMNOPQRSTUVWXY",
+            "imp_spat_fileloc": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
+            "imp_spat_colname": ["ABCDEFGHIJKLMNOPQRST", "ABCDEFGHIJKLMNOPQRSTUVWX"],
+            "imp_spat_rowname": ["ABCDEFGHIJKLMNO", "ABCDEFGHIJKLMNOPQRSTUVWX", "ABCDEFGHIJKLMNOPQ"]
+          },
+          "spatial_info": {
+            "imp_ISO3s": "QDJ",
+            "imp_spat_covcode": "spat_other",
             "imp_spat_res": 0,
             "imp_spat_resunits": "spatresunknown",
             "imp_spat_fileread": "spatfstantiff",
-            "imp_spat_crs": "ESRI:6"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCDEFGHIJKLMNOPQR",
-            "imp_spat_URL": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
-            "imp_spat_srcorg": "ABCDEFGHIJKLMNOPQRS"
-          }
-        },
-        {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
-            "imp_spat_fileloc": "ABCDEFGHIJKLMNO",
-            "imp_spat_colname": ["ABCDEFGHIJKLMNOPQRSTUVWXYZ", "ABCDEF", "ABCDEFGHIJKLMNOPQR", "ABCDE", "ABCDEF"],
-            "imp_spat_rowname": ["ABCDEFGHIJKLMNOPQRST", "ABCDEFGHIJ", "ABCDEFGHIJKLMNOPQRSTUVWXYZA", "ABCDEFGHIJKLMNOPQRST"]
-          },
-          "spatial_info": {
-            "imp_ISO3s": "CLF",
-            "imp_spat_scale": "multi-national",
-            "imp_spat_type": "lines",
-            "imp_spat_res": 0,
-            "imp_spat_resunits": "spatreslines",
-            "imp_spat_fileread": "spatfstantiff",
-            "imp_spat_crs": "ESRI:4"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-            "imp_spat_URL": "ABCDEFGHIJKLMNOPQR",
-            "imp_spat_srcorg": "ABCDEFGHIJKLMNO"
-          }
-        },
-        {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCDEF",
-            "imp_spat_fileloc": "ABCDEFGHIJKLMNOPQRS",
-            "imp_spat_colname": ["ABCD", "ABCDEFGHIJKLMNOPQRSTUVWXYZA"],
-            "imp_spat_rowname": "ABCDEFG"
-          },
-          "spatial_info": {
-            "imp_ISO3s": "OUR",
-            "imp_spat_scale": "sub-national",
-            "imp_spat_type": "polygons",
-            "imp_spat_res": 0,
-            "imp_spat_resunits": "metres",
-            "imp_spat_fileread": "spatfstangeot",
             "imp_spat_crs": "EPSG:1"
           },
           "source": {
-            "imp_spat_srcdb": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
-            "imp_spat_URL": "ABCDEFGHIJKLMNOPQRSTUV",
-            "imp_spat_srcorg": "ABCDEFGHIJKLMNOPQRSTUVWX"
+            "imp_spat_srcdb": "ABCDEFGHIJKLMNOPQRSTU",
+            "imp_spat_URL": "ABCDEFGHIJK",
+            "imp_spat_srcorg": "ABCDEFGH"
+          }
+        },
+        {
+          "ID_linkage": {
+            "imp_spat_ID": "ABCDEFGHIJKLMNOP",
+            "imp_spat_fileloc": "ABCDEFG",
+            "imp_spat_colname": ["ABCDE", "ABCDEFGHIJKLMNOPQRSTUVWX", "ABCDEFGHIJKLM", "ABCDEFGHIJKLMNOPQRSTUVWX", "ABCDEFGHIJKLM"],
+            "imp_spat_rowname": ["ABCDEFGHI", "ABCDEFGHIJKLMNOPQRSTUVWXYZABC", "ABCDEFGHIJKLMNOPQRSTUV", "ABCDEFGHIJKLMNOPQRSTUVWXY"]
+          },
+          "spatial_info": {
+            "imp_ISO3s": "BZS",
+            "imp_spat_covcode": "spat_raster",
+            "imp_spat_res": 0,
+            "imp_spat_resunits": "spatresother",
+            "imp_spat_fileread": "spatfstangeot",
+            "imp_spat_crs": "EPSG:576"
+          },
+          "source": {
+            "imp_spat_srcdb": "ABCDEFG",
+            "imp_spat_URL": "ABCDEFGHIJKLMNOPQRS",
+            "imp_spat_srcorg": "ABCDEFGHIJKLMNOPQRSTU"
+          }
+        },
+        {
+          "ID_linkage": {
+            "imp_spat_ID": "ABCDEFGHIJKLMNOPQRS",
+            "imp_spat_fileloc": "ABCDEFGHIJKLMNOP",
+            "imp_spat_colname": ["ABCDEFGHIJ", "ABCDEF", "ABCDEFGHIJKLMNO", "ABCDEFG", "ABCDEFGHIJKLMNOPQRSTUVWX", "ABCDEFGHIJKLMN", "ABCDEFGHIJKLMNOP"],
+            "imp_spat_rowname": ["ABCDEFGHIJKLMNO", "ABCDEFGHIJKLMNOPQRSTUVWX", "ABCDEFGHIJKLMNOPQRSTUVWX", "ABCDEFGHIJKLMNOPQ"]
+          },
+          "spatial_info": {
+            "imp_ISO3s": "FNY",
+            "imp_spat_covcode": "spat_other",
+            "imp_spat_res": 0,
+            "imp_spat_resunits": "spatresunknown",
+            "imp_spat_fileread": "spatfstantiff",
+            "imp_spat_crs": "EPSG:55"
+          },
+          "source": {
+            "imp_spat_srcdb": "ABCDEFGHIJ",
+            "imp_spat_URL": "ABCDEFGH",
+            "imp_spat_srcorg": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB"
           }
         }
       ]
+    },
+    {
+      "ID_linkage": {
+        "event_ID": "ABCDE",
+        "imp_sub_ID": "ABCDEFGHIJKLMNOPQRSTUVWX",
+        "haz_sub_ID": []
+      },
+      "source": {
+        "imp_src_db": "ABCDEFGHIJKLMNOPQ",
+        "imp_src_URL": "ABCDEFGHIJKLMNOPQ",
+        "imp_src_org": "ABCDEFGHIJKLMNOPQRSTUVW"
+      },
+      "impact_estimate": {
+        "imp_value": 0,
+        "imp_type": "imptypeemshel",
+        "imp_units": "unitISO4217C-ARY",
+        "imp_est_type": "esttype_model",
+        "imp_det": "impdetecoifrcreq",
+        "imp_unitdate": "1217-15-23"
+      },
+      "temporal": {
+        "imp_sdate": "1866-09-00",
+        "imp_fdate": "1635-13-37"
+      },
+      "spatial": []
+    },
+    {
+      "ID_linkage": {
+        "event_ID": "ABCDEFGHIJ",
+        "imp_sub_ID": "ABCDE",
+        "haz_sub_ID": "ABCDEFGHIJKLMNOPQRSTU"
+      },
+      "source": {
+        "imp_src_db": "ABCDEFGHIJKLMNOPQRST",
+        "imp_src_URL": "ABCDEFGHIJKLM",
+        "imp_src_org": "ABCDEFGHIJKLMNOPQRS"
+      },
+      "impact_estimate": {
+        "imp_value": 0,
+        "imp_type": "imptypcost",
+        "imp_units": "unitsuatm",
+        "imp_est_type": "esttype_prim",
+        "imp_det": "impdetroad",
+        "imp_unitdate": "0318-09-24"
+      },
+      "temporal": {
+        "imp_sdate": "2905-04-07",
+        "imp_fdate": "2695-01-37"
+      },
+      "spatial": []
     }
   ],
   "hazard_Data": [
     {
       "ID_linkage": {
-        "event_ID": "ABCDEFG",
-        "haz_sub_ID": "ABCDEFGHIJKLM",
+        "event_ID": "ABCDEFGHIJKLM",
+        "haz_sub_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
         "haz_ext_IDs": [
           {
-            "ext_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
-            "ext_ID_db": "ABCDEFGHIJK",
-            "ext_ID_org": "ABCDEFGHIJKLMNOPQRSTUVWX"
+            "ext_ID": "ABCDEF",
+            "ext_ID_db": "ABCDEFGHIJKLMN",
+            "ext_ID_org": "ABCDEFGHIJKLMNOPQRSTUVWXYZA"
           }
         ]
       },
       "source": {
-        "haz_src_db": "ABCDEFGHIJKLMNOPQR",
-        "haz_src_URL": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-        "haz_src_org": "ABCDEFGHIJKLMNOPQRSTUVW"
+        "haz_src_db": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
+        "haz_src_URL": "ABCD",
+        "haz_src_org": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC"
       },
       "hazard_detail": {
         "haz_maxvalue": 0,
-        "haz_maxunits": "unitISO4217C-MXV",
+        "haz_maxunits": "unitISO4217C-DJF",
         "haz_est_type": "esttype_second",
-        "concur_haz": [
-          {
-            "haz_sub_ID": "ABCDEFGHIJKLMNO",
-            "linkhaz_ext_IDs": [],
-            "linkhaz_spec": "CHO012",
-            "linkhaz_occ_known": true,
-            "linkhaz_occ_prob": "ABCDEF",
-            "linkhaz_occ_probdef": "ABCDEFGHIJKLMNOPQRST",
-            "relationship": "linkhaz-triggered-by-mainhaz"
-          },
-          {
-            "haz_sub_ID": "ABCDEF",
-            "linkhaz_ext_IDs": [],
-            "linkhaz_spec": "CHO012",
-            "linkhaz_occ_known": true,
-            "linkhaz_occ_prob": "ABCDEFGHIJ",
-            "linkhaz_occ_probdef": "ABCDEFGHIJKLMNOPQ",
-            "relationship": "linkhaz-triggered-by-mainhaz"
-          },
-          {
-            "haz_sub_ID": "ABCDEFGHIJKLMNOPQRSTU",
-            "linkhaz_ext_IDs": [
-              {
-                "ext_ID": "ABCDEFG",
-                "ext_ID_db": "ABCDE",
-                "ext_ID_org": "ABCDEFGHIJKLMNOPQRSTUVWXYZA"
-              }
-            ],
-            "linkhaz_spec": "CHO012",
-            "linkhaz_occ_known": true,
-            "linkhaz_occ_prob": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
-            "linkhaz_occ_probdef": "ABCDEFGHIJ",
-            "relationship": "linkhaz-triggered-by-mainhaz"
-          }
-        ]
-      },
-      "hazard_taxonomy": {
-        "haz_Ab": "QP",
-        "haz_type": "haztypebio",
-        "haz_cluster": "hazhmlitho",
-        "haz_spec": "CHO012"
-      },
-      "temporal": {
-        "haz_sdate": "1107-08-39",
-        "haz_fdate": "2973-18-02"
-      },
-      "spatial": [
-        {
-          "ID_linkage": {
-            "haz_spat_ID": "ABCDEFGHIJK",
-            "haz_spat_fileloc": "ABCDEFGHIJ",
-            "haz_spat_colname": [],
-            "haz_spat_rowname": []
-          },
-          "spatial_info": {
-            "haz_ISO3s": "DNX",
-            "haz_spat_scale": "national",
-            "haz_spat_type": "points",
-            "haz_spat_fileread": "spatfstantiff",
-            "haz_spat_res": 0,
-            "haz_spat_resunits": "kiloms",
-            "haz_spat_crs": "ESRI:622",
-            "haz_spat_unit": "unitISO4217C-AUD"
-          },
-          "source": {
-            "haz_spat_srcdb": "ABCDEFGHIJKLMNOPQRSTUVWXY",
-            "haz_spat_URL": "ABCDEFGHIJKLMNOPQRSTUV",
-            "haz_spat_srcorg": "ABCDEFGHIJKLM"
-          }
-        },
-        {
-          "ID_linkage": {
-            "haz_spat_ID": "ABCDEFG",
-            "haz_spat_fileloc": "ABCDEFGHIJKLMNOPQ",
-            "haz_spat_colname": [],
-            "haz_spat_rowname": ["ABCDEFGHIJKLMNOPQRSTUV", "ABCDEFGHIJKLMNOPQRSTU", "ABCDEFGHIJKLMNOPQRSTUVWXYZABC", "ABCDEFGHIJKLMNOPQRSTUVWXYZAB", "ABCDEFG", "ABCDEFGHIJKLMNOPQ", "ABCDEFGHIJKLMNOPQ", "ABCD"]
-          },
-          "spatial_info": {
-            "haz_ISO3s": "INF",
-            "haz_spat_scale": "sub-national",
-            "haz_spat_type": "lines",
-            "haz_spat_fileread": "spatfstanshp",
-            "haz_spat_res": 0,
-            "haz_spat_resunits": "arcsecs",
-            "haz_spat_crs": "EPSG:0",
-            "haz_spat_unit": "unitsoz"
-          },
-          "source": {
-            "haz_spat_srcdb": "ABCDEFGHIJKLMNOPQRST",
-            "haz_spat_URL": "ABCDEFGHIJK",
-            "haz_spat_srcorg": "ABCDEFGHIJKLMNOPQRSTUVWX"
-          }
-        }
-      ]
-    },
-    {
-      "ID_linkage": {
-        "event_ID": "ABCDEFGH",
-        "haz_sub_ID": "ABCDEFGHI",
-        "haz_ext_IDs": []
-      },
-      "source": {
-        "haz_src_db": "ABCDEFGHIJKLMNOPQRSTUVWX",
-        "haz_src_URL": "ABCDEFGHIJKLMNOP",
-        "haz_src_org": "ABCDEFGHIJKLMNOPQR"
-      },
-      "hazard_detail": {
-        "haz_maxvalue": 0,
-        "haz_maxunits": "unitISO4217C-USN",
-        "haz_est_type": "esttype_second",
-        "concur_haz": []
-      },
-      "hazard_taxonomy": {
-        "haz_Ab": "KJ",
-        "haz_type": "haztypeenviron",
-        "haz_cluster": "haztechinffail",
-        "haz_spec": "CHO012"
-      },
-      "temporal": {
-        "haz_sdate": "0178-17-00",
-        "haz_fdate": "0375-09-29"
-      },
-      "spatial": [
-        {
-          "ID_linkage": {
-            "haz_spat_ID": "ABCDEFGHIJKLMNOPQRSTUVWX",
-            "haz_spat_fileloc": "ABCDEFG",
-            "haz_spat_colname": [],
-            "haz_spat_rowname": []
-          },
-          "spatial_info": {
-            "haz_ISO3s": "ZGU",
-            "haz_spat_scale": "sub-national",
-            "haz_spat_type": "points",
-            "haz_spat_fileread": "spatfstantiff",
-            "haz_spat_res": 0,
-            "haz_spat_resunits": "kiloms",
-            "haz_spat_crs": "ESRI:4",
-            "haz_spat_unit": "unitslong_ton_UK"
-          },
-          "source": {
-            "haz_spat_srcdb": "ABCDEFG",
-            "haz_spat_URL": "ABCDEFG",
-            "haz_spat_srcorg": "ABCDEFGHIJKLMNOPQR"
-          }
-        }
-      ]
-    },
-    {
-      "ID_linkage": {
-        "event_ID": "ABCDEFGHIJK",
-        "haz_sub_ID": "ABCDEFGHIJKLM",
-        "haz_ext_IDs": [
-          {
-            "ext_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
-            "ext_ID_db": "ABCDEFGHIJKLMNOPQ",
-            "ext_ID_org": "ABCD"
-          }
-        ]
-      },
-      "source": {
-        "haz_src_db": "ABCDEFGHIJKLM",
-        "haz_src_URL": "ABCDEFGHIJKLMNOPQRSTUVWX",
-        "haz_src_org": "ABCDEFGHIJKLMNOPQRSTUV"
-      },
-      "hazard_detail": {
-        "haz_maxvalue": 0,
-        "haz_maxunits": "unitsdm",
-        "haz_est_type": "esttype_prim",
         "concur_haz": [
           {
             "haz_sub_ID": "ABCDEFGHIJKLMNOPQRS",
             "linkhaz_ext_IDs": [
               {
-                "ext_ID": "ABCDEFGHIJKLMNOPQR",
-                "ext_ID_db": "ABCDEFGHIJKLM",
+                "ext_ID": "ABCDEFGHIJK",
+                "ext_ID_db": "ABCDEFGHIJKLMNOPQRSTUVWXY",
                 "ext_ID_org": "ABCDEFGHIJKLMNOPQ"
               }
             ],
             "linkhaz_spec": "CHO012",
-            "linkhaz_occ_known": false,
-            "linkhaz_occ_prob": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
-            "linkhaz_occ_probdef": "ABCDEFGHIJKLMNOPQ",
-            "relationship": "linkhaz-triggered-by-mainhaz"
-          }
-        ]
-      },
-      "hazard_taxonomy": {
-        "haz_Ab": "TC",
-        "haz_type": "haztypehydromet",
-        "haz_cluster": "hazgeovolc",
-        "haz_spec": "CHO012"
-      },
-      "temporal": {
-        "haz_sdate": "2587-07-09",
-        "haz_fdate": "2911-12-06"
-      },
-      "spatial": []
-    },
-    {
-      "ID_linkage": {
-        "event_ID": "ABCDEFGHIJKLMNOPQ",
-        "haz_sub_ID": "ABCDEFGHIJKLMNOPQ",
-        "haz_ext_IDs": [
-          {
-            "ext_ID": "ABCDEFGHIJKLMNOPQR",
-            "ext_ID_db": "ABCDEFGHIJ",
-            "ext_ID_org": "ABCDEFG"
-          }
-        ]
-      },
-      "source": {
-        "haz_src_db": "ABCDEFGHIJKLMNO",
-        "haz_src_URL": "ABCDEFGHIJKLMNOPQRSTUVW",
-        "haz_src_org": "ABCDEFGHIJKLMNOPQRST"
-      },
-      "hazard_detail": {
-        "haz_maxvalue": 0,
-        "haz_maxunits": "unitsPbit",
-        "haz_est_type": "esttype_prim",
-        "concur_haz": [
-          {
-            "haz_sub_ID": "ABCD",
-            "linkhaz_ext_IDs": [],
-            "linkhaz_spec": "CHO012",
             "linkhaz_occ_known": true,
             "linkhaz_occ_prob": "ABCDEFGHIJKLMNOPQ",
-            "linkhaz_occ_probdef": "ABCDEFGHIJKLMNOPQRSTUV",
+            "linkhaz_occ_probdef": "ABCDEFGHIJKLMNOP",
             "relationship": "linkhaz-triggered-by-mainhaz"
-          }
-        ]
-      },
-      "hazard_taxonomy": {
-        "haz_Ab": "IE",
-        "haz_type": "haztypesoc",
-        "haz_cluster": "hazchemother",
-        "haz_spec": "CHO012"
-      },
-      "temporal": {
-        "haz_sdate": "0162-17-01",
-        "haz_fdate": "2233-04-18"
-      },
-      "spatial": [
-        {
-          "ID_linkage": {
-            "haz_spat_ID": "ABCDEFGHIJKLMNOP",
-            "haz_spat_fileloc": "ABCDEFGHIJ",
-            "haz_spat_colname": [],
-            "haz_spat_rowname": ["ABCDEFGHIJKL", "ABCDEFG"]
           },
-          "spatial_info": {
-            "haz_ISO3s": "TTI",
-            "haz_spat_scale": "multi-national",
-            "haz_spat_type": "polygons",
-            "haz_spat_fileread": "spatfstangeot",
-            "haz_spat_res": 0,
-            "haz_spat_resunits": "spatrespoints",
-            "haz_spat_crs": "EPSG:673",
-            "haz_spat_unit": "unitISO4217C-AWG"
-          },
-          "source": {
-            "haz_spat_srcdb": "ABCDEFGHIJ",
-            "haz_spat_URL": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
-            "haz_spat_srcorg": "ABCDE"
-          }
-        }
-      ]
-    },
-    {
-      "ID_linkage": {
-        "event_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
-        "haz_sub_ID": "ABCDEFGHIJK",
-        "haz_ext_IDs": [
           {
-            "ext_ID": "ABCDEFGHI",
-            "ext_ID_db": "ABCDEFGHIJKLMNO",
-            "ext_ID_org": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB"
-          }
-        ]
-      },
-      "source": {
-        "haz_src_db": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
-        "haz_src_URL": "ABCDEFGHIJKLMNOPQRS",
-        "haz_src_org": "ABCDEFGHIJKLMNOPQRST"
-      },
-      "hazard_detail": {
-        "haz_maxvalue": 0,
-        "haz_maxunits": "unitsml_per_min",
-        "haz_est_type": "esttype_second",
-        "concur_haz": []
-      },
-      "hazard_taxonomy": {
-        "haz_Ab": "RF",
-        "haz_type": "haztypechem",
-        "haz_cluster": "hazchemfishaqua",
-        "haz_spec": "CHO012"
-      },
-      "temporal": {
-        "haz_sdate": "1297-14-28",
-        "haz_fdate": "0152-17-13"
-      },
-      "spatial": [
-        {
-          "ID_linkage": {
-            "haz_spat_ID": "ABCDEFGHI",
-            "haz_spat_fileloc": "ABCDEF",
-            "haz_spat_colname": "ABCDEFGHIJKLMNOPQ",
-            "haz_spat_rowname": "ABCDEFGH"
-          },
-          "spatial_info": {
-            "haz_ISO3s": "RDN",
-            "haz_spat_scale": "national",
-            "haz_spat_type": "raster",
-            "haz_spat_fileread": "spatfstantiff",
-            "haz_spat_res": 0,
-            "haz_spat_resunits": "metres",
-            "haz_spat_crs": "ESRI:71",
-            "haz_spat_unit": "unitISO4217C-MKD"
-          },
-          "source": {
-            "haz_spat_srcdb": "ABCDEFGHI",
-            "haz_spat_URL": "ABCDEF",
-            "haz_spat_srcorg": "ABCDEFGHI"
-          }
-        }
-      ]
-    },
-    {
-      "ID_linkage": {
-        "event_ID": "ABCDEFGHIJKLMNOPQRSTUVWX",
-        "haz_sub_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
-        "haz_ext_IDs": []
-      },
-      "source": {
-        "haz_src_db": "ABCDEFGHIJKLMNOPQRSTUVWXY",
-        "haz_src_URL": "ABCDEFGHIJ",
-        "haz_src_org": "ABCDEFGHIJKLMNOPQRSTUVWXY"
-      },
-      "hazard_detail": {
-        "haz_maxvalue": 0,
-        "haz_maxunits": "unitISO4217C-COU",
-        "haz_est_type": "esttype_second",
-        "concur_haz": [
-          {
-            "haz_sub_ID": "ABCDEFGHIJKLMNOPQRSTU",
+            "haz_sub_ID": "ABCDEFGHIJKLMNOPQRSTUVWXY",
             "linkhaz_ext_IDs": [
               {
-                "ext_ID": "ABCDEFGHIJKLMNOPQRS",
-                "ext_ID_db": "ABCDEFGHIJKLMNOPQRSTUV",
-                "ext_ID_org": "ABCDEFGHIJKLM"
+                "ext_ID": "ABCDEFGHI",
+                "ext_ID_db": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
+                "ext_ID_org": "ABCDEFGH"
+              }
+            ],
+            "linkhaz_spec": "CHO012",
+            "linkhaz_occ_known": true,
+            "linkhaz_occ_prob": "ABCDEF",
+            "linkhaz_occ_probdef": "ABCDE",
+            "relationship": "mainhaz-triggers-linkhaz"
+          },
+          {
+            "haz_sub_ID": "ABCDE",
+            "linkhaz_ext_IDs": [
+              {
+                "ext_ID": "ABCDE",
+                "ext_ID_db": "ABCDEFGHIJKLMNOPQ",
+                "ext_ID_org": "ABCDEFGHIJKLMNOPQRSTUV"
               }
             ],
             "linkhaz_spec": "CHO012",
             "linkhaz_occ_known": false,
-            "linkhaz_occ_prob": "ABCD",
-            "linkhaz_occ_probdef": "ABCDEFGHIJKLMN",
-            "relationship": "concurrent-hazards"
-          },
-          {
-            "haz_sub_ID": "ABCDEFGHIJKLMNOPQR",
-            "linkhaz_ext_IDs": [],
-            "linkhaz_spec": "CHO012",
-            "linkhaz_occ_known": true,
-            "linkhaz_occ_prob": "ABCDEFGHIJKLMNOPQRSTUVW",
-            "linkhaz_occ_probdef": "ABCDEFGHIJK",
-            "relationship": "complex-relationship"
-          }
-        ]
-      },
-      "hazard_taxonomy": {
-        "haz_Ab": "FS",
-        "haz_type": "haztypehydromet",
-        "haz_cluster": "haztechindfail",
-        "haz_spec": "CHO012"
-      },
-      "temporal": {
-        "haz_sdate": "0924-00-16",
-        "haz_fdate": "2368-13-35"
-      },
-      "spatial": []
-    },
-    {
-      "ID_linkage": {
-        "event_ID": "ABCDEFGHIJKLMNOPQ",
-        "haz_sub_ID": "ABCDEFGHIJKLMNOP",
-        "haz_ext_IDs": []
-      },
-      "source": {
-        "haz_src_db": "ABCDEFGHIJKLMNOPQRST",
-        "haz_src_URL": "ABCDEFGHIJKLMNOPQRST",
-        "haz_src_org": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB"
-      },
-      "hazard_detail": {
-        "haz_maxvalue": 0,
-        "haz_maxunits": "unitISO4217C-EEK",
-        "haz_est_type": "esttype_second",
-        "concur_haz": [
-          {
-            "haz_sub_ID": "ABCDEFGHI",
-            "linkhaz_ext_IDs": [],
-            "linkhaz_spec": "CHO012",
-            "linkhaz_occ_known": true,
-            "linkhaz_occ_prob": "ABCDEFGHIJKLMNOPQRS",
-            "linkhaz_occ_probdef": "ABCDEFGHIJKLMNOP",
+            "linkhaz_occ_prob": "ABCDEFG",
+            "linkhaz_occ_probdef": "ABCDEFGHIJKLMNO",
             "relationship": "mainhaz-triggers-linkhaz"
           }
         ]
       },
       "hazard_taxonomy": {
-        "haz_Ab": "JV",
-        "haz_type": "haztypechem",
-        "haz_cluster": "haztechrad",
+        "haz_Ab": "BT",
         "haz_spec": "CHO012"
       },
       "temporal": {
-        "haz_sdate": "2746-19-17",
-        "haz_fdate": "1094-01-02"
+        "haz_sdate": "2710-10-22",
+        "haz_fdate": "2811-04-11"
       },
       "spatial": [
         {
           "ID_linkage": {
-            "haz_spat_ID": "ABCDEFGHIJKLMNOPQ",
-            "haz_spat_fileloc": "ABCDEFGHIJKLMNOPQR",
-            "haz_spat_colname": ["ABCDEFGHIJKLMNOPQRSTUVWXYZ", "ABCDEFGHIJKLMNO", "ABCDEFGHIJKLMNOPQRSTU", "ABCDEFGHIJKLMNO", "ABCDEFGHIJKLMN"],
-            "haz_spat_rowname": "ABCDEFGHIJKLMNOPQRSTUVWXY"
+            "haz_spat_ID": "ABCDEFG",
+            "haz_spat_fileloc": "ABCDEFGHIJKLMNO",
+            "haz_spat_colname": [],
+            "haz_spat_rowname": ["ABCDE", "ABCDEFGH", "ABCDEFGHIJKLMNO"]
           },
           "spatial_info": {
-            "haz_ISO3s": "KBG",
-            "haz_spat_scale": "multi-national",
-            "haz_spat_type": "raster",
-            "haz_spat_fileread": "spatfstantiff",
+            "haz_ISO3s": "GKC",
+            "haz_spat_covcode": "points",
+            "haz_spat_fileread": "spatfstanshp",
             "haz_spat_res": 0,
             "haz_spat_resunits": "spatreslines",
-            "haz_spat_crs": "ESRI:4",
-            "haz_spat_unit": "unitISO4217C-SBD"
+            "haz_spat_crs": "ESRI:80",
+            "haz_spat_unit": "unitsml_per_min"
           },
           "source": {
-            "haz_spat_srcdb": "ABCDEFGHI",
-            "haz_spat_URL": "ABCDEFG",
-            "haz_spat_srcorg": "ABCDEFGH"
+            "haz_spat_srcdb": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
+            "haz_spat_URL": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+            "haz_spat_srcorg": "ABCDEFGHIJKLMNO"
           }
         },
         {
           "ID_linkage": {
-            "haz_spat_ID": "ABCDEF",
-            "haz_spat_fileloc": "ABCDEFG",
-            "haz_spat_colname": ["ABCDEFGHIJK", "ABCDEFGHIJKLMNOPQRSTUVWXYZABC"],
-            "haz_spat_rowname": ["ABCDEFGHIJ", "ABCDEFGHIJKLMNOPQRSTU", "ABCDEFGHIJKLM", "ABCDEFGHIJKLMNOPQRS"]
+            "haz_spat_ID": "ABCDEFGHIJKLMNOPQR",
+            "haz_spat_fileloc": "ABCDEF",
+            "haz_spat_colname": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
+            "haz_spat_rowname": []
           },
           "spatial_info": {
-            "haz_ISO3s": "ALD",
-            "haz_spat_scale": "sub-national",
-            "haz_spat_type": "raster",
-            "haz_spat_fileread": "spatfstantiff",
+            "haz_ISO3s": "GEJ",
+            "haz_spat_covcode": "points",
+            "haz_spat_fileread": "spatfstanshp",
             "haz_spat_res": 0,
-            "haz_spat_resunits": "spatresother",
-            "haz_spat_crs": "ESRI:9",
-            "haz_spat_unit": "unitsdeg_dec_min"
+            "haz_spat_resunits": "spatrespoints",
+            "haz_spat_crs": "ESRI:4",
+            "haz_spat_unit": "unitISO4217C-ESA"
           },
           "source": {
-            "haz_spat_srcdb": "ABCDEF",
-            "haz_spat_URL": "ABCDEFGHIJKLMNOPQRST",
-            "haz_spat_srcorg": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB"
+            "haz_spat_srcdb": "ABCDEFGHIJKLMNOPQRSTU",
+            "haz_spat_URL": "ABCDEFGHIJKLMNOPQ",
+            "haz_spat_srcorg": "ABCDEFGHIJKLMNOPQRST"
+          }
+        },
+        {
+          "ID_linkage": {
+            "haz_spat_ID": "ABCDEFGHIJKLMNOPQR",
+            "haz_spat_fileloc": "ABCDEFG",
+            "haz_spat_colname": "ABCDEFGHI",
+            "haz_spat_rowname": "ABCDEFGHIJKLMN"
+          },
+          "spatial_info": {
+            "haz_ISO3s": "ZSL",
+            "haz_spat_covcode": "polygons",
+            "haz_spat_fileread": "spatfstanshp",
+            "haz_spat_res": 0,
+            "haz_spat_resunits": "spatreslines",
+            "haz_spat_crs": "EPSG:12",
+            "haz_spat_unit": "unitsMWh"
+          },
+          "source": {
+            "haz_spat_srcdb": "ABCDEFGHIJKLMNOPQRS",
+            "haz_spat_URL": "ABCDEFGHIJKLM",
+            "haz_spat_srcorg": "ABCDEFGHIJKLM"
           }
         }
       ]
@@ -1238,125 +736,507 @@
     {
       "ID_linkage": {
         "event_ID": "ABCDEFGHIJKLMNOPQRSTU",
-        "haz_sub_ID": "ABCDEFGHIJKLMNOPQR",
+        "haz_sub_ID": "ABCDEFGHIJKLMNOPQRSTU",
         "haz_ext_IDs": [
           {
-            "ext_ID": "ABCDEFGHI",
-            "ext_ID_db": "ABCDEFGHIJKLMNOPQRSTU",
-            "ext_ID_org": "ABCDEFGHIJKLMNOPQRSTU"
+            "ext_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
+            "ext_ID_db": "ABCDEFGHIJKLMNOPQRSTUVW",
+            "ext_ID_org": "ABCDEFGHIJKLMNOPQRSTUVWX"
           }
         ]
       },
       "source": {
-        "haz_src_db": "ABCDEFGHIJKLMNOPQ",
-        "haz_src_URL": "ABCDEFGHIJKLMNOPQRSTUVW",
-        "haz_src_org": "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "haz_src_db": "ABCDEFGHIJKLMNOPQRSTUV",
+        "haz_src_URL": "ABCDEF",
+        "haz_src_org": "ABCDEFGHIJKLMNOPQRSTUVWX"
       },
       "hazard_detail": {
         "haz_maxvalue": 0,
-        "haz_maxunits": "unitISO4217C-ARY",
+        "haz_maxunits": "unitISO4217C-BOV",
         "haz_est_type": "esttype_model",
         "concur_haz": [
           {
-            "haz_sub_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-            "linkhaz_ext_IDs": [],
+            "haz_sub_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
+            "linkhaz_ext_IDs": [
+              {
+                "ext_ID": "ABCDEFG",
+                "ext_ID_db": "ABCDEFGHIJKLMN",
+                "ext_ID_org": "ABCDEFGHIJ"
+              }
+            ],
             "linkhaz_spec": "CHO012",
-            "linkhaz_occ_known": true,
-            "linkhaz_occ_prob": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
-            "linkhaz_occ_probdef": "ABCDEFGHIJKLM",
+            "linkhaz_occ_known": false,
+            "linkhaz_occ_prob": "ABCDEFGHIJKLMNOP",
+            "linkhaz_occ_probdef": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
             "relationship": "concurrent-hazards"
           },
           {
-            "haz_sub_ID": "ABCDEFGHIJK",
+            "haz_sub_ID": "ABCDEFGHIJKLMNOP",
             "linkhaz_ext_IDs": [
               {
-                "ext_ID": "ABCDEFGHIJ",
-                "ext_ID_db": "ABCDEFGHIJKLMNOPQ",
-                "ext_ID_org": "ABCDEFGHIJKL"
+                "ext_ID": "ABCDE",
+                "ext_ID_db": "ABCDEFGHIJKLMNOPQRSTUVWX",
+                "ext_ID_org": "ABCDEFGHIJKLMNOPQ"
               }
             ],
             "linkhaz_spec": "CHO012",
             "linkhaz_occ_known": false,
-            "linkhaz_occ_prob": "ABCDEFGHIJKLMNOPQRSTUVW",
-            "linkhaz_occ_probdef": "ABCDEFGH",
-            "relationship": "complex-relationship"
-          },
-          {
-            "haz_sub_ID": "ABCDEFGHIJKLMNOPQRST",
-            "linkhaz_ext_IDs": [],
-            "linkhaz_spec": "CHO012",
-            "linkhaz_occ_known": true,
-            "linkhaz_occ_prob": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
-            "linkhaz_occ_probdef": "ABCDEFGHIJKLM",
-            "relationship": "concurrent-hazards"
-          },
-          {
-            "haz_sub_ID": "ABCDEFGHIJKLMNOPQRSTUVWX",
-            "linkhaz_ext_IDs": [
-              {
-                "ext_ID": "ABCDEFGHIJKLMNOPQRSTUVW",
-                "ext_ID_db": "ABCDEFG",
-                "ext_ID_org": "ABCDEF"
-              }
-            ],
-            "linkhaz_spec": "CHO012",
-            "linkhaz_occ_known": false,
-            "linkhaz_occ_prob": "ABCDEFGHIJKLMNOPQRSTUVWX",
-            "linkhaz_occ_probdef": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
-            "relationship": "mainhaz-triggers-linkhaz"
-          },
-          {
-            "haz_sub_ID": "ABCDEFGHIJK",
-            "linkhaz_ext_IDs": [
-              {
-                "ext_ID": "ABCDEFGHIJKLMNOP",
-                "ext_ID_db": "ABCDE",
-                "ext_ID_org": "ABCDEFGHIJKLMNOPQR"
-              }
-            ],
-            "linkhaz_spec": "CHO012",
-            "linkhaz_occ_known": false,
-            "linkhaz_occ_prob": "ABCDEFG",
-            "linkhaz_occ_probdef": "ABCDEFGHIJKLMNOPQRS",
-            "relationship": "complex-relationship"
-          },
-          {
-            "haz_sub_ID": "ABCDEFGHIJKLMNOPQR",
-            "linkhaz_ext_IDs": [],
-            "linkhaz_spec": "CHO012",
-            "linkhaz_occ_known": true,
-            "linkhaz_occ_prob": "ABCDEFG",
+            "linkhaz_occ_prob": "ABCDEFGHIJKL",
             "linkhaz_occ_probdef": "ABCD",
-            "relationship": "linkhaz-triggered-by-mainhaz"
+            "relationship": "concurrent-hazards"
           },
           {
-            "haz_sub_ID": "ABCDEFGHIJKLMNOPQRSTUV",
+            "haz_sub_ID": "ABCDEFGHIJKLMN",
             "linkhaz_ext_IDs": [
               {
-                "ext_ID": "ABCDEFGHIJKLMNOPQRSTUV",
-                "ext_ID_db": "ABCDEFGHIJKLMNOPQRS",
-                "ext_ID_org": "ABCDEF"
+                "ext_ID": "ABCDEFGHIJKL",
+                "ext_ID_db": "ABCDEFGHIJKLMNO",
+                "ext_ID_org": "ABCDEFGHIJKLMNOPQRSTU"
               }
             ],
             "linkhaz_spec": "CHO012",
-            "linkhaz_occ_known": false,
-            "linkhaz_occ_prob": "ABCDEFGHIJKLMNOPQRST",
-            "linkhaz_occ_probdef": "ABCDEFGH",
-            "relationship": "linkhaz-triggered-by-mainhaz"
+            "linkhaz_occ_known": true,
+            "linkhaz_occ_prob": "ABCDEFGHIJKLMNO",
+            "linkhaz_occ_probdef": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
+            "relationship": "concurrent-hazards"
           }
         ]
       },
       "hazard_taxonomy": {
-        "haz_Ab": "ER",
-        "haz_type": "haztypetech",
-        "haz_cluster": "hazhmmarine",
+        "haz_Ab": "RR",
         "haz_spec": "CHO012"
       },
       "temporal": {
-        "haz_sdate": "0316-18-37",
-        "haz_fdate": "1033-04-27"
+        "haz_sdate": "1260-00-04",
+        "haz_fdate": "0990-15-00"
       },
-      "spatial": []
+      "spatial": [
+        {
+          "ID_linkage": {
+            "haz_spat_ID": "ABCDEFG",
+            "haz_spat_fileloc": "ABCDEFGHIJ",
+            "haz_spat_colname": ["ABCDEFGHIJKLMNOPQRSTUVWXYZABC", "ABCDEFGHIJKLMNOPQRSTU", "ABCDEFGHIJKLMNOPQRS", "ABCDEFGHIJKLMNOPQRSTU", "ABCDEFGHIJKLMNOPQRSTUVWXY", "ABCDEFGHIJKLMNOPQRSTUVWX", "ABCDE"],
+            "haz_spat_rowname": []
+          },
+          "spatial_info": {
+            "haz_ISO3s": "KQY",
+            "haz_spat_covcode": "points",
+            "haz_spat_fileread": "spatfstanshp",
+            "haz_spat_res": 0,
+            "haz_spat_resunits": "spatreslines",
+            "haz_spat_crs": "EPSG:2",
+            "haz_spat_unit": "unitshr"
+          },
+          "source": {
+            "haz_spat_srcdb": "ABCDEFGHIJKLMN",
+            "haz_spat_URL": "ABCDEFGHIJKLMNOPQRSTUV",
+            "haz_spat_srcorg": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC"
+          }
+        },
+        {
+          "ID_linkage": {
+            "haz_spat_ID": "ABCDEFGHIJKLMNOPQRST",
+            "haz_spat_fileloc": "ABCDEFGHI",
+            "haz_spat_colname": [],
+            "haz_spat_rowname": []
+          },
+          "spatial_info": {
+            "haz_ISO3s": "BYD",
+            "haz_spat_covcode": "raster",
+            "haz_spat_fileread": "spatfstantiff",
+            "haz_spat_res": 0,
+            "haz_spat_resunits": "spatresunknown",
+            "haz_spat_crs": "ESRI:0",
+            "haz_spat_unit": "unitsimp_pint"
+          },
+          "source": {
+            "haz_spat_srcdb": "ABCDEFGHI",
+            "haz_spat_URL": "ABCD",
+            "haz_spat_srcorg": "ABCDEF"
+          }
+        },
+        {
+          "ID_linkage": {
+            "haz_spat_ID": "ABCDEFGHIJKLMNOPQRSTUV",
+            "haz_spat_fileloc": "ABCDEFGHIJKLMNOPQR",
+            "haz_spat_colname": ["ABCDEFGHIJKLMNOPQR", "ABCDEFGHIJK", "ABCDEFGHIJKLMNOP", "ABCDEFGHIJKLMN", "ABCDEFGHIJKLMNOPQ", "ABCDEFGHIJKLMNOPQRSTUVW", "ABCDEFGHIJKLMNO"],
+            "haz_spat_rowname": "ABCDEFGHIJK"
+          },
+          "spatial_info": {
+            "haz_ISO3s": "MUT",
+            "haz_spat_covcode": "polygons",
+            "haz_spat_fileread": "spatfstanshp",
+            "haz_spat_res": 0,
+            "haz_spat_resunits": "spatresother",
+            "haz_spat_crs": "EPSG:0",
+            "haz_spat_unit": "unitsft"
+          },
+          "source": {
+            "haz_spat_srcdb": "ABCDEFGH",
+            "haz_spat_URL": "ABCDEFGHIJKLMNOPQRSTUV",
+            "haz_spat_srcorg": "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+          }
+        },
+        {
+          "ID_linkage": {
+            "haz_spat_ID": "ABCDEF",
+            "haz_spat_fileloc": "ABCDEFGHIJKLMNOPQRS",
+            "haz_spat_colname": ["ABCDEFGHIJK", "ABCDEFGHIJKLMNOPQRST", "ABCDEFGHIJKLMNOPQ", "ABCDEFGH", "ABCDEFGHIJKLMNO", "ABCDEFG", "ABCD"],
+            "haz_spat_rowname": ["ABCDEFGHIJKLMNOPQRSTUVWXYZABC", "ABCDEFGHIJKLMNOPQRSTUVWXYZABC", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "ABCDEFGHIJKLMN"]
+          },
+          "spatial_info": {
+            "haz_ISO3s": "SGN",
+            "haz_spat_covcode": "points",
+            "haz_spat_fileread": "spatfstangeot",
+            "haz_spat_res": 0,
+            "haz_spat_resunits": "spatreslines",
+            "haz_spat_crs": "EPSG:98",
+            "haz_spat_unit": "unitskm2"
+          },
+          "source": {
+            "haz_spat_srcdb": "ABCDEFGHIJKLMNOP",
+            "haz_spat_URL": "ABCDEFGHIJKLMN",
+            "haz_spat_srcorg": "ABCDEFGHIJKLMNOPQRS"
+          }
+        },
+        {
+          "ID_linkage": {
+            "haz_spat_ID": "ABCDEF",
+            "haz_spat_fileloc": "ABCDEFGHIJKLMNOPQRSTU",
+            "haz_spat_colname": "ABCDEFG",
+            "haz_spat_rowname": ["ABCDEFGHIJKLMNOPQRSTUVWXYZA", "ABCDEFGHIJK", "ABCDEFGHIJKLMNOPQR", "ABCDEFGHIJKL"]
+          },
+          "spatial_info": {
+            "haz_ISO3s": "YDT",
+            "haz_spat_covcode": "lines",
+            "haz_spat_fileread": "spatfstangeot",
+            "haz_spat_res": 0,
+            "haz_spat_resunits": "spatresunknown",
+            "haz_spat_crs": "ESRI:924",
+            "haz_spat_unit": "unitISO4217C-FIM"
+          },
+          "source": {
+            "haz_spat_srcdb": "ABCDEFGHIJKLMNOPQ",
+            "haz_spat_URL": "ABCDEFGHIJKLMNOP",
+            "haz_spat_srcorg": "ABCDEFGHIJKLM"
+          }
+        },
+        {
+          "ID_linkage": {
+            "haz_spat_ID": "ABCDEFGHIJKLMNOPQR",
+            "haz_spat_fileloc": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+            "haz_spat_colname": ["ABCDEFGHIJ", "ABCDEFGHIJKLMNOPQRSTUVWXYZAB", "ABCD"],
+            "haz_spat_rowname": ["ABCDEFG", "ABCDEFGHIJKLMNOPQRSTU", "ABCDEFGHIJKLMNOPQ", "ABCDEFGHIJKLMNOPQR"]
+          },
+          "spatial_info": {
+            "haz_ISO3s": "QEM",
+            "haz_spat_covcode": "lines",
+            "haz_spat_fileread": "spatfstanshp",
+            "haz_spat_res": 0,
+            "haz_spat_resunits": "spatresother",
+            "haz_spat_crs": "ESRI:77",
+            "haz_spat_unit": "unitsN-m"
+          },
+          "source": {
+            "haz_spat_srcdb": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
+            "haz_spat_URL": "ABCDEFGHIJKLM",
+            "haz_spat_srcorg": "ABCDEFGHIJKLMNOPQR"
+          }
+        },
+        {
+          "ID_linkage": {
+            "haz_spat_ID": "ABCDEFGHIJKL",
+            "haz_spat_fileloc": "ABCDE",
+            "haz_spat_colname": ["ABCDEFGHIJKLMN", "ABCDEFGHIJKLMNOPQR", "ABCD", "ABCDEFGHIJKLMNOP", "ABCDEFGHIJKLMNOPQRSTUVWXYZABC", "ABCD"],
+            "haz_spat_rowname": ["ABCDEFGHIJKLMNOPQRSTUVWXYZA", "ABCDEFGHIJK", "ABCDEFG"]
+          },
+          "spatial_info": {
+            "haz_ISO3s": "YET",
+            "haz_spat_covcode": "polygons",
+            "haz_spat_fileread": "spatfstanshp",
+            "haz_spat_res": 0,
+            "haz_spat_resunits": "spatreslines",
+            "haz_spat_crs": "EPSG:29",
+            "haz_spat_unit": "unitISO4217C-XBC"
+          },
+          "source": {
+            "haz_spat_srcdb": "ABCDEFGHIJKLMNOPQRST",
+            "haz_spat_URL": "ABCDEFGHIJK",
+            "haz_spat_srcorg": "ABCDEFGHIJKLMNO"
+          }
+        }
+      ]
+    },
+    {
+      "ID_linkage": {
+        "event_ID": "ABCDEFGH",
+        "haz_sub_ID": "ABCDE",
+        "haz_ext_IDs": [
+          {
+            "ext_ID": "ABCDEFGH",
+            "ext_ID_db": "ABCD",
+            "ext_ID_org": "ABCDEFGHIJKLMNOPQ"
+          }
+        ]
+      },
+      "source": {
+        "haz_src_db": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
+        "haz_src_URL": "ABCDEFG",
+        "haz_src_org": "ABCDEFGHIJKLMNOPQRSTUVWX"
+      },
+      "hazard_detail": {
+        "haz_maxvalue": 0,
+        "haz_maxunits": "unitsml_per_sec",
+        "haz_est_type": "esttype_model",
+        "concur_haz": [
+          {
+            "haz_sub_ID": "ABCDEFGHIJKL",
+            "linkhaz_ext_IDs": [
+              {
+                "ext_ID": "ABCD",
+                "ext_ID_db": "ABCDEFGHIJ",
+                "ext_ID_org": "ABCDEFGHIJKLMNOPQRSTU"
+              }
+            ],
+            "linkhaz_spec": "CHO012",
+            "linkhaz_occ_known": true,
+            "linkhaz_occ_prob": "ABCDEFGHIJKLMNOP",
+            "linkhaz_occ_probdef": "ABCDEFGHIJKLMNOPQRSTU",
+            "relationship": "linkhaz-triggered-by-mainhaz"
+          },
+          {
+            "haz_sub_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
+            "linkhaz_ext_IDs": [],
+            "linkhaz_spec": "CHO012",
+            "linkhaz_occ_known": false,
+            "linkhaz_occ_prob": "ABCDEFGHIJKLMNOPQRSTU",
+            "linkhaz_occ_probdef": "ABCD",
+            "relationship": "mainhaz-triggers-linkhaz"
+          }
+        ]
+      },
+      "hazard_taxonomy": {
+        "haz_Ab": "BZ",
+        "haz_spec": "CHO012"
+      },
+      "temporal": {
+        "haz_sdate": "1683-13-18",
+        "haz_fdate": "0812-18-11"
+      },
+      "spatial": [
+        {
+          "ID_linkage": {
+            "haz_spat_ID": "ABCDEFG",
+            "haz_spat_fileloc": "ABCDEFGHIJKL",
+            "haz_spat_colname": ["ABCDEFGHIJKLMNOPQRSTUVWXYZA", "ABCDEFGHIJKLMNOPQRSTU", "ABCDEFGHIJKLMNOPQRSTUVWXYZABC"],
+            "haz_spat_rowname": ["ABCDEFGHIJKLMNOPQRSTUVWXYZ", "ABCDEFGHIJKLMNOPQRSTUVWX", "ABCDEFGHIJKLMNOP", "ABCDEFGHIJKLMNOP", "ABCDEFG", "ABCDEF", "ABCDEFGHIJKL"]
+          },
+          "spatial_info": {
+            "haz_ISO3s": "EQR",
+            "haz_spat_covcode": "raster",
+            "haz_spat_fileread": "spatfstanshp",
+            "haz_spat_res": 0,
+            "haz_spat_resunits": "spatresother",
+            "haz_spat_crs": "ESRI:340",
+            "haz_spat_unit": "unitISO4217C-GEK"
+          },
+          "source": {
+            "haz_spat_srcdb": "ABCDEFGHIJKLMNOPQRS",
+            "haz_spat_URL": "ABCDEFGHIJKLMNOPQRSTUVWXY",
+            "haz_spat_srcorg": "ABCDEFGHIJKLMNOPQRSTUVWX"
+          }
+        }
+      ]
+    },
+    {
+      "ID_linkage": {
+        "event_ID": "ABCDEFGHIJKLMNOPQRST",
+        "haz_sub_ID": "ABCDEFGHIJKL",
+        "haz_ext_IDs": [
+          {
+            "ext_ID": "ABCDEFG",
+            "ext_ID_db": "ABCDEFGHIJKLMNOPQR",
+            "ext_ID_org": "ABCDEFGHIJ"
+          }
+        ]
+      },
+      "source": {
+        "haz_src_db": "ABCDEFGHIJKLM",
+        "haz_src_URL": "ABCDEFGH",
+        "haz_src_org": "ABCDEFGHIJKLMNOPQRSTUVWXY"
+      },
+      "hazard_detail": {
+        "haz_maxvalue": 0,
+        "haz_maxunits": "unitISO4217C-XPT",
+        "haz_est_type": "esttype_second",
+        "concur_haz": [
+          {
+            "haz_sub_ID": "ABCDEFGHIJKL",
+            "linkhaz_ext_IDs": [
+              {
+                "ext_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+                "ext_ID_db": "ABCDEFGHIJKLMNO",
+                "ext_ID_org": "ABCDEFGHIJ"
+              }
+            ],
+            "linkhaz_spec": "CHO012",
+            "linkhaz_occ_known": true,
+            "linkhaz_occ_prob": "ABCDEFGHIJKLMNOPQRSTUVWX",
+            "linkhaz_occ_probdef": "ABCDEF",
+            "relationship": "concurrent-hazards"
+          },
+          {
+            "haz_sub_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
+            "linkhaz_ext_IDs": [
+              {
+                "ext_ID": "ABCDE",
+                "ext_ID_db": "ABCDEFGHIJKLMNOPQRSTUVW",
+                "ext_ID_org": "ABCDEF"
+              }
+            ],
+            "linkhaz_spec": "CHO012",
+            "linkhaz_occ_known": true,
+            "linkhaz_occ_prob": "ABCDEFG",
+            "linkhaz_occ_probdef": "ABCDEFGHIJKLM",
+            "relationship": "complex-relationship"
+          }
+        ]
+      },
+      "hazard_taxonomy": {
+        "haz_Ab": "XM",
+        "haz_spec": "CHO012"
+      },
+      "temporal": {
+        "haz_sdate": "1629-17-36",
+        "haz_fdate": "2400-18-30"
+      },
+      "spatial": [
+        {
+          "ID_linkage": {
+            "haz_spat_ID": "ABCDEFGHIJ",
+            "haz_spat_fileloc": "ABCDEFGHIJKLMNOPQRSTUVWXY",
+            "haz_spat_colname": [],
+            "haz_spat_rowname": ["ABCDEFGHI", "ABCDEFGHI", "ABCDE"]
+          },
+          "spatial_info": {
+            "haz_ISO3s": "QIG",
+            "haz_spat_covcode": "lines",
+            "haz_spat_fileread": "spatfstanshp",
+            "haz_spat_res": 0,
+            "haz_spat_resunits": "spatresother",
+            "haz_spat_crs": "EPSG:915",
+            "haz_spat_unit": "unitISO4217C-ISK"
+          },
+          "source": {
+            "haz_spat_srcdb": "ABCDEFGHIJKLMNOPQR",
+            "haz_spat_URL": "ABCDEFGHIJKLMNOPQR",
+            "haz_spat_srcorg": "ABCDEFGHIJKL"
+          }
+        },
+        {
+          "ID_linkage": {
+            "haz_spat_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
+            "haz_spat_fileloc": "ABCDEFGHIJKLMNOPQ",
+            "haz_spat_colname": ["ABCDEFGHI", "ABCDEFGHIJKLMNOPQR", "ABCDEFGHIJKLMNOPQRST", "ABCDEFGHIJKLMNOPQRSTUVWXYZ"],
+            "haz_spat_rowname": ["ABCDEFGHIJKLM", "ABCDEFGHIJKLMNOPQ", "ABCDEFGHIJKLMNOPQRSTUV", "ABCDEFGHIJKLMNOPQ"]
+          },
+          "spatial_info": {
+            "haz_ISO3s": "PFX",
+            "haz_spat_covcode": "lines",
+            "haz_spat_fileread": "spatfstanshp",
+            "haz_spat_res": 0,
+            "haz_spat_resunits": "spatrespoints",
+            "haz_spat_crs": "ESRI:4",
+            "haz_spat_unit": "unitsbar"
+          },
+          "source": {
+            "haz_spat_srcdb": "ABCDEFGH",
+            "haz_spat_URL": "ABCDEFGHIJK",
+            "haz_spat_srcorg": "ABCDE"
+          }
+        }
+      ]
+    },
+    {
+      "ID_linkage": {
+        "event_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
+        "haz_sub_ID": "ABCDEFGHIJKLMNOPQRSTU",
+        "haz_ext_IDs": []
+      },
+      "source": {
+        "haz_src_db": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
+        "haz_src_URL": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
+        "haz_src_org": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB"
+      },
+      "hazard_detail": {
+        "haz_maxvalue": 0,
+        "haz_maxunits": "unitISO4217C-YUD",
+        "haz_est_type": "esttype_model",
+        "concur_haz": [
+          {
+            "haz_sub_ID": "ABCD",
+            "linkhaz_ext_IDs": [
+              {
+                "ext_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
+                "ext_ID_db": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
+                "ext_ID_org": "ABCDEFGHIJ"
+              }
+            ],
+            "linkhaz_spec": "CHO012",
+            "linkhaz_occ_known": true,
+            "linkhaz_occ_prob": "ABCDEFGHIJKLMNOPQR",
+            "linkhaz_occ_probdef": "ABCDEFGHIJKLMNOPQRSTUVWX",
+            "relationship": "complex-relationship"
+          },
+          {
+            "haz_sub_ID": "ABCDEFGHIJK",
+            "linkhaz_ext_IDs": [
+              {
+                "ext_ID": "ABCDEFGHIJKLMN",
+                "ext_ID_db": "ABCDEF",
+                "ext_ID_org": "ABCDEFGHIJKLMNOPQRSTUVWXYZA"
+              }
+            ],
+            "linkhaz_spec": "CHO012",
+            "linkhaz_occ_known": true,
+            "linkhaz_occ_prob": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
+            "linkhaz_occ_probdef": "ABCDEFGHIJKLMNOPQRSTUVWX",
+            "relationship": "mainhaz-triggers-linkhaz"
+          }
+        ]
+      },
+      "hazard_taxonomy": {
+        "haz_Ab": "ZL",
+        "haz_spec": "CHO012"
+      },
+      "temporal": {
+        "haz_sdate": "1378-00-37",
+        "haz_fdate": "0142-05-03"
+      },
+      "spatial": [
+        {
+          "ID_linkage": {
+            "haz_spat_ID": "ABCDEFGHIJK",
+            "haz_spat_fileloc": "ABCDEFGHIJKLM",
+            "haz_spat_colname": "ABCDEFGHIJKLMNOPQRSTUVWXY",
+            "haz_spat_rowname": []
+          },
+          "spatial_info": {
+            "haz_ISO3s": "ZUN",
+            "haz_spat_covcode": "raster",
+            "haz_spat_fileread": "spatfstanshp",
+            "haz_spat_res": 0,
+            "haz_spat_resunits": "adminlevel",
+            "haz_spat_crs": "ESRI:5389",
+            "haz_spat_unit": "unitISO4217C-LVL"
+          },
+          "source": {
+            "haz_spat_srcdb": "ABCDEFGHIJKLMNOPQ",
+            "haz_spat_URL": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
+            "haz_spat_srcorg": "ABCDEFGHIJKL"
+          }
+        }
+      ]
     }
   ],
   "taxonomies": {
@@ -7259,121 +7139,30 @@
     ],
     "src_info": [
       {
-        "src_org_code": "ABCDEFGHIJKLMNOPQR",
-        "src_org_lab": "ABCDEFGHIJKLMNOPQRSTUVWX",
-        "src_org_typecode": "orgtypenews",
-        "src_org_typelab": "UN & International Organisations",
-        "src_org_email": "ABCDEFGHIJKL",
-        "src_db_code": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
-        "src_db_lab": "ABCDEFGHI",
-        "src_db_attr": "ABCDEFGHIJKLMNOPQRS",
-        "src_db_lic": "ABCDEFGHIJKLMNOPQ",
-        "src_db_URL": "ABCDEFGHIJKLMNO",
-        "src_addinfo": "ABCDEFGHIJ"
-      },
-      {
-        "src_org_code": "ABCDEFGHIJKLM",
-        "src_org_lab": "ABCDEFGHIJKLMNOPQRSTUVWX",
-        "src_org_typecode": "orgtypeacad",
-        "src_org_typelab": "Academic & Scientific",
-        "src_org_email": "ABCDEFGHIJKLMNO",
-        "src_db_code": "ABCDEFGHIJK",
-        "src_db_lab": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
-        "src_db_attr": "ABCDEFGHI",
-        "src_db_lic": "ABCDEFGH",
-        "src_db_URL": "ABCDEF",
-        "src_addinfo": "ABCDEFGHIJKLMNOPQRSTUV"
-      },
-      {
-        "src_org_code": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-        "src_org_lab": "ABCDEFGHIJKLMNO",
-        "src_org_typecode": "orgtypegov",
-        "src_org_typelab": "Private Sector",
-        "src_org_email": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
-        "src_db_code": "ABCDEFGHIJKLMNOPQRST",
-        "src_db_lab": "ABCDEFGHIJKLMN",
-        "src_db_attr": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
-        "src_db_lic": "ABCDEFGHIJKLMNOPQRST",
-        "src_db_URL": "ABCDEFGHI",
-        "src_addinfo": "ABCDEFGHIJKLMNOPQRSTUVWX"
-      },
-      {
-        "src_org_code": "ABCDEFGHIJKLMNOPQRS",
-        "src_org_lab": "ABCDEFGHIJKLMNOPQR",
-        "src_org_typecode": "orgtypeacad",
-        "src_org_typelab": "News & Media",
-        "src_org_email": "ABCDEFGHIJ",
-        "src_db_code": "ABCDEFGHIJKLMNOPQRSTUVW",
-        "src_db_lab": "ABCDEFGHIJKLMNOPQR",
-        "src_db_attr": "ABCDEFGHIJKLMN",
-        "src_db_lic": "ABCDEFGHIJKLMNOPQRSTU",
-        "src_db_URL": "ABCDEFGHIJKLMNOPQRSTUVWXY",
-        "src_addinfo": "ABCDEFGHIJKLMNOPQ"
-      },
-      {
-        "src_org_code": "ABCDEFGHIJKLMNOPQRSTUVWX",
+        "src_org_code": "ABCDEFGHIJKLMNOPQRSTUV",
         "src_org_lab": "ABCDEFGHIJKLMNOPQRSTUVWXY",
         "src_org_typecode": "orgtypeun",
-        "src_org_typelab": "News & Media",
-        "src_org_email": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
-        "src_db_code": "ABCDEFGHIJKLMNOPQRSTUVWX",
-        "src_db_lab": "ABCDEFGHIJKLMNOPQRST",
-        "src_db_attr": "ABCDEFGHIJKLMNOPQRSTUVW",
-        "src_db_lic": "ABCDEF",
-        "src_db_URL": "ABCD",
-        "src_addinfo": "ABCDEFGHI"
-      },
-      {
-        "src_org_code": "ABCDEFGHIJKLMNOPQRSTUVW",
-        "src_org_lab": "ABCDEFGHIJKLMNOPQR",
-        "src_org_typecode": "orgtypepriv",
-        "src_org_typelab": "Academic & Scientific",
-        "src_org_email": "ABCDEFGHIJKLMNOPQRS",
-        "src_db_code": "ABCDEFGHIJKLMNOPQ",
-        "src_db_lab": "ABCDEFGHIJKLMN",
-        "src_db_attr": "ABCDEFGHIJKLM",
-        "src_db_lic": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-        "src_db_URL": "ABCDEF",
-        "src_addinfo": "ABCD"
-      },
-      {
-        "src_org_code": "ABCDEFGHIJKLMNOPQRSTUVW",
-        "src_org_lab": "ABCDEFGH",
-        "src_org_typecode": "orgtypenews",
         "src_org_typelab": "Others",
-        "src_org_email": "ABCDEFGHIJKLMNOP",
-        "src_db_code": "ABCDEFGHIJKLMNOPQRSTU",
-        "src_db_lab": "ABCDEFGHIJKLMNOPQRSTU",
-        "src_db_attr": "ABCDE",
-        "src_db_lic": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
+        "src_org_email": "ABCDEFGHIJKLMNOPQRST",
+        "src_db_code": "ABCDEFGHIJKL",
+        "src_db_lab": "ABCDEFG",
+        "src_db_attr": "ABCDEFGHIJK",
+        "src_db_lic": "ABCDEF",
         "src_db_URL": "ABCDEFGHIJKLMNOPQRSTUV",
-        "src_addinfo": "ABCDEFGH"
-      },
-      {
-        "src_org_code": "ABCDEFGHIJKLMNOPQRSTUVWXY",
-        "src_org_lab": "ABCDEF",
-        "src_org_typecode": "orgtypegov",
-        "src_org_typelab": "Academic & Scientific",
-        "src_org_email": "ABCDEF",
-        "src_db_code": "ABCDEFGHIJKLM",
-        "src_db_lab": "ABCDEFGHIJKL",
-        "src_db_attr": "ABCDEFGHIJKLMNOPQRSTUVWX",
-        "src_db_lic": "ABCDEFGHIJKLMNOPQRST",
-        "src_db_URL": "ABCDEFGHIJKLMNOPQRSTUVW",
         "src_addinfo": "ABCDEFGHIJKLMNOPQRST"
       },
       {
-        "src_org_code": "ABCDEFGHIJKLMNOPQRSTUVWX",
-        "src_org_lab": "ABCDEFGHIJKLMNOPQRSTUV",
-        "src_org_typecode": "orgtypepriv",
-        "src_org_typelab": "Non Governmental Organisation",
-        "src_org_email": "ABCDEFGHIJK",
-        "src_db_code": "ABCDE",
-        "src_db_lab": "ABCDEFGHI",
-        "src_db_attr": "ABCDEFGHIJKLM",
-        "src_db_lic": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
-        "src_db_URL": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-        "src_addinfo": "ABCDEFGHIJKLMNOPQR"
+        "src_org_code": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
+        "src_org_lab": "ABCDEFGHI",
+        "src_org_typecode": "orgtyperio",
+        "src_org_typelab": "Others",
+        "src_org_email": "ABCDEFGHIJKLMNOPQRSTUVWX",
+        "src_db_code": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
+        "src_db_lab": "ABCDEFGHIJKLMNOPQRSTUVWX",
+        "src_db_attr": "ABCDEFGHIJ",
+        "src_db_lic": "ABCDE",
+        "src_db_URL": "ABCDEFGH",
+        "src_addinfo": "ABCDE"
       }
     ],
     "units_info": [
@@ -11200,36 +10989,6 @@
         "unit_groups_lab": "Spatial-Data Related"
       },
       {
-        "unit_codes": "degrees",
-        "units_lab": "Degrees",
-        "unit_groups_code": "unitsspatial",
-        "unit_groups_lab": "Spatial-Data Related"
-      },
-      {
-        "unit_codes": "arcsecs",
-        "units_lab": "Arc-seconds",
-        "unit_groups_code": "unitsspatial",
-        "unit_groups_lab": "Spatial-Data Related"
-      },
-      {
-        "unit_codes": "arcmins",
-        "units_lab": "Arc-minutes",
-        "unit_groups_code": "unitsspatial",
-        "unit_groups_lab": "Spatial-Data Related"
-      },
-      {
-        "unit_codes": "kiloms",
-        "units_lab": "Kilometres",
-        "unit_groups_code": "unitsspatial",
-        "unit_groups_lab": "Spatial-Data Related"
-      },
-      {
-        "unit_codes": "metres",
-        "units_lab": "Metres",
-        "unit_groups_code": "unitsspatial",
-        "unit_groups_lab": "Spatial-Data Related"
-      },
-      {
         "unit_codes": "spatresother",
         "units_lab": "Other",
         "unit_groups_code": "unitsspatial",
@@ -11300,23 +11059,23 @@
     ],
     "spatial_coverage": [
       {
-        "spat_cov_code": "aggadm",
+        "spat_cov_code": "spat_polygon",
         "spat_cov_lab": "Aggregated to administrative level or specific region outline/shape"
       },
       {
-        "spat_cov_code": "gridded",
+        "spat_cov_code": "spat_raster",
         "spat_cov_lab": "Gridded data (raster/pixel)"
       },
       {
-        "spat_cov_code": "spatpoints",
+        "spat_cov_code": "spat_points",
         "spat_cov_lab": "Points (Non-gridded)"
       },
       {
-        "spat_cov_code": "spatlines",
+        "spat_cov_code": "spat_lines",
         "spat_cov_lab": "Lines (Non-gridded)"
       },
       {
-        "spat_cov_code": "spatcovother",
+        "spat_cov_code": "spat_other",
         "spat_cov_lab": "Other/Unknown"
       }
     ]

@@ -22,7 +22,7 @@ PairEMDATspatial<-function(EMDAT,haz="EQ",GAULexist=F){
   write_csv(outer,paste0("./CleanedData/SocioPoliticalData/EMDAT/fully_complete_",haz,".csv"))
   
   EMDAT$imp_spat_ID<-checkers$ID
-  EMDAT$imp_spat_type<-"polygon"
+  EMDAT$imp_spat_covcode<-"polygon"
   EMDAT$spat_orig<-"GAUL"
   
   # If some spatial objects aren't found, try accessing ADM level 1
@@ -202,7 +202,7 @@ CleanEMDAT<-function(EMDAT){
   EMDAT$imp_spat_srcorg<-EMDAT$imp_src_org<-"CRED - Uni. Louvain"
   EMDAT$imp_src_db<-"EM-DAT"
   EMDAT$imp_src_orgtype<-"orgtypeacad"
-  EMDAT$imp_spat_type<-"Polygon"
+  EMDAT$imp_spat_covcode<-"spat_polygon"
   stop("EMDAT imp_spat_ID needs sorting out")
   # EMDAT$imp_spat_ID<-apply(EMDAT[,c("Admin1.Code","Admin2.Code")],1,function(x) {
   #   if(all(is.na(x))) return(NA_character_)
@@ -285,21 +285,27 @@ CleanEMDAT_old<-function(EMDAT){
   # Column renaming
   colnames(EMDAT)[colnames(EMDAT)=="Event.Name"]<-"ev_name_en"; colnames(EMDAT)[colnames(EMDAT)=="Location"]<-"location"; colnames(EMDAT)[colnames(EMDAT)=="ISO"]<-"imp_ISO3s"
   # Add some of the extra details that are Desinventar-specific
-  EMDAT$imp_est_type<-"esttype_prim"
-  EMDAT$src_URL<-"https://public.emdat.be/"
-  EMDAT$imp_spat_srcorg<-EMDAT$imp_src_org<-"CRED - Uni. Louvain"
-  EMDAT$imp_src_db<-"EM-DAT"
-  EMDAT$imp_src_orgtype<-"orgtypeacad"
-  EMDAT$imp_spat_type<-"Polygon"
-  EMDAT$imp_spat_ID<-apply(EMDAT[,c("Admin1.Code","Admin2.Code")],1,function(x) {
+  EMDAT%<>%mutate(imp_est_type="esttype_prim",
+  imp_src_URL="https://public.emdat.be/",
+  imp_src_org="CRED",
+  imp_src_db="EM-DAT",
+  imp_src_orgtype="orgtypeacad",
+  imp_spat_covcode="spat_polygon",
+  imp_spat_ID=apply(EMDAT[,c("Admin1.Code","Admin2.Code")],1,function(x) {
     if(all(is.na(x))) return(NA_character_)
     if(any(is.na(x))) return(x[!is.na(x)])
     paste0(c(ifelse(is.na(x[1]),"",x[1]),
              ifelse(is.na(x[2]),"",x[2])),
            collapse = ",")
-  },simplify = T)
+  },simplify = T),
+  imp_spat_srcorg="FAO-GAUL",
+  imp_spat_URL="https://owncloud.unepgrid.ch/index.php/s/Rh2hDmXY84VUrPb",
+  imp_spat_res=0,
+  imp_spat_resunits="adminlevel",
+  imp_spat_fileread="spatfstanshp",
+  imp_spat_crs="EPSG:4326")
   # Admin level resolution
-  EMDAT$spat_res<-"ADM-0"; EMDAT$spat_res[!is.na(EMDAT$Admin1.Code)]<-"ADM-1"; EMDAT$spat_res[!is.na(EMDAT$Admin2.Code)]<-"ADM-2"
+  EMDAT$imp_spat_res[!is.na(EMDAT$Admin1.Code)]<-1; EMDAT$imp_spat_res[!is.na(EMDAT$Admin2.Code)]<-2
   # Link to the hazard taxonomy from HIPS
   EMDAT%<>%EMDATHazards_old()
   

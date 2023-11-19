@@ -101,15 +101,20 @@ GetGIDD<-function(){
   # Generate GCDB event ID
   GIDD$event_ID<-GetMonty_ID(GIDD)
   # Add some of the extra details that are Desinventar-specific
-  GIDD$imp_est_type<-"esttype_prim"
-  GIDD$src_URL<-"https://helix-tools-api.idmcdb.org/external-api/gidd/disasters/disaster-export/"
-  GIDD$imp_spat_srcorg<-GIDD$imp_src_org<-"Internal Displacement Monitoring Centre (IDMC)"
-  GIDD$imp_src_db<-"GIDD"
-  GIDD$imp_src_orgtype<-"orgtypengo"
-  GIDD$imp_spat_type<-"Polygon"
-  GIDD$imp_spat_ID<-NA_character_
-  # Admin level resolution
-  GIDD$spat_res<-"ADM-0"
+  GIDD%<>%mutate(imp_est_type="esttype_prim",
+  imp_src_URL="https://helix-tools-api.idmcdb.org/external-api/gidd/disasters/disaster-export/",
+  imp_src_org="IDMC",
+  imp_src_db="GIDD",
+  imp_src_orgtype="orgtypengo",
+  imp_spat_srcorg="IFRC",
+  imp_spat_srcdb="GO",
+  imp_spat_URL="https://go-user-library.ifrc.org/maps",
+  imp_spat_res=0,
+  imp_spat_resunits="adminlevel",
+  imp_spat_fileread="spatfstanshp",
+  imp_spat_crs="EPSG:4326",
+  imp_spat_covcode="spat_polygon",
+  imp_spat_ID=NA_character_)
   # Correct the labels of the impacts, melting by impact detail
   GIDD%<>%ImpLabs(nomDB = "GIDD")
   # Create an impact-specific ID

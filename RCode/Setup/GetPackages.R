@@ -11,6 +11,7 @@ GetSourceFiles<-function(packred){
   source(paste0(dir,'RCode/Other/GetGoogleEarthEngineData.R'))
   # Objects
   source(paste0(dir,'RCode/GCDB_Objects/GCDB_table.R'))
+  source(paste0(dir,'RCode/GCDB_Objects/MontyMethods.R'))
   # Impact related:
   source(paste0(dir,'RCode/MainlyImpactData/GetDesinventar.R'))
   source(paste0(dir,'RCode/MainlyImpactData/GetEMDAT.R'))

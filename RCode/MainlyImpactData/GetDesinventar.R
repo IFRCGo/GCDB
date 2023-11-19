@@ -617,21 +617,30 @@ Des2tabGCDB<-function(Dessie){
   # Generate GCDB event ID
   Dessie$event_ID<-GetMonty_ID(Dessie)
   # Add some of the extra details that are Desinventar-specific
-  Dessie$imp_est_type<-"esttype_prim"
-  Dessie$src_URL<-paste0(desbaseurl,Dessie$imp_ISO3s,".zip")
-  Dessie$imp_spat_srcorg<-Dessie$imp_src_org<-"Local Government Estimate"
-  Dessie$imp_src_db<-"Desinventar"
-  Dessie$imp_src_orgtype<-"orgtypegov"
-  Dessie$imp_spat_type<-"Polygon"
-  Dessie$imp_spat_ID<-apply(Dessie[,c("level1","level2")],1,function(x) {
-    if(all(is.na(x))) return(NA_character_)
-    if(any(is.na(x))) return(x[!is.na(x)])
-    paste0(c(ifelse(is.na(x[1]),"",x[1]),
-           ifelse(is.na(x[2]),"",x[2])),
-           collapse = ",")
-    },simplify = T)
+  Dessie%<>%mutate(
+    imp_est_type="esttype_prim",
+    imp_src_URL=paste0(desbaseurl,imp_ISO3s,".zip"),
+    imp_src_org="Local Government Estimate",
+    imp_src_db="Desinventar",
+    imp_src_orgtype="orgtypegov",
+    imp_spat_covcode="spat_polygon",
+    imp_spat_ID=apply(Dessie[,c("level1","level2")],1,function(x) {
+      if(all(is.na(x))) return(NA_character_)
+      if(any(is.na(x))) return(x[!is.na(x)])
+      paste0(c(ifelse(is.na(x[1]),"",x[1]),
+               ifelse(is.na(x[2]),"",x[2])),
+             collapse = ",")
+    },simplify = T),
+    imp_spat_srcorg="Local Government Estimate",
+    imp_spat_srcdb="Desinventar",
+    imp_spat_URL=paste0(desbaseurl,imp_ISO3s,".zip"),
+    imp_spat_covcode="spat_polygon",
+    imp_spat_res=0,
+    imp_spat_resunits="adminlevel",
+    imp_spat_fileread="spatfstanshp",
+    imp_spat_crs="EPSG:4326")
   # Admin level resolution
-  Dessie$spat_res<-"ADM-0"; Dessie$spat_res[!is.na(Dessie$level1)]<-"ADM-1"; Dessie$spat_res[!is.na(Dessie$level2)]<-"ADM-2"
+  Dessie$imp_spat_res[!is.na(Dessie$level1)]<-1; Dessie$imp_spat_res[!is.na(Dessie$level2)]<-2
   # Clean up!
   Dessie%<>%dplyr::select(-c(level1,level2,name1,name2))
   # Correct the labels of the impacts, melting by impact detail
