@@ -3,6 +3,19 @@ source("./RCode/Setup/GetPackages.R")
 # https://json-schema.org/learn/glossary
 # Get the RDLS JSON schema
 RDLS<-jsonlite::fromJSON("https://docs.riskdatalibrary.org/en/0__2__0/rdls_schema.json")
+
+
+
+
+
+
+stop("rename ext_IDs to something less overlappyyyyy")
+stop("change _fileread to _format, check _spat_fileloc and _spat_URL")
+
+
+
+
+
 # Get the taxonomy data
 taxies<-openxlsx::read.xlsx("./ImpactInformationProfiles.xlsx")
 # Country codes and associated regions

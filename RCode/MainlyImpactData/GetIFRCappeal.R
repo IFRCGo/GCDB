@@ -130,7 +130,7 @@ CleanGO_app<-function(appeal){
   
   # Create an impact-specific ID
   appeal%<>%GetGCDB_impID()
-  appeal$imp_spat_ID<-GetGCDB_spatID(appeal)
+  appeal$imp_spat_ID<-GetGCDB_imp_spatID(appeal)
   # Add missing columns & reorder the dataframe to fit imp_GCDB object
   # appeal%<>%AddEmptyColImp()
   
@@ -220,7 +220,7 @@ CleanGO_field<-function(fieldr){
   
   # Create an impact-specific ID
   fieldr%<>%GetGCDB_impID()
-  fieldr$imp_spat_ID<-GetGCDB_spatID(fieldr)
+  fieldr$imp_spat_ID<-GetGCDB_imp_spatID(fieldr)
   # Add missing columns & reorder the dataframe to fit imp_GCDB object
   fieldr%<>%AddEmptyColImp()
   
@@ -284,7 +284,7 @@ convGOApp_Monty<-function(appeal){
   appMonty<-jsonlite::fromJSON("./Taxonomies/Montandon_JSON-Example.json")
   #@@@@@ Impact-level data @@@@@#
   # IDs
-  ID_linkage<-Add_ImIDlink_Monty(
+  ID_linkage<-Add_ImpIDlink_Monty(
     appeal%>%mutate(haz_sub_ID=NA_character_)%>%
       dplyr::select(event_ID,imp_sub_ID,haz_sub_ID)
   )
@@ -299,7 +299,7 @@ convGOApp_Monty<-function(appeal){
   temporal<-appeal%>%dplyr::select(imp_sdate,imp_fdate)
   # Spatial data relevant to the impact estimates
   # multiple-entry rows: imp_spat_rowname,imp_spat_colname,imp_ISO3s,imp_spat_res,imp_spat_fileread
-  spatial<-Add_ImSpatAll_Monty(
+  spatial<-Add_ImpSpatAll_Monty(
     ID_linkage=data.frame(
       imp_sub_ID=appeal$imp_sub_ID,
       imp_spat_ID="GO-ADM0-World-shp",

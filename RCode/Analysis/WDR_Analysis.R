@@ -811,12 +811,154 @@ ggsave("./Plots/Counts_db_w-LOESS.png",p,width=10,height=6)
 
 
 
+impies%<>%mutate(Region=left_join(impies,readxl::read_xlsx(filer)%>%
+                                    transmute(ISO3=`ISO Code`,continent=`UN Region`),
+                                  by="ISO3")$continent,
+                 Subregion=left_join(impies,readxl::read_xlsx(filer)%>%
+                                       transmute(ISO3=`ISO Code`,continent=`World Bank Regions`),
+                                     by="ISO3")$continent)
+# So that the months are plotted in english
+Sys.setlocale(category = "LC_TIME", locale="en_GB.UTF-8")
+
+month_labs<-c("January","February","March","April",
+              "May","June","July","August",
+              "September","October","November","December")
+# 
+p<-impies%>%filter(!is.na(Subregion) & Subregion!="Not Classified" & 
+                     (haz_type=="haztypehydromet" | haz_Ab=="WF") & imp_src_db=="EM-DAT")%>%
+  distinct(GCDB_ID,.keep_all = T)%>%group_by(Subregion)%>%
+  mutate(difftime=as.numeric((as.Date(ev_sdate)-as.Date(paste0(AsYear(ev_sdate),"-01-01")))/365))%>%
+  ggplot()+geom_density(aes(difftime,y=..scaled..,fill=Subregion),alpha=0.5)+
+  scale_x_continuous(breaks=0:11/12,labels=month_labs)+xlab("Month")+ylab("Proportion")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
+        panel.background = element_rect(fill = "white",
+                                        colour = "white",
+                                        size = 0.5, linetype = "solid"),
+        panel.grid.major = element_line(size = 0.1, linetype = 'solid',
+                                        colour = "grey"),
+        plot.title = element_text(hjust = 0.5))+
+  facet_wrap(~Subregion,nrow=3)+
+  ggtitle("Proportion of Climate- & Weather-Related Events");p
+ggsave("./Plots/PercEvents_Month_Subregion.png",p,height = 8,width=12) 
+# 
+p<-impies%>%filter(!is.na(Subregion) & Subregion!="Not Classified" & 
+                     imp_src_db=="EM-DAT" & haz_Ab%in%c("FL"))%>%
+  distinct(GCDB_ID,.keep_all = T)%>%group_by(Subregion)%>%
+  mutate(difftime=as.numeric((as.Date(ev_sdate)-as.Date(paste0(AsYear(ev_sdate),"-01-01")))/365))%>%
+  ggplot()+geom_density(aes(difftime,y=..scaled..,fill=Subregion),alpha=0.5)+
+  scale_x_continuous(breaks=0:11/12,labels=month_labs)+xlab("Month")+ylab("Proportion")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
+        panel.background = element_rect(fill = "white",
+                                        colour = "white",
+                                        size = 0.5, linetype = "solid"),
+        panel.grid.major = element_line(size = 0.1, linetype = 'solid',
+                                        colour = "grey"),
+        plot.title = element_text(hjust = 0.5))+
+  facet_wrap(~Subregion)+
+  ggtitle("Proportion of Flood Events");p
+ggsave("./Plots/PercFloods_Month_Subregion.png",p,height = 8,width=12) 
+# 
+p<-impies%>%filter(!is.na(Subregion) & Subregion!="Not Classified" & 
+                     (haz_type=="haztypehydromet" | haz_Ab=="WF") & 
+                     imp_det=="impdetallpeop" & imp_type=="imptypdeat")%>%
+  distinct(GCDB_ID,.keep_all = T)%>%group_by(Subregion)%>%
+  mutate(difftime=as.numeric((as.Date(ev_sdate)-as.Date(paste0(AsYear(ev_sdate),"-01-01")))/365),
+         Subregion=as.factor(Subregion))%>%filter(imp_src_db=="EM-DAT")%>%
+  ggplot()+geom_density(aes(difftime,y=..scaled..,weights=imp_value/sum(imp_value),fill=Subregion),alpha=0.5)+
+  scale_x_continuous(breaks=0:11/12,labels=month_labs)+xlab("Month")+ylab("Proportion")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
+        panel.background = element_rect(fill = "white",
+                                        colour = "white",
+                                        size = 0.5, linetype = "solid"),
+        panel.grid.major = element_line(size = 0.1, linetype = 'solid',
+                                        colour = "grey"),
+        plot.title = element_text(hjust = 0.5))+
+  facet_wrap(~Subregion,nrow=3)+
+  ggtitle("Proportion of Climate- & Weather-Related Deaths");p
+ggsave("./Plots/PercDeaths_Month_Subregion.png",p,height = 8,width=12) 
+# 
+p<-impies%>%filter(!is.na(Subregion) & Subregion!="Not Classified" & 
+                     (haz_type=="haztypehydromet" | haz_Ab=="WF") & 
+                     imp_det=="impdetallpeop" & imp_type=="imptypdeat")%>%
+  distinct(GCDB_ID,.keep_all = T)%>%group_by(Subregion)%>%
+  mutate(difftime=as.numeric((as.Date(ev_sdate)-as.Date(paste0(AsYear(ev_sdate),"-01-01")))/365))%>%
+  filter(imp_src_db=="EM-DAT")%>%
+  ggplot()+geom_density(aes(difftime,y=..scaled..,weights=imp_value/sum(imp_value),fill=Subregion),alpha=0.5)+
+  scale_x_continuous(breaks=0:11/12,labels=month_labs)+xlab("Month")+ylab("Proportion")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
+        panel.background = element_rect(fill = "white",
+                                        colour = "white",
+                                        size = 0.5, linetype = "solid"),
+        panel.grid.major = element_line(size = 0.1, linetype = 'solid',
+                                        colour = "grey"),
+        plot.title = element_text(hjust = 0.5))+
+  facet_wrap(~Subregion)+
+  ggtitle("Proportion of Flood Deaths");p
+ggsave("./Plots/PercFloodDeaths_Month_Subregion.png",p,height = 8,width=12) 
+
+
+p<-impies%>%filter(!is.na(Subregion) & Subregion!="Not Classified" & 
+                     (haz_type=="haztypehydromet" | haz_Ab=="WF") & 
+                     imp_det%in%c("impdetinfloccur","impdetloccur") & imp_type=="imptypcost")%>%
+  distinct(GCDB_ID,.keep_all = T)%>%group_by(Subregion)%>%
+  mutate(difftime=as.numeric((as.Date(ev_sdate)-as.Date(paste0(AsYear(ev_sdate),"-01-01")))/365))%>%
+  # filter(imp_src_db=="EM-DAT")%>%
+  ggplot()+geom_density(aes(difftime,y=..scaled..,weights=imp_value/sum(imp_value),
+                            fill=Subregion,linetype=imp_src_db,alpha=imp_src_db))+
+  scale_x_continuous(breaks=0:11/12,labels=month_labs)+xlab("Month")+ylab("Proportion")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
+        panel.background = element_rect(fill = "white",
+                                        colour = "white",
+                                        size = 0.5, linetype = "solid"),
+        panel.grid.major = element_line(size = 0.1, linetype = 'solid',
+                                        colour = "grey"),
+        plot.title = element_text(hjust = 0.5))+
+  scale_alpha_discrete(range = c(0, 0.5))+
+  facet_wrap(~Subregion)+
+  ggtitle("Proportion of Cost");p
+ggsave("./Plots/PercCost_Month_Subregion_perDB.png",p,height = 8,width=12) 
+
+p<-impies%>%filter(!is.na(Subregion) & Subregion!="Not Classified" & 
+                     (haz_type=="haztypehydromet" | haz_Ab=="WF") & 
+                     imp_det=="impdetinfloccur" & imp_type=="imptypcost")%>%
+  distinct(GCDB_ID,.keep_all = T)%>%group_by(Subregion)%>%
+  mutate(difftime=as.numeric((as.Date(ev_sdate)-as.Date(paste0(AsYear(ev_sdate),"-01-01")))/365))%>%
+  # filter(imp_src_db=="EM-DAT")%>%
+  ggplot()+geom_density(aes(difftime,y=..scaled..,weights=imp_value/sum(imp_value),
+                            fill=Subregion),alpha=0.5)+
+  scale_x_continuous(breaks=0:11/12,labels=month_labs)+xlab("Month")+ylab("Proportion")+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
+        panel.background = element_rect(fill = "white",
+                                        colour = "white",
+                                        size = 0.5, linetype = "solid"),
+        panel.grid.major = element_line(size = 0.1, linetype = 'solid',
+                                        colour = "grey"),
+        plot.title = element_text(hjust = 0.5))+
+  scale_alpha_discrete(range = c(0, 0.5))+
+  facet_wrap(~Subregion)+
+  ggtitle("Proportion of Cost (EM-DAT)");p
+ggsave("./Plots/PercCost_Month_Subregion_EMDAT.png",p,height = 8,width=12) 
+
+
+tmp<-impies%>%mutate(Year=AsYear(ev_sdate), Date=as.Date(ev_sdate))%>%
+  filter(haz_Ab=="EQ" & imp_src_db=="EM-DAT" &
+         imp_det=="impdetallpeop" & imp_type=="imptypdeat" &
+         Year<2005)%>%distinct(GCDB_ID,.keep_all = T)%>%
+  arrange(Date)
+tmp%>%group_by(Date)%>%
+  mutate(Count=sum(tmp$Date>unique(Date)-365/2 & tmp$Date<unique(Date)+365/2))%>%
+  ggplot()+geom_point(aes(Date,Count))
+
+tmp
 
 
 
 
+tmp$dateDiff2<-c(0,as.numeric(tmp$Date[2:nrow(tmp)]-tmp$Date[1:(nrow(tmp)-1)]))
 
-
+tmp%>%mutate(Gradient=zoo::rollmean(1/dateDiff2,k=30, fill=NA, align='right'))%>%
+  filter(Gradient<1 & Year>1970)%>%
+  ggplot()+geom_point(aes(Date,Gradient))
 
 
 

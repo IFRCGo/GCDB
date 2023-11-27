@@ -66,7 +66,7 @@ col_tabGCDB<-c("event_ID"="character", # GCDB event ID
                "haz_link"="character", # Associated impactful-hazards to the specific hazard
                "haz_potlink"="character", # Potential other impactful-hazards that may be associated to the specific hazard
                "haz_maxvalue"="numeric", # Maximum intensity or magnitude of the hazard, e.g.  
-               "haz_units"="character", # Units of the max intensity/magnitude value estimate
+               "haz_maxunits"="character", # Units of the max intensity/magnitude value estimate
                "haz_est_type"="character", # Estimate type: primary, secondary, modelled
                "haz_src_db"="character", # Source database name of impact estimate or the curated estimate
                "haz_src_org"="character", # Source organisation of impact estimate or the curated estimate
@@ -84,21 +84,28 @@ col_tabGCDB<-c("event_ID"="character", # GCDB event ID
                "imp_spat_covcode"="character", # Spatial object type
                "imp_spat_res"="character", # Spatial resolution of impact estimate
                "imp_spat_resunits"="character", # Spatial resolution units of impact estimate (e.g. ADM level, raster grid)
+               "imp_spat_crs"="character",
                "imp_spat_srcorg"="character", # organisation of the spatial data
+               "imp_spat_srcdb"="character",
                "imp_spat_srcurl"="character", # URL of the impact estimate
                "imp_spat_colIDs"="character",
                "imp_spat_rowIDs"="character",
                "imp_spat_fileloc"="character",
-               
+               "imp_spat_fileread"="character",
+               "imp_spat_URL"="character",
                # Spatial info - hazard
                "haz_spat_ID"="character", # ID of the spatial object
                "haz_spat_covcode"="character", # Spatial object type
+               "haz_spat_fileread"="character",
                "haz_spat_res"="character", # Spatial resolution of impact estimate
                "haz_spat_resunits"="character", # Spatial resolution units of impact estimate (e.g. ADM level, raster grid)
+               "haz_spat_crs"="character",
                "haz_spat_srcorg"="character", # Source organisation from where the spatial object comes from
                "haz_spat_srcurl"="character", # URL of the impact estimate
-               "haz_spat_colIDs"="character",
-               "haz_spat_rowIDs"="character",
+               "haz_spat_srcdb"="character",
+               "haz_spat_URL"="character",
+               "haz_spat_colname"="character",
+               "haz_spat_rowname"="character",
                "haz_spat_fileloc"="character")
 # Required fields
 oblig_tabGCDB<-c("event_ID","imp_sub_ID","ev_ISO3s","imp_cat","imp_subcat","imp_det","imp_units",
@@ -142,8 +149,13 @@ GetGCDB_hazID<-function(impies){
   return(impies)
 }
 
-GetGCDB_spatID<-function(impies){
+GetGCDB_imp_spatID<-function(impies){
   impies%>%dplyr::select(imp_spat_srcorg,imp_spat_srcdb,imp_spat_covcode,imp_spat_res,imp_spat_resunits)%>%
+    apply(1,function(x) paste0(x,collapse = "-"))
+}
+
+GetGCDB_haz_spatID<-function(hazzies){
+  hazzies%>%dplyr::select(haz_spat_srcorg,haz_spat_srcdb,haz_spat_covcode,haz_spat_res,haz_spat_resunits)%>%
     apply(1,function(x) paste0(x,collapse = "-"))
 }
 

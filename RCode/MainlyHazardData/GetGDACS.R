@@ -167,15 +167,15 @@ severitysplitter<-function(haz,txt){
   # } 
   if(haz=="EQ") {
     return(list(haz_maxvalue=txt$severity,
-                haz_units="unitsrichter"))
+                haz_maxunits="unitsrichter"))
   } else if(haz=="TC") {
     return(list(haz_maxvalue=txt$severity,
-                haz_units="unitskph"))
+                haz_maxunits="unitskph"))
   } else if(haz=="DR") {
     return(list(haz_maxvalue=txt$severity,
-                haz_units="unitskm2"))
+                haz_maxunits="unitskm2"))
   } else return(list(haz_maxvalue=NA_real_,
-                     haz_units=NA_character_))
+                     haz_maxunits=NA_character_))
 }
 
 GetIntMap<-function(hazard="EQ"){
@@ -227,6 +227,7 @@ FilterGDACS<-function(haz=NULL,syear=2016L,fyear=NULL,list_GDACS=NULL,red=F){
                                         episodeid=rep(tmp$properties$episodeid,len),
                                         link=rep(tmp$properties$url$details,len),
                                         imp_ISO3s=dfct$ISO3,
+                                        ev_ISO3s=dfct$ISO3,
                                         country=dfct$country,
                                         ev_sdate=rep(as.Date(as.POSIXct(tmp$properties$fromdate),format = "%Y%m%d"),len),
                                         ev_fdate=rep(as.Date(as.POSIXct(tmp$properties$todate),format = "%Y%m%d"),len),
@@ -237,7 +238,7 @@ FilterGDACS<-function(haz=NULL,syear=2016L,fyear=NULL,list_GDACS=NULL,red=F){
                                         haz_src_org=tmp$properties$source,
                                         ext_IDs=rep(tmp$properties$glide,len),
                                         ext_ID_dbs="GLIDE",
-                                        ext_ID_orgs="Asian Disaster Reduction Center (ADRC)",
+                                        ext_ID_orgs="ADRC",
                                         geom_type=rep(tmp$geometry$type,len),
                                         cent_lon=rep(tmp$geometry$coordinates[1],len),
                                         cent_lat=rep(tmp$geometry$coordinates[2],len),
@@ -266,34 +267,59 @@ GDACSHazards<-function(GDACS){
 convGDACS_GCDB<-function(GDACS){
   # Form the ID for the event
   GDACS$event_ID<-GetMonty_ID(GDACS)
+  # Make the dates the correct type
+  GDACS%<>%mutate_at(vars(ev_sdate,ev_fdate),as.character)
   # Date shifts
-  GDACS$imp_sdate<-GDACS$imp_unitdate<-GDACS$haz_sdate<-as.character(GDACS$ev_sdate)
+  GDACS$imp_sdate<-GDACS$imp_unitdate<-GDACS$haz_sdate<-GDACS$ev_sdate
   GDACS$imp_fdate<-GDACS$haz_fdate<-GDACS$ev_fdate
   # Add the continent, then remove the unnecesary layers
-  GDACS%<>%mutate(region=convIso3Continent(imp_ISO3s))%>%
+  GDACS%<>%mutate(region=convIso3Continent_alt(imp_ISO3s))%>%
     filter(!is.na(region))
   # Add alertscore as the impact value
-  GDACS$imp_value<-GDACS$alertscore
-  GDACS$imp_cat<-"impother"
-  GDACS$imp_subcat<-"imptyperisk"
-  GDACS$imp_det<-"impdetalert"
-  GDACS$imp_type<-"imptypalert"
-  GDACS$imp_units<-"unitsgdacsalert"
-  # This estimate is modelled
-  GDACS$imp_est_type<-"esttype_model"
-  GDACS$haz_est_type<-"esttype_second"
-  # Organisation
-  GDACS$imp_src_db<-"GDACS"
-  GDACS$imp_src_org<-"European Commission"
-  GDACS$imp_src_orgtype<-"orgtyperio"
+  GDACS%<>%mutate(
+    imp_value=GDACS$alertscore,
+    imp_cat="impother",
+    imp_subcat="imptyperisk",
+    imp_det="impdetalert",
+    imp_type="imptypalert",
+    imp_units="unitsgdacsalert",
+    # This estimate is modelled
+    imp_est_type="esttype_model",
+    haz_est_type="esttype_second",
+    # Organisation
+    imp_src_db="GDACS",
+    imp_src_org="EC-JRC",
+    imp_src_orgtype="orgtyperio",
+    imp_spat_covcode="spat_polygon",
+    imp_spat_res=0,
+    imp_spat_resunits="adminlevel",
+    imp_spat_fileread="spatfstanshp",
+    imp_spat_crs="EPSG:4326",
+    imp_spat_srcorg="IFRC",
+    imp_spat_srcdb="GO-Maps",
+    imp_spat_URL="https://go-user-library.ifrc.org/maps",
+    imp_spat_ID=NA_character_,
+    haz_ISO3s=imp_ISO3s,
+    haz_spat_covcode="spat_polygon",
+    haz_spat_res=NA_real_,
+    haz_spat_resunits="spatresother",
+    haz_spat_fileread="spatfstanshp",
+    haz_spat_fileloc=src_URL,
+    haz_spat_crs="EPSG:4326",
+    haz_spat_srcorg="EC-JRC",
+    haz_spat_srcdb="GDACS",
+    haz_spat_URL=src_URL)
+  
   colnames(GDACS)[colnames(GDACS)=="src_URL"]<-"haz_src_URL"
   colnames(GDACS)[colnames(GDACS)=="link"]<-"imp_src_URL"
   # Convert to the UNDRR-ISC hazard taxonomy
   GDACS%<>%GDACSHazards()
   # Create the impact and hazard sub-ID for the speciic level, not event level
   GDACS%<>%GetGCDB_impID()
+  GDACS$imp_spat_ID<-GetGCDB_imp_spatID(GDACS)
   # Now for hazards
   GDACS%<>%GetGCDB_hazID()
+  GDACS$haz_spat_ID<-GetGCDB_haz_spatID(GDACS)
   # Add the extra columns to make it officially a GCDB object
   GDACS%>%AddEmptyColImp()%>%distinct()
 }
@@ -304,6 +330,179 @@ GetGDACS_GCDB<-function(){
   # Store it out as a imp_GCDB object
   GDACS%>%convGDACS_GCDB()
 }
+
+convGDACS_Monty<-function(GDACS){
+  # Get rid of repeated entries
+  GDACS%<>%distinct(imp_sub_ID,.keep_all = TRUE)
+  # Extract the Monty JSON schema template
+  gdacsMonty<-jsonlite::fromJSON("./Taxonomies/Montandon_JSON-Example.json")
+  #@@@@@ Impact-level data @@@@@#
+  # IDs
+  ID_linkage<-Add_ImpIDlink_Monty(
+    GDACS%>%
+      dplyr::select(event_ID,imp_sub_ID,haz_sub_ID)
+  )
+  # Sources for impact data
+  source<-GDACS%>%dplyr::select(imp_src_db,imp_src_URL,imp_src_org)
+  # impact estimates
+  impact_estimate<-GDACS%>%
+    dplyr::select(imp_det,imp_value,imp_type,imp_units,imp_est_type,imp_unitdate)
+  # Add temporal information
+  temporal<-GDACS%>%dplyr::select(imp_sdate,imp_fdate)
+  # Spatial data relevant to the impact estimates
+  # multiple-entry rows: imp_spat_rowname,imp_spat_colname,imp_ISO3s,imp_spat_res,imp_spat_fileread
+  spatial<-Add_ImpSpatAll_Monty(
+    ID_linkage=data.frame(
+      imp_sub_ID=GDACS$imp_sub_ID,
+      imp_spat_ID="GO-ADM0-World-shp",
+      imp_spat_fileloc="https://go-user-library.ifrc.org/maps",
+      imp_spat_colname="iso3",
+      imp_spat_rowname=GDACS$imp_ISO3s
+    ),
+    spatial_info=GDACS%>%dplyr::select(
+      imp_ISO3s,
+      imp_spat_covcode,
+      imp_spat_res,
+      imp_spat_resunits,
+      imp_spat_fileread,
+      imp_spat_crs
+    ),
+    source=GDACS%>%dplyr::select(
+      imp_spat_srcdb,
+      imp_spat_URL,
+      imp_spat_srcorg
+    )
+  )
+  
+  # Gather it all and store it in the template!
+  # (I know this is hideous, but I don't understand how JSON files can have lists that are also S3 data.frames)
+  gdacsMonty$impact_Data<-data.frame(imp_sub_ID=GDACS$imp_sub_ID)
+  gdacsMonty$impact_Data$ID_linkage=ID_linkage
+  gdacsMonty$impact_Data$source=source
+  gdacsMonty$impact_Data$impact_estimate=impact_estimate
+  gdacsMonty$impact_Data$temporal=temporal
+  gdacsMonty$impact_Data$spatial=spatial
+  gdacsMonty$impact_Data$imp_sub_ID<-NULL
+  
+  #@@@@@ Event-level data @@@@@#
+  # IDs
+  ID_linkage<-Add_EvIDlink_Monty(
+    GDACS%>%dplyr::select(event_ID, ev_name, ext_IDs,ext_ID_dbs,ext_ID_orgs)%>%
+      rename(ext_ID=ext_IDs,ext_ID_db=ext_ID_dbs,ext_ID_org=ext_ID_orgs)
+  )
+  # Spatial
+  spatial<-Add_EvSpat_Monty(
+    GDACS%>%dplyr::select(event_ID,imp_ISO3s,location)%>%
+      rename(ev_ISO3s=imp_ISO3s,gen_location=location)
+  )
+  # temporal
+  temporal<-Add_EvTemp_Monty(
+    GDACS%>%dplyr::select(event_ID,imp_sdate,imp_fdate,ev_sdate,ev_fdate)
+  )
+  # Hazards
+  allhaz_class<-Add_HazTax_Monty(
+    GDACS%>%dplyr::select(event_ID, haz_Ab, haz_spec)
+  )
+  # Gather it all and store it in the template!
+  gdacsMonty$event_Level<-data.frame(ev=ID_linkage$event_ID)
+  gdacsMonty$event_Level$ID_linkage<-ID_linkage
+  gdacsMonty$event_Level$temporal<-temporal
+  gdacsMonty$event_Level$spatial<-spatial
+  gdacsMonty$event_Level$allhaz_class<-allhaz_class
+  gdacsMonty$event_Level$ev<-NULL
+  
+  
+  #@@@@@ Hazard-level data @@@@@#
+  GDACS%<>%distinct(haz_sub_ID,.keep_all = T)
+  
+  # Nothing to put here as we haven't linked any hazard data yet
+  ID_linkage<-Add_hazIDlink_Monty(
+    GDACS%>%
+      dplyr::select(event_ID,haz_sub_ID,ext_IDs,ext_ID_dbs,ext_ID_orgs)%>%
+      rename(ext_ID=ext_IDs,ext_ID_db=ext_ID_dbs,ext_ID_org=ext_ID_orgs)
+  )
+  # Sources for impact data
+  source<-GDACS%>%dplyr::select(haz_src_db,haz_src_URL,haz_src_org)%>%mutate(haz_src_db="GDACS")
+  # hazard intensity estimates
+  hazard_detail<-GDACS%>%
+    dplyr::select(haz_maxvalue,haz_maxunits,haz_est_type)
+  hazard_detail$concur_haz<-lapply(1:nrow(hazard_detail),function(i) list())
+  # hazard taxonomy
+  hazard_taxonomy<-Add_HazTax_Monty(
+    GDACS%>%dplyr::select(haz_sub_ID, haz_Ab, haz_spec)%>%rename(event_ID=haz_sub_ID)
+  )
+  # Add temporal information
+  temporal<-GDACS%>%dplyr::select(haz_sdate,haz_fdate)
+  # Spatial data relevant to the impact estimates
+  # multiple-entry rows: imp_spat_rowname,imp_spat_colname,imp_ISO3s,imp_spat_res,imp_spat_fileread
+  GDACS$haz_spat_fileloc<-GDACS$haz_spat_URL
+  # Spatial instance
+  spatial<-Add_hazSpatAll_Monty(
+    ID_linkage=GDACS%>%dplyr::select(
+      haz_sub_ID,
+      haz_spat_ID,
+      haz_spat_fileloc,
+      haz_spat_colname,
+      haz_spat_rowname
+    ),
+    spatial_info=GDACS%>%dplyr::select(
+      haz_ISO3s,
+      haz_spat_covcode,
+      haz_spat_res,
+      haz_spat_resunits,
+      haz_spat_fileread,
+      haz_spat_crs
+    ),
+    source=GDACS%>%dplyr::select(
+      haz_spat_srcdb,
+      haz_spat_URL,
+      haz_spat_srcorg
+    )
+  )
+  
+  # Gather it all and store it in the template!
+  # (I know this is hideous, but I don't understand how JSON files can have lists that are also S3 data.frames)
+  gdacsMonty$hazard_Data<-data.frame(imp_sub_ID=GDACS$imp_sub_ID)
+  gdacsMonty$hazard_Data$ID_linkage=ID_linkage
+  gdacsMonty$hazard_Data$source=source
+  gdacsMonty$hazard_Data$hazard_detail=hazard_detail
+  gdacsMonty$hazard_Data$hazard_taxonomy=hazard_taxonomy
+  gdacsMonty$hazard_Data$temporal=temporal
+  gdacsMonty$hazard_Data$spatial=spatial
+  gdacsMonty$hazard_Data$imp_sub_ID<-NULL
+  
+  
+  #@@@@@ Source Data In Taxonomy Field @@@@@#
+  gdacsMonty$taxonomies$src_info<-data.frame(
+    src_org_code="EC-JRC",
+    src_org_lab="European Commission - Joint Research Center",
+    src_org_typecode="orgtyperio",
+    src_org_typelab="Regional Intergovernmental Organisation",
+    src_org_email="coordination@gdacs.org",
+    src_db_code="GDACS",
+    src_db_lab="Global Disaster Alert and Coordination System (GDACS)",
+    src_db_attr="mediator",
+    src_db_lic="unknown",
+    src_db_URL="www.gdacs.org",
+    src_addinfo=""
+  )
+  
+  # Write it out just for keep-sake
+  write(jsonlite::toJSON(gdacsMonty,pretty = T,auto_unbox=T),
+        "./CleanedData/MostlyHazardData/GDACS/GDACS_20231119.json")
+  
+  return(gdacsMonty)
+}
+
+
+
+
+
+
+
+
+
+
 
 GetGDACSalertscore<-function(dfGDACS=NULL,haz,bbox,sdater,fdater=NULL,isos=NULL){
   
