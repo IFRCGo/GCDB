@@ -18,3 +18,9 @@ go_token<-"ec07bcaf0a66eac9902709682777f970156c9769"
 deepl_token<-"3cb021c1-47fe-0eb3-28e4-cd63625670c4:fx"
 # How does the Monty delimit some of the data variables, such as ISO3C codes?
 delim<-":"
+
+
+
+# ssh -i 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 ifrctgc0root@98.71.131.43
+# Use this to see the keys for the PostgreSQL and Blobstorages
+# ifrctgc0root@ifrctgc001vm:~/devops$ head *

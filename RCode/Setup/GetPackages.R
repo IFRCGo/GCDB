@@ -75,7 +75,8 @@ GetPackages<-function(packred){
                         "countrycode","rworldmap","rworldxtra","chron","ncdf4",
                         "GADMTools","akima","adehabitatMA","flexsurv", "ExtDist", 
                         'EnvStats', 'posterior', 'doParallel', 'VGAM', 'abind',
-                        'Rmpi', 'openxlsx', 'ecochange','googlesheets4', 'bookdown')
+                        'Rmpi', 'openxlsx', 'ecochange','googlesheets4', 'bookdown',
+                        "AzureStor", "plumber")
   
   if(!packred) list.of.packages<-c(list.of.packages,
                                    "codetools","latex2exp","fixest",

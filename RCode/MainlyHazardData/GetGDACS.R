@@ -221,9 +221,10 @@ FilterGDACS<-function(haz=NULL,syear=2016L,fyear=NULL,list_GDACS=NULL,red=F){
       
       dfGDACS<-rbind(dfGDACS,data.frame(alert=rep(trimws(tolower(tmp$properties$episodealertlevel[j]), "b"),len),
                                         alertscore=rep(tmp$properties$episodealertscore[j],len),
-                                        eventid=rep(tmp$properties$eventid,len),
+                                        GDACS_ID=rep(tmp$properties$eventid,len),
                                         ev_name=rep(tmp$properties$name,len),
                                         ev_name_lang=rep("lang_eng",len),
+                                        location=rep(tmp$properties$name,len),
                                         episodeid=rep(tmp$properties$episodeid,len),
                                         link=rep(tmp$properties$url$details,len),
                                         imp_ISO3s=dfct$ISO3,
@@ -246,6 +247,10 @@ FilterGDACS<-function(haz=NULL,syear=2016L,fyear=NULL,list_GDACS=NULL,red=F){
     }
     
   }  
+  
+  # Get rid of any GLIDE numbers that are not in the correct format
+  GDACS$ext_IDs[sum(!is.na(GDACS$ext_IDs) &
+                      !grepl(GDACS$ext_IDs,pattern = "^[A-Z]{2}-\\d{4}-\\d{6}-[A-Z]{3}$"))]<-NA_character_
   
   dfGDACS$alertscore[dfGDACS$alertscore<0]<-0
   
@@ -278,9 +283,7 @@ convGDACS_GCDB<-function(GDACS){
   # Add alertscore as the impact value
   GDACS%<>%mutate(
     imp_value=GDACS$alertscore,
-    imp_cat="impother",
-    imp_subcat="imptyperisk",
-    imp_det="impdetalert",
+    exp_spec="expspec_alert",
     imp_type="imptypalert",
     imp_units="unitsgdacsalert",
     # This estimate is modelled
@@ -307,6 +310,9 @@ convGDACS_GCDB<-function(GDACS){
     haz_spat_fileloc=src_URL,
     haz_spat_crs="EPSG:4326",
     haz_spat_srcorg="EC-JRC",
+    haz_spat_fileloc=src_URL,
+    haz_spat_colname=NA_character_,
+    haz_spat_rowname=NA_character_,
     haz_spat_srcdb="GDACS",
     haz_spat_URL=src_URL)
   
@@ -320,8 +326,12 @@ convGDACS_GCDB<-function(GDACS){
   # Now for hazards
   GDACS%<>%GetGCDB_hazID()
   GDACS$haz_spat_ID<-GetGCDB_haz_spatID(GDACS)
+  # Make sure not to lose the GDACS ID
+  GDACS_ID<-GDACS$GDACS_ID
   # Add the extra columns to make it officially a GCDB object
-  GDACS%>%AddEmptyColImp()%>%distinct()
+  # GDACS%<>%AddEmptyColImp()
+  # Add GDACS ID back and return
+  GDACS%>%mutate(GDACS_ID=GDACS_ID)%>%distinct()
 }
 
 GetGDACS_GCDB<-function(){
@@ -331,22 +341,35 @@ GetGDACS_GCDB<-function(){
   GDACS%>%convGDACS_GCDB()
 }
 
-convGDACS_Monty<-function(GDACS){
+convGDACS_Monty<-function(){
+  # Extract raw GDACS data
+  GDACS<-GetGDACS_GCDB()
   # Get rid of repeated entries
-  GDACS%<>%distinct(imp_sub_ID,.keep_all = TRUE)
+  GDACS%<>%distinct(imp_sub_ID,.keep_all = TRUE)%>%
+    arrange(ev_sdate)
   # Extract the Monty JSON schema template
   gdacsMonty<-jsonlite::fromJSON("./Taxonomies/Montandon_JSON-Example.json")
   #@@@@@ Impact-level data @@@@@#
   # IDs
   ID_linkage<-Add_ImpIDlink_Monty(
-    GDACS%>%
-      dplyr::select(event_ID,imp_sub_ID,haz_sub_ID)
+    rbind(GDACS%>%mutate(ext_ID_db="GDACS",ext_ID_org="EC-JRC")%>%
+            dplyr::select(event_ID, imp_sub_ID, haz_sub_ID, GDACS_ID,
+                          ext_ID_db,ext_ID_org)%>%
+            rename(ext_ID=GDACS_ID)%>%
+            dplyr::select(event_ID, imp_sub_ID, haz_sub_ID, 
+                          ext_ID, ext_ID_db, ext_ID_org),
+          GDACS%>%filter(!is.na(ext_IDs))%>%mutate(ext_ID_db="GDACS",ext_ID_org="EC-JRC")%>%
+            dplyr::select(event_ID, imp_sub_ID, haz_sub_ID, ext_IDs, ext_ID_dbs, ext_ID_orgs)%>%
+            rename(ext_ID=ext_IDs,ext_ID_db=ext_ID_dbs,ext_ID_org=ext_ID_orgs)%>%
+            dplyr::select(event_ID, imp_sub_ID, haz_sub_ID, 
+                          ext_ID, ext_ID_db, ext_ID_org)
+    )
   )
   # Sources for impact data
   source<-GDACS%>%dplyr::select(imp_src_db,imp_src_URL,imp_src_org)
   # impact estimates
-  impact_estimate<-GDACS%>%
-    dplyr::select(imp_det,imp_value,imp_type,imp_units,imp_est_type,imp_unitdate)
+  impact_detail<-GDACS%>%
+    dplyr::select(exp_spec,imp_value,imp_type,imp_units,imp_est_type,imp_unitdate)
   # Add temporal information
   temporal<-GDACS%>%dplyr::select(imp_sdate,imp_fdate)
   # Spatial data relevant to the impact estimates
@@ -373,13 +396,12 @@ convGDACS_Monty<-function(GDACS){
       imp_spat_srcorg
     )
   )
-  
   # Gather it all and store it in the template!
   # (I know this is hideous, but I don't understand how JSON files can have lists that are also S3 data.frames)
-  gdacsMonty$impact_Data<-data.frame(imp_sub_ID=GDACS$imp_sub_ID)
+  gdacsMonty$impact_Data<-data.frame(imp_sub_ID=unique(GDACS$imp_sub_ID))
   gdacsMonty$impact_Data$ID_linkage=ID_linkage
   gdacsMonty$impact_Data$source=source
-  gdacsMonty$impact_Data$impact_estimate=impact_estimate
+  gdacsMonty$impact_Data$impact_detail=impact_detail
   gdacsMonty$impact_Data$temporal=temporal
   gdacsMonty$impact_Data$spatial=spatial
   gdacsMonty$impact_Data$imp_sub_ID<-NULL
@@ -387,8 +409,14 @@ convGDACS_Monty<-function(GDACS){
   #@@@@@ Event-level data @@@@@#
   # IDs
   ID_linkage<-Add_EvIDlink_Monty(
-    GDACS%>%dplyr::select(event_ID, ev_name, ext_IDs,ext_ID_dbs,ext_ID_orgs)%>%
-      rename(ext_ID=ext_IDs,ext_ID_db=ext_ID_dbs,ext_ID_org=ext_ID_orgs)
+    # By default, only GDACS eventIDs are used
+    rbind(GDACS%>%mutate(ext_ID_db="GDACS",ext_ID_org="EC-JRC")%>%
+            dplyr::select(event_ID, ev_name, GDACS_ID,ext_ID_db,ext_ID_org)%>%
+            rename(ext_ID=GDACS_ID),
+          GDACS%>%filter(!is.na(ext_IDs))%>%
+            dplyr::select(event_ID, ev_name, ext_IDs,ext_ID_dbs,ext_ID_orgs)%>%
+            rename(ext_ID=ext_IDs,ext_ID_db=ext_ID_dbs,ext_ID_org=ext_ID_orgs)
+      )
   )
   # Spatial
   spatial<-Add_EvSpat_Monty(
@@ -400,7 +428,7 @@ convGDACS_Monty<-function(GDACS){
     GDACS%>%dplyr::select(event_ID,imp_sdate,imp_fdate,ev_sdate,ev_fdate)
   )
   # Hazards
-  allhaz_class<-Add_HazTax_Monty(
+  allhaz_class<-Add_EvHazTax_Monty(
     GDACS%>%dplyr::select(event_ID, haz_Ab, haz_spec)
   )
   # Gather it all and store it in the template!
@@ -414,7 +442,6 @@ convGDACS_Monty<-function(GDACS){
   
   #@@@@@ Hazard-level data @@@@@#
   GDACS%<>%distinct(haz_sub_ID,.keep_all = T)
-  
   # Nothing to put here as we haven't linked any hazard data yet
   ID_linkage<-Add_hazIDlink_Monty(
     GDACS%>%
@@ -423,19 +450,16 @@ convGDACS_Monty<-function(GDACS){
   )
   # Sources for impact data
   source<-GDACS%>%dplyr::select(haz_src_db,haz_src_URL,haz_src_org)%>%mutate(haz_src_db="GDACS")
-  # hazard intensity estimates
-  hazard_detail<-GDACS%>%
-    dplyr::select(haz_maxvalue,haz_maxunits,haz_est_type)
-  hazard_detail$concur_haz<-lapply(1:nrow(hazard_detail),function(i) list())
   # hazard taxonomy
-  hazard_taxonomy<-Add_HazTax_Monty(
-    GDACS%>%dplyr::select(haz_sub_ID, haz_Ab, haz_spec)%>%rename(event_ID=haz_sub_ID)
+  hazard_detail<-Add_HazTax_Monty(
+    GDACS%>%dplyr::select(haz_sub_ID, haz_Ab, haz_spec, 
+                          haz_maxvalue,haz_maxunits,haz_est_type)%>%
+      rename(event_ID=haz_sub_ID)
   )
+  # Concurrent hazard info:
+  hazard_detail$concur_haz<-lapply(1:nrow(hazard_detail),function(i) list())
   # Add temporal information
   temporal<-GDACS%>%dplyr::select(haz_sdate,haz_fdate)
-  # Spatial data relevant to the impact estimates
-  # multiple-entry rows: imp_spat_rowname,imp_spat_colname,imp_ISO3s,imp_spat_res,imp_spat_fileread
-  GDACS$haz_spat_fileloc<-GDACS$haz_spat_URL
   # Spatial instance
   spatial<-Add_hazSpatAll_Monty(
     ID_linkage=GDACS%>%dplyr::select(
@@ -466,10 +490,14 @@ convGDACS_Monty<-function(GDACS){
   gdacsMonty$hazard_Data$ID_linkage=ID_linkage
   gdacsMonty$hazard_Data$source=source
   gdacsMonty$hazard_Data$hazard_detail=hazard_detail
-  gdacsMonty$hazard_Data$hazard_taxonomy=hazard_taxonomy
   gdacsMonty$hazard_Data$temporal=temporal
   gdacsMonty$hazard_Data$spatial=spatial
   gdacsMonty$hazard_Data$imp_sub_ID<-NULL
+  
+  
+  #@@@@@ Response-level data @@@@@#
+  # Nothing to put here as we haven't linked any response data yet
+  gdacsMonty$response_Data<-list()
   
   
   #@@@@@ Source Data In Taxonomy Field @@@@@#
@@ -489,7 +517,7 @@ convGDACS_Monty<-function(GDACS){
   
   # Write it out just for keep-sake
   write(jsonlite::toJSON(gdacsMonty,pretty = T,auto_unbox=T),
-        "./CleanedData/MostlyHazardData/GDACS/GDACS_20231119.json")
+        paste0("./CleanedData/MostlyHazardData/GDACS/GDACS_",Sys.Date(),".json"))
   
   return(gdacsMonty)
 }
@@ -597,7 +625,7 @@ GetGDACSspatial<-function(GDACS){
   
   
   
-  BigPoly@crs<-
+  # BigPoly@crs<-
     
     
     

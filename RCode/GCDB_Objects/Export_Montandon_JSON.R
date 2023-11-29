@@ -75,7 +75,7 @@ ExpMonty<-function(evvies,impies,hazzies,delim=delim){
       # Source information of the impact data
       impact_Data$source<-subimp[j,names(impact_Data$source)]
       # Impact estimates
-      impact_Data$impact_estimate<-subimp[j,names(impact_Data$impact_estimate)]
+      impact_Data$impact_detail<-subimp[j,names(impact_Data$impact_detail)]
       # Impact categorisation according to taxonomy
       impact_Data$impact_taxonomy<-subimp[j,names(impact_Data$impact_taxonomy)]
       # Temporal information

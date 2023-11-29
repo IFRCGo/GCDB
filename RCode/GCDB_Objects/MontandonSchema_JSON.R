@@ -8,8 +8,6 @@ RDLS<-jsonlite::fromJSON("https://docs.riskdatalibrary.org/en/0__2__0/rdls_schem
 
 
 
-
-stop("rename ext_IDs to something less overlappyyyyy")
 stop("change _fileread to _format, check _spat_fileloc and _spat_URL")
 
 
@@ -20,28 +18,34 @@ stop("change _fileread to _format, check _spat_fileloc and _spat_URL")
 taxies<-openxlsx::read.xlsx("./ImpactInformationProfiles.xlsx")
 # Country codes and associated regions
 counties<-openxlsx::read.xlsx("./Taxonomies/IsoContinentRegion.xlsx")%>%
-    filter(!is.na(Country))%>%mutate(continent=convIso3Continent_alt(ISO.Code))
+    filter(!is.na(Country))%>%mutate(Continent=convIso3Continent_alt(ISO.Code))
 # Make sure the extra countries not present here are included
 tmp<-data.frame(ISO.Code=(taxies%>%filter(list_name=="Country")%>%pull(name))[!taxies%>%filter(list_name=="Country")%>%pull(name)%in%counties$ISO.Code])%>%
                 mutate(Country=convIso3Country(ISO.Code),continent=convIso3Continent_alt(ISO.Code))
 # Add them
 othcounties<-counties%>%filter(ISO.Code=="damndaniel"); othcounties[1:nrow(tmp),]<-NA_character_
-counties%<>%rbind(othcounties%>%mutate(ISO.Code=tmp$ISO.Code,Country=tmp$Country,continent=tmp$continent))%>%
+counties%<>%rbind(othcounties%>%mutate(ISO.Code=tmp$ISO.Code,Country=tmp$Country,Continent=tmp$continent))%>%
   filter(!duplicated(ISO.Code)); rm(tmp,othcounties)
+counties%<>%dplyr::select(ISO.Code,Country,UN.Region,World.Bank.Regions,Continent,UN.Sub.Region,World.Bank.Income.Groups)
+colnames(counties)[1]<-"ISO3"
 # Create the data frames of the taxonomies to be saved out later
-imp_class<-data.frame(
-  imp_det_code=taxies%>%filter(list_name=="imp_det")%>%pull(name),
-  imp_det_lab=taxies%>%filter(list_name=="imp_det")%>%pull(label),
-  imp_subcat_code=taxies%>%filter(list_name=="imp_det")%>%pull(link_group),
-  imp_subcat_lab=left_join(taxies[taxies$list_name=="imp_det",2:4],
-                   taxies[taxies$list_name=="imp_subcats",2:4],
+exp_class<-data.frame(
+  exp_spec_code=taxies%>%filter(list_name=="exp_specs")%>%pull(name),
+  exp_spec_lab=taxies%>%filter(list_name=="exp_specs")%>%pull(label),
+  exp_subcat_code=taxies%>%filter(list_name=="exp_specs")%>%pull(link_group),
+  exp_subcat_lab=left_join(taxies[taxies$list_name=="exp_specs",2:4],
+                   taxies[taxies$list_name=="exp_subcats",2:4],
                    by=c("link_group"="name"))%>%pull(label.y),
-  imp_cat_code=taxies%>%filter(list_name=="imp_det")%>%pull(link_maingroup),
-  imp_cat_lab=left_join(left_join(taxies[taxies$list_name=="imp_det",2:4],
-                             taxies[taxies$list_name=="imp_subcats",2:4],
+  exp_cat_code=taxies%>%filter(list_name=="exp_specs")%>%pull(link_maingroup),
+  exp_cat_lab=left_join(left_join(taxies[taxies$list_name=="exp_specs",2:4],
+                             taxies[taxies$list_name=="exp_subcats",2:4],
                              by=c("link_group"="name")),
-                   taxies[taxies$list_name=="imp_cats",2:3],
+                   taxies[taxies$list_name=="exp_cats",2:3],
                    by=c("link_group.y"="name"))%>%pull(label)
+)
+imp_class<-data.frame(
+  imp_type_code=taxies%>%filter(list_name=="imp_type")%>%pull(name),
+  imp_type_lab=taxies%>%filter(list_name=="imp_type")%>%pull(label)
 )
 haz_class<-data.frame(
   haz_spec_code=taxies%>%filter(list_name=="hazardsubsubtypes")%>%pull(name),
@@ -145,6 +149,15 @@ Monty$properties$hazard_Data<-list(
   items=list(`$ref`="#/$defs/Hazard_obj"),
   uniqueItems=TRUE
 )
+#@@@@@@@@@@@@@@@@@@@@@@ RESPONSE-LEVEL PROPERTIES @@@@@@@@@@@@@@@@@@@@@@@#
+Monty$properties$response_Data<-list(
+  title="Response Data",
+  description="A collection of data on the response/interventions to the hazard event",
+  type="array",
+  items=list(`$ref`="#/$defs/Response_obj"),
+  uniqueItems=TRUE
+)
+
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ TAXONOMIES @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#
 Monty$properties$taxonomies<-list(
   title="Montandon Taxonomy Codes",
@@ -164,7 +177,7 @@ Monty$properties$taxonomies<-list(
             type="string",
             codelist="IsoContinentRegion.csv",
             openCodelist=FALSE,
-            enum=counties$ISO.Code%>%na.omit()%>%unique()
+            enum=counties$ISO3%>%na.omit()%>%unique()
           ),
           country=list(
             title="Country Name",
@@ -196,7 +209,7 @@ Monty$properties$taxonomies<-list(
             type="string",
             codelist="IsoContinentRegion.csv",
             openCodelist=FALSE,
-            enum=counties$continent%>%na.omit()%>%unique()
+            enum=counties$Continent%>%na.omit()%>%unique()
           ),
           subregion_UN=list(
             title="UN-Defined Sub-Region",
@@ -217,60 +230,86 @@ Monty$properties$taxonomies<-list(
         )
       )
     ),
-    imp_class=list(
-      title="Impact Taxonomy",
-      description="The taxonomy of the different impact categorisations",
+    exp_class=list(
+      title="Exposure Taxonomy",
+      description="The taxonomy of the different exposure categorisations",
       type="array",
       items=list(
         type="object",
         properties=list(
-          imp_det_code=list(
-            title="Impact Detail Code",
-            description="The code of the impact detail",
+          exp_spec_code=list(
+            title="Exposure Detail Code",
+            description="The code of the exposure detail",
             type="string",
             codelist="ImpactInformationProfiles.csv",
             openCodelist=FALSE,
-            enum=imp_class$imp_det_code%>%na.omit()%>%unique()
+            enum=exp_class$exp_spec_code%>%na.omit()%>%unique()
           ),
-          imp_det_lab=list(
-            title="Impact Detail Label",
-            description="The label or full name of the impact detail",
+          exp_spec_lab=list(
+            title="Exposure Detail Label",
+            description="The label or full name of the exposure detail",
             type="string",
             codelist="ImpactInformationProfiles.csv",
             openCodelist=FALSE,
-            enum=imp_class$imp_det_lab%>%na.omit()%>%unique()
+            enum=exp_class$exp_spec_lab%>%na.omit()%>%unique()
           ),
-          imp_subcat_code=list(
-            title="Impact Sub-Category Code",
-            description="The code for the impact sub-category",
+          exp_subcat_code=list(
+            title="Exposure Sub-Category Code",
+            description="The code for the exposure sub-category",
             type="string",
             codelist="ImpactInformationProfiles.csv",
             openCodelist=FALSE,
-            enum=imp_class$imp_subcat_code%>%na.omit()%>%unique()
+            enum=exp_class$exp_subcat_code%>%na.omit()%>%unique()
           ),
-          imp_subcat_lab=list(
-            title="Impact Sub-Category Label",
-            description="The label or full name of the impact sub-category",
+          exp_subcat_lab=list(
+            title="Exposure Sub-Category Label",
+            description="The label or full name of the exposure sub-category",
             type="string",
             codelist="ImpactInformationProfiles.csv",
             openCodelist=FALSE,
-            enum=imp_class$imp_subcat_lab%>%na.omit()%>%unique()
+            enum=exp_class$exp_subcat_lab%>%na.omit()%>%unique()
           ),
-          imp_cat_code=list(
-            title="Impact Category Code",
-            description="The code of the impact category",
+          exp_cat_code=list(
+            title="Exposure Category Code",
+            description="The code of the exposure category",
             type="string",
             codelist="ImpactInformationProfiles.csv",
             openCodelist=FALSE,
-            enum=imp_class$imp_cat_code%>%na.omit()%>%unique()
+            enum=exp_class$exp_cat_code%>%na.omit()%>%unique()
           ),
-          imp_cat_lab=list(
-            title="Impact Category Label",
-            description="The label or full name of the impact category",
+          exp_cat_lab=list(
+            title="Exposure Category Label",
+            description="The label or full name of the exposure category",
             type="string",
             codelist="ImpactInformationProfiles.csv",
             openCodelist=FALSE,
-            enum=imp_class$imp_cat_lab%>%na.omit()%>%unique()
+            enum=exp_class$exp_cat_lab%>%na.omit()%>%unique()
+          )
+        )
+      )
+    ),
+    imp_class=list(
+      title="Impact Taxonomy",
+      description="The taxonomy of the different impact and loss categorisations",
+      type="array",
+      items=list(
+        type="object",
+        properties=list(
+          imp_type_code=list(
+            title="Impact Type Code",
+            description="The code of the impact type",
+            type="string",
+            codelist="ImpactInformationProfiles.csv",
+            openCodelist=FALSE,
+            enum=imp_class$imp_type_code%>%na.omit()%>%unique()
+          ),
+          imp_type_lab=list(
+            title="Impact Type Label",
+            description="The label or full name of the impact type",
+            type="string",
+            codelist="ImpactInformationProfiles.csv",
+            openCodelist=FALSE,
+            enum=imp_class$imp_type_lab%>%na.omit()%>%unique()
           )
         )
       )
@@ -511,7 +550,7 @@ Monty$properties$taxonomies<-list(
 # uniqueItems=TRUE
 # )
 
-Monty$required<-c("monty_Info","event_Level","impact_Data","hazard_Data")
+Monty$required<-c("monty_Info","event_Level","impact_Data","hazard_Data","response_Data")
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 #%%%%%%%%%%%%%%%%%%%%%%%%%% CLASS DEFINITIONS %%%%%%%%%%%%%%%%%%%%%%%%%%%#
@@ -539,7 +578,7 @@ Monty$`$defs`$Event_obj<-list(
           type="string",
           description="Name of the event, for general use, in any given language."
         ),
-        ext_IDs=list(
+        all_ext_IDs=list(
           title="External IDs",
           description="List of ID codes that are used by external organisations (outside of the Montandon) to uniquely identify the hazard event. For example, GLIDE numbers.",
           type="array",
@@ -675,18 +714,18 @@ Monty$`$defs`$Impact_obj=list(
       required=list("imp_src_db","imp_src_URL")
     ),
     ### Impact Value ###
-    impact_estimate=list(
+    impact_detail=list(
       title="Impact Value Data",
-      description="Impact estimate value and unit information",
+      description="Impact estimate value and unit information, including the exposure classification of what was impacted.",
       type="object",
       properties=list(
-        imp_det=list(
+        exp_spec=list(
           title="Impact Detail",
           description="The sub-sub category of impact, which is the specific asset or population demographic that has been impacted by the hazard.",
           type="string",
           codelist="ImpactInformationProfiles.csv",
           openCodelist=TRUE,
-          enum=taxies%>%filter(list_name=="imp_det")%>%pull(name)%>%unique()%>%na.omit()
+          enum=taxies%>%filter(list_name=="exp_specs")%>%pull(name)%>%unique()%>%na.omit()
         ),
         imp_value=list(
           title="Estimated Impact Value",
@@ -718,7 +757,7 @@ Monty$`$defs`$Impact_obj=list(
           `$ref`="#/$defs/EstType_obj"
         )
       ),
-      required=list("imp_value","imp_type","imp_units","imp_est_type")
+      required=list("exp_spec","imp_value","imp_type","imp_units","imp_est_type")
     ),
     ### Temporal Information ###
     temporal=list(
@@ -746,7 +785,7 @@ Monty$`$defs`$Impact_obj=list(
       items=list(`$ref`="#/$defs/SpatialImpact_obj")
     )
   ),
-  required=list("ID_linkage","source","impact_estimate","temporal","spatial")
+  required=list("ID_linkage","source","impact_detail","temporal","spatial")
 )
 
 #@@@@@@@@@@@@@@@@@@@ Hazard Object @@@@@@@@@@@@@@@@@@@@#
@@ -814,6 +853,16 @@ Monty$`$defs`$Hazard_obj=list(
       description="Basic information about the hazard, including things like the maximum magnitude/intensity/severity values and any related trigger/triggering/concurrent hazards (observed or even potential).",
       type="object",
       properties=list(
+        haz_Ab=list(
+          title="Abbreviated Hazard ID",
+          description="Two-letter abbreviated ID for the hazard. For example, floods would be 'FL' and earthquakes 'EQ'. These abbreviations are pre-determined and standardised, and should be found online.",
+          `$ref`="#/$defs/HazAb_obj"
+        ), 
+        haz_spec=list(
+          title="Specific Hazard",
+          description="The specific hazard is the final layer in the categorisation of the hazards. Please see the UNDRR-ISC 2020 Hazard Information Profiles report for more information.",
+          `$ref`="#/$defs/HazSpec_obj"
+        ),
         haz_maxvalue=list(
           title="Maximum Hazard Severity Value",
           description="The estimated maximum hazard intensity/magnitude/severity value, as a number, without the units.",
@@ -884,23 +933,6 @@ Monty$`$defs`$Hazard_obj=list(
         )
       )
     ),
-    hazard_taxonomy=list(
-      title="Hazard Taxonomy",
-      description="Classification of this specific hazard, with respect to the UNDRR-ISC 2020 Hazard Information Profiles report.",
-      type="object",
-      properties=list(
-        haz_Ab=list(
-          title="Abbreviated Hazard ID",
-          description="Two-letter abbreviated ID for the hazard. For example, floods would be 'FL' and earthquakes 'EQ'. These abbreviations are pre-determined and standardised, and should be found online.",
-          `$ref`="#/$defs/HazAb_obj"
-        ), 
-        haz_spec=list(
-          title="Specific Hazard",
-          description="The specific hazard is the final layer in the categorisation of the hazards. Please see the UNDRR-ISC 2020 Hazard Information Profiles report for more information.",
-          `$ref`="#/$defs/HazSpec_obj"
-        )
-      )
-    ),
     ### Temporal Information ###
     temporal=list(
       title="Time-Related Data",
@@ -928,8 +960,110 @@ Monty$`$defs`$Hazard_obj=list(
       items=list(`$ref`="#/$defs/SpatialHazard_obj")
     )
   ),
-  required=list("ID_linkage","source","hazard_detail","hazard_taxonomy","temporal","spatial")
+  required=list("ID_linkage","source","hazard_detail","temporal","spatial")
 )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#@@@@@@@@@@@@@@@@@@ Response Object @@@@@@@@@@@@@@@@@@@#
+Monty$`$defs`$Response_obj=list(
+  title="Response Object of Montandon",
+  type="object",
+  description="Responses and interventions to the disaster, which aim to reduce the impact or speed up recovery.",
+  # the properties element has 6 sections: 
+  # ID, impact value, impact categorisation, temporal, spatial and source information
+  properties=list(
+    ### ID ###
+    ID_linkage=list(
+      title="Impact ID and Links",
+      description="Impact ID information and links to other object instances within an event. For example, linking to hazard IDs. Note: no spatial IDs are linked here, see the spatial element.",
+      type="object",
+      properties=list(
+        event_ID=list(
+          title="Event ID",
+          description="ID of the overall event that this impact estimate refers to",
+          type="string",
+          minLength=1
+        ),
+        res_sub_ID=list(
+          title="Response ID",
+          description="ID of each response element, within the overall event",
+          type="string",
+          minLength=1
+        ),
+        imp_sub_ID=list(
+          title="Impact Estimate ID",
+          description="ID of each impact element, within the overall event",
+          type="string"
+        ),
+        haz_sub_ID=list(
+          title="Hazard ID Link",
+          description="ID of each hazard event data element, within the overall event",
+          type="array",
+          items=list(type="string",uniqueItems=TRUE)
+        )
+      ),
+      required=list("event_ID","res_sub_ID")
+    )
+  ),
+  required=list("ID_linkage")
+)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #@@@@@@@@@@@@@@@ Spatial Impact Object @@@@@@@@@@@@@@@@#
 Monty$`$defs`$SpatialImpact_obj=list(
@@ -1285,6 +1419,7 @@ ex_Monty$monty_Info$class_version<-Monty_JSONschema
 ex_Monty$monty_Info$db_pubdate<-Sys.Date()
 # Ensure all the taxonomy data is present (except src_info which is added at the data-level)
 ex_Monty$taxonomies<-list(ISO_info=counties,
+                          exp_class=exp_class,
                           imp_class=imp_class,
                           haz_class=haz_class,
                           src_info=ex_Monty$taxonomies$src_info,

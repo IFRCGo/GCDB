@@ -105,7 +105,7 @@ CleanGO_app<-function(appeal){
   appeal%<>%mutate(imp_ISO3s=imp_ISO3s,ev_ISO3s=imp_ISO3s,region=region,
                    ev_name=name,location=name,
                    ev_name_lang="lang_eng",
-                   imp_sdate=as.character(as.Date(created_at)),imp_fdate=as.character(as.Date(modified_at)),
+                   imp_sdate=as.character(as.Date(created_at)),imp_fdate=as.character(as.Date(end_date)),
                    ev_sdate=as.character(as.Date(start_date)),ev_fdate=as.character(as.Date(end_date)),
                    # ev_sdate=as.character(as.Date(created_at)),ev_fdate=as.character(as.Date(created_at)),
                    imp_unitdate=as.character(as.Date(modified_at)),
@@ -277,26 +277,33 @@ CleanGO_dref<-function(dref){
   colnames(tmp)
 }
 
-convGOApp_Monty<-function(appeal){
+convGOApp_Monty<-function(){
+  # Get the Emergency Appeal data from GO
+  appeal<-ExtractGOdata(db = "GO-App", token = token)
   # Clean using the old GCDB structure
-  appeal%<>%CleanGO_app()
+  appeal%<>%CleanGO_app()%>%filter(!is.na(haz_spec))
+  # Get rid of repeated entries
+  appeal%<>%distinct(imp_sub_ID,.keep_all = TRUE)%>%
+    arrange(ev_sdate)
   # Load the Monty JSON template
   appMonty<-jsonlite::fromJSON("./Taxonomies/Montandon_JSON-Example.json")
   #@@@@@ Impact-level data @@@@@#
   # IDs
   ID_linkage<-Add_ImpIDlink_Monty(
-    appeal%>%mutate(haz_sub_ID=NA_character_)%>%
-      dplyr::select(event_ID,imp_sub_ID,haz_sub_ID)
+    appeal%>%mutate(ext_ID_db="GO-App",ext_ID_org="IFRC",haz_sub_ID=NA_character_)%>%
+      dplyr::select(event_ID, imp_sub_ID, haz_sub_ID, code,
+                    ext_ID_db,ext_ID_org)%>%
+      rename(ext_ID=code)
   )
   # Sources for impact data
   source<-data.frame(imp_src_db=rep("GO-App",nrow(ID_linkage)),
                      imp_src_URL=rep("https://goadmin.ifrc.org/api/v2/appeal",nrow(ID_linkage)),
                      imp_src_org=rep("IFRC",nrow(ID_linkage)))
   # impact estimates
-  impact_estimate<-appeal%>%
-    dplyr::select(imp_det,imp_value,imp_type,imp_units,imp_est_type,imp_unitdate)
+  impact_detail<-appeal%>%distinct(imp_sub_ID,.keep_all = T)%>%
+    dplyr::select(exp_spec,imp_value,imp_type,imp_units,imp_est_type,imp_unitdate)
   # Add temporal information
-  temporal<-appeal%>%dplyr::select(imp_sdate,imp_fdate)
+  temporal<-appeal%>%distinct(imp_sub_ID,.keep_all = T)%>%dplyr::select(imp_sdate,imp_fdate)
   # Spatial data relevant to the impact estimates
   # multiple-entry rows: imp_spat_rowname,imp_spat_colname,imp_ISO3s,imp_spat_res,imp_spat_fileread
   spatial<-Add_ImpSpatAll_Monty(
@@ -324,10 +331,10 @@ convGOApp_Monty<-function(appeal){
   
   # Gather it all and store it in the template!
   # (I know this is hideous, but I don't understand how JSON files can have lists that are also S3 data.frames)
-  appMonty$impact_Data<-data.frame(imp_sub_ID=appeal$imp_sub_ID)
+  appMonty$impact_Data<-data.frame(imp_sub_ID=unique(appeal$imp_sub_ID))
   appMonty$impact_Data$ID_linkage=ID_linkage
   appMonty$impact_Data$source=source
-  appMonty$impact_Data$impact_estimate=impact_estimate
+  appMonty$impact_Data$impact_detail=impact_detail
   appMonty$impact_Data$temporal=temporal
   appMonty$impact_Data$spatial=spatial
   appMonty$impact_Data$imp_sub_ID<-NULL
@@ -348,7 +355,7 @@ convGOApp_Monty<-function(appeal){
     appeal%>%dplyr::select(event_ID,imp_sdate,imp_fdate,ev_sdate,ev_fdate)
   )
   # Hazards
-  allhaz_class<-Add_HazTax_Monty(
+  allhaz_class<-Add_EvHazTax_Monty(
     appeal%>%dplyr::select(event_ID, haz_Ab, haz_spec)
   )
   # Gather it all and store it in the template!
@@ -361,6 +368,10 @@ convGOApp_Monty<-function(appeal){
   #@@@@@ Hazard-level data @@@@@#
   # Nothing to put here as we haven't linked any hazard data yet
   appMonty$hazard_Data<-list()
+  
+  #@@@@@ Response-level data @@@@@#
+  # Nothing to put here as we haven't linked any response data yet
+  appMonty$response_Data<-list()
   
   #@@@@@ Source Data In Taxonomy Field @@@@@#
   appMonty$taxonomies$src_info<-data.frame(
@@ -384,7 +395,7 @@ convGOApp_Monty<-function(appeal){
   
   # Write it out just for keep-sake
   write(jsonlite::toJSON(appMonty,pretty = T,auto_unbox=T),
-        "./CleanedData/MostlyImpactData/IFRC/Appeal_20231119.json")
+        paste0("./CleanedData/MostlyImpactData/IFRC/Appeal_",Sys.Date(),".json"))
     
   return(appMonty)
 }

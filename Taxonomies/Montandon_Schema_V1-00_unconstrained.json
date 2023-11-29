@@ -4,7 +4,7 @@
   "title": "Hazard-Impact Event Dataset - The Montandon Schema",
   "description": "The data allows the user to assemble many different hazard-impact estimates, potentially for different impact types, across different organisations and with spatio-temporal coverage, and more. The structure and form of this dataset conforms with the Montandon Data Standards.",
   "type": "object",
-  "required": ["monty_Info", "event_Level", "impact_Data", "hazard_Data"],
+  "required": ["monty_Info", "event_Level", "impact_Data", "hazard_Data", "response_Data"],
   "properties": {
     "monty_Info": {
       "title": "Monty Object Instance-Specific Information",
@@ -70,6 +70,15 @@
       "type": "array",
       "items": {
         "$ref": "#/$defs/Hazard_obj"
+      },
+      "uniqueItems": true
+    },
+    "response_Data": {
+      "title": "Response Data",
+      "description": "A collection of data on the response/interventions to the hazard event",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Response_obj"
       },
       "uniqueItems": true
     },
@@ -144,60 +153,86 @@
             }
           }
         },
-        "imp_class": {
-          "title": "Impact Taxonomy",
-          "description": "The taxonomy of the different impact categorisations",
+        "exp_class": {
+          "title": "Exposure Taxonomy",
+          "description": "The taxonomy of the different exposure categorisations",
           "type": "array",
           "items": {
             "type": "object",
             "properties": {
-              "imp_det_code": {
-                "title": "Impact Detail Code",
-                "description": "The code of the impact detail",
+              "exp_spec_code": {
+                "title": "Exposure Detail Code",
+                "description": "The code of the exposure detail",
                 "type": "string",
                 "codelist": "ImpactInformationProfiles.csv",
                 "openCodelist": false,
-                "enum": ["impdetallpeop", "impdetcrop", "impdetwomen", "impdetmen", "impdetelder", "impdetchld14", "impdetchld18", "impdetwheelch", "impdetroad", "impdettrainlin", "impdetvulempl", "impdetbuild", "impdetreccost", "impdethosp", "impdeteduc", "impdetloccur", "impdetglobdate", "impdetinfloccur", "impdetinfglobdate", "impdetusdunsure", "impdetcattle", "impdetaidgen", "impdetecoifrcall", "impdetecoifrcreq", "impdetalert"]
+                "enum": ["expspec_allpeop", "expspec_crop", "expspec_women", "expspec_men", "expspec_elder", "expspec_chld14", "expspec_chld18", "expspec_wheelch", "expspec_road", "expspec_trainlin", "expspec_vulempl", "expspec_build", "expspec_reccost", "expspec_hosp", "expspec_educ", "expspec_loccur", "expspec_globdate", "expspec_infloccur", "expspec_infglobdate", "expspec_usdunsure", "expspec_cattle", "expspec_aidgen", "expspec_ecoifrcall", "expspec_ecoifrcreq", "expspec_alert"]
               },
-              "imp_det_lab": {
-                "title": "Impact Detail Label",
-                "description": "The label or full name of the impact detail",
+              "exp_spec_lab": {
+                "title": "Exposure Detail Label",
+                "description": "The label or full name of the exposure detail",
                 "type": "string",
                 "codelist": "ImpactInformationProfiles.csv",
                 "openCodelist": false,
                 "enum": ["People (All Demographics)", "Crops", "Women", "Men", "Elderly (Over 65)", "Children (Under 14)", "Children (Under 18)", "Wheelchair Users", "Road", "Train-lines", "Population in Vulnerable Employment", "Buildings", "Reconstruction Costs", "Hospitals", "Education Centers", "Local Currency [Date of Event]", "Global/Regional Currency (e.g. USD)", "Inflation-Adjusted Local Currency [Date of Event]", "Inflation-Adjusted Global/Regional Currency (USD)", "USD [Unsure]", "Cattle", "General Aid Contributions", "IFRC Appeal Contribution", "IFRC Appeal Requested", "Alertscore"]
               },
-              "imp_subcat_code": {
-                "title": "Impact Sub-Category Code",
-                "description": "The code for the impact sub-category",
+              "exp_subcat_code": {
+                "title": "Exposure Sub-Category Code",
+                "description": "The code for the exposure sub-category",
                 "type": "string",
                 "codelist": "ImpactInformationProfiles.csv",
                 "openCodelist": false,
-                "enum": ["imptypepopcnt", "impinfarabl", "imptypepopgend", "imptypepopage", "imptypepopdis", "impinfrds", "imptypepopvuln", "impinftot", "impecotot", "impphyhealth", "impphyedu", "impenvliv", "impecoaid", "imptyperisk"]
+                "enum": ["expsubcat_popcnt", "expsubcat_infarabl", "expsubcat_popgend", "expsubcat_popage", "expsubcat_popdis", "expsubcat_infrds", "expsubcat_popvuln", "expsubcat_inftot", "expsubcat_ecotot", "expsubcat_phyhealth", "expsubcat_phyedu", "expsubcat_envliv", "expsubcat_ecoaid", "expsubcat_typaidreqifrc", "expsubcat_typaidallifrc", "expsubcat_risk"]
               },
-              "imp_subcat_lab": {
-                "title": "Impact Sub-Category Label",
-                "description": "The label or full name of the impact sub-category",
+              "exp_subcat_lab": {
+                "title": "Exposure Sub-Category Label",
+                "description": "The label or full name of the exposure sub-category",
                 "type": "string",
                 "codelist": "ImpactInformationProfiles.csv",
                 "openCodelist": false,
                 "enum": ["Total Population", "Arable Land & Agricultural Produce", "Gender &/or Sex (SAAB) Demographic", "Age Demographic", "Disabled Population", "Transportation Systems (Roads, Railways, Harbours, Airports, etc)", "Vulnerable Population", "Total Buildings", "Total Cost", "Health Facilities – Non-Residential", "Educational Facilities – Non-Residential", "Livestock", "Aid Contributions", "Alertscore or risk indicator"]
               },
-              "imp_cat_code": {
-                "title": "Impact Category Code",
-                "description": "The code of the impact category",
+              "exp_cat_code": {
+                "title": "Exposure Category Code",
+                "description": "The code of the exposure category",
                 "type": "string",
                 "codelist": "ImpactInformationProfiles.csv",
                 "openCodelist": false,
-                "enum": ["impcatpop", "impcatenv", "impcatphyinf", "impcatfineco", "impother"]
+                "enum": ["expcat_pop", "expcat_env", "expcat_phyinf", "expcat_fineco", "expcat_other"]
               },
-              "imp_cat_lab": {
-                "title": "Impact Category Label",
-                "description": "The label or full name of the impact category",
+              "exp_cat_lab": {
+                "title": "Exposure Category Label",
+                "description": "The label or full name of the exposure category",
                 "type": "string",
                 "codelist": "ImpactInformationProfiles.csv",
                 "openCodelist": false,
-                "enum": ["Population & Demographic", "Environmental & Cultural Assets", "Physical Infrastructural Assets", "Financial/Economic Assets", "Other"]
+                "enum": ["Population & Demographic", "Environmental Assets", "Physical Infrastructural Assets", "Financial/Economic Assets", "Other"]
+              }
+            }
+          }
+        },
+        "imp_class": {
+          "title": "Impact Taxonomy",
+          "description": "The taxonomy of the different impact and loss categorisations",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "imp_type_code": {
+                "title": "Impact Type Code",
+                "description": "The code of the impact type",
+                "type": "string",
+                "codelist": "ImpactInformationProfiles.csv",
+                "openCodelist": false,
+                "enum": ["imptypunspec", "imptypdama", "imptypdest", "imptypaffe", "imptypdiraffe", "imptypindaffe", "imptypdeat", "imptypmiss", "imptypinju", "imptypevac", "imptypereloc", "imptypeassist", "imptypeemshel", "imptypetempacc", "imptypelongacc", "imptypneed", "imptyptarg", "imptypdisr", "imptypcost", "imptyphomles", "imptypidp", "imptypextdisp", "imptypedisp", "imptypalert"]
+              },
+              "imp_type_lab": {
+                "title": "Impact Type Label",
+                "description": "The label or full name of the impact type",
+                "type": "string",
+                "codelist": "ImpactInformationProfiles.csv",
+                "openCodelist": false,
+                "enum": ["Unspecified", "Damaged", "Destroyed", "Total Affected", "Directly Affected", "Indirectly Affected", "Deaths", "Missing", "Injured", "Evacuated", "Relocated", "Assisted (Recieved Aid/Support)", "Emergency Sheltered", "Temporary Accommodated", "Long-Term Accommodated", "In Need", "Targeted", "Disrupted", "Loss (Cost)", "Homeless", "Internally Displaced Persons (IDPs)", "Refugees, Asylum Seekers and Externally Displaced Persons", "Displaced Persons (Internal & External)", "Alertscore"]
               }
             }
           }
@@ -215,7 +250,7 @@
                 "type": "string",
                 "codelist": "ImpactInformationProfiles.csv",
                 "openCodelist": false,
-                "enum": ["MH0001", "MH0002", "MH0003", "MH0004", "MH0005", "MH0006", "MH0007", "MH0008", "MH0009", "MH0010", "MH0011", "MH0012", "MH0013", "MH0014", "MH0015", "MH0016", "MH0017", "MH0018", "MH0019", "MH0020", "MH0021", "MH0022", "MH0023", "MH0024", "MH0025", "MH0026", "MH0027", "MH0028", "MH0029", "MH0030", "MH0031", "MH0032", "MH0033", "MH0034", "MH0035", "MH0036", "MH0037", "MH0038", "MH0039", "MH0040", "MH0041", "MH0042", "MH0043", "MH0044", "MH0045", "MH0046", "MH0047", "MH0048", "MH0049", "MH0050", "MH0051", "MH0052", "MH0053", "MH0054", "MH0055", "MH0056", "MH0057", "MH0058", "MH0099", "MH0059", "MH0060", "ET0001", "ET0002", "ET0003", "ET0004", "ET0005", "ET0006", "ET0007", "ET0008", "ET0009", "GH0001", "GH0002", "GH0003", "GH0004", "GH0005", "GH0006", "GH0007", "GH0008", "GH0009", "GH0010", "GH0011", "GH0012", "GH0013", "GH0014", "GH0015", "GH0016", "GH0017", "GH0018", "GH0019", "GH0020", "GH0021", "GH0022", "GH0023", "GH0024", "GH0025", "GH0026", "GH0027", "GH0028", "GH0029", "GH0030", "GH0031", "GH0032", "GH0033", "GH0034", "GH0035", "EN0001", "EN0002", "EN0003", "EN0004", "EN0005", "EN0006", "EN0007", "EN0008", "EN0009", "EN0010", "EN0011", "EN0012", "EN0013", "EN0014", "EN0015", "EN0016", "EN0017", "EN0018", "EN0019", "EN0020", "EN0021", "EN0022", "EN0023", "EN0024", "CH0001", "CH0002", "CH0003", "CH0004", "CH0005", "CH0006", "CH0007", "CH0008", "CH0009", "CH0010", "CH0011", "CHO012", "CH0013", "CH0014", "CH0015", "CH0016", "CH0017", "CH0018", "CH0019", "CH0020", "CH0021", "CH0022", "CH0023", "CH0024", "CH0025", "BI0001", "BI0002", "BI0003", "BI0004", "BI0005", "BI0006", "BI0007", "BI0008", "BI0009", "BI0010", "BI0011", "BI0012", "BI0013", "BI0014", "BI0015", "BI0016", "BI0017", "BI0018", "BI0019", "BI0020", "BI0021", "BI0022", "BI0023", "BI0024", "BI0025", "BI0026", "BI0027", "BI0028", "BI0029", "BI0030", "BI0031", "BI0032", "BI0033", "BI0034", "BI0035", "BI0036", "BI0037", "BI0038", "BI0039", "BI0040", "BI0041", "BI0042", "BI0043", "BI0044", "BI0045", "BI0046", "BI0047", "BI0048", "BI0049", "BI0050", "BI0051", "BI0052", "BI0053", "BI0054", "BI0055", "BI0056", "BI0057", "BI0058", "BI0059", "BI0060", "BI0061", "BI0062", "BI0063", "BI0064", "BI0065", "BI0066", "BI0067", "BI0068", "BI0069", "BI0070", "BI0071", "BI0072", "BI0073", "BI0074", "BI0075", "BI0076", "BI0077", "BI0078", "BI0079", "BI0080", "BI0081", "BI0082", "BI0083", "BI0084", "BI0085", "BI0086", "BI0087", "BI0088", "TL0001", "TL0002", "TL0003", "TL0004", "TL0005", "TL0006", "TL0007", "TL0008", "TL0009", "TL0010", "TL0011", "TL0012", "TL0013", "TL0014", "TL0015", "TL0016", "TL0017", "TL0018", "TL0019", "TL0020", "TL0021", "TL0022", "TL0023", "TL0024", "TL0025", "TL0026", "TL0027", "TL0028", "TL0029", "TL0030", "TL0031", "TL0032", "TL0033", "TL0034", "TL0035", "TL0036", "TL0037", "TL0038", "TL0039", "TL0040", "TL0041", "TL0042", "TL0043", "TL0044", "TL0045", "TL0046", "TL0047", "TL0048", "TL0049", "TL0050", "TL0051", "TL0052", "TL0053", "SO0001", "SO0002", "SO0003", "SO0004", "SO0005", "SO0006", "SO0007", "SO0008"]
+                "enum": ["MH0001", "MH0002", "MH0003", "MH0004", "MH0005", "MH0006", "MH0007", "MH0008", "MH0009", "MH0010", "MH0011", "MH0012", "MH0013", "MH0014", "MH0015", "MH0016", "MH0017", "MH0018", "MH0019", "MH0020", "MH0021", "MH0022", "MH0023", "MH0024", "MH0025", "MH0026", "MH0027", "MH0028", "MH0029", "MH0030", "MH0031", "MH0032", "MH0033", "MH0034", "MH0035", "MH0036", "MH0037", "MH0038", "MH0039", "MH0040", "MH0041", "MH0042", "MH0043", "MH0044", "MH0045", "MH0046", "MH0047", "MH0048", "MH0049", "MH0050", "MH0051", "MH0052", "MH0053", "MH0054", "MH0055", "MH0056", "MH0057", "MH0058", "MH0099", "MH0059", "MH0060", "ET0001", "ET0002", "ET0003", "ET0004", "ET0005", "ET0006", "ET0007", "ET0008", "ET0009", "GH0001", "GH0002", "GH0003", "GH0004", "GH0005", "GH0006", "GH0007", "GH0008", "GH0009", "GH0010", "GH0011", "GH0012", "GH0013", "GH0014", "GH0015", "GH0016", "GH0017", "GH0018", "GH0019", "GH0020", "GH0021", "GH0022", "GH0023", "GH0024", "GH0025", "GH0026", "GH0027", "GH0028", "GH0029", "GH0030", "GH0031", "GH0032", "GH0033", "GH0034", "GH0035", "EN0001", "EN0002", "EN0003", "EN0004", "EN0005", "EN0006", "EN0007", "EN0008", "EN0009", "EN0010", "EN0011", "EN0012", "EN0013", "EN0014", "EN0015", "EN0016", "EN0017", "EN0018", "EN0019", "EN0020", "EN0021", "EN0022", "EN0023", "EN0024", "CH0001", "CH0002", "CH0003", "CH0004", "CH0005", "CH0006", "CH0007", "CH0008", "CH0009", "CH0010", "CH0011", "CHO012", "CH0013", "CH0014", "CH0016", "CH0017", "CH0018", "CH0019", "CH0020", "CH0021", "CH0022", "CH0023", "CH0024", "CH0025", "BI0001", "BI0002", "BI0003", "BI0004", "BI0005", "BI0006", "BI0007", "BI0008", "BI0009", "BI0010", "BI0011", "BI0012", "BI0013", "BI0014", "BI0015", "BI0016", "BI0017", "BI0018", "BI0019", "BI0020", "BI0021", "BI0022", "BI0023", "BI0024", "BI0025", "BI0026", "BI0027", "BI0028", "BI0029", "BI0030", "BI0031", "BI0032", "BI0033", "BI0034", "BI0035", "BI0036", "BI0037", "BI0038", "BI0039", "BI0040", "BI0041", "BI0042", "BI0043", "BI0044", "BI0045", "BI0046", "BI0047", "BI0048", "BI0049", "BI0050", "BI0051", "BI0052", "BI0053", "BI0054", "BI0055", "BI0056", "BI0057", "BI0058", "BI0059", "BI0060", "BI0061", "BI0062", "BI0063", "BI0064", "BI0065", "BI0066", "BI0067", "BI0068", "BI0069", "BI0070", "BI0071", "BI0072", "BI0073", "BI0074", "BI0075", "BI0076", "BI0077", "BI0078", "BI0079", "BI0080", "BI0081", "BI0082", "BI0083", "BI0084", "BI0085", "BI0086", "BI0087", "BI0088", "TL0001", "TL0002", "TL0003", "TL0004", "TL0005", "TL0006", "TL0007", "TL0008", "TL0009", "TL0010", "TL0011", "TL0012", "TL0013", "TL0014", "TL0015", "TL0016", "TL0017", "TL0018", "TL0019", "TL0020", "TL0021", "TL0022", "TL0023", "TL0024", "TL0025", "TL0026", "TL0027", "TL0028", "TL0029", "TL0030", "TL0031", "TL0032", "TL0033", "TL0034", "TL0035", "TL0036", "TL0037", "TL0038", "TL0039", "TL0040", "TL0041", "TL0042", "TL0043", "TL0044", "TL0045", "TL0046", "TL0047", "TL0048", "TL0049", "TL0050", "TL0051", "TL0052", "TL0053", "SO0001", "SO0002", "SO0003", "SO0004", "SO0005", "SO0006", "SO0007", "SO0008"]
               },
               "haz_spec_lab": {
                 "title": "Specific Hazard Name",
@@ -223,7 +258,7 @@
                 "type": "string",
                 "codelist": "ImpactInformationProfiles.csv",
                 "openCodelist": false,
-                "enum": ["Downburst", "Lightning (Electrical Storm)", "Thunderstorm", "Coastal Flood", "Estuarine (Coastal) Flood", "Flash Flood", "Fluvial (Riverine) Flood", "Groundwater Flood", "Ice-Jam Flood Including Debris", "Ponding (Drainage) Flood", "Snowmelt Flood", "Surface Water Flooding", "Glacial Lake Outburst Flood", "Black Carbon (Brown Clouds)", "Dust storm or Sandstorm", "Fog", "Haze", "Polluted Air", "Sand haze", "Smoke", "Ocean Acidification", "Rogue Wave", "Sea Water Intrusion", "Sea Ice (Icebergs)", "Ice Flow", "Seiche", "Storm Surge", "Storm Tides", "Tsunami", "Depression or Cyclone (Low Pressure Area)", "Extra-tropical Cyclone", "Sub-Tropical Cyclone", "Acid Rain", "Blizzard", "Drought", "Hail", "Ice Storm", "Snow", "Snow Storm", "Cold Wave", "Dzud", "Freeze", "Frost (Hoar Frost)", "Freezing Rain (Supercooled Rain)", "Glaze", "Ground Frost", "Heatwave", "Icing (including Ice)", "Thaw", "Avalanche", "Mud Flow", "Rock Slide", "Derecho", "Gale (Strong Gale)", "Squall", "Subtropical Storm", "Tropical Cyclone (Cyclonic Wind, Rain [Storm] surge)", "Tropical Storm", "Extra-tropical Storm", "Tornado", "Wind", "Airburst", "Geomagnetic Storm (including energetic particles related to space weather, and solar flare radio blackout [R Scale])", "UV Radiation", "Meteorite Impact", "Ionospheric Storms", "Radio Blackout", "Solar Storm (Solar Radiation Storm) (S Scale)", "Space Hazard / Accident", "Near-Earth Object", "Earthquake", "Ground Shaking (Earthquake)", "Liquefaction (Earthquake Trigger)", "Earthquake Surface Rupture, Fissures, and Tectonic Uplift/Subsidence", "Subsidence and Uplift, Including Shoreline Change (Earthquake Trigger)", "Tsunami (Earthquake Trigger)", "Landslide or Debris Flow (Earthquake Trigger)", "Ground Gases (Seismogenic)", "Lava Flows (Lava Domes)", "Ash/Tephra Fall (Physical and Chemical)", "Ballistics (Volcanic)", "Pyroclastic Density Current", "Debris Flow/Lahars/Floods", "Landslide (Volcanic Trigger)", "Ground Shaking (Volcanic Earthquake)", "Volcanic Gases and Aerosols", "Tsunami (Volcanic Trigger)", "Lightning (Volcanic Trigger)", "Urban Fire (During/Following Volcanic Eruption)", "Subsidence and Uplift, Including Shoreline Change (Magmatic/Volcanic Trigger)", "Ground Shaking (induced earthquake, reservoir fill, dams, cavity collapse, underground explosion, impact, hydrocarbon fields, shale exploration, etc.)", "Liquefaction (Groundwater Trigger)", "Ground Fissuring", "Subsidence and Uplift Including Shoreline Change", "Shrink-Swell Subsidence", "Sinkhole", "Ground Gases (CH4, Rn, etc.)", "Riverbank Erosion", "Sand Encroachment", "Aquifer Recharge (Systems Failure/ Outages)", "Submarine Landslide", "Rockfall", "Landscape Creep", "Sediment Rock Avalanche", "Tsunami (Submarine Landslide Trigger)", "Household Air Pollution", "Air Pollution (Point Source)", "Ambient (Outdoor) Air Pollution", "Land Degradation", "Soil Degradation", "Runoff / Nonpoint Source Pollution", "Salinity", "Biodiversity Loss", "Deforestation", "Forest Declines and Diebacks", "Forest Disturbances", "Forest Invasive Species", "Wildfires", "Desertification", "Loss of Mangroves", "Wetland Loss/Degradation", "Coral Bleaching", "Compressive Soils", "Soil Erosion", "Coastal Erosion and Shoreline Change", "Permafrost Loss", "Sand Mining", "Sea Level Rise", "Eutrophication", "Ammonia", "Carbon Monoxide", "Arsenic", "Cadmium", "Lead", "Mercury", "Levels of Contaminants in Food and Feed", "Pesticides – Highly Hazardous", "Residue of Pesticides", "Hazardous Pesticide Contamination in Soils", "Insecticides", "Fungicides", "Dioxins and Dioxin-like Substances", "Microplastics", "Phosphine", "Chlorine", "Oil Pollution", "Benzene", "Chemical Warfare Agents", "Asbestos", "Aflatoxins", "Fluoride - Excess or inadequate intake", "Methanol", "Substandard and Falsified Medical Products", "Marine Toxins", "Harmful Algal Blooms", "Insect Pest Infestations", "Locust", "Invasive Weeds", "Invasive Species", "Snake Envenomation", "Human-Wildlife Conflict", "Biological Agents", "Suicide Cluster", "Antimicrobial Resistance", "Foodborne Microbial Hazards (including human enteric virus and foodborne parasite)", "Bacterial Plant Disease", "Fungal Plant Disease", "Viral, Mycoplasma and Viroid Plant Disease Epidemics", "Anthrax", "Airborne Diseases", "Blood Borne Viruses", "Waterborne Diseases", "Foodborne Diseases", "Sexually Transmitted Diseases (Human)", "Neglected Tropical Diseases (Human)", "Vaccine-Preventable Diseases (Human)", "Vector Borne Diseases (VBD) (Human)", "Viral Haemorrhagic Fevers (Human)", "Antimicrobial Resistant Microorganisms (Human)", "Animal Diseases (Not Zoonoses)", "Zoonotic Diseases", "Diarrhoeal Diseases (Human)", "Prion Diseases", "Hepatitis B (Human)", "Hepatitis C (Human)", "HIV and AIDS (Human)", "COVID-19 (SARS-CoV-2) (Human)", "Cholera (Human)", "Cryptosporidium (Human)", "Paratyphoid fever (Human)", "Typhoid Fever (Human)", "Hepatitis A (Human)", "Escherichia Coli (STEC) (Human)", "Listeriosis (Human)", "Shigellosis (Human)", "Avian Influenza (Human and Animal)", "Pandemic Influenza (Human)", "Seasonal Influenza (Human)", "Cysticercosis", "Leptospirosis (Human)", "Plague (Human)", "Leprosy", "Chikungunya", "Zika Virus (human)", "Diphtheria (Human)", "Measles (Human)", "Meningococcal Meningitis (Human)", "Pertussis (Human)", "Polio (Human)", "Smallpox (Human)", "Varicella and herpes zoster (Human)", "Yellow Fever (Human)", "Dengue (Human)", "Malaria (Human)", "Crimean-Congo Haemorrhagic Fever (Human)", "Ebola (Human)", "Lassa Fever (Human)", "Tuberculosis (Human and Animal)", "Middle East Respiratory Syndrome (MERS) (Human)", "Monkeypox (Human)", "Rabies (Animal and Human)", "Severe Acute Respiratory Syndrome (SARS) (Human)", "Rotavirus (Human)", "African Swine Fever (Animal)", "Vector-borne diseases (VBD) (Animals)", "Brucellosis (Animal)", "Classical Swine Fever (Animal)", "Contagious Bovine Pleuropneumonia (CBPP) (Animal)", "Contagious Caprine Pleuropneumonia (CCPP) (Animal)", "Foot and Mouth Disease Virus (Animal)", "Lumpy Skin Disease (Animal)", "New World Screwworm (NWS) (Animal)", "Newcastle Disease Virus (Animal)", "Peste Des Petits Ruminants (Animal)", "Q Fever", "Rift Valley Fever (Animal)", "Trypanosomosis (Animal)", "West Nile Fever (Human)", "Rinderpest (Animal)", "Trypanosomiasis (Human)", "Shrimp disease (bacterial) - Acute Hepatic pancreatic necrosis", "Oyster Disease Aquaculture", "Radioactive Waste", "Radioactive Material", "Radiation Agents", "Nuclear Agents", "Building Collapse", "Building, highrise, cladding", "Structural Failure", "Bridge Failure", "Dam Failure", "Supply Chain Failure", "Critical Infrastructure Failure", "Nuclear Plant Failure", "Power Outage/ or Blackout", "Emergency Telecommunications Failure", "Water Supply Failure", "Radio and Other Telecommunication Failures", "Misconfiguration of Software and Hardware", "Non-Conformity and Interoperability", "Malware", "Data Breach", "Data Security-Related Hazards", "Disrupt", "Outage", "Personally Identifiable Information (PII) Breach", "Internet of Things (IOT)-Related Hazards", "Cyberbullying", "Natech", "Pollution", "Explosion", "Leaks and Spills", "Soil Pollution", "Fire", "Mining Hazards", "Safety Hazards Associated with Oil and Gas Extraction Activities", "Disaster Waste", "Solid Waste", "Wastewater", "Hazardous Waste", "Plastic Waste", "Marine Debris", "Electronic Waste (E-Waste)", "Healthcare Risk Waste", "Landfilling", "Tailings", "Waste Treatment Lagoons", "Drain and Sewer Flooding", "Reservoir Flooding", "Air Transportation Accident", "Inland Water Ways", "Marine Accident", "Rail Accident", "Road Traffic Accident", "Explosive agents", "International Armed Conflict (IAC)", "Non-International Armed Conflict (NIAC)", "Civil Unrest", "Explosive Remnants of War", "Environmental Degradation from Conflict", "Violence", "Stampede or Crushing (Human)", "Financial shock"]
+                "enum": ["Downburst", "Lightning (Electrical Storm)", "Thunderstorm", "Coastal Flood", "Estuarine (Coastal) Flood", "Flash Flood", "Fluvial (Riverine) Flood", "Groundwater Flood", "Ice-Jam Flood Including Debris", "Ponding (Drainage) Flood", "Snowmelt Flood", "Surface Water Flooding", "Glacial Lake Outburst Flood", "Black Carbon (Brown Clouds)", "Dust storm or Sandstorm", "Fog", "Haze", "Polluted Air", "Sand haze", "Smoke", "Ocean Acidification", "Rogue Wave", "Sea Water Intrusion", "Sea Ice (Icebergs)", "Ice Flow", "Seiche", "Storm Surge", "Storm Tides", "Tsunami", "Depression or Cyclone (Low Pressure Area)", "Extra-tropical Cyclone", "Sub-Tropical Cyclone", "Acid Rain", "Blizzard", "Drought", "Hail", "Ice Storm", "Snow", "Snow Storm", "Cold Wave", "Dzud", "Freeze", "Frost (Hoar Frost)", "Freezing Rain (Supercooled Rain)", "Glaze", "Ground Frost", "Heatwave", "Icing (including Ice)", "Thaw", "Avalanche", "Mud Flow", "Rock Slide", "Derecho", "Gale (Strong Gale)", "Squall", "Subtropical Storm", "Tropical Cyclone (Cyclonic Wind, Rain [Storm] surge)", "Tropical Storm", "Extra-tropical Storm", "Tornado", "Wind", "Airburst", "Geomagnetic Storm (including energetic particles related to space weather, and solar flare radio blackout [R Scale])", "UV Radiation", "Meteorite Impact", "Ionospheric Storms", "Radio Blackout", "Solar Storm (Solar Radiation Storm) (S Scale)", "Space Hazard / Accident", "Near-Earth Object", "Earthquake", "Ground Shaking (Earthquake)", "Liquefaction (Earthquake Trigger)", "Earthquake Surface Rupture, Fissures, and Tectonic Uplift/Subsidence", "Subsidence and Uplift, Including Shoreline Change (Earthquake Trigger)", "Tsunami (Earthquake Trigger)", "Landslide or Debris Flow (Earthquake Trigger)", "Ground Gases (Seismogenic)", "Lava Flows (Lava Domes)", "Ash/Tephra Fall (Physical and Chemical)", "Ballistics (Volcanic)", "Pyroclastic Density Current", "Debris Flow/Lahars/Floods", "Landslide (Volcanic Trigger)", "Ground Shaking (Volcanic Earthquake)", "Volcanic Gases and Aerosols", "Tsunami (Volcanic Trigger)", "Lightning (Volcanic Trigger)", "Urban Fire (During/Following Volcanic Eruption)", "Subsidence and Uplift, Including Shoreline Change (Magmatic/Volcanic Trigger)", "Ground Shaking (induced earthquake, reservoir fill, dams, cavity collapse, underground explosion, impact, hydrocarbon fields, shale exploration, etc.)", "Liquefaction (Groundwater Trigger)", "Ground Fissuring", "Subsidence and Uplift Including Shoreline Change", "Shrink-Swell Subsidence", "Sinkhole", "Ground Gases (CH4, Rn, etc.)", "Riverbank Erosion", "Sand Encroachment", "Aquifer Recharge (Systems Failure/ Outages)", "Submarine Landslide", "Rockfall", "Landscape Creep", "Sediment Rock Avalanche", "Tsunami (Submarine Landslide Trigger)", "Household Air Pollution", "Air Pollution (Point Source)", "Ambient (Outdoor) Air Pollution", "Land Degradation", "Soil Degradation", "Runoff / Nonpoint Source Pollution", "Salinity", "Biodiversity Loss", "Deforestation", "Forest Declines and Diebacks", "Forest Disturbances", "Forest Invasive Species", "Wildfires", "Desertification", "Loss of Mangroves", "Wetland Loss/Degradation", "Coral Bleaching", "Compressive Soils", "Soil Erosion", "Coastal Erosion and Shoreline Change", "Permafrost Loss", "Sand Mining", "Sea Level Rise", "Eutrophication", "Ammonia", "Carbon Monoxide", "Arsenic", "Cadmium", "Lead", "Mercury", "Levels of Contaminants in Food and Feed", "Pesticides – Highly Hazardous", "Residue of Pesticides", "Hazardous Pesticide Contamination in Soils", "Insecticides", "Fungicides", "Dioxins and Dioxin-like Substances", "Microplastics", "Chlorine", "Oil Pollution", "Benzene", "Chemical Warfare Agents", "Asbestos", "Aflatoxins", "Fluoride - Excess or inadequate intake", "Methanol", "Substandard and Falsified Medical Products", "Marine Toxins", "Harmful Algal Blooms", "Insect Pest Infestations", "Locust", "Invasive Weeds", "Invasive Species", "Snake Envenomation", "Human-Wildlife Conflict", "Biological Agents", "Suicide Cluster", "Antimicrobial Resistance", "Foodborne Microbial Hazards (including human enteric virus and foodborne parasite)", "Bacterial Plant Disease", "Fungal Plant Disease", "Viral, Mycoplasma and Viroid Plant Disease Epidemics", "Anthrax", "Airborne Diseases", "Blood Borne Viruses", "Waterborne Diseases", "Foodborne Diseases", "Sexually Transmitted Diseases (Human)", "Neglected Tropical Diseases (Human)", "Vaccine-Preventable Diseases (Human)", "Vector Borne Diseases (VBD) (Human)", "Viral Haemorrhagic Fevers (Human)", "Antimicrobial Resistant Microorganisms (Human)", "Animal Diseases (Not Zoonoses)", "Zoonotic Diseases", "Diarrhoeal Diseases (Human)", "Prion Diseases", "Hepatitis B (Human)", "Hepatitis C (Human)", "HIV and AIDS (Human)", "COVID-19 (SARS-CoV-2) (Human)", "Cholera (Human)", "Cryptosporidium (Human)", "Paratyphoid fever (Human)", "Typhoid Fever (Human)", "Hepatitis A (Human)", "Escherichia Coli (STEC) (Human)", "Listeriosis (Human)", "Shigellosis (Human)", "Avian Influenza (Human and Animal)", "Pandemic Influenza (Human)", "Seasonal Influenza (Human)", "Cysticercosis", "Leptospirosis (Human)", "Plague (Human)", "Leprosy", "Chikungunya", "Zika Virus (human)", "Diphtheria (Human)", "Measles (Human)", "Meningococcal Meningitis (Human)", "Pertussis (Human)", "Polio (Human)", "Smallpox (Human)", "Varicella and herpes zoster (Human)", "Yellow Fever (Human)", "Dengue (Human)", "Malaria (Human)", "Crimean-Congo Haemorrhagic Fever (Human)", "Ebola (Human)", "Lassa Fever (Human)", "Tuberculosis (Human and Animal)", "Middle East Respiratory Syndrome (MERS) (Human)", "Monkeypox (Human)", "Rabies (Animal and Human)", "Severe Acute Respiratory Syndrome (SARS) (Human)", "Rotavirus (Human)", "African Swine Fever (Animal)", "Vector-borne diseases (VBD) (Animals)", "Brucellosis (Animal)", "Classical Swine Fever (Animal)", "Contagious Bovine Pleuropneumonia (CBPP) (Animal)", "Contagious Caprine Pleuropneumonia (CCPP) (Animal)", "Foot and Mouth Disease Virus (Animal)", "Lumpy Skin Disease (Animal)", "New World Screwworm (NWS) (Animal)", "Newcastle Disease Virus (Animal)", "Peste Des Petits Ruminants (Animal)", "Q Fever", "Rift Valley Fever (Animal)", "Trypanosomosis (Animal)", "West Nile Fever (Human)", "Rinderpest (Animal)", "Trypanosomiasis (Human)", "Shrimp disease (bacterial) - Acute Hepatic pancreatic necrosis", "Oyster Disease Aquaculture", "Radioactive Waste", "Radioactive Material", "Radiation Agents", "Nuclear Agents", "Building Collapse", "Building, highrise, cladding", "Structural Failure", "Bridge Failure", "Dam Failure", "Supply Chain Failure", "Critical Infrastructure Failure", "Nuclear Plant Failure", "Power Outage/ or Blackout", "Emergency Telecommunications Failure", "Water Supply Failure", "Radio and Other Telecommunication Failures", "Misconfiguration of Software and Hardware", "Non-Conformity and Interoperability", "Malware", "Data Breach", "Data Security-Related Hazards", "Disrupt", "Outage", "Personally Identifiable Information (PII) Breach", "Internet of Things (IOT)-Related Hazards", "Cyberbullying", "Natech", "Pollution", "Explosion", "Leaks and Spills", "Soil Pollution", "Fire", "Mining Hazards", "Safety Hazards Associated with Oil and Gas Extraction Activities", "Disaster Waste", "Solid Waste", "Wastewater", "Hazardous Waste", "Plastic Waste", "Marine Debris", "Electronic Waste (E-Waste)", "Healthcare Risk Waste", "Landfilling", "Tailings", "Waste Treatment Lagoons", "Drain and Sewer Flooding", "Reservoir Flooding", "Air Transportation Accident", "Inland Water Ways", "Marine Accident", "Rail Accident", "Road Traffic Accident", "Explosive agents", "International Armed Conflict (IAC)", "Non-International Armed Conflict (NIAC)", "Civil Unrest", "Explosive Remnants of War", "Environmental Degradation from Conflict", "Violence", "Stampede or Crushing (Human)", "Financial shock"]
               },
               "haz_cluster_code": {
                 "title": "Hazard Cluster Code",
@@ -446,7 +481,7 @@
               "type": "string",
               "description": "Name of the event, for general use, in any given language."
             },
-            "ext_IDs": {
+            "all_ext_IDs": {
               "title": "External IDs",
               "description": "List of ID codes that are used by external organisations (outside of the Montandon) to uniquely identify the hazard event. For example, GLIDE numbers.",
               "type": "array",
@@ -603,18 +638,18 @@
             "imp_src_URL"
           ]
         },
-        "impact_estimate": {
+        "impact_detail": {
           "title": "Impact Value Data",
-          "description": "Impact estimate value and unit information",
+          "description": "Impact estimate value and unit information, including the exposure classification of what was impacted.",
           "type": "object",
           "properties": {
-            "imp_det": {
+            "exp_spec": {
               "title": "Impact Detail",
               "description": "The sub-sub category of impact, which is the specific asset or population demographic that has been impacted by the hazard.",
               "type": "string",
               "codelist": "ImpactInformationProfiles.csv",
               "openCodelist": true,
-              "enum": ["impdetallpeop", "impdetcrop", "impdetwomen", "impdetmen", "impdetelder", "impdetchld14", "impdetchld18", "impdetwheelch", "impdetroad", "impdettrainlin", "impdetvulempl", "impdetbuild", "impdetreccost", "impdethosp", "impdeteduc", "impdetloccur", "impdetglobdate", "impdetinfloccur", "impdetinfglobdate", "impdetusdunsure", "impdetcattle", "impdetaidgen", "impdetecoifrcall", "impdetecoifrcreq", "impdetalert"]
+              "enum": ["expspec_allpeop", "expspec_crop", "expspec_women", "expspec_men", "expspec_elder", "expspec_chld14", "expspec_chld18", "expspec_wheelch", "expspec_road", "expspec_trainlin", "expspec_vulempl", "expspec_build", "expspec_reccost", "expspec_hosp", "expspec_educ", "expspec_loccur", "expspec_globdate", "expspec_infloccur", "expspec_infglobdate", "expspec_usdunsure", "expspec_cattle", "expspec_aidgen", "expspec_ecoifrcall", "expspec_ecoifrcreq", "expspec_alert"]
             },
             "imp_value": {
               "title": "Estimated Impact Value",
@@ -647,6 +682,7 @@
             }
           },
           "required": [
+            "exp_spec",
             "imp_value",
             "imp_type",
             "imp_units",
@@ -686,7 +722,7 @@
       "required": [
         "ID_linkage",
         "source",
-        "impact_estimate",
+        "impact_detail",
         "temporal",
         "spatial"
       ]
@@ -761,6 +797,16 @@
           "description": "Basic information about the hazard, including things like the maximum magnitude/intensity/severity values and any related trigger/triggering/concurrent hazards (observed or even potential).",
           "type": "object",
           "properties": {
+            "haz_Ab": {
+              "title": "Abbreviated Hazard ID",
+              "description": "Two-letter abbreviated ID for the hazard. For example, floods would be 'FL' and earthquakes 'EQ'. These abbreviations are pre-determined and standardised, and should be found online.",
+              "$ref": "#/$defs/HazAb_obj"
+            },
+            "haz_spec": {
+              "title": "Specific Hazard",
+              "description": "The specific hazard is the final layer in the categorisation of the hazards. Please see the UNDRR-ISC 2020 Hazard Information Profiles report for more information.",
+              "$ref": "#/$defs/HazSpec_obj"
+            },
             "haz_maxvalue": {
               "title": "Maximum Hazard Severity Value",
               "description": "The estimated maximum hazard intensity/magnitude/severity value, as a number, without the units.",
@@ -838,23 +884,6 @@
             }
           }
         },
-        "hazard_taxonomy": {
-          "title": "Hazard Taxonomy",
-          "description": "Classification of this specific hazard, with respect to the UNDRR-ISC 2020 Hazard Information Profiles report.",
-          "type": "object",
-          "properties": {
-            "haz_Ab": {
-              "title": "Abbreviated Hazard ID",
-              "description": "Two-letter abbreviated ID for the hazard. For example, floods would be 'FL' and earthquakes 'EQ'. These abbreviations are pre-determined and standardised, and should be found online.",
-              "$ref": "#/$defs/HazAb_obj"
-            },
-            "haz_spec": {
-              "title": "Specific Hazard",
-              "description": "The specific hazard is the final layer in the categorisation of the hazards. Please see the UNDRR-ISC 2020 Hazard Information Profiles report for more information.",
-              "$ref": "#/$defs/HazSpec_obj"
-            }
-          }
-        },
         "temporal": {
           "title": "Time-Related Data",
           "description": "Data related to dates and time periods of the hazard",
@@ -885,9 +914,55 @@
         "ID_linkage",
         "source",
         "hazard_detail",
-        "hazard_taxonomy",
         "temporal",
         "spatial"
+      ]
+    },
+    "Response_obj": {
+      "title": "Response Object of Montandon",
+      "type": "object",
+      "description": "Responses and interventions to the disaster, which aim to reduce the impact or speed up recovery.",
+      "properties": {
+        "ID_linkage": {
+          "title": "Impact ID and Links",
+          "description": "Impact ID information and links to other object instances within an event. For example, linking to hazard IDs. Note: no spatial IDs are linked here, see the spatial element.",
+          "type": "object",
+          "properties": {
+            "event_ID": {
+              "title": "Event ID",
+              "description": "ID of the overall event that this impact estimate refers to",
+              "type": "string",
+              "minLength": 1
+            },
+            "res_sub_ID": {
+              "title": "Response ID",
+              "description": "ID of each response element, within the overall event",
+              "type": "string",
+              "minLength": 1
+            },
+            "imp_sub_ID": {
+              "title": "Impact Estimate ID",
+              "description": "ID of each impact element, within the overall event",
+              "type": "string"
+            },
+            "haz_sub_ID": {
+              "title": "Hazard ID Link",
+              "description": "ID of each hazard event data element, within the overall event",
+              "type": "array",
+              "items": {
+                "type": "string",
+                "uniqueItems": true
+              }
+            }
+          },
+          "required": [
+            "event_ID",
+            "res_sub_ID"
+          ]
+        }
+      },
+      "required": [
+        "ID_linkage"
       ]
     },
     "SpatialImpact_obj": {
@@ -1202,7 +1277,7 @@
       "pattern": "^[A-Z]{2}\\d{4}$",
       "codelist": "ImpactInformationProfiles.csv",
       "openCodelist": false,
-      "enum": ["MH0001", "MH0002", "MH0003", "MH0004", "MH0005", "MH0006", "MH0007", "MH0008", "MH0009", "MH0010", "MH0011", "MH0012", "MH0013", "MH0014", "MH0015", "MH0016", "MH0017", "MH0018", "MH0019", "MH0020", "MH0021", "MH0022", "MH0023", "MH0024", "MH0025", "MH0026", "MH0027", "MH0028", "MH0029", "MH0030", "MH0031", "MH0032", "MH0033", "MH0034", "MH0035", "MH0036", "MH0037", "MH0038", "MH0039", "MH0040", "MH0041", "MH0042", "MH0043", "MH0044", "MH0045", "MH0046", "MH0047", "MH0048", "MH0049", "MH0050", "MH0051", "MH0052", "MH0053", "MH0054", "MH0055", "MH0056", "MH0057", "MH0058", "MH0099", "MH0059", "MH0060", "ET0001", "ET0002", "ET0003", "ET0004", "ET0005", "ET0006", "ET0007", "ET0008", "ET0009", "GH0001", "GH0002", "GH0003", "GH0004", "GH0005", "GH0006", "GH0007", "GH0008", "GH0009", "GH0010", "GH0011", "GH0012", "GH0013", "GH0014", "GH0015", "GH0016", "GH0017", "GH0018", "GH0019", "GH0020", "GH0021", "GH0022", "GH0023", "GH0024", "GH0025", "GH0026", "GH0027", "GH0028", "GH0029", "GH0030", "GH0031", "GH0032", "GH0033", "GH0034", "GH0035", "EN0001", "EN0002", "EN0003", "EN0004", "EN0005", "EN0006", "EN0007", "EN0008", "EN0009", "EN0010", "EN0011", "EN0012", "EN0013", "EN0014", "EN0015", "EN0016", "EN0017", "EN0018", "EN0019", "EN0020", "EN0021", "EN0022", "EN0023", "EN0024", "CH0001", "CH0002", "CH0003", "CH0004", "CH0005", "CH0006", "CH0007", "CH0008", "CH0009", "CH0010", "CH0011", "CHO012", "CH0013", "CH0014", "CH0015", "CH0016", "CH0017", "CH0018", "CH0019", "CH0020", "CH0021", "CH0022", "CH0023", "CH0024", "CH0025", "BI0001", "BI0002", "BI0003", "BI0004", "BI0005", "BI0006", "BI0007", "BI0008", "BI0009", "BI0010", "BI0011", "BI0012", "BI0013", "BI0014", "BI0015", "BI0016", "BI0017", "BI0018", "BI0019", "BI0020", "BI0021", "BI0022", "BI0023", "BI0024", "BI0025", "BI0026", "BI0027", "BI0028", "BI0029", "BI0030", "BI0031", "BI0032", "BI0033", "BI0034", "BI0035", "BI0036", "BI0037", "BI0038", "BI0039", "BI0040", "BI0041", "BI0042", "BI0043", "BI0044", "BI0045", "BI0046", "BI0047", "BI0048", "BI0049", "BI0050", "BI0051", "BI0052", "BI0053", "BI0054", "BI0055", "BI0056", "BI0057", "BI0058", "BI0059", "BI0060", "BI0061", "BI0062", "BI0063", "BI0064", "BI0065", "BI0066", "BI0067", "BI0068", "BI0069", "BI0070", "BI0071", "BI0072", "BI0073", "BI0074", "BI0075", "BI0076", "BI0077", "BI0078", "BI0079", "BI0080", "BI0081", "BI0082", "BI0083", "BI0084", "BI0085", "BI0086", "BI0087", "BI0088", "TL0001", "TL0002", "TL0003", "TL0004", "TL0005", "TL0006", "TL0007", "TL0008", "TL0009", "TL0010", "TL0011", "TL0012", "TL0013", "TL0014", "TL0015", "TL0016", "TL0017", "TL0018", "TL0019", "TL0020", "TL0021", "TL0022", "TL0023", "TL0024", "TL0025", "TL0026", "TL0027", "TL0028", "TL0029", "TL0030", "TL0031", "TL0032", "TL0033", "TL0034", "TL0035", "TL0036", "TL0037", "TL0038", "TL0039", "TL0040", "TL0041", "TL0042", "TL0043", "TL0044", "TL0045", "TL0046", "TL0047", "TL0048", "TL0049", "TL0050", "TL0051", "TL0052", "TL0053", "SO0001", "SO0002", "SO0003", "SO0004", "SO0005", "SO0006", "SO0007", "SO0008"]
+      "enum": ["MH0001", "MH0002", "MH0003", "MH0004", "MH0005", "MH0006", "MH0007", "MH0008", "MH0009", "MH0010", "MH0011", "MH0012", "MH0013", "MH0014", "MH0015", "MH0016", "MH0017", "MH0018", "MH0019", "MH0020", "MH0021", "MH0022", "MH0023", "MH0024", "MH0025", "MH0026", "MH0027", "MH0028", "MH0029", "MH0030", "MH0031", "MH0032", "MH0033", "MH0034", "MH0035", "MH0036", "MH0037", "MH0038", "MH0039", "MH0040", "MH0041", "MH0042", "MH0043", "MH0044", "MH0045", "MH0046", "MH0047", "MH0048", "MH0049", "MH0050", "MH0051", "MH0052", "MH0053", "MH0054", "MH0055", "MH0056", "MH0057", "MH0058", "MH0099", "MH0059", "MH0060", "ET0001", "ET0002", "ET0003", "ET0004", "ET0005", "ET0006", "ET0007", "ET0008", "ET0009", "GH0001", "GH0002", "GH0003", "GH0004", "GH0005", "GH0006", "GH0007", "GH0008", "GH0009", "GH0010", "GH0011", "GH0012", "GH0013", "GH0014", "GH0015", "GH0016", "GH0017", "GH0018", "GH0019", "GH0020", "GH0021", "GH0022", "GH0023", "GH0024", "GH0025", "GH0026", "GH0027", "GH0028", "GH0029", "GH0030", "GH0031", "GH0032", "GH0033", "GH0034", "GH0035", "EN0001", "EN0002", "EN0003", "EN0004", "EN0005", "EN0006", "EN0007", "EN0008", "EN0009", "EN0010", "EN0011", "EN0012", "EN0013", "EN0014", "EN0015", "EN0016", "EN0017", "EN0018", "EN0019", "EN0020", "EN0021", "EN0022", "EN0023", "EN0024", "CH0001", "CH0002", "CH0003", "CH0004", "CH0005", "CH0006", "CH0007", "CH0008", "CH0009", "CH0010", "CH0011", "CHO012", "CH0013", "CH0014", "CH0016", "CH0017", "CH0018", "CH0019", "CH0020", "CH0021", "CH0022", "CH0023", "CH0024", "CH0025", "BI0001", "BI0002", "BI0003", "BI0004", "BI0005", "BI0006", "BI0007", "BI0008", "BI0009", "BI0010", "BI0011", "BI0012", "BI0013", "BI0014", "BI0015", "BI0016", "BI0017", "BI0018", "BI0019", "BI0020", "BI0021", "BI0022", "BI0023", "BI0024", "BI0025", "BI0026", "BI0027", "BI0028", "BI0029", "BI0030", "BI0031", "BI0032", "BI0033", "BI0034", "BI0035", "BI0036", "BI0037", "BI0038", "BI0039", "BI0040", "BI0041", "BI0042", "BI0043", "BI0044", "BI0045", "BI0046", "BI0047", "BI0048", "BI0049", "BI0050", "BI0051", "BI0052", "BI0053", "BI0054", "BI0055", "BI0056", "BI0057", "BI0058", "BI0059", "BI0060", "BI0061", "BI0062", "BI0063", "BI0064", "BI0065", "BI0066", "BI0067", "BI0068", "BI0069", "BI0070", "BI0071", "BI0072", "BI0073", "BI0074", "BI0075", "BI0076", "BI0077", "BI0078", "BI0079", "BI0080", "BI0081", "BI0082", "BI0083", "BI0084", "BI0085", "BI0086", "BI0087", "BI0088", "TL0001", "TL0002", "TL0003", "TL0004", "TL0005", "TL0006", "TL0007", "TL0008", "TL0009", "TL0010", "TL0011", "TL0012", "TL0013", "TL0014", "TL0015", "TL0016", "TL0017", "TL0018", "TL0019", "TL0020", "TL0021", "TL0022", "TL0023", "TL0024", "TL0025", "TL0026", "TL0027", "TL0028", "TL0029", "TL0030", "TL0031", "TL0032", "TL0033", "TL0034", "TL0035", "TL0036", "TL0037", "TL0038", "TL0039", "TL0040", "TL0041", "TL0042", "TL0043", "TL0044", "TL0045", "TL0046", "TL0047", "TL0048", "TL0049", "TL0050", "TL0051", "TL0052", "TL0053", "SO0001", "SO0002", "SO0003", "SO0004", "SO0005", "SO0006", "SO0007", "SO0008"]
     },
     "ISO3_obj": {
       "title": "ISO-3C Codes",
