@@ -21,6 +21,6 @@ delim<-":"
 
 
 
-# ssh -i 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 ifrctgc0root@98.71.131.43
+# ssh -i ifrctgc0root@98.71.131.43
 # Use this to see the keys for the PostgreSQL and Blobstorages
 # ifrctgc0root@ifrctgc001vm:~/devops$ head *
