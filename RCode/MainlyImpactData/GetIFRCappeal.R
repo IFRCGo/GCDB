@@ -112,7 +112,7 @@ CleanGO_app<-function(appeal){
                    imp_src_URL="https://goadmin.ifrc.org/api/v2/appeal",
                    imp_src_orglab="International Federation of Red Cross and Red Crescent Societies (IFRC)",
                    imp_src_org="IFRC",
-                   imp_src_db="GO-App",
+                   imp_src_db=atype_display,
                    imp_src_orgtype="orgtypengo",
                    imp_spat_covcode="spat_polygon",
                    imp_spat_res=0,
@@ -296,9 +296,7 @@ convGOApp_Monty<-function(){
       rename(ext_ID=code)
   )
   # Sources for impact data
-  source<-data.frame(imp_src_db=rep("GO-App",nrow(ID_linkage)),
-                     imp_src_URL=rep("https://goadmin.ifrc.org/api/v2/appeal",nrow(ID_linkage)),
-                     imp_src_org=rep("IFRC",nrow(ID_linkage)))
+  source<-appeal%>%dplyr::select(imp_src_db,imp_src_URL,imp_src_org)
   # impact estimates
   impact_detail<-appeal%>%distinct(imp_sub_ID,.keep_all = T)%>%
     dplyr::select(exp_spec,imp_value,imp_type,imp_units,imp_est_type,imp_unitdate)
@@ -393,6 +391,7 @@ convGOApp_Monty<-function(){
            src_db_lab="IFRC-GO ADM-0 Maps",
            src_db_URL="https://go-user-library.ifrc.org/maps"))
   
+  if(!dir.exists("./CleanedData/MostlyImpactData/IFRC/")) dir.create("./CleanedData/MostlyImpactData/IFRC/")
   # Write it out just for keep-sake
   write(jsonlite::toJSON(appMonty,pretty = T,auto_unbox=T),
         paste0("./CleanedData/MostlyImpactData/IFRC/Appeal_",Sys.Date(),".json"))

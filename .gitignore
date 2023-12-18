@@ -43,6 +43,7 @@ RawData
 Plots
 Results
 Analysis_Results
+*GetEnv.R
 
 *.pdf
 *.pptx

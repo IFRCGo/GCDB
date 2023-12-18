@@ -460,12 +460,12 @@ ReadDessie<-function(iso3, forcer=F){
   
 }
 
-WrangleDessie<-function(iso3){
+WrangleDessie<-function(iso3,forcer=T){
   iso3%<>%str_to_lower()
   
-  chk<-tryCatch(GetDessie(iso3),error=function(e) NA)
+  chk<-tryCatch(GetDessie(iso3,forcer = forcer),error=function(e) NA)
   if(is.na(chk)) return(F)
-  chk<-tryCatch(ReadDessie(iso3),error=function(e) NA)
+  chk<-tryCatch(ReadDessie(iso3,forcer = forcer),error=function(e) NA)
   if(is.na(chk)) return(F)
   
   return(T)
