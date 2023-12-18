@@ -342,7 +342,7 @@ OverlapMonty<-function(MontyA,MontyB){
 }
 
 # Merge multiple Monty objects, all gathered in a list
-MergeMonty<-function(lMonty){
+MergeMonty<-function(lMonty,jsoner=F){
   # Checks: check none of the Monty instances have empty event or impact data
   chk<-sapply(seq_along(lMonty),function(i){
     !is.null(lMonty[[i]]$event_Level) & nrow(lMonty[[i]]$event_Level)>0 &
@@ -365,7 +365,7 @@ MergeMonty<-function(lMonty){
     lMonty[[i]]$event_Level$temporal}))
   spatial<-do.call(rbind,lapply(seq_along(lMonty),function(i){
     lMonty[[i]]$event_Level$spatial}))
-  allhaz_class<-do.call(rbind,lapply(seq_along(lMonty),function(i){
+  allhaz_class<-do.call(c,lapply(seq_along(lMonty),function(i){
     lMonty[[i]]$event_Level$allhaz_class}))
   # Replace the event_Level field of Monty instance 
   Monty$event_Level<-data.frame(indy=1:nrow(ID_linkage))
@@ -420,8 +420,13 @@ MergeMonty<-function(lMonty){
   if(length(Monty$response_Data)!=0) {
     warning("Response-level data not ready to be merged")
   }
+  
+  # Source-related taxonomy information
+  Monty$taxonomies$src_info<-do.call(rbind,lapply(seq_along(lMonty),function(i){
+    lMonty[[i]]$taxonomies$src_info}))
+  
   # Return it!
-  if(form=="json") return(jsonlite::toJSON(Monty,pretty = T,auto_unbox = T)) else return(Monty)
+  if(jsoner) return(jsonlite::toJSON(Monty,pretty = T,auto_unbox = T)) else return(Monty)
 }
 
 # Split the Monty instance by event_IDs (evs)
@@ -523,3 +528,21 @@ CheckAPIinput<-function(sdate=NULL,fdate=NULL,ISO3=NULL,haz_Ab=NULL){
   # Return safe message if nothing went wrong
   return(list(valid=T,message="Valid input to API"))
 }
+
+ConvMonty2Tabs<-function(Monty){
+  
+}
+
+
+# Sort EM-DAT & GIDD data first?
+# Match by event id minus the day
+# Make tabular data out of this matched Monty object
+# Attach the impact admin boundary data (ADM-0 for now)
+# For hazard data, extract from those with GDACS data directly
+
+
+
+
+
+
+

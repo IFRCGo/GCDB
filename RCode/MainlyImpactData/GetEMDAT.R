@@ -331,10 +331,61 @@ CleanEMDAT_old<-function(EMDAT){
   EMDAT%>%AddEmptyColImp()
 }
 
+API_EMDAT<-function(){
+  query_str = 
+    'query monty {
+      api_version
+      public_emdat(
+        cursor: {limit: -1, offset: 1}
+        filters: {
+          from: 1990,
+          to: 2019,
+          classif: ["nat-*"],
+          include_hist: true
+        }
+      ) {
+        total_available
+        info {
+          timestamp
+          filters
+          cursor
+        }
+        data {
+          disno
+          classif_key
+          type
+          subtype
+          river_basin
+          total_dam
+          total_dam_adj
+          total_deaths
+          total_affected
+          entry_date
+          last_update
+        }
+      }
+    }'
+  # setup the connection with the GraphQL database
+  client <- ghql::GraphqlClient$new(
+    url = "https://api.emdat.be/v1",
+    headers = list(Authorization = emdat_token)
+  )
+  # Setup the query in GraphQL language
+  q <- ghql::Query$new()
+  q$query('monty',query_str)
+  # Make the query to EM-DAT
+  EMDAT <- jsonlite::fromJSON(client$exec(q$queries$monty))$data$public_emdat$data%>%
+    CleanEMDAT()
+  
+  
+}
+
 GetEMDAT<-function(new_format=T){
   # EMDAT file
   # filez<-paste0("./RawData/MostlyImpactData/EMDAT/emdat_public_",haz,"_20230526.xlsx")
   filez<-paste0("./CleanedData/MostlyImpactData/EMDAT/emdat_public_2023_09_22_query_uid-tUnheR.xlsx")
+  
+  
   # If nothing found
   if(!file.exists(filez)) return(data.frame())
   # Extract the hazard-specific EMDAT data
