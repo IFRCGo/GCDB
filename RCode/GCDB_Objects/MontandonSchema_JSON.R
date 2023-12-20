@@ -9,6 +9,7 @@ RDLS<-jsonlite::fromJSON("https://docs.riskdatalibrary.org/en/0__2__0/rdls_schem
 
 
 stop("change _fileread to _format, check _spat_fileloc and _spat_URL")
+stop("Add the resunits to the Monty taxonomies")
 
 
 

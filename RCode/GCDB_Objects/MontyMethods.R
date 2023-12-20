@@ -529,6 +529,8 @@ CheckAPIinput<-function(sdate=NULL,fdate=NULL,ISO3=NULL,haz_Ab=NULL){
   return(list(valid=T,message="Valid input to API"))
 }
 
+# Function: for JSON-based dataframes, with certain variables as nested lists
+#           we convert these nested lists to characters and then paste them together
 squishLDF<-function(DF){
   if(!is.null(ncol(DF[[1]]))) {
     return(do.call(rbind,lapply(seq_along(DF),function(i){
@@ -541,7 +543,30 @@ squishLDF<-function(DF){
   }
 }
 
-Monty_Ev2Tab<-function(Monty,red=F,intuit=F){
+# Function: for JSON-based dataframes, with certain variables as nested lists
+#           we left join to the given taxonomies and then use squishDF to merge together
+JoinDFMonty<-function(DF,taxy,DFjoiner,taxyjoiner=NULL){
+  if(!is.null(ncol(DF[[1]]))) {
+    return(squishLDF(lapply(seq_along(DF),function(i){
+      # Join by the provided name: 'joiner'
+      colnames(DF[[i]])[colnames(DF[[i]])==DFjoiner]<-taxyjoiner
+      DF[[i]]%>%left_join(taxy,by=taxyjoiner)
+    }))%>%as.data.frame())
+  } else {
+    if(class(DF)=="list"){
+      return(squishLDF(lapply(seq_along(DF),function(i){
+        # Join by the provided name: 'joiner'
+        data.frame(DF[[i]])%>%
+          left_join(taxy)
+      }))%>%as.data.frame())
+    } else if (class(DF)=="data.frame"){
+      colnames(DF)[colnames(DF)==DFjoiner]<-taxyjoiner
+      return(left_join(DF,taxy,by=taxyjoiner))
+    }
+  }
+}
+
+Monty_Ev2Tab<-function(Monty){
   #%%%%%%%%%%%%%%%%%%%%%% EVENT LEVEL %%%%%%%%%%%%%%%%%%%%%%#
   # IDs and linkages first
   ev_lv<-Monty$event_Level$ID_linkage[,c("event_ID","ev_name")]
@@ -552,18 +577,23 @@ Monty_Ev2Tab<-function(Monty,red=F,intuit=F){
                  Monty$event_Level$spatial%>%dplyr::select(gen_location))
   # Add the ISOs
   ev_lv$ev_ISO3s<-squishLDF(Monty$event_Level$spatial$ev_ISO3s)
+  # Country info from ISOs (accounting for when ev_ISOs is a nested list of DFs)
+  ev_lv%<>%cbind(JoinDFMonty(Monty$event_Level$spatial%>%dplyr::select(ev_ISO3s), 
+                             Monty$taxonomies$ISO_info,
+                             "ev_ISO3s","ISO3"))
   # Hazard classifications
   ev_lv%<>%cbind(squishLDF(Monty$event_Level$allhaz_class))
-  
-  # If the most memory-efficient version is desired, return it
-  if(red) return(ev_lv)
-  # Otherwise, add on the labels to the coded variables
-  
+  # Hazard taxonomy from specific hazards
+  ev_lv%<>%cbind(JoinDFMonty(Monty$event_Level$allhaz_class, 
+                             Monty$taxonomies$haz_class,
+                             "all_hazs_spec","haz_spec_code"))%>%
+    dplyr::select(-c("all_hazs_Ab","all_hazs_spec"))%>%
+    rename(haz_Ab=all_hazs_Ab)
   
   return(ev_lv)
 }
 
-Monty_Imp2Tab<-function(Monty,red=F,intuit=F){
+Monty_Imp2Tab<-function(Monty){
   #%%%%%%%%%%%%%%%%%%%%%% IMPACT LEVEL %%%%%%%%%%%%%%%%%%%%%%#
   # IDs and linkages first
   imp_lv<-Monty$impact_Data$ID_linkage[,c("event_ID","imp_sub_ID")]
@@ -572,22 +602,67 @@ Monty_Imp2Tab<-function(Monty,red=F,intuit=F){
   # External IDs
   imp_lv%<>%cbind(squishLDF(Monty$impact_Data$ID_linkage$imp_ext_IDs))
   # Source, impact detail and temporal
-  imp_lv%<>%cbind(Monty$impact_Data$source,
-                  Monty$impact_Data$impact_detail,
-                  Monty$impact_Data$temporal)
+  imp_lv%<>%cbind(Monty$impact_Data$source%>%dplyr::select(-c(imp_src_db,imp_src_org)),
+                  Monty$impact_Data$impact_detail)
+  # Exposure classification
+  imp_lv%<>%rename(exp_spec_code=exp_spec)%>%
+    left_join(Monty$taxonomies$exp_class,
+                      by="exp_spec_code")
+  # Impact type
+  imp_lv%<>%rename(imp_type_code=imp_type)%>%
+    left_join(Monty$taxonomies$imp_class,
+              by="imp_type_code")
+  # Impact units
+  imp_lv%<>%rename(unit_codes=imp_units)%>%
+    left_join(Monty$taxonomies$units_info,
+              by="unit_codes")%>%
+    rename(imp_unit_code=unit_codes,imp_unit_lab=units_lab,
+           imp_unitgroup_code=unit_groups_code,
+           imp_unitgroup_lab=unit_groups_lab)
+  # Temporal information
+  imp_lv%<>%cbind(Monty$impact_Data$temporal)
+  # Organisation name and database
+  imp_lv%<>%cbind(JoinDFMonty(Monty$impact_Data$source%>%dplyr::select(imp_src_db,imp_src_org), 
+                              Monty$taxonomies$src_info,
+                              "imp_src_db","src_db_code"))%>%
+    dplyr::select(-imp_src_org)
   # Spatial ID linkages
-  imp_lv%<>%cbind(squishLDF(Monty$impact_Data$spatial$ID_linkage),
-                  squishLDF(Monty$impact_Data$spatial$spatial_info),
-                  squishLDF(Monty$impact_Data$spatial$source))
-  
-  # If the most memory-efficient version is desired, return it
-  if(red) return(imp_lv)
-  # Otherwise, add on the labels to the coded variables
+  imp_lv%<>%cbind(squishLDF(Monty$impact_Data$spatial$ID_linkage))
+  # Spatial object type
+  imp_lv%<>%cbind(JoinDFMonty(Monty$impact_Data$spatial$spatial_info, 
+                              Monty$taxonomies$spatial_coverage,
+                              "imp_spat_covcode","spat_cov_code")%>%
+                    dplyr::select("spat_cov_code","spat_cov_lab","imp_spat_res","imp_spat_resunits","imp_spat_crs"))%>%
+    rename(imp_spat_covcode=spat_cov_code, imp_spat_covlab=spat_cov_lab)
+  # Country info from ISOs (accounting for when ev_ISOs is a nested list of DFs)
+  imp_lv%<>%cbind(JoinDFMonty(Monty$impact_Data$spatial$spatial_info, 
+                             Monty$taxonomies$ISO_info,
+                             "imp_ISO3s","ISO3")%>%
+                    dplyr::select("ISO3","Country","UN.Region","World.Bank.Regions",
+                                  "Continent","UN.Sub.Region","World.Bank.Income.Groups"))%>%
+    rename(imp_ISO3s=ISO3)
+  # Re-order this all
+  imp_lv%<>%dplyr::select(c("event_ID","imp_sub_ID","haz_sub_ID","ext_ID",
+                            "ext_ID_db","ext_ID_org","imp_src_URL",
+                            "exp_spec_code","exp_spec_lab","exp_subcat_code",
+                            "exp_subcat_lab","exp_cat_code","exp_cat_lab",
+                            "imp_value","imp_type_code","imp_type_lab",
+                            "imp_unit_code","imp_unit_lab","imp_unitgroup_code",
+                            "imp_unitgroup_lab","imp_est_type","imp_unitdate","imp_sdate",
+                            "imp_fdate","src_db_code","src_db_code","src_db_lab",
+                            "src_org_code","src_org_lab","src_org_typecode","src_org_typelab",
+                            "src_org_email","src_db_attr","src_db_lic",
+                            "src_db_URL","src_addinfo","imp_spat_ID","imp_spat_fileloc",
+                            "imp_spat_colname","imp_spat_rowname","imp_spat_covcode",
+                            "imp_spat_covlab","imp_spat_res","imp_spat_resunits",
+                            "imp_spat_crs","imp_ISO3s","Country","UN.Region",
+                            "World.Bank.Regions","Continent","UN.Sub.Region",
+                            "World.Bank.Income.Groups"))
   
   return(imp_lv)
 }
 
-Monty_Haz2Tab<-function(Monty,red=F,intuit=F){
+Monty_Haz2Tab<-function(Monty){
   #%%%%%%%%%%%%%%%%%%%%%% HAZARD LEVEL %%%%%%%%%%%%%%%%%%%%%%#
   # IDs and linkages first
   haz_lv<-Monty$hazard_Data$ID_linkage[,c("event_ID","haz_sub_ID")]
@@ -612,20 +687,16 @@ Monty_Haz2Tab<-function(Monty,red=F,intuit=F){
                   squishLDF(Monty$hazard_Data$spatial$spatial_info),
                   squishLDF(Monty$hazard_Data$spatial$source))
   
-  # If the most memory-efficient version is desired, return it
-  if(red) return(haz_lv)
-  # Otherwise, add on the labels to the coded variables
-  
   return(haz_lv)
 }
 
-ConvMonty2Tabs<-function(Monty,red=F,intuit=F){
+ConvMonty2Tabs<-function(Monty){
   #%%%%%%%%%%%%%%%%%%%%%% EVENT LEVEL %%%%%%%%%%%%%%%%%%%%%%#
-  ev_lv<-Monty_Ev2Tab(Monty,red=red,intuit=intuit)
+  ev_lv<-Monty_Ev2Tab(Monty)
   #%%%%%%%%%%%%%%%%%%%%% IMPACT LEVEL %%%%%%%%%%%%%%%%%%%%%%#
-  imp_lv<-Monty_Imp2Tab(Monty,red=red,intuit=intuit)
+  imp_lv<-Monty_Imp2Tab(Monty)
   #%%%%%%%%%%%%%%%%%%%%% HAZARD LEVEL %%%%%%%%%%%%%%%%%%%%%%#
-  haz_lv<-Monty_Haz2Tab(Monty,red=red,intuit=intuit)
+  haz_lv<-Monty_Haz2Tab(Monty)
   
   return(list(event_Level=ev_lv,impact_Level=imp_lv,hazard_Level=haz_lv))
   
