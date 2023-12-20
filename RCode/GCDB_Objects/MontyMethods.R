@@ -529,7 +529,105 @@ CheckAPIinput<-function(sdate=NULL,fdate=NULL,ISO3=NULL,haz_Ab=NULL){
   return(list(valid=T,message="Valid input to API"))
 }
 
-ConvMonty2Tabs<-function(Monty){
+squishLDF<-function(DF){
+  if(!is.null(ncol(DF[[1]]))) {
+    return(do.call(rbind,lapply(seq_along(DF),function(i){
+      apply(DF[[i]],2,function(x) paste0(unique(x),collapse=delim))
+    })))
+  } else {
+    return(unlist(lapply(seq_along(DF),function(i){
+      sapply(DF[[i]],function(x) paste0(unique(x),collapse=delim))
+    })))
+  }
+}
+
+Monty_Ev2Tab<-function(Monty,red=F,intuit=F){
+  #%%%%%%%%%%%%%%%%%%%%%% EVENT LEVEL %%%%%%%%%%%%%%%%%%%%%%#
+  # IDs and linkages first
+  ev_lv<-Monty$event_Level$ID_linkage[,c("event_ID","ev_name")]
+  # Add the external IDs
+  ev_lv%<>%cbind(squishLDF(Monty$event_Level$ID_linkage$all_ext_IDs))
+  # Add the temporal information and general location variable
+  ev_lv%<>%cbind(Monty$event_Level$temporal,
+                 Monty$event_Level$spatial%>%dplyr::select(gen_location))
+  # Add the ISOs
+  ev_lv$ev_ISO3s<-squishLDF(Monty$event_Level$spatial$ev_ISO3s)
+  # Hazard classifications
+  ev_lv%<>%cbind(squishLDF(Monty$event_Level$allhaz_class))
+  
+  # If the most memory-efficient version is desired, return it
+  if(red) return(ev_lv)
+  # Otherwise, add on the labels to the coded variables
+  
+  
+  return(ev_lv)
+}
+
+Monty_Imp2Tab<-function(Monty,red=F,intuit=F){
+  #%%%%%%%%%%%%%%%%%%%%%% IMPACT LEVEL %%%%%%%%%%%%%%%%%%%%%%#
+  # IDs and linkages first
+  imp_lv<-Monty$impact_Data$ID_linkage[,c("event_ID","imp_sub_ID")]
+  # Hazard IDs
+  imp_lv$haz_sub_ID<-squishLDF(Monty$impact_Data$ID_linkage$haz_sub_ID)
+  # External IDs
+  imp_lv%<>%cbind(squishLDF(Monty$impact_Data$ID_linkage$imp_ext_IDs))
+  # Source, impact detail and temporal
+  imp_lv%<>%cbind(Monty$impact_Data$source,
+                  Monty$impact_Data$impact_detail,
+                  Monty$impact_Data$temporal)
+  # Spatial ID linkages
+  imp_lv%<>%cbind(squishLDF(Monty$impact_Data$spatial$ID_linkage),
+                  squishLDF(Monty$impact_Data$spatial$spatial_info),
+                  squishLDF(Monty$impact_Data$spatial$source))
+  
+  # If the most memory-efficient version is desired, return it
+  if(red) return(imp_lv)
+  # Otherwise, add on the labels to the coded variables
+  
+  return(imp_lv)
+}
+
+Monty_Haz2Tab<-function(Monty,red=F,intuit=F){
+  #%%%%%%%%%%%%%%%%%%%%%% HAZARD LEVEL %%%%%%%%%%%%%%%%%%%%%%#
+  # IDs and linkages first
+  haz_lv<-Monty$hazard_Data$ID_linkage[,c("event_ID","haz_sub_ID")]
+  # Hazard IDs
+  haz_lv$haz_ext_IDs<-squishLDF(Monty$hazard_Data$ID_linkage$haz_ext_IDs)
+  # External IDs
+  haz_lv%<>%cbind(squishLDF(Monty$hazard_Data$ID_linkage$imp_ext_IDs))
+  # Source & some of the hazard detail
+  haz_lv%<>%cbind(Monty$hazard_Data$source,
+                  Monty$hazard_Data$hazard_detail%>%
+                    dplyr::select(haz_est_type,all_hazs_Ab))
+  # Specific hazards
+  haz_lv$all_hazs_spec<-squishLDF(Monty$hazard_Data$hazard_detail$all_hazs_spec)
+  # Concurrent hazards
+  haz_lv$concur_haz<-squishLDF(Monty$hazard_Data$hazard_detail$concur_haz)
+  # Remaining hazard detail variables and temporal
+  haz_lv%<>%cbind(Monty$hazard_Data$hazard_detail%>%
+                    dplyr::select(haz_maxvalue,haz_maxunits),
+                  Monty$hazard_Data$temporal)
+  # Spatial ID linkages
+  haz_lv%<>%cbind(squishLDF(Monty$hazard_Data$spatial$ID_linkage),
+                  squishLDF(Monty$hazard_Data$spatial$spatial_info),
+                  squishLDF(Monty$hazard_Data$spatial$source))
+  
+  # If the most memory-efficient version is desired, return it
+  if(red) return(haz_lv)
+  # Otherwise, add on the labels to the coded variables
+  
+  return(haz_lv)
+}
+
+ConvMonty2Tabs<-function(Monty,red=F,intuit=F){
+  #%%%%%%%%%%%%%%%%%%%%%% EVENT LEVEL %%%%%%%%%%%%%%%%%%%%%%#
+  ev_lv<-Monty_Ev2Tab(Monty,red=red,intuit=intuit)
+  #%%%%%%%%%%%%%%%%%%%%% IMPACT LEVEL %%%%%%%%%%%%%%%%%%%%%%#
+  imp_lv<-Monty_Imp2Tab(Monty,red=red,intuit=intuit)
+  #%%%%%%%%%%%%%%%%%%%%% HAZARD LEVEL %%%%%%%%%%%%%%%%%%%%%%#
+  haz_lv<-Monty_Haz2Tab(Monty,red=red,intuit=intuit)
+  
+  return(list(event_Level=ev_lv,impact_Level=imp_lv,hazard_Level=haz_lv))
   
 }
 
