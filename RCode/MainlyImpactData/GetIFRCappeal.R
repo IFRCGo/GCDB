@@ -103,7 +103,7 @@ CleanGO_app<-function(appeal){
   appeal$end_date<-str_split(appeal$end_date,"T",simplify = T)[,1]
   
   appeal%<>%mutate(imp_ISO3s=imp_ISO3s,ev_ISO3s=imp_ISO3s,region=region,
-                   ev_name=name,location=name,
+                   ev_name=str_replace_all(name,'"',""),location=str_replace_all(name,'"',""),
                    ev_name_lang="lang_eng",
                    imp_sdate=as.character(as.Date(created_at)),imp_fdate=as.character(as.Date(end_date)),
                    ev_sdate=as.character(as.Date(start_date)),ev_fdate=as.character(as.Date(end_date)),
@@ -174,6 +174,7 @@ CleanGO_field<-function(fieldr){
   
   fieldr$ev_name<-fieldr$location<-
     sapply(1:length(fieldr$countries), function(i) paste0(fieldr$countries[[i]]$name,collapse = ","), simplify = T)
+  fieldr$ev_name=str_replace_all(fieldr$ev_name,'"',"")
   
   fieldr$ev_name_lang="lang_eng"
   
@@ -281,7 +282,7 @@ convGOApp_Monty<-function(){
   # Get the Emergency Appeal data from GO
   appeal<-ExtractGOdata(db = "GO-App", token = token)
   # Clean using the old GCDB structure
-  appeal%<>%CleanGO_app()%>%filter(!is.na(haz_spec))
+  appeal%<>%CleanGO_app()%>%filter(!is.na(haz_spec) & imp_value>0)
   # Get rid of repeated entries
   appeal%<>%distinct(imp_sub_ID,.keep_all = TRUE)%>%
     arrange(ev_sdate)
@@ -353,8 +354,14 @@ convGOApp_Monty<-function(){
     appeal%>%dplyr::select(event_ID,imp_sdate,imp_fdate,ev_sdate,ev_fdate)
   )
   # Hazards
+  hazs<-appeal%>%dplyr::select(event_ID, haz_Ab, haz_spec)
   allhaz_class<-Add_EvHazTax_Monty(
-    appeal%>%dplyr::select(event_ID, haz_Ab, haz_spec)
+    do.call(rbind,lapply(1:nrow(hazs),function(i){
+      specs<-c(str_split(hazs$haz_spec[i],":",simplify = T))
+      outsy<-hazs[rep(i,length(specs)),]
+      outsy$haz_spec<-specs
+      return(outsy)
+    }))
   )
   # Gather it all and store it in the template!
   appMonty$event_Level<-data.frame(ev=ID_linkage$event_ID)
@@ -378,7 +385,7 @@ convGOApp_Monty<-function(){
     src_org_typecode="orgtypengo",
     src_org_typelab="Non Governmental Organisation",
     src_org_email="im@ifrc.org",
-    src_db_code="GO-App",
+    src_db_code=unique(appeal$imp_src_db),
     src_db_lab="IFRC Emergency Appeals Database",
     src_db_attr="custodian",
     src_db_lic="Creative Commons Attribution 3.0 International License",
@@ -389,7 +396,7 @@ convGOApp_Monty<-function(){
   appMonty$taxonomies$src_info%<>%rbind(appMonty$taxonomies$src_info%>%
     mutate(src_db_code="GO-Maps",
            src_db_lab="IFRC-GO ADM-0 Maps",
-           src_db_URL="https://go-user-library.ifrc.org/maps"))
+           src_db_URL="https://go-user-library.ifrc.org/maps"))%>%distinct()
   
   if(!dir.exists("./CleanedData/MostlyImpactData/IFRC/")) dir.create("./CleanedData/MostlyImpactData/IFRC/")
   # Write it out just for keep-sake

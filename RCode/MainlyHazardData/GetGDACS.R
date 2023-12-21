@@ -249,8 +249,8 @@ FilterGDACS<-function(haz=NULL,syear=2016L,fyear=NULL,list_GDACS=NULL,red=F){
   }  
   
   # Get rid of any GLIDE numbers that are not in the correct format
-  GDACS$ext_IDs[sum(!is.na(GDACS$ext_IDs) &
-                      !grepl(GDACS$ext_IDs,pattern = "^[A-Z]{2}-\\d{4}-\\d{6}-[A-Z]{3}$"))]<-NA_character_
+  dfGDACS$ext_IDs[sum(!is.na(dfGDACS$ext_IDs) &
+                      !grepl(dfGDACS$ext_IDs,pattern = "^[A-Z]{2}-\\d{4}-\\d{6}-[A-Z]{3}$"))]<-NA_character_
   
   dfGDACS$alertscore[dfGDACS$alertscore<0]<-0
   
@@ -428,8 +428,14 @@ convGDACS_Monty<-function(){
     GDACS%>%dplyr::select(event_ID,imp_sdate,imp_fdate,ev_sdate,ev_fdate)
   )
   # Hazards
+  hazs<-GDACS%>%dplyr::select(event_ID, haz_Ab, haz_spec)
   allhaz_class<-Add_EvHazTax_Monty(
-    GDACS%>%dplyr::select(event_ID, haz_Ab, haz_spec)
+    do.call(rbind,lapply(1:nrow(hazs),function(i){
+      specs<-c(str_split(hazs$haz_spec[i],":",simplify = T))
+      outsy<-hazs[rep(i,length(specs)),]
+      outsy$haz_spec<-specs
+      return(outsy)
+    }))
   )
   # Gather it all and store it in the template!
   gdacsMonty$event_Level<-data.frame(ev=ID_linkage$event_ID)
@@ -442,18 +448,21 @@ convGDACS_Monty<-function(){
   
   #@@@@@ Hazard-level data @@@@@#
   GDACS%<>%distinct(haz_sub_ID,.keep_all = T)
-  # Nothing to put here as we haven't linked any hazard data yet
-  ID_linkage<-Add_hazIDlink_Monty(
-    GDACS%>%
-      dplyr::select(event_ID,haz_sub_ID,ext_IDs,ext_ID_dbs,ext_ID_orgs)%>%
-      rename(ext_ID=ext_IDs,ext_ID_db=ext_ID_dbs,ext_ID_org=ext_ID_orgs)
-  )
+  # The ID linkage stuff is the same as for the event_Level element
+  ID_linkage%<>%cbind(GDACS["haz_sub_ID"])%>%
+    dplyr::select(event_ID,haz_sub_ID,all_ext_IDs)%>%rename(haz_ext_IDs=all_ext_IDs)
+  # <-Add_hazIDlink_Monty(
+  #   GDACS%>%
+  #     dplyr::select(event_ID,haz_sub_ID,ext_IDs,ext_ID_dbs,ext_ID_orgs)%>%
+  #     rename(ext_ID=ext_IDs,ext_ID_db=ext_ID_dbs,ext_ID_org=ext_ID_orgs)
+  # )
+  
   # Sources for impact data
   source<-GDACS%>%dplyr::select(haz_src_db,haz_src_URL,haz_src_org)%>%mutate(haz_src_db="GDACS")
   # hazard taxonomy
   hazard_detail<-Add_HazTax_Monty(
     GDACS%>%dplyr::select(haz_sub_ID, haz_Ab, haz_spec, 
-                          haz_maxvalue,haz_maxunits,haz_est_type)%>%
+                  haz_maxvalue,haz_maxunits,haz_est_type)%>%
       rename(event_ID=haz_sub_ID)
   )
   # Concurrent hazard info:
@@ -514,6 +523,21 @@ convGDACS_Monty<-function(){
     src_db_URL="www.gdacs.org",
     src_addinfo=""
   )
+  # And the impact modelling spatial data
+  gdacsMonty$taxonomies$src_info%<>%rbind(data.frame(
+    src_org_code="IFRC",
+    src_org_lab="International Federation of Red Cross and Red Crescent Societies (IFRC)",
+    src_org_typecode="orgtypengo",
+    src_org_typelab="Non Governmental Organisation",
+    src_org_email="im@ifrc.org",
+    src_db_code="GO-Maps",
+    src_db_lab="IFRC-GO ADM-0 Maps",
+    src_db_attr="custodian",
+    src_db_lic="Creative Commons Attribution 3.0 International License",
+    src_db_URL="https://go-user-library.ifrc.org/maps",
+    src_addinfo=""
+  ))
+  
   
   # Write it out just for keep-sake
   write(jsonlite::toJSON(gdacsMonty,pretty = T,auto_unbox=T),
@@ -552,18 +576,20 @@ GetGDACSalertscore<-function(dfGDACS=NULL,haz,bbox,sdater,fdater=NULL,isos=NULL)
   
 }
 
-poly_ccodes<-c("eventid","episodeid","polygonlabel","Class","forecast","fromdate","todate","geometry")
+poly_ccodes<-c("eventid","episodeid","polygonlabel","Class","haz_severity","haz_sev_units","forecast","fromdate","todate","geometry")
 
 GetGDACSspatial<-function(GDACS){
   
   BigPoly<-data.frame()
   for(ev in unique(GDACS$event_ID)){
+    print(ev)
     # Find the appropriate elements of the GDACS database
     ind<-GDACS$event_ID==ev
     # Get the shapefile
-    poly<-suppressWarnings(geojsonsf::geojson_sf(unique(GDACS$haz_src_URL[ind])))
+    poly<-suppressWarnings(geojsonsf::geojson_sf(unique(GDACS$haz_spat_fileloc[ind])))
     # poly<-as(sf::st_read(URL),"Spatial")
-    
+    poly$haz_severity<-suppressWarnings(as.numeric(gsub("[^0-9]", "",  poly$polygonlabel)))
+    poly$haz_sev_units<-sapply(1:nrow(poly),function(i) jsonlite::fromJSON(poly$severitydata[i])$severityunit,simplify = T)
     # Modify per hazard
     if(unique(GDACS$haz_Ab[ind])=="TC"){
       # Take only the three-level wind-speed risk boundaries
@@ -593,7 +619,7 @@ GetGDACSspatial<-function(GDACS){
         mutate(forecast=NA)
     } else stop("Hazard not recognised in GDACS available hazards")
     
-    
+    poly$event_ID<-ev
     
     # Here we need to modify the GDACS object to put in the fromdate and todate 
     # in the form of the haz_sdate and haz_fdate
@@ -603,15 +629,6 @@ GetGDACSspatial<-function(GDACS){
     # and then also the units of measurement too 
     
     
-    BigPoly$haz_sub_ID<-BigPoly$imp_spat_ID<-paste0(unique())
-    
-    
-    GetMonty_ID(Dessie,haz=unique(GDACS$haz_Ab[ind]))
-    
-    
-    
-    
-    
     # Join to the big motherbase
     BigPoly%<>%rbind(poly)
   }
@@ -619,7 +636,6 @@ GetGDACSspatial<-function(GDACS){
   ind<-is.na(BigPoly$forecast)
   BigPoly$forecast[ind]<-F; BigPoly$forecast[!ind]<-T
   # Create a unique ID per shapefile
-  BigPoly$haz_sub_ID<-
   # convert to sp spatial class
   BigPoly%<>%as("Spatial")
   
@@ -628,13 +644,9 @@ GetGDACSspatial<-function(GDACS){
   # BigPoly@crs<-
     
     
-    
-    
-    
-  # Now left-join to the full GDACS database by 
-  GDACS%<>%left_join(poly@data,by = "event_ID")
+  BigPoly@data%<>%left_join(GDACS,by="event_ID")
+  return(BigPoly)
   
-  return(list(GDACS=GDACS,poly=BigPoly))
 }
 
 ShakeURL2Poly<-function(eventid,sid=1L,sil=T){

@@ -27,8 +27,8 @@ tmp<-data.frame(ISO.Code=(taxies%>%filter(list_name=="Country")%>%pull(name))[!t
 othcounties<-counties%>%filter(ISO.Code=="damndaniel"); othcounties[1:nrow(tmp),]<-NA_character_
 counties%<>%rbind(othcounties%>%mutate(ISO.Code=tmp$ISO.Code,Country=tmp$Country,Continent=tmp$continent))%>%
   filter(!duplicated(ISO.Code)); rm(tmp,othcounties)
-counties%<>%dplyr::select(ISO.Code,Country,UN.Region,World.Bank.Regions,Continent,UN.Sub.Region,World.Bank.Income.Groups)
-colnames(counties)[1]<-"ISO3"
+counties%<>%dplyr::select(ISO.Code,Country,UN.Region,World.Bank.Regions,Continent,UN.Sub.Region,World.Bank.Income.Groups)%>%
+  setNames(c("ISO3","Country","UNRegion","WorldBankRegions","Continent","UNSubRegion","WorldBankIncomeGroups"))
 # Create the data frames of the taxonomies to be saved out later
 exp_class<-data.frame(
   exp_spec_code=taxies%>%filter(list_name=="exp_specs")%>%pull(name),
@@ -194,7 +194,7 @@ Monty$properties$taxonomies<-list(
             type="string",
             codelist="IsoContinentRegion.csv",
             openCodelist=FALSE,
-            enum=counties$UN.Region%>%na.omit()%>%unique()
+            enum=counties$UNRegion%>%na.omit()%>%unique()
           ),
           region_WB=list(
             title="World Bank-Defined Region",
@@ -202,7 +202,7 @@ Monty$properties$taxonomies<-list(
             type="string",
             codelist="IsoContinentRegion.csv",
             openCodelist=FALSE,
-            enum=counties$World.Bank.Regions%>%na.omit()%>%unique()
+            enum=counties$WorldBankRegions%>%na.omit()%>%unique()
           ),
           continent=list(
             title="Continent",
@@ -218,7 +218,7 @@ Monty$properties$taxonomies<-list(
             type="string",
             codelist="IsoContinentRegion.csv",
             openCodelist=FALSE,
-            enum=counties$UN.Sub.Region%>%na.omit()%>%unique()
+            enum=counties$UNSubRegion%>%na.omit()%>%unique()
           ),
           income_WB=list(
             title="Country Income Group",
@@ -226,7 +226,7 @@ Monty$properties$taxonomies<-list(
             type="string",
             codelist="IsoContinentRegion.csv",
             openCodelist=FALSE,
-            enum=counties$World.Bank.Income.Groups%>%na.omit()%>%unique()
+            enum=counties$WorldBankIncomeGroups%>%na.omit()%>%unique()
           )
         )
       )
@@ -682,6 +682,12 @@ Monty$`$defs`$Impact_obj=list(
         haz_sub_ID=list(
           title="Hazard ID Link",
           description="ID of each hazard event data element, within the overall event",
+          type="array",
+          items=list(type="string",uniqueItems=TRUE)
+        ),
+        imp_ext_IDs=list(
+          title="Impact External ID",
+          description="External ID associated to this impact record",
           type="array",
           items=list(type="string",uniqueItems=TRUE)
         )
@@ -1424,7 +1430,7 @@ ex_Monty$taxonomies<-list(ISO_info=counties,
                           imp_class=imp_class,
                           haz_class=haz_class,
                           src_info=ex_Monty$taxonomies$src_info,
-                          units_info=units_info,
+                          units_info=units_info%>%distinct(unit_codes,.keep_all = T),
                           est_type=est_type,
                           spatial_coverage=spatial_coverage)
 # Helpful resources for the user on the Montandon database
