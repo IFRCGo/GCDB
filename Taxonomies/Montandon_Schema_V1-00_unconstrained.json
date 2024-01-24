@@ -182,7 +182,7 @@
                 "type": "string",
                 "codelist": "ImpactInformationProfiles.csv",
                 "openCodelist": false,
-                "enum": ["expsubcat_popcnt", "expsubcat_infarabl", "expsubcat_popgend", "expsubcat_popage", "expsubcat_popdis", "expsubcat_infrds", "expsubcat_popvuln", "expsubcat_inftot", "expsubcat_ecotot", "expsubcat_phyhealth", "expsubcat_phyedu", "expsubcat_envliv", "expsubcat_ecoaid", "expsubcat_typaidreqifrc", "expsubcat_typaidallifrc", "expsubcat_risk"]
+                "enum": ["expsubcat_popcnt", "expsubcat_infarabl", "expsubcat_popgend", "expsubcat_popage", "expsubcat_popdis", "expsubcat_infrds", "expsubcat_popvuln", "expsubcat_inftot", "expsubcat_ecotot", "expsubcat_phyhealth", "expsubcat_phyedu", "expsubcat_envliv", "expsubcat_ecoaid", "expsubcat_risk"]
               },
               "exp_subcat_lab": {
                 "title": "Exposure Sub-Category Label",

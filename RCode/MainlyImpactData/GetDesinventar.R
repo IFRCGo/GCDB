@@ -684,6 +684,156 @@ GetDesinventar<-function(){
   # Form a GCDB impacts object from EMDAT data (if there is a problem, return an empty tabGCDB object)
   # tryCatch(new("tabGCDB",impies),error=function(e) new("tabGCDB"))
 }
+
+
+convDessie_Monty<-function(){
+  
+  stop("Ensure Dessie has record-level ID numbers that include the country code")
+  
+  # Extract raw Dessie data
+  Dessie<-GetDesinventar()
+  # Get rid of repeated entries
+  Dessie%<>%distinct(imp_sub_ID,.keep_all = TRUE)%>%
+    arrange(ev_sdate)
+  # Extract the Monty JSON schema template
+  dMonty<-jsonlite::fromJSON("./Taxonomies/Montandon_JSON-Example.json")
+  #@@@@@ Impact-level data @@@@@#
+  # IDs
+  ID_linkage<-Add_ImpIDlink_Monty(
+    rbind(Dessie%>%mutate(ext_ID_db="Desinventar",ext_ID_org="UNDRR")%>%
+            dplyr::select(event_ID, imp_sub_ID, haz_sub_ID, Dessie_ID,
+                          ext_ID_db,ext_ID_org)%>%
+            rename(ext_ID=Dessie_ID)%>%
+            dplyr::select(event_ID, imp_sub_ID, haz_sub_ID, 
+                          ext_ID, ext_ID_db, ext_ID_org),
+          Dessie%>%filter(!is.na(ext_IDs))%>%mutate(ext_ID_db="Desinventar",ext_ID_org="UNDRR")%>%
+            dplyr::select(event_ID, imp_sub_ID, haz_sub_ID, ext_IDs, ext_ID_dbs, ext_ID_orgs)%>%
+            rename(ext_ID=ext_IDs,ext_ID_db=ext_ID_dbs,ext_ID_org=ext_ID_orgs)%>%
+            dplyr::select(event_ID, imp_sub_ID, haz_sub_ID, 
+                          ext_ID, ext_ID_db, ext_ID_org)
+    )
+  )
+  # Sources for impact data
+  source<-Dessie%>%dplyr::select(imp_src_db,imp_src_URL,imp_src_org)
+  # impact estimates
+  impact_detail<-Dessie%>%
+    dplyr::select(exp_spec,imp_value,imp_type,imp_units,imp_est_type,imp_unitdate)
+  # Add temporal information
+  temporal<-Dessie%>%dplyr::select(imp_sdate,imp_fdate)
+  # Spatial data relevant to the impact estimates
+  # multiple-entry rows: imp_spat_rowname,imp_spat_colname,imp_ISO3s,imp_spat_res,imp_spat_fileread
+  spatial<-Add_ImpSpatAll_Monty(
+    ID_linkage=data.frame(
+      imp_sub_ID=Dessie$imp_sub_ID,
+      imp_spat_ID="GO-ADM0-World-shp",
+      imp_spat_fileloc="https://go-user-library.ifrc.org/maps",
+      imp_spat_colname="iso3",
+      imp_spat_rowname=Dessie$imp_ISO3s
+    ),
+    spatial_info=Dessie%>%dplyr::select(
+      imp_ISO3s,
+      imp_spat_covcode,
+      imp_spat_res,
+      imp_spat_resunits,
+      imp_spat_fileread,
+      imp_spat_crs
+    ),
+    source=Dessie%>%dplyr::select(
+      imp_spat_srcdb,
+      imp_spat_URL,
+      imp_spat_srcorg
+    )
+  )
+  # Gather it all and store it in the template!
+  # (I know this is hideous, but I don't understand how JSON files can have lists that are also S3 data.frames)
+  dMonty$impact_Data<-data.frame(imp_sub_ID=unique(Dessie$imp_sub_ID))
+  dMonty$impact_Data$ID_linkage=ID_linkage
+  dMonty$impact_Data$source=source
+  dMonty$impact_Data$impact_detail=impact_detail
+  dMonty$impact_Data$temporal=temporal
+  dMonty$impact_Data$spatial=spatial
+  dMonty$impact_Data$imp_sub_ID<-NULL
+  
+  #@@@@@ Event-level data @@@@@#
+  # IDs
+  ID_linkage<-Add_EvIDlink_Monty(
+    # By default, only Desinventar eventIDs are used
+    rbind(Dessie%>%mutate(ext_ID_db="Dessie",ext_ID_org="UNDRR")%>%
+            dplyr::select(event_ID, ev_name, Dessie_ID,ext_ID_db,ext_ID_org)%>%
+            rename(ext_ID=Dessie_ID),
+          Dessie%>%filter(!is.na(ext_IDs))%>%
+            dplyr::select(event_ID, ev_name, ext_IDs,ext_ID_dbs,ext_ID_orgs)%>%
+            rename(ext_ID=ext_IDs,ext_ID_db=ext_ID_dbs,ext_ID_org=ext_ID_orgs)
+    )
+  )
+  # Spatial
+  spatial<-Add_EvSpat_Monty(
+    Dessie%>%dplyr::select(event_ID,imp_ISO3s,location)%>%
+      rename(ev_ISO3s=imp_ISO3s,gen_location=location)
+  )
+  # temporal
+  temporal<-Add_EvTemp_Monty(
+    Dessie%>%dplyr::select(event_ID,imp_sdate,imp_fdate,ev_sdate,ev_fdate)
+  )
+  # Hazards
+  hazs<-Dessie%>%dplyr::select(event_ID, haz_Ab, haz_spec)
+  allhaz_class<-Add_EvHazTax_Monty(
+    do.call(rbind,lapply(1:nrow(hazs),function(i){
+      specs<-c(str_split(hazs$haz_spec[i],":",simplify = T))
+      outsy<-hazs[rep(i,length(specs)),]
+      outsy$haz_spec<-specs
+      return(outsy)
+    }))
+  )
+  # Gather it all and store it in the template!
+  dMonty$event_Level<-data.frame(ev=ID_linkage$event_ID)
+  dMonty$event_Level$ID_linkage<-ID_linkage
+  dMonty$event_Level$temporal<-temporal
+  dMonty$event_Level$spatial<-spatial
+  dMonty$event_Level$allhaz_class<-allhaz_class
+  dMonty$event_Level$ev<-NULL
+  
+  #@@@@@ Hazard-level data @@@@@#
+  # Nothing to put here as we haven't linked any hazard data yet
+  dMonty$hazard_Data<-list()  
+  
+  #@@@@@ Response-level data @@@@@#
+  # Nothing to put here as we haven't linked any response data yet
+  dMonty$response_Data<-list()
+  
+  #@@@@@ Source Data In Taxonomy Field @@@@@#
+  dMonty$taxonomies$src_info<-data.frame(
+    src_org_code="UNDRR",
+    src_org_lab="United Nations Disaster Risk Reduction (UNDRR)",
+    src_org_typecode="orgtypeun",
+    src_org_typelab="UN & International Organisations",
+    src_org_email="undrr-bonn@un.org",
+    src_db_code="Desinventar",
+    src_db_lab="Disaster Inventory System (Desinventar)",
+    src_db_attr="mediator",
+    src_db_lic="unknown",
+    src_db_URL="www.gdacs.org",
+    src_addinfo=""
+  )
+  # Create the path for the output
+  dir.create("./CleanedData/MostlyHazardData/Desinventar",showWarnings = F)
+  # Write it out just for keep-sake
+  write(jsonlite::toJSON(dMonty,pretty = T,auto_unbox=T),
+        paste0("./CleanedData/MostlyHazardData/Desinventar/Desinventar_",Sys.Date(),".json"))
+  
+  return(dMonty)
+}
+
+
+
+
+
+
+
+
+
+
+
 # tmp<-Dessie[nrow(Dessie):1,]%>%filter(imp_value>0)
 # inds<-tmp%>%dplyr::select(imp_sub_ID)%>%duplicated()
 # Dessie<-tmp[!inds,]

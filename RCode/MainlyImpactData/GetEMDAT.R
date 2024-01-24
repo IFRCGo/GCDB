@@ -374,10 +374,8 @@ API_EMDAT<-function(){
   q <- ghql::Query$new()
   q$query('monty',query_str)
   # Make the query to EM-DAT
-  EMDAT <- jsonlite::fromJSON(client$exec(q$queries$monty))$data$public_emdat$data%>%
+  jsonlite::fromJSON(client$exec(q$queries$monty))$data$public_emdat$data%>%
     CleanEMDAT()
-  
-  
 }
 
 GetEMDAT<-function(new_format=T){

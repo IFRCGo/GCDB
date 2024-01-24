@@ -537,8 +537,8 @@ convGDACS_Monty<-function(){
     src_db_URL="https://go-user-library.ifrc.org/maps",
     src_addinfo=""
   ))
-  
-  
+  # Create the path for the output
+  dir.create("./CleanedData/MostlyHazardData/GDACS",showWarnings = F)
   # Write it out just for keep-sake
   write(jsonlite::toJSON(gdacsMonty,pretty = T,auto_unbox=T),
         paste0("./CleanedData/MostlyHazardData/GDACS/GDACS_",Sys.Date(),".json"))
