@@ -158,6 +158,92 @@ EMDATHazards_old<-function(EMDAT){
   
 } 
 
+
+CleanEMDAT_API<-function(EMDAT){
+  # Replace empty values
+  # EMDAT[EMDAT=="Source:"]<-NA
+  # Some of the column names are messed up due to presence of non-letters
+  colnames(EMDAT)[c(20,37:42)]<-
+    c("AID.Contribution","Reconstruction.Costs","Reconstruction.Costs.Adjusted",
+      "Insured.Damages","Insured.Damages.Adjusted","Total.Damages","Total.Damages.Adjusted")
+  # Also, make sure to convert to the full value in US dollars
+  for(i in c(20,37:42)) EMDAT[,i]<-1000*as.numeric(EMDAT[,i])
+  # For dates with no start day, make it the middle of the month
+  EMDAT$start_day[is.na(EMDAT$start_day)]<-15
+  # Make sure the start date is 2 characters
+  EMDAT$start_day[nchar(EMDAT$start_day)==1 & !is.na(EMDAT$start_day)]<-
+    paste0("0",EMDAT$start_day[nchar(EMDAT$start_day)==1 & !is.na(EMDAT$start_day)])
+  # Make sure the start month is 2 characters
+  EMDAT$start_month[nchar(EMDAT$start_month)==1 & !is.na(EMDAT$start_month)]<-
+    paste0("0",EMDAT$start_month[nchar(EMDAT$start_month)==1 & !is.na(EMDAT$start_month)])
+  # Make sure the end date is 2 characters
+  EMDAT$end_day[nchar(EMDAT$end_day)==1 & !is.na(EMDAT$end_day)]<-
+    paste0("0",EMDAT$end_day[nchar(EMDAT$end_day)==1 & !is.na(EMDAT$end_day)])
+  # Make sure the end month is 2 characters
+  EMDAT$end_month[nchar(EMDAT$end_month)==1 & !is.na(EMDAT$end_month)]<-
+    paste0("0",EMDAT$end_month[nchar(EMDAT$end_month)==1 & !is.na(EMDAT$end_month)])
+  # Start date in one
+  EMDAT$imp_sdate<-EMDAT$ev_sdate<-EMDAT$imp_unitdate<-sapply(1:nrow(EMDAT),function(i) paste0(c(EMDAT$start_year[i],
+                                                                                                 EMDAT$start_month[i],
+                                                                                                 EMDAT$start_day[i]),collapse = "-"),simplify = T)
+  # End date in one
+  EMDAT$imp_fdate<-EMDAT$ev_fdate<-sapply(1:nrow(EMDAT),function(i) paste0(c(EMDAT$end_year[i],
+                                                                             EMDAT$end_month[i],
+                                                                             EMDAT$end_day[i]),collapse = "-"),simplify = T)
+  # Remove everything we dont need
+  EMDAT%<>%dplyr::select(-c(start_day,start_month,start_year,
+                            end_day,end_month,end_year,
+                            country,region))
+  # Column renaming
+  colnames(EMDAT)[colnames(EMDAT)=="name"]<-"ev_name"; colnames(EMDAT)[colnames(EMDAT)=="iso"]<-"imp_ISO3s"
+  EMDAT$ev_name_lang<-"lang_eng"
+  # Add some of the extra details that are Desinventar-specific
+  EMDAT$imp_est_type<-"esttype_prim"
+  EMDAT$src_URL<-"https://public.emdat.be/"
+  EMDAT$imp_spat_srcorg<-EMDAT$imp_src_org<-"CRED-UCLou"
+  EMDAT$imp_src_db<-"EM-DAT"
+  EMDAT$imp_src_orgtype<-"orgtypeacad"
+  EMDAT$imp_spat_covcode<-"spat_polygon"
+  
+  stop("EMDAT imp_spat_ID needs sorting out. Add directly from GAUL by stripping out the geo elements and doing left_join")
+  
+  EMDAT$spat_res<-"ADM-0"
+  EMDAT$spat_res[grepl(x = EMDAT$admin_units,"adm1_")]<-"ADM-1" 
+  EMDAT$spat_res[grepl(x = EMDAT$admin_units,"adm2_")]<-"ADM-2"
+  
+  # Change colnames to allow the hazard taxonomies to be merged
+  colnames(EMDAT)[colnames(EMDAT)%in%c("group","subgroup","type","subtype")]<-
+    paste0("Disaster.",colnames(EMDAT)[colnames(EMDAT)%in%c("group","subgroup","type","subtype")]%>%
+             stringi::stri_trans_totitle())
+  # Link to the hazard taxonomy from HIPS
+  EMDAT%<>%EMDATHazards()
+  
+  if(nrow(EMDAT)==0) return(EMDAT)
+  
+  # Sort the IDs variable:
+  EMDAT$GLIDE<-EMDAT$external_ids
+  EMDAT$Glide[ind]<-paste0(EMDAT$haz_Ab[ind],"-",EMDAT$Glide[ind])
+  # Ensure column name aligns with imp_GCDB object
+  colnames(EMDAT)[colnames(EMDAT)=="Glide"]<-"GLIDE"
+  
+  
+  
+  
+  
+  # Generate the GCDB ID
+  EMDAT$event_ID<-GetMonty_ID(EMDAT)
+  # Melt the columns and apply the impact categorisation
+  EMDAT%<>%ImpLabs(nomDB = "EM-DAT")
+  # Now get rid of the extra columns of data
+  EMDAT%<>%dplyr::select(-which(!colnames(EMDAT)%in%names(col_tabGCDB)))
+  # Create an impact-specific ID
+  EMDAT%<>%GetGCDB_impID()
+  # Make sure to remove all NA impact estimates
+  EMDAT%<>%filter(!is.na(imp_value))
+  # Add missing columns & reorder the dataframe to fit imp_GCDB object
+  EMDAT%>%AddEmptyColImp()
+}
+
 CleanEMDAT<-function(EMDAT){
   # Replace empty values
   # EMDAT[EMDAT=="Source:"]<-NA
@@ -336,7 +422,7 @@ API_EMDAT<-function(){
     'query monty {
       api_version
       public_emdat(
-        cursor: {limit: -1, offset: 1}
+        cursor: {limit: -1}
         filters: {
           from: 1990,
           to: 2019,
@@ -353,13 +439,46 @@ API_EMDAT<-function(){
         data {
           disno
           classif_key
+          group
+          subgroup
           type
           subtype
+          external_ids
+          name
+          iso
+          country
+          subregion
+          region
+          location
+          origin
+          associated_types
+          ofda_response
+          appeal
+          declaration
+          aid_contribution
+          magnitude
+          magnitude_scale
+          latitude
+          longitude
           river_basin
-          total_dam
-          total_dam_adj
+          start_year
+          start_month
+          start_day
+          end_year
+          end_month
+          end_day
           total_deaths
+          no_injured
+          no_affected
+          no_homeless
           total_affected
+          reconstr_dam
+          reconstr_dam_adj
+          insur_dam
+          insur_dam_adj
+          total_dam
+          cpi
+          admin_units
           entry_date
           last_update
         }
@@ -375,7 +494,7 @@ API_EMDAT<-function(){
   q$query('monty',query_str)
   # Make the query to EM-DAT
   jsonlite::fromJSON(client$exec(q$queries$monty))$data$public_emdat$data%>%
-    CleanEMDAT()
+    CleanEMDAT_API()
 }
 
 GetEMDAT<-function(new_format=T){
@@ -410,4 +529,72 @@ GetEMDAT<-function(new_format=T){
 # Get the EMDAT data
 # filez<-list.files("../../CleanedData/MostlyImpactData/EMDAT/",include.dirs = T,all.files = T,recursive = T,ignore.case = T)
 # EMDAT<-do.call(rbind,lapply(filez,function(fff) {openxlsx::read.xlsx(paste0("../../CleanedData/MostlyImpactData/EMDAT/",fff),startRow = 7)}))
+
+convEMDAT2Monty<-function(){
+  # Extract the data
+  EMDAT<-API_EMDAT()
+  
+  
+  
+  
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

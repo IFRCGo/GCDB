@@ -1,7 +1,7 @@
 {
   "monty_Info": {
     "class_version": "Monty Schema V1.00",
-    "db_pubdate": "2024-01-22",
+    "db_pubdate": "2024-02-21",
     "helpful_resources": [
       {
         "title": "Global Crisis Data Bank - Concept Note",
@@ -3204,7 +3204,7 @@
         "exp_subcat_code": "expsubcat_popcnt",
         "exp_subcat_lab": "Total Population",
         "exp_cat_code": "expcat_pop",
-        "exp_cat_lab": "Population & Demographic"
+        "exp_cat_lab": "Population"
       },
       {
         "exp_spec_code": "expspec_crop",
@@ -3212,7 +3212,7 @@
         "exp_subcat_code": "expsubcat_infarabl",
         "exp_subcat_lab": "Arable Land & Agricultural Produce",
         "exp_cat_code": "expcat_env",
-        "exp_cat_lab": "Environmental Assets"
+        "exp_cat_lab": "Environmental & Ecological Assets"
       },
       {
         "exp_spec_code": "expspec_women",
@@ -3220,7 +3220,7 @@
         "exp_subcat_code": "expsubcat_popgend",
         "exp_subcat_lab": "Gender &/or Sex (SAAB) Demographic",
         "exp_cat_code": "expcat_pop",
-        "exp_cat_lab": "Population & Demographic"
+        "exp_cat_lab": "Population"
       },
       {
         "exp_spec_code": "expspec_men",
@@ -3228,7 +3228,7 @@
         "exp_subcat_code": "expsubcat_popgend",
         "exp_subcat_lab": "Gender &/or Sex (SAAB) Demographic",
         "exp_cat_code": "expcat_pop",
-        "exp_cat_lab": "Population & Demographic"
+        "exp_cat_lab": "Population"
       },
       {
         "exp_spec_code": "expspec_elder",
@@ -3236,7 +3236,7 @@
         "exp_subcat_code": "expsubcat_popage",
         "exp_subcat_lab": "Age Demographic",
         "exp_cat_code": "expcat_pop",
-        "exp_cat_lab": "Population & Demographic"
+        "exp_cat_lab": "Population"
       },
       {
         "exp_spec_code": "expspec_chld14",
@@ -3244,7 +3244,7 @@
         "exp_subcat_code": "expsubcat_popage",
         "exp_subcat_lab": "Age Demographic",
         "exp_cat_code": "expcat_pop",
-        "exp_cat_lab": "Population & Demographic"
+        "exp_cat_lab": "Population"
       },
       {
         "exp_spec_code": "expspec_chld18",
@@ -3252,7 +3252,7 @@
         "exp_subcat_code": "expsubcat_popage",
         "exp_subcat_lab": "Age Demographic",
         "exp_cat_code": "expcat_pop",
-        "exp_cat_lab": "Population & Demographic"
+        "exp_cat_lab": "Population"
       },
       {
         "exp_spec_code": "expspec_wheelch",
@@ -3260,7 +3260,7 @@
         "exp_subcat_code": "expsubcat_popdis",
         "exp_subcat_lab": "Disabled Population",
         "exp_cat_code": "expcat_pop",
-        "exp_cat_lab": "Population & Demographic"
+        "exp_cat_lab": "Population"
       },
       {
         "exp_spec_code": "expspec_road",
@@ -3268,7 +3268,7 @@
         "exp_subcat_code": "expsubcat_infrds",
         "exp_subcat_lab": "Transportation Systems (Roads, Railways, Harbours, Airports, etc)",
         "exp_cat_code": "expcat_phyinf",
-        "exp_cat_lab": "Physical Infrastructural Assets"
+        "exp_cat_lab": "Built Environment & Cultural Assets"
       },
       {
         "exp_spec_code": "expspec_trainlin",
@@ -3276,7 +3276,7 @@
         "exp_subcat_code": "expsubcat_infrds",
         "exp_subcat_lab": "Transportation Systems (Roads, Railways, Harbours, Airports, etc)",
         "exp_cat_code": "expcat_phyinf",
-        "exp_cat_lab": "Physical Infrastructural Assets"
+        "exp_cat_lab": "Built Environment & Cultural Assets"
       },
       {
         "exp_spec_code": "expspec_vulempl",
@@ -3284,7 +3284,7 @@
         "exp_subcat_code": "expsubcat_popvuln",
         "exp_subcat_lab": "Vulnerable Population",
         "exp_cat_code": "expcat_pop",
-        "exp_cat_lab": "Population & Demographic"
+        "exp_cat_lab": "Population"
       },
       {
         "exp_spec_code": "expspec_build",
@@ -3292,7 +3292,7 @@
         "exp_subcat_code": "expsubcat_inftot",
         "exp_subcat_lab": "Total Buildings",
         "exp_cat_code": "expcat_phyinf",
-        "exp_cat_lab": "Physical Infrastructural Assets"
+        "exp_cat_lab": "Built Environment & Cultural Assets"
       },
       {
         "exp_spec_code": "expspec_reccost",
@@ -3308,7 +3308,7 @@
         "exp_subcat_code": "expsubcat_phyhealth",
         "exp_subcat_lab": "Health Facilities – Non-Residential",
         "exp_cat_code": "expcat_phyinf",
-        "exp_cat_lab": "Physical Infrastructural Assets"
+        "exp_cat_lab": "Built Environment & Cultural Assets"
       },
       {
         "exp_spec_code": "expspec_educ",
@@ -3316,7 +3316,7 @@
         "exp_subcat_code": "expsubcat_phyedu",
         "exp_subcat_lab": "Educational Facilities – Non-Residential",
         "exp_cat_code": "expcat_phyinf",
-        "exp_cat_lab": "Physical Infrastructural Assets"
+        "exp_cat_lab": "Built Environment & Cultural Assets"
       },
       {
         "exp_spec_code": "expspec_loccur",
@@ -3364,7 +3364,7 @@
         "exp_subcat_code": "expsubcat_envliv",
         "exp_subcat_lab": "Livestock",
         "exp_cat_code": "expcat_env",
-        "exp_cat_lab": "Environmental Assets"
+        "exp_cat_lab": "Environmental & Ecological Assets"
       },
       {
         "exp_spec_code": "expspec_aidgen",
@@ -3397,6 +3397,132 @@
         "exp_subcat_lab": "Alertscore or risk indicator",
         "exp_cat_code": "expcat_other",
         "exp_cat_lab": "Other"
+      },
+      {
+        "exp_subcat_code": "expsubcat_infprec",
+        "exp_subcat_lab": "Other Precious Resources",
+        "exp_cat_code": "expcat_env",
+        "exp_cat_lab": "Environmental & Ecological Assets"
+      },
+      {
+        "exp_subcat_code": "expsubcat_infmin",
+        "exp_subcat_lab": "Mining Resources",
+        "exp_cat_code": "expcat_env",
+        "exp_cat_lab": "Environmental & Ecological Assets"
+      },
+      {
+        "exp_subcat_code": "expsubcat_infwater",
+        "exp_subcat_lab": "Water",
+        "exp_cat_code": "expcat_env",
+        "exp_cat_lab": "Environmental & Ecological Assets"
+      },
+      {
+        "exp_subcat_code": "expsubcat_finfor",
+        "exp_subcat_lab": "Forestry & Natural Vegetation",
+        "exp_cat_code": "expcat_env",
+        "exp_cat_lab": "Environmental & Ecological Assets"
+      },
+      {
+        "exp_subcat_code": "expsubcat_envaqu",
+        "exp_subcat_lab": "Aquaculture & Fisheries",
+        "exp_cat_code": "expcat_env",
+        "exp_cat_lab": "Environmental & Ecological Assets"
+      },
+      {
+        "exp_subcat_code": "expsubcat_envgreen",
+        "exp_subcat_lab": "Green Infrastructure",
+        "exp_cat_code": "expcat_env",
+        "exp_cat_lab": "Environmental & Ecological Assets"
+      },
+      {
+        "exp_subcat_code": "expsubcat_enveco",
+        "exp_subcat_lab": "Ecological Zones & Nature Reserves",
+        "exp_cat_code": "expcat_env",
+        "exp_cat_lab": "Environmental & Ecological Assets"
+      },
+      {
+        "exp_subcat_code": "expsubcat_envhab",
+        "exp_subcat_lab": "Sensitive Habitats or Species",
+        "exp_cat_code": "expcat_env",
+        "exp_cat_lab": "Environmental & Ecological Assets"
+      },
+      {
+        "exp_subcat_code": "expsubcat_detreccost",
+        "exp_subcat_lab": "Reconstruction Costs",
+        "exp_cat_code": "expcat_fineco",
+        "exp_cat_lab": "Financial/Economic Assets"
+      },
+      {
+        "exp_subcat_code": "expsubcat_ecoins",
+        "exp_subcat_lab": "Insured Cost",
+        "exp_cat_code": "expcat_fineco",
+        "exp_cat_lab": "Financial/Economic Assets"
+      },
+      {
+        "exp_subcat_code": "expsubcat_ecounins",
+        "exp_subcat_lab": "Uninsured Cost",
+        "exp_cat_code": "expcat_fineco",
+        "exp_cat_lab": "Financial/Economic Assets"
+      },
+      {
+        "exp_subcat_code": "expsubcat_ecodirtot",
+        "exp_subcat_lab": "Total Direct Cost",
+        "exp_cat_code": "expcat_fineco",
+        "exp_cat_lab": "Financial/Economic Assets"
+      },
+      {
+        "exp_subcat_code": "expsubcat_ecoindtot",
+        "exp_subcat_lab": "Total Indirect Cost",
+        "exp_cat_code": "expcat_fineco",
+        "exp_cat_lab": "Financial/Economic Assets"
+      },
+      {
+        "exp_subcat_code": "expsubcat_physinfo",
+        "exp_subcat_lab": "Information & Communication",
+        "exp_cat_code": "expcat_phyinf",
+        "exp_cat_lab": "Built Environment & Cultural Assets"
+      },
+      {
+        "exp_subcat_code": "expsubcat_physwater",
+        "exp_subcat_lab": "Water & Sanitation Systems",
+        "exp_cat_code": "expcat_phyinf",
+        "exp_cat_lab": "Built Environment & Cultural Assets"
+      },
+      {
+        "exp_subcat_code": "expsubcat_infres",
+        "exp_subcat_lab": "Residential Buildings",
+        "exp_cat_code": "expcat_phyinf",
+        "exp_cat_lab": "Built Environment & Cultural Assets"
+      },
+      {
+        "exp_subcat_code": "expsubcat_infnonres",
+        "exp_subcat_lab": "Other Non-Residential Buildings",
+        "exp_cat_code": "expcat_phyinf",
+        "exp_cat_lab": "Built Environment & Cultural Assets"
+      },
+      {
+        "exp_subcat_code": "expsubcat_infind",
+        "exp_subcat_lab": "Industrial Buildings",
+        "exp_cat_code": "expcat_phyinf",
+        "exp_cat_lab": "Built Environment & Cultural Assets"
+      },
+      {
+        "exp_subcat_code": "expsubcat_infener",
+        "exp_subcat_lab": "Energy Supply & Electricity infrastructure",
+        "exp_cat_code": "expcat_phyinf",
+        "exp_cat_lab": "Built Environment & Cultural Assets"
+      },
+      {
+        "exp_subcat_code": "expsubcat_infnonmov",
+        "exp_subcat_lab": "Socio-cultural Infrastructure (monuments, museums, etc)",
+        "exp_cat_code": "expcat_phyinf",
+        "exp_cat_lab": "Built Environment & Cultural Assets"
+      },
+      {
+        "exp_subcat_code": "expsubcat_popindig",
+        "exp_subcat_lab": "Indigenous or first nations people",
+        "exp_cat_code": "expcat_pop",
+        "exp_cat_lab": "Population"
       }
     ],
     "imp_class": [

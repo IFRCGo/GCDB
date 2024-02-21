@@ -23,31 +23,27 @@ counties<-openxlsx::read.xlsx("./Taxonomies/IsoContinentRegion.xlsx")%>%
 # Make sure the extra countries not present here are included
 tmp<-data.frame(ISO.Code=(taxies%>%filter(list_name=="Country")%>%pull(name))[!taxies%>%filter(list_name=="Country")%>%pull(name)%in%counties$ISO.Code])%>%
                 mutate(Country=convIso3Country(ISO.Code),continent=convIso3Continent_alt(ISO.Code))
-# Add them
+# Add them to an empty dataframe
 othcounties<-counties%>%filter(ISO.Code=="damndaniel"); othcounties[1:nrow(tmp),]<-NA_character_
 counties%<>%rbind(othcounties%>%mutate(ISO.Code=tmp$ISO.Code,Country=tmp$Country,Continent=tmp$continent))%>%
   filter(!duplicated(ISO.Code)); rm(tmp,othcounties)
 counties%<>%dplyr::select(ISO.Code,Country,UN.Region,World.Bank.Regions,Continent,UN.Sub.Region,World.Bank.Income.Groups)%>%
   setNames(c("ISO3","Country","UNRegion","WorldBankRegions","Continent","UNSubRegion","WorldBankIncomeGroups"))
 # Create the data frames of the taxonomies to be saved out later
-exp_class<-data.frame(
-  exp_spec_code=taxies%>%filter(list_name=="exp_specs")%>%pull(name),
-  exp_spec_lab=taxies%>%filter(list_name=="exp_specs")%>%pull(label),
-  exp_subcat_code=taxies%>%filter(list_name=="exp_specs")%>%pull(link_group),
-  exp_subcat_lab=left_join(taxies[taxies$list_name=="exp_specs",2:4],
-                   taxies[taxies$list_name=="exp_subcats",2:4],
-                   by=c("link_group"="name"))%>%pull(label.y),
-  exp_cat_code=taxies%>%filter(list_name=="exp_specs")%>%pull(link_maingroup),
-  exp_cat_lab=left_join(left_join(taxies[taxies$list_name=="exp_specs",2:4],
-                             taxies[taxies$list_name=="exp_subcats",2:4],
-                             by=c("link_group"="name")),
-                   taxies[taxies$list_name=="exp_cats",2:3],
-                   by=c("link_group.y"="name"))%>%pull(label)
-)
+# exposure taxonomy
+exp_class<-taxies%>%filter(list_name=="exp_subcats")%>%dplyr::select(name,label,link_group)%>%
+    setNames(c("exp_subcat_code","exp_subcat_lab","exp_cat_code"))
+exp_class%<>%full_join(taxies[taxies$list_name=="exp_cats",2:3]%>%
+                         setNames(c("exp_cat_code","exp_cat_lab")),by = "exp_cat_code")
+exp_class<-full_join(taxies%>%filter(list_name=="exp_specs")%>%dplyr::select(name,label,link_group)%>%
+            setNames(c("exp_spec_code","exp_spec_lab","exp_subcat_code")),
+          exp_class, by="exp_subcat_code")
+# impact type taxonomy
 imp_class<-data.frame(
   imp_type_code=taxies%>%filter(list_name=="imp_type")%>%pull(name),
   imp_type_lab=taxies%>%filter(list_name=="imp_type")%>%pull(label)
 )
+# hazard taxonomy
 haz_class<-data.frame(
   haz_spec_code=taxies%>%filter(list_name=="hazardsubsubtypes")%>%pull(name),
   haz_spec_lab=taxies%>%filter(list_name=="hazardsubsubtypes")%>%pull(label),
@@ -62,18 +58,19 @@ haz_class<-data.frame(
                    taxies[taxies$list_name=="hazardtypes",2:3],
                    by=c("link_group.y"="name"))%>%pull(label)  
 )
-units_info<-data.frame(
-  unit_codes=taxies%>%filter(list_name=="measunits")%>%pull(name)%>%na.omit(),
-  units_lab=taxies%>%filter(list_name=="measunits")%>%pull(label)%>%na.omit(),
-  unit_groups_code=taxies%>%filter(list_name=="measunits")%>%pull(link_group)%>%na.omit()
-)
+# unit of measurement taxonomy
+units_info<-taxies%>%filter(list_name=="measunits")%>%
+    dplyr::select(name,label,link_group)%>%
+    setNames(c("unit_codes","units_lab","unit_groups_code"))%>%na.omit()
 units_info%<>%left_join(taxies%>%
                           filter(list_name=="measunitgroups")%>%
                           dplyr::select(2:3)%>%
                           rename(unit_groups_code=name,unit_groups_lab=label),
                         by="unit_groups_code")
+# estimation type taxonomy
 est_type<-taxies%>%filter(list_name=="est_type")%>%dplyr::select(2:3)%>%
   rename(est_type_code=name,est_type_lab=label)
+# spatial coverage taxonomy
 spatial_coverage<-taxies%>%filter(list_name=="spatialcoverage")%>%
   dplyr::select(2:3)%>%rename(spat_cov_code=name,spat_cov_lab=label)
 

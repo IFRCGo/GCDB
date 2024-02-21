@@ -373,7 +373,7 @@ MergeMonty<-function(lMonty,jsoner=F){
     lMonty[[i]]$impact_Data$impact_detail}))
   temporal<-do.call(rbind,lapply(seq_along(lMonty),function(i){
     lMonty[[i]]$impact_Data$temporal}))
-  spatial<-do.call(rbind,lapply(seq_along(lMonty),function(i){
+  spatial<-do.call(c,lapply(seq_along(lMonty),function(i){
     lMonty[[i]]$impact_Data$spatial}))
   # Replace the impact_Data field of Monty instance
   Monty$impact_Data<-data.frame(indy=1:nrow(ID_linkage))
@@ -384,26 +384,35 @@ MergeMonty<-function(lMonty,jsoner=F){
   Monty$impact_Data$spatial<-spatial
   Monty$impact_Data$indy<-NULL
   #@@@@@@@@@@@@@@@ Merge the hazard-level data @@@@@@@@@@@@@@@#
-  if(length(Monty$hazard_Data)!=0) {
-    # Store out the data we need
-    ID_linkage<-do.call(rbind,lapply(seq_along(lMonty),function(i){
-      lMonty[[i]]$hazard_Data$ID_linkage}))
-    source<-do.call(rbind,lapply(seq_along(lMonty),function(i){
-      lMonty[[i]]$hazard_Data$source}))
-    hazard_detail<-do.call(rbind,lapply(seq_along(lMonty),function(i){
-      lMonty[[i]]$hazard_Data$hazard_detail}))
-    temporal<-do.call(rbind,lapply(seq_along(lMonty),function(i){
-      lMonty[[i]]$hazard_Data$temporal}))
-    spatial<-do.call(rbind,lapply(seq_along(lMonty),function(i){
-      lMonty[[i]]$hazard_Data$spatial}))
-    # Replace the impact_Data field of Monty instance
-    Monty$hazard_Data<-data.frame(indy=1:nrow(ID_linkage))
-    Monty$hazard_Data$ID_linkage<-ID_linkage
-    Monty$hazard_Data$source<-source
-    Monty$hazard_Data$hazard_detail<-hazard_detail
-    Monty$hazard_Data$temporal<-temporal
-    Monty$hazard_Data$spatial<-spatial
-    Monty$hazard_Data$indy<-NULL
+  # Create a boolean array to check whether each list element has hazard data
+  hasHaz<-sapply(seq_along(lMonty),function(i) length(lMonty[[i]]$hazard_Data)!=0,simplify = T)
+  if(any(hasHaz)) {
+    if(sum(hasHaz)==1){
+      Monty$hazard_Data<-lMonty[[seq_along(lMonty)[hazHaz]]]$hazard_Data
+    } else {
+      # Only include elements that have hazard_Data
+      tMonty<-lMonty[[seq_along(lMonty)[hazHaz]]]
+      # Store out the data we need
+      ID_linkage<-do.call(rbind,lapply(seq_along(tMonty),function(i){
+        tMonty[[i]]$hazard_Data$ID_linkage}))
+      source<-do.call(rbind,lapply(seq_along(tMonty),function(i){
+        tMonty[[i]]$hazard_Data$source}))
+      hazard_detail<-do.call(rbind,lapply(seq_along(tMonty),function(i){
+        tMonty[[i]]$hazard_Data$hazard_detail}))
+      temporal<-do.call(rbind,lapply(seq_along(tMonty),function(i){
+        tMonty[[i]]$hazard_Data$temporal}))
+      spatial<-do.call(c,lapply(seq_along(tMonty),function(i){
+        tMonty[[i]]$hazard_Data$spatial}))
+      rm(tMonty)
+      # Replace the impact_Data field of Monty instance
+      Monty$hazard_Data<-data.frame(indy=1:nrow(ID_linkage))
+      Monty$hazard_Data$ID_linkage<-ID_linkage
+      Monty$hazard_Data$source<-source
+      Monty$hazard_Data$hazard_detail<-hazard_detail
+      Monty$hazard_Data$temporal<-temporal
+      Monty$hazard_Data$spatial<-spatial
+      Monty$hazard_Data$indy<-NULL
+    }
   }
   #@@@@@@@@@@@@@@ Merge the response-level data @@@@@@@@@@@@@@#
   if(length(Monty$response_Data)!=0) {
