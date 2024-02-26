@@ -138,9 +138,75 @@ GetGAULmeta<-function(){
   return(readxl::read_xls(loccy))
 }
 
-GetGAUL<-function(ISO3C,lADM=2){
-  # Setup Google Earth Engine library and objects
-  SetupGEE()
+GAUL2Monty<-function(ISO3C,forcer=F){
+  # File name
+  filer<-paste0("./CleanedData/SocioPoliticalData/GAUL/",ISO3C,"/ADM_",ISO3C,".geojson")
+  # Check if the file exists first
+  if(!forcer & file.exists(filer)) {
+    return(sf::st_read(filer, drivers = "GeoJSON"))
+  }
+  # Download ADM2 boundaries first
+  gaul<-GetGAUL(ISO3C,2,T)
+  # Convert from sp to sf if needs be
+  if(any(class(gaul)=="SpatialPolygonsDataFrame")) gaul%<>%sf::st_as_sf()
+  # Now drop everything we don't need
+  gaul%<>%dplyr::select(2:7)%>%setNames(c("spat_ADM0_code","spat_ADM0_lab","spat_ADM1_code","spat_ADM1_lab","spat_ADM2_code","spat_ADM2_lab","geometry"))
+  # Add variables such as admin spatial resolution
+  gaul%<>%mutate(spat_ADM_res=2,
+                 spat_ADM_code=spat_ADM2_code,
+                 spat_ADM_lab=spat_ADM2_lab)
+  # Set the ADM0 code to be the ISO3C code
+  gaul$spat_ADM0_code<-ISO3C
+  # Now add the ADM0 polygons to the dataframe
+  tmp<-GetGAUL(ISO3C,0,T)
+  # Modify this
+  tmp%<>%transmute(spat_ADM0_code=ISO3C,spat_ADM0_lab=ADM0_NAME,
+                   spat_ADM1_code=NA,spat_ADM1_lab=NA,
+                   spat_ADM2_code=NA,spat_ADM2_lab=NA,
+                   geometry=geometry)
+  # Add variables such as admin spatial resolution
+  tmp%<>%mutate(spat_ADM_res=0,
+                spat_ADM_code=spat_ADM0_code,
+                spat_ADM_lab=spat_ADM0_lab)
+  # Add it
+  gaul%<>%rbind(tmp)
+  # Now add the ADM1 polygons to the dataframe
+  tmp<-GetGAUL(ISO3C,1,T)
+  # Modify this
+  tmp%<>%transmute(spat_ADM0_code=ISO3C,spat_ADM0_lab=ADM0_NAME,
+                   spat_ADM1_code=ADM1_CODE,spat_ADM1_lab=ADM1_NAME,
+                   spat_ADM2_code=NA,spat_ADM2_lab=NA,
+                   geometry=geometry)
+  # Add variables such as admin spatial resolution
+  tmp%<>%mutate(spat_ADM_res=1,
+                spat_ADM_code=spat_ADM1_code,
+                spat_ADM_lab=spat_ADM1_lab)
+  # Add it
+  gaul%<>%rbind(tmp); rm(tmp)
+  # Add the extra columns and reduce to only what we need
+  gaul%<>%mutate(spat_db_code="GAUL",spat_org_code="FAO",spat_ADM_ISO=ISO3C,
+                 spat_extID=paste(paste(spat_org_code,spat_db_code,sep = "-"),
+                               str_replace_all(paste(spat_ADM0_code,
+                                                          spat_ADM1_code,
+                                                          spat_ADM2_code,
+                                                          sep = "_"),"_NA",""),
+                               sep = "_"))%>%
+    dplyr::select(spat_extID,spat_db_code,spat_org_code,spat_ADM_ISO,
+                  spat_ADM_res,spat_ADM_code,spat_ADM_lab,geometry)
+  # Cleanup the attribute data
+  attr(gaul, "metadata") <- NULL
+  # Create the cleaned folder
+  dir.create(paste0("./CleanedData/SocioPoliticalData/GAUL/",ISO3C),showWarnings = F,recursive = T); 
+  # Save out to be read in later on
+  sf::st_write(gaul, filer, driver = "GeoJSON",delete_dsn=T)
+  # return the spatial object
+  return(gaul)
+}
+
+# Setup Google Earth Engine library and objects
+SetupGEE()
+
+GetGAUL<-function(ISO3C,lADM=2,retobj=F,spout=F){
   # Extract the GAUL admin boundary data extraction function from GEE
   ADM<-ee$FeatureCollection(paste0('FAO/GAUL/2015/level',lADM))
   # Extract the GAUL admin boundary metadata
@@ -148,52 +214,55 @@ GetGAUL<-function(ISO3C,lADM=2){
   # For each country, extract the GAUL data
   do.call(rbind,lapply(ISO3C,function(iso3) {
     # Make sure we're not unecessarily duplicating work
-    if(file.exists(paste0("./CleanedData/SocioPoliticalData/EMDAT/",iso3,"/ADM_",iso3,".geojson"))) return(T)
+    if(!retobj & file.exists(paste0("./CleanedData/SocioPoliticalData/GAUL/",iso3,"/ADM",lADM,"_",iso3,".geojson"))) return(T)
     # Create a folder for the results
     dir.create(paste0("./RawData/SocioPoliticalData/GAUL/",iso3),showWarnings = F,recursive = T)
     # Convert iso3 code to the GAUL admin code
     nGAUL<-GAULcod$ADM_NAME[GAULcod$ISO3==iso3]
     # Extract country shapefile from Google Earth Engine
     gaul<-ee_as_sf(ADM$filter(ee$Filter$eq('ADM0_NAME', nGAUL)),via = "drive",quiet = T,overwrite = T)
-    # Temporarily save it out
-    tmp<-file.copy(from=attributes(gaul)$metadata$dsn,
-                   to=paste0("./RawData/SocioPoliticalData/GAUL/",iso3,"/tmp_",iso3,".geojson"))
-    # Check the types to make sure everything is a polygon, not lines
-    types <- vapply(sf::st_geometry(gaul), function(x) class(x)[2], "")
-    # Extract all elements without issues
-    polys <- gaul[grepl("*POLYGON", types),]
-    # Highlight which elements have issues (are lines, etc)
-    oth <- gaul[!grepl("*POLYGON", types),]
-    # What to do if it didn0't work out as planned
-    if(nrow(oth)!=0) {
-      # Sort out the error in the geometries
-      geoms <- lapply( oth$geometry, `[` )
-      mp <- tryCatch(do.call(rbind,lapply( geoms, function(x) sf::st_multipolygon( x = x[2] ) )),
-                     error=function(e) NA)
-      if(all(is.na(mp)) | length(mp)!=nrow(oth)){
-        print(paste0(nrow(oth)," non-polygon elements in shapefile, out of ",nrow(gaul)," = ",signif(100*nrow(oth)/nrow(gaul),2),"%"))
-        # If everything failed
-        if(nrow(oth)==nrow(gaul)) stop("NOPE: EMDAT didn't work!")
-        # Only store what worked
-        out<-as(polys,"Spatial")
-      } else {
-        # Patch it over
-        for(i in 1:nrow(oth)) oth$geometry[i]<-mp[[i]]
-        # Convert both into spatial objects and return as one
-        out<-rbind(as(polys,"Spatial"),as(oth,"Spatial"))
-      }
-    } else out<-as(polys,"Spatial")
-    # Create the cleaned folder
-    dir.create(paste0("./CleanedData/SocioPoliticalData/EMDAT/",iso3),showWarnings = F,recursive = T); 
-    # Save out to be read in later on
-    rgdal::writeOGR(out,
-                    dsn=paste0("./CleanedData/SocioPoliticalData/EMDAT/",iso3,"/ADM_",iso3,".geojson"),
-                    layer = paste0("/ADM_",iso3),
-                    driver = "GeoJSON",overwrite_layer = T)
+    # If you want to have the output file in sp Spatial* format, then some fudging is in order...
+    if(spout){
+      # Check the types to make sure everything is a polygon, not lines
+      types <- vapply(sf::st_geometry(gaul), function(x) class(x)[2], "")
+      # Extract all elements without issues
+      polys <- gaul[grepl("*POLYGON", types) | grepl("*GEOMETRYCOLLECTION", types),]
+      # Highlight which elements have issues (are lines, etc)
+      oth <- gaul[!(grepl("*POLYGON", types) | grepl("*GEOMETRYCOLLECTION", types)),]
+      # What to do if it didn0't work out as planned
+      if(nrow(oth)!=0) {
+        # Sort out the error in the geometries
+        geoms <- lapply( oth$geometry, `[` )
+        mp <- tryCatch(do.call(rbind,lapply( geoms, function(x) sf::st_multipolygon( x = x[2] ) )),
+                       error=function(e) NA)
+        if(all(is.na(mp)) | length(mp)!=nrow(oth)){
+          print(paste0(nrow(oth)," non-polygon elements in shapefile, out of ",nrow(gaul)," = ",signif(100*nrow(oth)/nrow(gaul),2),"%"))
+          # If everything failed
+          if(nrow(oth)==nrow(gaul)) stop("NOPE: GAUL didn't work!")
+          # Only store what worked
+          gaul<-as(polys,"Spatial")
+        } else {
+          # Patch it over
+          for(i in 1:nrow(oth)) oth$geometry[i]<-mp[[i]]
+          # Convert both into spatial objects and return as one
+          gaul<-rbind(as(polys,"Spatial"),as(oth,"Spatial"))
+        }
+      } else gaul<-as(polys,"Spatial")
+      # Save out to be read in later on
+      rgdal::writeOGR(gaul,
+                      dsn=paste0("./RawData/SocioPoliticalData/GAUL/",iso3,"/ADM",lADM,"_",iso3,".geojson"),
+                      layer = paste0("/ADM_",iso3),
+                      driver = "GeoJSON",overwrite_layer = T)
+    } else {
+      # Save out to be read in later on
+      sf::st_write(gaul, 
+                   paste0("./RawData/SocioPoliticalData/GAUL/",iso3,"/ADM",lADM,"_",iso3,".geojson"), 
+                   driver = "GeoJSON",delete_dsn=T)
+    }
     
-    return(data.frame(iso3=iso3,checker=T))
+    if(retobj) return(gaul) else return(data.frame(iso3=iso3,checker=T))
   }))
-  
+
 }
 
 GetIFRCADM<-function(ISO,level=0){
