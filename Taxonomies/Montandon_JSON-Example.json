@@ -1,7 +1,7 @@
 {
   "monty_Info": {
     "class_version": "Monty Schema V1.00",
-    "db_pubdate": "2024-02-21",
+    "db_pubdate": "2024-03-03",
     "helpful_resources": [
       {
         "title": "Global Crisis Data Bank - Concept Note",
@@ -3531,12 +3531,20 @@
         "imp_type_lab": "Unspecified"
       },
       {
+        "imp_type_code": "imptypunaff",
+        "imp_type_lab": "Unaffected"
+      },
+      {
         "imp_type_code": "imptypdama",
         "imp_type_lab": "Damaged"
       },
       {
         "imp_type_code": "imptypdest",
         "imp_type_lab": "Destroyed"
+      },
+      {
+        "imp_type_code": "imptyppotdam",
+        "imp_type_lab": "Potentially Damaged"
       },
       {
         "imp_type_code": "imptypaffe",
@@ -6117,6 +6125,12 @@
       }
     ],
     "units_info": [
+      {
+        "unit_codes": "unitsunknown",
+        "units_lab": "Unknown",
+        "unit_groups_code": "unitsgrpunknown",
+        "unit_groups_lab": "Unknown Group"
+      },
       {
         "unit_codes": "unitsmm_per_sec2",
         "units_lab": "mm_per_sec2",
