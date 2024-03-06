@@ -428,50 +428,63 @@ MergeMonty<-function(lMonty,jsoner=F){
 }
 
 # Split the Monty instance by event_IDs (evs)
-SplitMonty<-function(Monty,evs,form=NULL){
+SplitMonty<-function(Monty,evs,form=NULL,arranger=T){
   #@@@@@@@@@@@@@@@ Split the event-level data @@@@@@@@@@@@@@@#
-  indy<-Monty$event_Level$ID_linkage$event_ID%in%evs
+  if(arranger) {
+    indy<-Monty$event_Level$ID_linkage$event_ID%in%evs
+    indy<-arrange(data.frame(id=seq_along(indy[indy]),
+                             date=Monty$event_Level$temporal$ev_sdate[indy]),
+                  date)%>%pull(id)
+  } else indy<-Monty$event_Level$ID_linkage$event_ID%in%evs
   # Store out the data we need
-  ID_linkage=Monty$event_Level$ID_linkage[indy,]
-  temporal=Monty$event_Level$temporal[indy,]
-  spatial=Monty$event_Level$spatial[indy,]
-  allhaz_class=Monty$event_Level$allhaz_class[indy]
+  ID_linkage<-Monty$event_Level$ID_linkage[indy,]
+  temporal<-Monty$event_Level$temporal[indy,]
+  spatial<-Monty$event_Level$spatial[indy,]
+  allhaz_class<-Monty$event_Level$allhaz_class[indy]
   # Replace the event_Level field of Monty instance 
-  Monty$event_Level<-data.frame(indy=which(indy))
+  Monty$event_Level<-data.frame(indy=seq_along(indy))
   Monty$event_Level$ID_linkage<-ID_linkage
   Monty$event_Level$temporal<-temporal
   Monty$event_Level$spatial<-spatial
   Monty$event_Level$allhaz_class<-allhaz_class
   Monty$event_Level$indy<-NULL
-  
   #@@@@@@@@@@@@@@@ Split the impact-level data @@@@@@@@@@@@@@@#
-  indy<-Monty$impact_Data$ID_linkage$event_ID%in%evs
+  if(arranger) {
+    indy<-Monty$impact_Data$ID_linkage$event_ID%in%evs
+    indy<-arrange(data.frame(id=seq_along(indy[indy]),
+                             date=Monty$impact_Data$temporal$imp_sdate[indy]),
+                  date)%>%pull(id)
+  } else indy<-Monty$impact_Data$ID_linkage$event_ID%in%evs
   # Store out the data we need
   ID_linkage<-Monty$impact_Data$ID_linkage[indy,]
   source<-Monty$impact_Data$source[indy,]
   impact_detail<-Monty$impact_Data$impact_detail[indy,]
   temporal<-Monty$impact_Data$temporal[indy,]
-  spatial<-Monty$impact_Data$spatial[indy]
+  spatial<-Monty$impact_Data$spatial[indy,]
   # Replace the impact_Data field of Monty instance
-  Monty$impact_Data<-data.frame(indy=which(indy))
+  Monty$impact_Data<-data.frame(indy=seq_along(indy))
   Monty$impact_Data$ID_linkage<-ID_linkage
   Monty$impact_Data$source<-source
   Monty$impact_Data$impact_detail<-impact_detail
   Monty$impact_Data$temporal<-temporal
   Monty$impact_Data$spatial<-spatial
   Monty$impact_Data$indy<-NULL
-  
   #@@@@@@@@@@@@@@@ Split the hazard-level data @@@@@@@@@@@@@@@#
   if(length(Monty$hazard_Data)!=0) {
-    indy<-Monty$hazard_Data$ID_linkage$event_ID%in%evs
+    if(arranger) {
+      indy<-Monty$hazard_Data$ID_linkage$event_ID%in%evs
+      indy<-arrange(data.frame(id=seq_along(indy[indy]),
+                               date=Monty$hazard_Data$temporal$haz_sdate[indy]),
+                    date)%>%pull(id)
+    } else indy<-Monty$hazard_Data$ID_linkage$event_ID%in%evs
     # Store out the data we need
     ID_linkage<-Monty$hazard_Data$ID_linkage[indy,]
     source<-Monty$hazard_Data$source[indy,]
     hazard_detail<-Monty$hazard_Data$hazard_detail[indy,]
     temporal<-Monty$hazard_Data$temporal[indy,]
-    spatial<-Monty$hazard_Data$spatial[indy]
+    spatial<-Monty$hazard_Data$spatial[indy,]
     # Replace the impact_Data field of Monty instance
-    Monty$hazard_Data<-data.frame(indy=which(indy))
+    Monty$hazard_Data<-data.frame(indy=seq_along(indy))
     Monty$hazard_Data$ID_linkage<-ID_linkage
     Monty$hazard_Data$source<-source
     Monty$hazard_Data$hazard_detail<-hazard_detail
@@ -479,13 +492,13 @@ SplitMonty<-function(Monty,evs,form=NULL){
     Monty$hazard_Data$spatial<-spatial
     Monty$hazard_Data$indy<-NULL
   }
-  
   #@@@@@@@@@@@@@@ Split the response-level data @@@@@@@@@@@@@@#
   if(length(Monty$response_Data)!=0) {
     warning("Response-level data not ready to be split")
   }
   # Return it!
-  if(form=="json") return(jsonlite::toJSON(Monty,pretty = T,auto_unbox = T)) else return(Monty)
+  if(is.null(form)) return (Monty) 
+  if(form=="json") return(jsonlite::toJSON(Monty,pretty = T,auto_unbox = T))
 }
 
 # Filter the Monty instance to find the appropriate eventids
