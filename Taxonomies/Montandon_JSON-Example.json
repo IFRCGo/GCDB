@@ -1,7 +1,7 @@
 {
   "monty_Info": {
     "class_version": "Monty Schema V1.00",
-    "db_pubdate": "2024-03-03",
+    "db_pubdate": "2024-02-21",
     "helpful_resources": [
       {
         "title": "Global Crisis Data Bank - Concept Note",
@@ -18,108 +18,250 @@
   "event_Level": [
     {
       "ID_linkage": {
-        "event_ID": "ABCDEF",
-        "ev_name": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
+        "event_ID": "FL-2015-11-30-PRY-GCDB_V1",
+        "ev_name": "\"Flood in Paraguay\"",
         "all_ext_IDs": [
           {
-            "ext_ID": "ABCDEFGHIJKLMNOPQRST",
-            "ext_ID_db": "ABCDEFGH",
-            "ext_ID_org": "ABCDEFGHIJKLMNOPQRSTUV"
+            "ext_ID": "4315",
+            "ext_ID_db": "GDACS",
+            "ext_ID_org": "EC-JRC"
+          },
+          {
+            "ext_ID": "FL-2015-000171-PRY",
+            "ext_ID_db": "GLIDE",
+            "ext_ID_org": "ADRC"
           }
         ]
       },
-      "spatial": {
-        "ev_ISO3s": "XMZ",
-        "gen_location": "ABCDEFGHIJKLMN"
-      },
       "temporal": {
-        "ev_sdate": "1653-14-21",
-        "ev_fdate": "2317-04-10"
-      },
-      "allhaz_class": []
-    },
-    {
-      "ID_linkage": {
-        "event_ID": "ABCD",
-        "ev_name": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
-        "all_ext_IDs": []
+        "ev_sdate": "2015-11-30",
+        "ev_fdate": "2016-01-28"
       },
       "spatial": {
-        "ev_ISO3s": "OLZ",
-        "gen_location": "ABCD"
-      },
-      "temporal": {
-        "ev_sdate": "0021-14-31",
-        "ev_fdate": "2488-12-08"
+        "gen_location": "\"Flood in Paraguay\"",
+        "ev_ISO3s": "PRY"
       },
       "allhaz_class": [
         {
-          "all_hazs_Ab": "YE",
-          "all_hazs_spec": "CHO012"
+          "all_hazs_Ab": "FL",
+          "all_hazs_spec": "MH0004"
         },
         {
-          "all_hazs_Ab": "RF",
-          "all_hazs_spec": "CHO012"
+          "all_hazs_Ab": "FL",
+          "all_hazs_spec": "MH0005"
+        },
+        {
+          "all_hazs_Ab": "FL",
+          "all_hazs_spec": "MH0006"
+        },
+        {
+          "all_hazs_Ab": "FL",
+          "all_hazs_spec": "MH0007"
+        },
+        {
+          "all_hazs_Ab": "FL",
+          "all_hazs_spec": "MH0008"
+        },
+        {
+          "all_hazs_Ab": "FL",
+          "all_hazs_spec": "MH0012"
         }
       ]
     },
     {
       "ID_linkage": {
-        "event_ID": "ABCDEF",
-        "ev_name": "ABCDEFGHI",
+        "event_ID": "FL-2015-11-30-KEN-GCDB_V1",
+        "ev_name": "\"Flood in Kenya\"",
         "all_ext_IDs": [
           {
-            "ext_ID": "ABCDEFGHIJKL",
-            "ext_ID_db": "ABCDEFGH",
-            "ext_ID_org": "ABCDEFGHIJKL"
+            "ext_ID": "4317",
+            "ext_ID_db": "GDACS",
+            "ext_ID_org": "EC-JRC"
+          },
+          {
+            "ext_ID": "0",
+            "ext_ID_db": "GLIDE",
+            "ext_ID_org": "ADRC"
           }
         ]
       },
-      "spatial": {
-        "ev_ISO3s": "VAY",
-        "gen_location": "ABCD"
-      },
       "temporal": {
-        "ev_sdate": "1542-05-17",
-        "ev_fdate": "2796-04-28"
+        "ev_sdate": "2015-11-30",
+        "ev_fdate": "2016-01-05"
+      },
+      "spatial": {
+        "gen_location": "\"Flood in Kenya\"",
+        "ev_ISO3s": "KEN"
       },
       "allhaz_class": [
         {
-          "all_hazs_Ab": "QT",
-          "all_hazs_spec": "CHO012"
+          "all_hazs_Ab": "FL",
+          "all_hazs_spec": "MH0004"
         },
         {
-          "all_hazs_Ab": "VP",
-          "all_hazs_spec": "CHO012"
+          "all_hazs_Ab": "FL",
+          "all_hazs_spec": "MH0005"
         },
         {
-          "all_hazs_Ab": "ON",
-          "all_hazs_spec": "CHO012"
+          "all_hazs_Ab": "FL",
+          "all_hazs_spec": "MH0006"
         },
         {
-          "all_hazs_Ab": "AY",
-          "all_hazs_spec": "CHO012"
+          "all_hazs_Ab": "FL",
+          "all_hazs_spec": "MH0007"
+        },
+        {
+          "all_hazs_Ab": "FL",
+          "all_hazs_spec": "MH0008"
+        },
+        {
+          "all_hazs_Ab": "FL",
+          "all_hazs_spec": "MH0012"
         }
       ]
     },
     {
       "ID_linkage": {
-        "event_ID": "ABCD",
-        "ev_name": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
-        "all_ext_IDs": []
-      },
-      "spatial": {
-        "ev_ISO3s": "PTE",
-        "gen_location": "ABCDEFGHIJKLMN"
+        "event_ID": "EQ-2016-01-02-IND-GCDB_V1",
+        "ev_name": "\"Earthquake in India\"",
+        "all_ext_IDs": [
+          {
+            "ext_ID": "1077755",
+            "ext_ID_db": "GDACS",
+            "ext_ID_org": "EC-JRC"
+          }
+        ]
       },
       "temporal": {
-        "ev_sdate": "2318-09-10",
-        "ev_fdate": "1627-03-26"
+        "ev_sdate": "2016-01-02",
+        "ev_fdate": "2016-01-02"
+      },
+      "spatial": {
+        "gen_location": "\"Earthquake in India\"",
+        "ev_ISO3s": "IND"
       },
       "allhaz_class": [
         {
-          "all_hazs_Ab": "NX",
-          "all_hazs_spec": "CHO012"
+          "all_hazs_Ab": "EQ",
+          "all_hazs_spec": "GH0001"
+        },
+        {
+          "all_hazs_Ab": "EQ",
+          "all_hazs_spec": "GH0002"
+        }
+      ]
+    },
+    {
+      "ID_linkage": {
+        "event_ID": "TC-2016-02-09-FJI-GCDB_V1",
+        "ev_name": "\"Tropical Cyclone WINSTON-16\"",
+        "all_ext_IDs": [
+          {
+            "ext_ID": "1000252",
+            "ext_ID_db": "GDACS",
+            "ext_ID_org": "EC-JRC"
+          }
+        ]
+      },
+      "temporal": {
+        "ev_sdate": "2016-02-09",
+        "ev_fdate": "2016-02-23"
+      },
+      "spatial": {
+        "gen_location": "\"Tropical Cyclone WINSTON-16\"",
+        "ev_ISO3s": "FJI"
+      },
+      "allhaz_class": [
+        {
+          "all_hazs_Ab": "TC",
+          "all_hazs_spec": "MH0057"
+        },
+        {
+          "all_hazs_Ab": "TC",
+          "all_hazs_spec": "MH0059"
+        }
+      ]
+    },
+    {
+      "ID_linkage": {
+        "event_ID": "FL-2016-03-11-PAK-GCDB_V1",
+        "ev_name": "\"Flood in Pakistan\"",
+        "all_ext_IDs": [
+          {
+            "ext_ID": "4339",
+            "ext_ID_db": "GDACS",
+            "ext_ID_org": "EC-JRC"
+          },
+          {
+            "ext_ID": "FL-2016-000021-PAK",
+            "ext_ID_db": "GLIDE",
+            "ext_ID_org": "ADRC"
+          }
+        ]
+      },
+      "temporal": {
+        "ev_sdate": "2016-03-11",
+        "ev_fdate": "2016-04-12"
+      },
+      "spatial": {
+        "gen_location": "\"Flood in Pakistan\"",
+        "ev_ISO3s": "PAK"
+      },
+      "allhaz_class": [
+        {
+          "all_hazs_Ab": "FL",
+          "all_hazs_spec": "MH0004"
+        },
+        {
+          "all_hazs_Ab": "FL",
+          "all_hazs_spec": "MH0005"
+        },
+        {
+          "all_hazs_Ab": "FL",
+          "all_hazs_spec": "MH0006"
+        },
+        {
+          "all_hazs_Ab": "FL",
+          "all_hazs_spec": "MH0007"
+        },
+        {
+          "all_hazs_Ab": "FL",
+          "all_hazs_spec": "MH0008"
+        },
+        {
+          "all_hazs_Ab": "FL",
+          "all_hazs_spec": "MH0012"
+        }
+      ]
+    },
+    {
+      "ID_linkage": {
+        "event_ID": "EQ-2016-04-09-AFG-GCDB_V1",
+        "ev_name": "\"Earthquake in Afghanistan\"",
+        "all_ext_IDs": [
+          {
+            "ext_ID": "1084073",
+            "ext_ID_db": "GDACS",
+            "ext_ID_org": "EC-JRC"
+          }
+        ]
+      },
+      "temporal": {
+        "ev_sdate": "2016-04-09",
+        "ev_fdate": "2016-04-09"
+      },
+      "spatial": {
+        "gen_location": "\"Earthquake in Afghanistan\"",
+        "ev_ISO3s": "AFG"
+      },
+      "allhaz_class": [
+        {
+          "all_hazs_Ab": "EQ",
+          "all_hazs_spec": "GH0001"
+        },
+        {
+          "all_hazs_Ab": "EQ",
+          "all_hazs_spec": "GH0002"
         }
       ]
     }
@@ -127,1014 +269,677 @@
   "impact_Data": [
     {
       "ID_linkage": {
-        "event_ID": "ABCDEFGHIJKLMNOPQRSTU",
-        "imp_sub_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
-        "haz_sub_ID": ["ABCDEFGHIJKLMNOPQRSTUVW", "ABCDEFGHIJKLMNOPQ", "ABCDEFGHIJKLMNOPQRSTUVWXYZA"],
-        "imp_ext_IDs": ["ABCDEFGHIJKLMNOPQRSTUVWX", "ABCDE", "ABCDEFGHI", "ABCDEFGHIJKLMN", "ABCDEF", "ABCDEF", "ABCDEFGHIJKLMNOPQ", "ABCDEF"]
+        "event_ID": "FL-2015-11-30-PRY-GCDB_V1",
+        "imp_sub_ID": "FL-2015-11-30-PRY-GCDB_V1-Gdacs-expspec_alert-imptypalert-",
+        "haz_sub_ID": "FL-2015-11-30-PRY-GCDB_V1-Dfo-hazhmflood-MH0004:MH0005:MH0006:MH0007:MH0008:MH0012-",
+        "imp_ext_IDs": [
+          {
+            "ext_ID": "4315",
+            "ext_ID_db": "GDACS",
+            "ext_ID_org": "EC-JRC"
+          },
+          {
+            "ext_ID": "FL-2015-000171-PRY",
+            "ext_ID_db": "GLIDE",
+            "ext_ID_org": "ADRC"
+          }
+        ]
       },
       "source": {
-        "imp_src_db": "ABCDEFGHIJKLM",
-        "imp_src_URL": "ABCDEFGHIJKLMNOPQRST",
-        "imp_src_org": "ABCDEFGHIJKLMNOPQ"
+        "imp_src_db": "GDACS",
+        "imp_src_URL": "https://www.gdacs.org/gdacsapi/api/events/geteventdata?eventtype=FL&eventid=4315",
+        "imp_src_org": "EC-JRC"
       },
       "impact_detail": {
-        "exp_spec": "expspec_aidgen",
-        "imp_value": 0,
-        "imp_type": "imptypaffe",
-        "imp_units": "unitsml_per_hr",
-        "imp_est_type": "esttype_prim",
-        "imp_unitdate": "1654-00-17"
-      },
-      "temporal": {
-        "imp_sdate": "2957-09-20",
-        "imp_fdate": "0478-00-21"
-      },
-      "spatial": [
-        {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCDEFGHIJKLM",
-            "imp_spat_fileloc": "ABCDEFGHIJKLMNOPQRSTUVWX",
-            "imp_spat_colname": ["ABCDEFGHIJKLMNOPQRSTUV", "ABCDEFGHIJKLMNOPQRSTUVWX", "ABCDEFGHIJKLMNOPQRST"],
-            "imp_spat_rowname": "ABCDEFGHIJKLMN"
-          },
-          "spatial_info": {
-            "imp_ISO3s": "VHR",
-            "imp_spat_covcode": "spat_polygon",
-            "imp_spat_res": 0,
-            "imp_spat_resunits": "adminlevel",
-            "imp_spat_fileread": "spatfstangeot",
-            "imp_spat_crs": "ESRI:0"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCDEFGHIJKLMNOPQ",
-            "imp_spat_URL": "ABCDEFGHIJKLMNOP",
-            "imp_spat_srcorg": "ABCDE"
-          }
-        },
-        {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCDEFGHIJKLMNOP",
-            "imp_spat_fileloc": "ABCDEFGHIJKLMNOP",
-            "imp_spat_colname": [],
-            "imp_spat_rowname": ["ABCDEFGHIJKLM", "ABCDEFGHIJKLMNOPQRSTU", "ABCDEFG", "ABCDEFGHIJKLMNOPQRSTUVWX"]
-          },
-          "spatial_info": {
-            "imp_ISO3s": "RLD",
-            "imp_spat_covcode": "spat_lines",
-            "imp_spat_res": 0,
-            "imp_spat_resunits": "spatresunknown",
-            "imp_spat_fileread": "spatfstantiff",
-            "imp_spat_crs": "ESRI:6"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCDEFGHIJKLMNOPQRST",
-            "imp_spat_URL": "ABCDEFGHI",
-            "imp_spat_srcorg": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC"
-          }
-        }
-      ]
-    },
-    {
-      "ID_linkage": {
-        "event_ID": "ABCDEFGH",
-        "imp_sub_ID": "ABCDEFGHIJKLMNOPQRSTUVW",
-        "haz_sub_ID": ["ABCDEFGHIJKL", "ABCDEF", "ABCDEFGHIJKLMNOPQRSTUV"],
-        "imp_ext_IDs": ["ABCDEFGHIJKLM", "ABCDEFGHIJKL"]
-      },
-      "source": {
-        "imp_src_db": "ABCDE",
-        "imp_src_URL": "ABCDEFGHIJKLMNOPQRST",
-        "imp_src_org": "ABCDEFGHIJKLMNOPQRST"
-      },
-      "impact_detail": {
-        "exp_spec": "expspec_chld18",
-        "imp_value": 0,
-        "imp_type": "imptypdiraffe",
-        "imp_units": "unitISO4217C-SRD",
-        "imp_est_type": "esttype_model",
-        "imp_unitdate": "2958-10-15"
-      },
-      "temporal": {
-        "imp_sdate": "2926-00-38",
-        "imp_fdate": "2062-04-06"
-      },
-      "spatial": [
-        {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCDEFGHIJKLMNOPQR",
-            "imp_spat_fileloc": "ABCDEF",
-            "imp_spat_colname": ["ABCDEFGHI", "ABCDEFGHIJKLMNOPQR", "ABCDEF", "ABCDEF", "ABCDEFGHIJKLMNOPQ", "ABCDEFGHIJKLMNOPQRSTUVWXYZAB"],
-            "imp_spat_rowname": ["ABCDEFGHIJKLMNOPQRSTUVWXY", "ABCDEFG"]
-          },
-          "spatial_info": {
-            "imp_ISO3s": "ZWS",
-            "imp_spat_covcode": "spat_other",
-            "imp_spat_res": 0,
-            "imp_spat_resunits": "spatresunknown",
-            "imp_spat_fileread": "spatfstangeot",
-            "imp_spat_crs": "ESRI:0"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCDEFGHIJKL",
-            "imp_spat_URL": "ABCDEFGH",
-            "imp_spat_srcorg": "ABCDEFGHIJKL"
-          }
-        },
-        {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-            "imp_spat_fileloc": "ABCDEFGH",
-            "imp_spat_colname": "ABCDE",
-            "imp_spat_rowname": "ABCDEFGHIJKLMNOPQRSTUVWXYZA"
-          },
-          "spatial_info": {
-            "imp_ISO3s": "CST",
-            "imp_spat_covcode": "spat_raster",
-            "imp_spat_res": 0,
-            "imp_spat_resunits": "adminlevel",
-            "imp_spat_fileread": "spatfstangeot",
-            "imp_spat_crs": "EPSG:824"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCDEFGHIJKLMNOPQRSTUV",
-            "imp_spat_URL": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
-            "imp_spat_srcorg": "ABCDEFGHIJKLMNOPQRSTU"
-          }
-        },
-        {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCDEFGHIJKLMNOPQRSTUVW",
-            "imp_spat_fileloc": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
-            "imp_spat_colname": "ABCDE",
-            "imp_spat_rowname": "ABCDEFGHIJKLMNOPQRS"
-          },
-          "spatial_info": {
-            "imp_ISO3s": "ZTK",
-            "imp_spat_covcode": "spat_points",
-            "imp_spat_res": 0,
-            "imp_spat_resunits": "spatresunknown",
-            "imp_spat_fileread": "spatfstantiff",
-            "imp_spat_crs": "ESRI:88"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
-            "imp_spat_URL": "ABCDEFG",
-            "imp_spat_srcorg": "ABCDEFGHIJKLMNOPQRSTUV"
-          }
-        }
-      ]
-    },
-    {
-      "ID_linkage": {
-        "event_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
-        "imp_sub_ID": "ABCDEFGHIJKLMNOPQR",
-        "haz_sub_ID": ["ABCDEFG", "ABCDEFGHIJKLMNOPQRSTUVWXYZA", "ABCDEFGHIJKLMNOPQRSTUVWXYZAB", "ABCDEF"],
-        "imp_ext_IDs": ["ABCDEFGHIJKLMNOPQR", "ABCDEFGHIJKLMNOP", "ABCDEFGHIJKLMNOPQ", "ABCDEFGHIJK", "ABCDEFGHIJKLMNOP", "ABCDEFGHIJKL", "ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
-      },
-      "source": {
-        "imp_src_db": "ABCDEFGHIJKL",
-        "imp_src_URL": "ABCDEFGHIJKLMNO",
-        "imp_src_org": "ABCDEFGHIJKLMNOPQRSTUVWXYZA"
-      },
-      "impact_detail": {
-        "exp_spec": "expspec_men",
-        "imp_value": 0,
-        "imp_type": "imptypmiss",
-        "imp_units": "unitsJ",
-        "imp_est_type": "esttype_second",
-        "imp_unitdate": "1237-10-30"
-      },
-      "temporal": {
-        "imp_sdate": "1199-16-21",
-        "imp_fdate": "0275-01-07"
-      },
-      "spatial": [
-        {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCDEFGHIJKL",
-            "imp_spat_fileloc": "ABCDEFGHIJKLMNOPQR",
-            "imp_spat_colname": ["ABCDEFGHIJKLMNOPQR", "ABCDEFGHI", "ABCDEFGH", "ABCDEFGH"],
-            "imp_spat_rowname": ["ABCDEFGHIJKLMNOPQRSTU", "ABCDEFGHIJKLMNOPQRST", "ABCDE"]
-          },
-          "spatial_info": {
-            "imp_ISO3s": "GZD",
-            "imp_spat_covcode": "spat_polygon",
-            "imp_spat_res": 0,
-            "imp_spat_resunits": "spatresunknown",
-            "imp_spat_fileread": "spatfstanshp",
-            "imp_spat_crs": "EPSG:4"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCD",
-            "imp_spat_URL": "ABCDEFGHIJKLMNOPQRSTUVW",
-            "imp_spat_srcorg": "ABCDEFGHIJKLMNOPQRST"
-          }
-        }
-      ]
-    },
-    {
-      "ID_linkage": {
-        "event_ID": "ABCDEFGHIJKLMNOPQRSTUVW",
-        "imp_sub_ID": "ABCDEFGHIJKLMNOPQRST",
-        "haz_sub_ID": "ABCDEFGHIJ",
-        "imp_ext_IDs": []
-      },
-      "source": {
-        "imp_src_db": "ABCDEFGHIJKLMNO",
-        "imp_src_URL": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
-        "imp_src_org": "ABCDEFGHIJ"
-      },
-      "impact_detail": {
-        "exp_spec": "expspec_trainlin",
-        "imp_value": 0,
-        "imp_type": "imptypereloc",
-        "imp_units": "unitsinch_per_sec",
-        "imp_est_type": "esttype_prim",
-        "imp_unitdate": "2134-04-19"
-      },
-      "temporal": {
-        "imp_sdate": "1697-17-27",
-        "imp_fdate": "2593-07-16"
-      },
-      "spatial": [
-        {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCDEFGHIJKLMNOPQRSTUVWX",
-            "imp_spat_fileloc": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
-            "imp_spat_colname": ["ABCDEFG", "ABCD", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "ABCDEFGHIJKLMNOPQ", "ABCD"],
-            "imp_spat_rowname": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB"
-          },
-          "spatial_info": {
-            "imp_ISO3s": "ZNA",
-            "imp_spat_covcode": "spat_lines",
-            "imp_spat_res": 0,
-            "imp_spat_resunits": "spatrespoints",
-            "imp_spat_fileread": "spatfstanshp",
-            "imp_spat_crs": "ESRI:4"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCDEFGHIJKLMNOPQRST",
-            "imp_spat_URL": "ABCDEFG",
-            "imp_spat_srcorg": "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-          }
-        },
-        {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
-            "imp_spat_fileloc": "ABCDEFGHIJKLMNOPQRST",
-            "imp_spat_colname": [],
-            "imp_spat_rowname": []
-          },
-          "spatial_info": {
-            "imp_ISO3s": "FWH",
-            "imp_spat_covcode": "spat_other",
-            "imp_spat_res": 0,
-            "imp_spat_resunits": "spatresother",
-            "imp_spat_fileread": "spatfstanshp",
-            "imp_spat_crs": "EPSG:5"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCDEFGHIJKLMNOPQRST",
-            "imp_spat_URL": "ABCDEFGHIJKLMNOPQRSTUV",
-            "imp_spat_srcorg": "ABCDEFGHI"
-          }
-        },
-        {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCDEFGHIJKLMNOP",
-            "imp_spat_fileloc": "ABCDEFGHIJKLMNOPQRSTUVW",
-            "imp_spat_colname": ["ABCDEFGHIJKLMNOPQRSTUV", "ABCDEFG", "ABCDEF", "ABCDEFGHIJKLMNOPQRSTUVWXYZAB"],
-            "imp_spat_rowname": ["ABCDEFGHIJKLMNOPQRSTUVW", "ABCDEFGHIJKLMNOPQRSTU", "ABCDEFGHIJKLMNOP"]
-          },
-          "spatial_info": {
-            "imp_ISO3s": "ZRX",
-            "imp_spat_covcode": "spat_polygon",
-            "imp_spat_res": 0,
-            "imp_spat_resunits": "spatresunknown",
-            "imp_spat_fileread": "spatfstangeot",
-            "imp_spat_crs": "EPSG:0"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCDEFGHIJKLMNOPQRST",
-            "imp_spat_URL": "ABCDEFGHIJK",
-            "imp_spat_srcorg": "ABCDEFGHIJKLMNOPQRSTUVWXYZA"
-          }
-        }
-      ]
-    },
-    {
-      "ID_linkage": {
-        "event_ID": "ABCDEFGHIJKLMNOPQRSTUV",
-        "imp_sub_ID": "ABCDE",
-        "haz_sub_ID": ["ABCDEFGHIJKLMNOPQRSTUVWX", "ABCDEFGHIJKLMNOPQRSTUVW", "ABCDEFGHIJKLMN", "ABCDEFGHIJK"],
-        "imp_ext_IDs": ["ABCDEFGHIJ", "ABCDEFGHIJKLMNOPQRSTUVWX"]
-      },
-      "source": {
-        "imp_src_db": "ABCD",
-        "imp_src_URL": "ABCDEFGHIJ",
-        "imp_src_org": "ABCDEFGHIJKLMNOPQRSTUVW"
-      },
-      "impact_detail": {
-        "exp_spec": "expspec_usdunsure",
-        "imp_value": 0,
+        "exp_spec": "expspec_alert",
+        "imp_value": 2,
         "imp_type": "imptypalert",
-        "imp_units": "unitscal_per_sec",
+        "imp_units": "unitsgdacsalert",
         "imp_est_type": "esttype_model",
-        "imp_unitdate": "2128-12-31"
+        "imp_unitdate": "2015-11-30"
       },
       "temporal": {
-        "imp_sdate": "0170-02-09",
-        "imp_fdate": "0203-16-15"
+        "imp_sdate": "2015-11-30",
+        "imp_fdate": "2016-01-28"
       },
-      "spatial": [
-        {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCDEFG",
-            "imp_spat_fileloc": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
-            "imp_spat_colname": ["ABCDEFGHIJKLMN", "ABCDEFGHIJKLMNOPQRSTU"],
-            "imp_spat_rowname": ["ABCDEFGHIJKLM", "ABCDEFGHIJKLMNOPQR", "ABCDEFGHIJKLMNOPQRSTUV", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "ABCDEFGHIJKLMNOPQRSTUVW", "ABCD"]
-          },
-          "spatial_info": {
-            "imp_ISO3s": "OBE",
-            "imp_spat_covcode": "spat_points",
-            "imp_spat_res": 0,
-            "imp_spat_resunits": "spatresunknown",
-            "imp_spat_fileread": "spatfstanshp",
-            "imp_spat_crs": "ESRI:090"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCD",
-            "imp_spat_URL": "ABCDEFGHIJKLMNOPQRSTUVWXY",
-            "imp_spat_srcorg": "ABCDEFGHIJKLMNOPQRSTUVWXY"
+      "spatial": {
+        "ID_linkage": [
+          {
+            "imp_spat_ID": "GO-ADM0-World-shp",
+            "imp_spat_fileloc": "https://go-user-library.ifrc.org/maps",
+            "imp_spat_colname": "iso3",
+            "imp_spat_rowname": "PRY"
           }
-        },
-        {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCDEFGHIJKLMNOPQRSTUV",
-            "imp_spat_fileloc": "ABCDEFGHIJKLMNOPQ",
-            "imp_spat_colname": "ABCDEFGHIJKLMNOPQRSTUVWXY",
-            "imp_spat_rowname": ["ABCDEFGHIJKLMNOPQRSTUVWXYZA", "ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
-          },
-          "spatial_info": {
-            "imp_ISO3s": "BSC",
-            "imp_spat_covcode": "spat_points",
-            "imp_spat_res": 0,
-            "imp_spat_resunits": "othershape",
-            "imp_spat_fileread": "spatfstangeot",
-            "imp_spat_crs": "ESRI:427"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCDEFG",
-            "imp_spat_URL": "ABCDEFGHIJKLMNOPQRST",
-            "imp_spat_srcorg": "ABCDEFGHIJKLMNOPQRSTUVWXY"
-          }
-        },
-        {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCDEFGHIJ",
-            "imp_spat_fileloc": "ABCDEFGHIJKLMNOPQRSTUV",
-            "imp_spat_colname": "ABCDEFGHIJKLMNOPQ",
-            "imp_spat_rowname": "ABCDEFGHIJKLMNOPQRSTUVWXY"
-          },
-          "spatial_info": {
-            "imp_ISO3s": "DRF",
-            "imp_spat_covcode": "spat_lines",
-            "imp_spat_res": 0,
-            "imp_spat_resunits": "spatreslines",
-            "imp_spat_fileread": "spatfstangeot",
-            "imp_spat_crs": "ESRI:5"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCD",
-            "imp_spat_URL": "ABCDEFGHIJKLMNOPQRSTUVW",
-            "imp_spat_srcorg": "ABCDEFGH"
-          }
-        },
-        {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCDEFG",
-            "imp_spat_fileloc": "ABCDEFGHIJKLMNOPQRSTUVWX",
-            "imp_spat_colname": [],
-            "imp_spat_rowname": "ABCDEFGHIJKLMNO"
-          },
-          "spatial_info": {
-            "imp_ISO3s": "LDT",
-            "imp_spat_covcode": "spat_points",
-            "imp_spat_res": 0,
-            "imp_spat_resunits": "adminlevel",
-            "imp_spat_fileread": "spatfstangeot",
-            "imp_spat_crs": "EPSG:9"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCDE",
-            "imp_spat_URL": "ABCDEFGHIJKLMNOP",
-            "imp_spat_srcorg": "ABCDEFGHIJKLMNOPQRST"
-          }
-        },
-        {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCDEFGHIJKLMNOPQ",
-            "imp_spat_fileloc": "ABCDEFGHI",
-            "imp_spat_colname": ["ABCDEFGHIJKL", "ABCDEFG"],
-            "imp_spat_rowname": ["ABCDEFGHIJKLMNOPQRSTUVWX", "ABCDEFGHIJKLMNOPQR", "ABCDEFGHIJKLMNO"]
-          },
-          "spatial_info": {
-            "imp_ISO3s": "SMY",
-            "imp_spat_covcode": "spat_points",
-            "imp_spat_res": 0,
-            "imp_spat_resunits": "spatresunknown",
-            "imp_spat_fileread": "spatfstangeot",
-            "imp_spat_crs": "ESRI:02"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCD",
-            "imp_spat_URL": "ABCDEFGHIJKLMNOPQ",
-            "imp_spat_srcorg": "ABCDEFGHIJKLMNOPQRSTUVWXY"
-          }
-        },
-        {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCDEFGHIJKLMNOPQRS",
-            "imp_spat_fileloc": "ABCDEFGHIJKLMNOPQRSTUVWXY",
-            "imp_spat_colname": ["ABCDEFGHIJKLMNO", "ABCDEFGHIJKLMNOPQRSTUVW", "ABCDEFGHIJKLMNOPQRSTUVWX", "ABCDE", "ABCD", "ABCDEFGHIJKLMNOPQRSTUVWXY", "ABCDEFGH"],
-            "imp_spat_rowname": []
-          },
-          "spatial_info": {
-            "imp_ISO3s": "GLW",
+        ],
+        "spatial_info": [
+          {
+            "imp_ISO3s": "PRY",
             "imp_spat_covcode": "spat_polygon",
             "imp_spat_res": 0,
-            "imp_spat_resunits": "spatresunknown",
-            "imp_spat_fileread": "spatfstantiff",
-            "imp_spat_crs": "ESRI:0"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCDEFG",
-            "imp_spat_URL": "ABCDE",
-            "imp_spat_srcorg": "ABCDEFGHI"
+            "imp_spat_resunits": "adminlevel",
+            "imp_spat_fileread": "spatfstanshp",
+            "imp_spat_crs": "EPSG:4326"
           }
-        },
-        {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCDEFGHIJKL",
-            "imp_spat_fileloc": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
-            "imp_spat_colname": ["ABCDEFGHIJKLMNOPQRSTUVWXYZAB", "ABCDEFGHI", "ABCDEFGHIJK", "ABCDEFGHIJKLMNOPQRSTUVWXYZAB"],
-            "imp_spat_rowname": []
-          },
-          "spatial_info": {
-            "imp_ISO3s": "TAM",
-            "imp_spat_covcode": "spat_other",
-            "imp_spat_res": 0,
-            "imp_spat_resunits": "spatrespoints",
-            "imp_spat_fileread": "spatfstangeot",
-            "imp_spat_crs": "ESRI:31"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCDEFGHIJKLM",
-            "imp_spat_URL": "ABCDEFGHIJKLMNOPQRSTUVWXY",
-            "imp_spat_srcorg": "ABCDEFGHIJKLMNOPQRST"
+        ],
+        "source": [
+          {
+            "imp_spat_srcdb": "GO-Maps",
+            "imp_spat_URL": "https://go-user-library.ifrc.org/maps",
+            "imp_spat_srcorg": "IFRC"
           }
-        }
-      ]
+        ]
+      }
     },
     {
       "ID_linkage": {
-        "event_ID": "ABCDEFGHIJKLMNO",
-        "imp_sub_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-        "haz_sub_ID": [],
-        "imp_ext_IDs": ["ABCDEFGHIJKLMNOPQRSTUVWXYZAB", "ABCDEFGHIJKLMNOPQRSTUV"]
+        "event_ID": "FL-2015-11-30-KEN-GCDB_V1",
+        "imp_sub_ID": "FL-2015-11-30-KEN-GCDB_V1-Gdacs-expspec_alert-imptypalert-",
+        "haz_sub_ID": "FL-2015-11-30-KEN-GCDB_V1-Dfo-hazhmflood-MH0004:MH0005:MH0006:MH0007:MH0008:MH0012-",
+        "imp_ext_IDs": [
+          {
+            "ext_ID": "4317",
+            "ext_ID_db": "GDACS",
+            "ext_ID_org": "EC-JRC"
+          },
+          {
+            "ext_ID": "0",
+            "ext_ID_db": "GLIDE",
+            "ext_ID_org": "ADRC"
+          }
+        ]
       },
       "source": {
-        "imp_src_db": "ABCDEFGHIJKL",
-        "imp_src_URL": "ABCDEFGHIJKL",
-        "imp_src_org": "ABCD"
+        "imp_src_db": "GDACS",
+        "imp_src_URL": "https://www.gdacs.org/gdacsapi/api/events/geteventdata?eventtype=FL&eventid=4317",
+        "imp_src_org": "EC-JRC"
       },
       "impact_detail": {
-        "exp_spec": "expspec_aidgen",
-        "imp_value": 0,
-        "imp_type": "imptypelongacc",
-        "imp_units": "unitsstone",
-        "imp_est_type": "esttype_second",
-        "imp_unitdate": "1519-12-08"
+        "exp_spec": "expspec_alert",
+        "imp_value": 2,
+        "imp_type": "imptypalert",
+        "imp_units": "unitsgdacsalert",
+        "imp_est_type": "esttype_model",
+        "imp_unitdate": "2015-11-30"
       },
       "temporal": {
-        "imp_sdate": "2722-09-10",
-        "imp_fdate": "2436-16-26"
+        "imp_sdate": "2015-11-30",
+        "imp_fdate": "2016-01-05"
       },
-      "spatial": [
-        {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCDEFGHIJKLMNOPQRSTUV",
-            "imp_spat_fileloc": "ABCDEFGHIJK",
-            "imp_spat_colname": ["ABCDEFGHIJKLMNO", "ABCDEFGHIJKLMNOPQRSTUVWXYZA", "ABCD", "ABCDE", "ABCDEFGHIJKLMNOPQRSTUVWXYZABC", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "ABCDEFGHIJKLMNOPQRSTUVWXYZ"],
-            "imp_spat_rowname": []
-          },
-          "spatial_info": {
-            "imp_ISO3s": "PBF",
-            "imp_spat_covcode": "spat_other",
+      "spatial": {
+        "ID_linkage": [
+          {
+            "imp_spat_ID": "GO-ADM0-World-shp",
+            "imp_spat_fileloc": "https://go-user-library.ifrc.org/maps",
+            "imp_spat_colname": "iso3",
+            "imp_spat_rowname": "KEN"
+          }
+        ],
+        "spatial_info": [
+          {
+            "imp_ISO3s": "KEN",
+            "imp_spat_covcode": "spat_polygon",
             "imp_spat_res": 0,
             "imp_spat_resunits": "adminlevel",
             "imp_spat_fileread": "spatfstanshp",
-            "imp_spat_crs": "ESRI:9"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCDEFGHIJKLMNO",
-            "imp_spat_URL": "ABCDEFGHIJKLMNOPQRSTU",
-            "imp_spat_srcorg": "ABCDEFGHIJ"
+            "imp_spat_crs": "EPSG:4326"
           }
-        },
-        {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCDEFGHIJKLMNOPQRST",
-            "imp_spat_fileloc": "ABCDEFGHIJKLMNOPQRSTUV",
-            "imp_spat_colname": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-            "imp_spat_rowname": ["ABCDEFGHIJKLMNOP", "ABCDEFG", "ABCDEFGHIJKLMNOPQ", "ABCDEFGHIJKLMNOPQRSTUVWXYZAB"]
-          },
-          "spatial_info": {
-            "imp_ISO3s": "VVY",
-            "imp_spat_covcode": "spat_points",
-            "imp_spat_res": 0,
-            "imp_spat_resunits": "adminlevel",
-            "imp_spat_fileread": "spatfstantiff",
-            "imp_spat_crs": "EPSG:4"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCDEFG",
-            "imp_spat_URL": "ABCDEFGHIJKLMN",
-            "imp_spat_srcorg": "ABCDEFGHIJKLMNOPQRS"
+        ],
+        "source": [
+          {
+            "imp_spat_srcdb": "GO-Maps",
+            "imp_spat_URL": "https://go-user-library.ifrc.org/maps",
+            "imp_spat_srcorg": "IFRC"
           }
-        },
-        {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCDEFGHIJKLMN",
-            "imp_spat_fileloc": "ABCDEFGHIJKLM",
-            "imp_spat_colname": [],
-            "imp_spat_rowname": []
-          },
-          "spatial_info": {
-            "imp_ISO3s": "QYC",
-            "imp_spat_covcode": "spat_raster",
-            "imp_spat_res": 0,
-            "imp_spat_resunits": "spatrespoints",
-            "imp_spat_fileread": "spatfstangeot",
-            "imp_spat_crs": "ESRI:82"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCDEFGHIJKLMN",
-            "imp_spat_URL": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
-            "imp_spat_srcorg": "ABCDEFGHIJKLMNOPQRSTUVWXYZA"
+        ]
+      }
+    },
+    {
+      "ID_linkage": {
+        "event_ID": "EQ-2016-01-02-IND-GCDB_V1",
+        "imp_sub_ID": "EQ-2016-01-02-IND-GCDB_V1-Gdacs-expspec_alert-imptypalert-",
+        "haz_sub_ID": "EQ-2016-01-02-IND-GCDB_V1-Neic-hazgeoseis-GH0001:GH0002-",
+        "imp_ext_IDs": [
+          {
+            "ext_ID": "1077755",
+            "ext_ID_db": "GDACS",
+            "ext_ID_org": "EC-JRC"
           }
-        },
-        {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
-            "imp_spat_fileloc": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
-            "imp_spat_colname": ["ABCDEFGHIJKLMNOPQRSTUVWXY", "ABCDEFGHIJKLMNOPQRST"],
-            "imp_spat_rowname": []
-          },
-          "spatial_info": {
-            "imp_ISO3s": "KOU",
-            "imp_spat_covcode": "spat_points",
-            "imp_spat_res": 0,
-            "imp_spat_resunits": "spatrespoints",
-            "imp_spat_fileread": "spatfstantiff",
-            "imp_spat_crs": "EPSG:5"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCDEFGHIJKLMNOPQR",
-            "imp_spat_URL": "ABCDEFG",
-            "imp_spat_srcorg": "ABCDEFGHIJKLMNOPQRSTUVWXY"
+        ]
+      },
+      "source": {
+        "imp_src_db": "GDACS",
+        "imp_src_URL": "https://www.gdacs.org/gdacsapi/api/events/geteventdata?eventtype=EQ&eventid=1077755",
+        "imp_src_org": "EC-JRC"
+      },
+      "impact_detail": {
+        "exp_spec": "expspec_alert",
+        "imp_value": 2.3989,
+        "imp_type": "imptypalert",
+        "imp_units": "unitsgdacsalert",
+        "imp_est_type": "esttype_model",
+        "imp_unitdate": "2016-01-02"
+      },
+      "temporal": {
+        "imp_sdate": "2016-01-02",
+        "imp_fdate": "2016-01-02"
+      },
+      "spatial": {
+        "ID_linkage": [
+          {
+            "imp_spat_ID": "GO-ADM0-World-shp",
+            "imp_spat_fileloc": "https://go-user-library.ifrc.org/maps",
+            "imp_spat_colname": "iso3",
+            "imp_spat_rowname": "IND"
           }
-        },
-        {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCDEFGHIJKLMNOPQR",
-            "imp_spat_fileloc": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
-            "imp_spat_colname": "ABCDEFGHIJK",
-            "imp_spat_rowname": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB"
-          },
-          "spatial_info": {
-            "imp_ISO3s": "PDB",
-            "imp_spat_covcode": "spat_raster",
+        ],
+        "spatial_info": [
+          {
+            "imp_ISO3s": "IND",
+            "imp_spat_covcode": "spat_polygon",
             "imp_spat_res": 0,
             "imp_spat_resunits": "adminlevel",
             "imp_spat_fileread": "spatfstanshp",
-            "imp_spat_crs": "EPSG:2"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
-            "imp_spat_URL": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
-            "imp_spat_srcorg": "ABCDEFGHIJKLMNOPQRST"
+            "imp_spat_crs": "EPSG:4326"
           }
-        },
-        {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCDEFGHIJKLMNOPQRSTUVWXY",
-            "imp_spat_fileloc": "ABCDEFGHIJKL",
-            "imp_spat_colname": [],
-            "imp_spat_rowname": []
-          },
-          "spatial_info": {
-            "imp_ISO3s": "CHK",
-            "imp_spat_covcode": "spat_points",
+        ],
+        "source": [
+          {
+            "imp_spat_srcdb": "GO-Maps",
+            "imp_spat_URL": "https://go-user-library.ifrc.org/maps",
+            "imp_spat_srcorg": "IFRC"
+          }
+        ]
+      }
+    },
+    {
+      "ID_linkage": {
+        "event_ID": "TC-2016-02-09-FJI-GCDB_V1",
+        "imp_sub_ID": "TC-2016-02-09-FJI-GCDB_V1-Gdacs-expspec_alert-imptypalert-",
+        "haz_sub_ID": "TC-2016-02-09-FJI-GCDB_V1-Jtwc-hazhmwind-MH0057:MH0059-",
+        "imp_ext_IDs": [
+          {
+            "ext_ID": "1000252",
+            "ext_ID_db": "GDACS",
+            "ext_ID_org": "EC-JRC"
+          }
+        ]
+      },
+      "source": {
+        "imp_src_db": "GDACS",
+        "imp_src_URL": "https://www.gdacs.org/gdacsapi/api/events/geteventdata?eventtype=TC&eventid=1000252",
+        "imp_src_org": "EC-JRC"
+      },
+      "impact_detail": {
+        "exp_spec": "expspec_alert",
+        "imp_value": 1,
+        "imp_type": "imptypalert",
+        "imp_units": "unitsgdacsalert",
+        "imp_est_type": "esttype_model",
+        "imp_unitdate": "2016-02-09"
+      },
+      "temporal": {
+        "imp_sdate": "2016-02-09",
+        "imp_fdate": "2016-02-23"
+      },
+      "spatial": {
+        "ID_linkage": [
+          {
+            "imp_spat_ID": "GO-ADM0-World-shp",
+            "imp_spat_fileloc": "https://go-user-library.ifrc.org/maps",
+            "imp_spat_colname": "iso3",
+            "imp_spat_rowname": "FJI"
+          }
+        ],
+        "spatial_info": [
+          {
+            "imp_ISO3s": "FJI",
+            "imp_spat_covcode": "spat_polygon",
             "imp_spat_res": 0,
-            "imp_spat_resunits": "spatresunknown",
-            "imp_spat_fileread": "spatfstantiff",
-            "imp_spat_crs": "EPSG:499"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCDEFGHIJKLMNOP",
-            "imp_spat_URL": "ABCDEFGHIJKLMNOPQRST",
-            "imp_spat_srcorg": "ABCDEFGHIJKLMNOPQRSTUVWXY"
+            "imp_spat_resunits": "adminlevel",
+            "imp_spat_fileread": "spatfstanshp",
+            "imp_spat_crs": "EPSG:4326"
           }
-        },
-        {
-          "ID_linkage": {
-            "imp_spat_ID": "ABCDEFGHIJKLMNOPQRST",
-            "imp_spat_fileloc": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-            "imp_spat_colname": "ABCDEFGHIJKLMNOPQRSTUVWXY",
-            "imp_spat_rowname": []
+        ],
+        "source": [
+          {
+            "imp_spat_srcdb": "GO-Maps",
+            "imp_spat_URL": "https://go-user-library.ifrc.org/maps",
+            "imp_spat_srcorg": "IFRC"
+          }
+        ]
+      }
+    },
+    {
+      "ID_linkage": {
+        "event_ID": "FL-2016-03-11-PAK-GCDB_V1",
+        "imp_sub_ID": "FL-2016-03-11-PAK-GCDB_V1-Gdacs-expspec_alert-imptypalert-",
+        "haz_sub_ID": "FL-2016-03-11-PAK-GCDB_V1-Dfo-hazhmflood-MH0004:MH0005:MH0006:MH0007:MH0008:MH0012-",
+        "imp_ext_IDs": [
+          {
+            "ext_ID": "4339",
+            "ext_ID_db": "GDACS",
+            "ext_ID_org": "EC-JRC"
           },
-          "spatial_info": {
-            "imp_ISO3s": "EMY",
-            "imp_spat_covcode": "spat_points",
+          {
+            "ext_ID": "FL-2016-000021-PAK",
+            "ext_ID_db": "GLIDE",
+            "ext_ID_org": "ADRC"
+          }
+        ]
+      },
+      "source": {
+        "imp_src_db": "GDACS",
+        "imp_src_URL": "https://www.gdacs.org/gdacsapi/api/events/geteventdata?eventtype=FL&eventid=4339",
+        "imp_src_org": "EC-JRC"
+      },
+      "impact_detail": {
+        "exp_spec": "expspec_alert",
+        "imp_value": 2,
+        "imp_type": "imptypalert",
+        "imp_units": "unitsgdacsalert",
+        "imp_est_type": "esttype_model",
+        "imp_unitdate": "2016-03-11"
+      },
+      "temporal": {
+        "imp_sdate": "2016-03-11",
+        "imp_fdate": "2016-04-12"
+      },
+      "spatial": {
+        "ID_linkage": [
+          {
+            "imp_spat_ID": "GO-ADM0-World-shp",
+            "imp_spat_fileloc": "https://go-user-library.ifrc.org/maps",
+            "imp_spat_colname": "iso3",
+            "imp_spat_rowname": "PAK"
+          }
+        ],
+        "spatial_info": [
+          {
+            "imp_ISO3s": "PAK",
+            "imp_spat_covcode": "spat_polygon",
             "imp_spat_res": 0,
-            "imp_spat_resunits": "spatrespoints",
-            "imp_spat_fileread": "spatfstangeot",
-            "imp_spat_crs": "EPSG:5"
-          },
-          "source": {
-            "imp_spat_srcdb": "ABCDEF",
-            "imp_spat_URL": "ABCDEFGHIJKLM",
-            "imp_spat_srcorg": "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            "imp_spat_resunits": "adminlevel",
+            "imp_spat_fileread": "spatfstanshp",
+            "imp_spat_crs": "EPSG:4326"
           }
-        }
-      ]
+        ],
+        "source": [
+          {
+            "imp_spat_srcdb": "GO-Maps",
+            "imp_spat_URL": "https://go-user-library.ifrc.org/maps",
+            "imp_spat_srcorg": "IFRC"
+          }
+        ]
+      }
+    },
+    {
+      "ID_linkage": {
+        "event_ID": "EQ-2016-04-09-AFG-GCDB_V1",
+        "imp_sub_ID": "EQ-2016-04-09-AFG-GCDB_V1-Gdacs-expspec_alert-imptypalert-",
+        "haz_sub_ID": "EQ-2016-04-09-AFG-GCDB_V1-Neic-hazgeoseis-GH0001:GH0002-",
+        "imp_ext_IDs": [
+          {
+            "ext_ID": "1084073",
+            "ext_ID_db": "GDACS",
+            "ext_ID_org": "EC-JRC"
+          }
+        ]
+      },
+      "source": {
+        "imp_src_db": "GDACS",
+        "imp_src_URL": "https://www.gdacs.org/gdacsapi/api/events/geteventdata?eventtype=EQ&eventid=1084073",
+        "imp_src_org": "EC-JRC"
+      },
+      "impact_detail": {
+        "exp_spec": "expspec_alert",
+        "imp_value": 2.2111,
+        "imp_type": "imptypalert",
+        "imp_units": "unitsgdacsalert",
+        "imp_est_type": "esttype_model",
+        "imp_unitdate": "2016-04-09"
+      },
+      "temporal": {
+        "imp_sdate": "2016-04-09",
+        "imp_fdate": "2016-04-09"
+      },
+      "spatial": {
+        "ID_linkage": [
+          {
+            "imp_spat_ID": "GO-ADM0-World-shp",
+            "imp_spat_fileloc": "https://go-user-library.ifrc.org/maps",
+            "imp_spat_colname": "iso3",
+            "imp_spat_rowname": "AFG"
+          }
+        ],
+        "spatial_info": [
+          {
+            "imp_ISO3s": "AFG",
+            "imp_spat_covcode": "spat_polygon",
+            "imp_spat_res": 0,
+            "imp_spat_resunits": "adminlevel",
+            "imp_spat_fileread": "spatfstanshp",
+            "imp_spat_crs": "EPSG:4326"
+          }
+        ],
+        "source": [
+          {
+            "imp_spat_srcdb": "GO-Maps",
+            "imp_spat_URL": "https://go-user-library.ifrc.org/maps",
+            "imp_spat_srcorg": "IFRC"
+          }
+        ]
+      }
     }
   ],
   "hazard_Data": [
     {
       "ID_linkage": {
-        "event_ID": "ABCDEFGHIJKLMNOP",
-        "haz_sub_ID": "ABCDEFGHIJKLMNOPQRST",
-        "haz_ext_IDs": []
-      },
-      "source": {
-        "haz_src_db": "ABCDEFGHI",
-        "haz_src_URL": "ABCDEFGHIJKLMNOPQRSTUV",
-        "haz_src_org": "ABCDEFGHIJ"
-      },
-      "hazard_detail": {
-        "haz_Ab": "DK",
-        "haz_spec": "CHO012",
-        "haz_maxvalue": 0,
-        "haz_maxunits": "unitsus_quart",
-        "haz_est_type": "esttype_second",
-        "concur_haz": []
-      },
-      "temporal": {
-        "haz_sdate": "2392-09-28",
-        "haz_fdate": "0985-03-24"
-      },
-      "spatial": [
-        {
-          "ID_linkage": {
-            "haz_spat_ID": "ABCDEFGHIJK",
-            "haz_spat_fileloc": "ABCDEFGHIJKLMNOPQRSTUV",
-            "haz_spat_colname": ["ABCD", "ABCDE", "ABCDEFGHIJKLMNOP"],
-            "haz_spat_rowname": "ABCDEFGHIJKLMNOPQRST"
-          },
-          "spatial_info": {
-            "haz_ISO3s": "HHD",
-            "haz_spat_covcode": "lines",
-            "haz_spat_fileread": "spatfstantiff",
-            "haz_spat_res": 0,
-            "haz_spat_resunits": "spatreslines",
-            "haz_spat_crs": "ESRI:0",
-            "haz_spat_unit": "unitISO4217C-XPD"
-          },
-          "source": {
-            "haz_spat_srcdb": "ABCDEFGHIJKLM",
-            "haz_spat_URL": "ABCDEFGHIJKLMNOP",
-            "haz_spat_srcorg": "ABCDEFGHIJKLMN"
-          }
-        }
-      ]
-    },
-    {
-      "ID_linkage": {
-        "event_ID": "ABCDEFGHIJ",
-        "haz_sub_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "event_ID": "FL-2015-11-30-PRY-GCDB_V1",
+        "haz_sub_ID": "FL-2015-11-30-PRY-GCDB_V1-Dfo-hazhmflood-MH0004:MH0005:MH0006:MH0007:MH0008:MH0012-",
         "haz_ext_IDs": [
-          {
-            "ext_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
-            "ext_ID_db": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
-            "ext_ID_org": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB"
-          }
+          [
+            {
+              "ext_ID": "FL-2015-000171-PRY",
+              "ext_ID_db": "GLIDE",
+              "ext_ID_org": "ADRC"
+            }
+          ]
         ]
       },
       "source": {
-        "haz_src_db": "ABCDEFGHIJKLMNOPQRSTU",
-        "haz_src_URL": "ABCDEFG",
-        "haz_src_org": "ABCDEFGHIJKLMN"
+        "haz_src_db": "GDACS",
+        "haz_src_URL": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=FL&eventid=4315&episodeid=2",
+        "haz_src_org": "DFO"
       },
       "hazard_detail": {
-        "haz_Ab": "UJ",
-        "haz_spec": "CHO012",
-        "haz_maxvalue": 0,
-        "haz_maxunits": "unitsus_tsp",
         "haz_est_type": "esttype_second",
-        "concur_haz": [
-          {
-            "haz_sub_ID": "ABCDEFGHIJ",
-            "linkhaz_ext_IDs": [
-              {
-                "ext_ID": "ABCDEFGHIJKLMNOPQRSTUV",
-                "ext_ID_db": "ABCDEFGHIJKLMNOPQRS",
-                "ext_ID_org": "ABCDEF"
-              }
-            ],
-            "linkhaz_spec": "CHO012",
-            "linkhaz_occ_known": false,
-            "linkhaz_occ_prob": "ABCDEFGHIJKLMNOPQRSTUVW",
-            "linkhaz_occ_probdef": "ABCDEFGHIJK",
-            "relationship": "mainhaz-triggers-linkhaz"
-          },
-          {
-            "haz_sub_ID": "ABCDEFGHIJKLM",
-            "linkhaz_ext_IDs": [
-              {
-                "ext_ID": "ABCDEFGHIJKL",
-                "ext_ID_db": "ABCDEFGHI",
-                "ext_ID_org": "ABCDEFGHIJKLMNOPQRSTUVW"
-              }
-            ],
-            "linkhaz_spec": "CHO012",
-            "linkhaz_occ_known": false,
-            "linkhaz_occ_prob": "ABCDEFGHIJKLMNO",
-            "linkhaz_occ_probdef": "ABCD",
-            "relationship": "linkhaz-triggered-by-mainhaz"
-          },
-          {
-            "haz_sub_ID": "ABCDEFGHIJKLMNOPQRSTUVW",
-            "linkhaz_ext_IDs": [
-              {
-                "ext_ID": "ABCD",
-                "ext_ID_db": "ABCDEFGHIJ",
-                "ext_ID_org": "ABCDEFGHIJKLMNOPQRSTUV"
-              }
-            ],
-            "linkhaz_spec": "CHO012",
-            "linkhaz_occ_known": true,
-            "linkhaz_occ_prob": "ABCDEFGHIJKLMNOPQR",
-            "linkhaz_occ_probdef": "ABCDEFGHIJK",
-            "relationship": "linkhaz-triggered-by-mainhaz"
-          }
-        ]
-      },
-      "temporal": {
-        "haz_sdate": "1915-01-32",
-        "haz_fdate": "0101-06-35"
-      },
-      "spatial": [
-        {
-          "ID_linkage": {
-            "haz_spat_ID": "ABCDEFGHIJKLM",
-            "haz_spat_fileloc": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
-            "haz_spat_colname": [],
-            "haz_spat_rowname": "ABCDEFGH"
-          },
-          "spatial_info": {
-            "haz_ISO3s": "KGF",
-            "haz_spat_covcode": "raster",
-            "haz_spat_fileread": "spatfstanshp",
-            "haz_spat_res": 0,
-            "haz_spat_resunits": "spatreslines",
-            "haz_spat_crs": "ESRI:609531",
-            "haz_spat_unit": "unitscen"
-          },
-          "source": {
-            "haz_spat_srcdb": "ABCDEFGHIJKLMNOP",
-            "haz_spat_URL": "ABCDEF",
-            "haz_spat_srcorg": "ABCDEFGHIJKLMNOPQRSTU"
-          }
-        },
-        {
-          "ID_linkage": {
-            "haz_spat_ID": "ABCDEFGHIJKLMNO",
-            "haz_spat_fileloc": "ABCDEFGHIJKLMNOPQRST",
-            "haz_spat_colname": [],
-            "haz_spat_rowname": []
-          },
-          "spatial_info": {
-            "haz_ISO3s": "PQL",
-            "haz_spat_covcode": "points",
-            "haz_spat_fileread": "spatfstanshp",
-            "haz_spat_res": 0,
-            "haz_spat_resunits": "spatresother",
-            "haz_spat_crs": "ESRI:9",
-            "haz_spat_unit": "unitISO4217C-PKR"
-          },
-          "source": {
-            "haz_spat_srcdb": "ABCDEFGHIJKLMNOPQRSTUVW",
-            "haz_spat_URL": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
-            "haz_spat_srcorg": "ABCDEFGHIJKLMNOPQRSTUVWXY"
-          }
-        },
-        {
-          "ID_linkage": {
-            "haz_spat_ID": "ABCDEFGHIJKL",
-            "haz_spat_fileloc": "ABCDEFGHI",
-            "haz_spat_colname": ["ABCDEFGHIJKLMNOPQRSTUVWXY", "ABCDEFGHIJKLMNOPQRSTUVWXY", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "ABCDEFGHI", "ABCDEFGHIJKLMNOPQRSTUVW"],
-            "haz_spat_rowname": ["ABCDEFGHIJKLMNOPQR", "ABCDEFGHIJKLMNO"]
-          },
-          "spatial_info": {
-            "haz_ISO3s": "TIL",
-            "haz_spat_covcode": "raster",
-            "haz_spat_fileread": "spatfstantiff",
-            "haz_spat_res": 0,
-            "haz_spat_resunits": "spatresother",
-            "haz_spat_crs": "EPSG:340",
-            "haz_spat_unit": "unitISO4217C-XCD"
-          },
-          "source": {
-            "haz_spat_srcdb": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
-            "haz_spat_URL": "ABCDEFGHIJKLMNOPQRST",
-            "haz_spat_srcorg": "ABCDEFGHIJKLMNOPQRSTU"
-          }
-        }
-      ]
-    },
-    {
-      "ID_linkage": {
-        "event_ID": "ABCDEFGHIJKLMNO",
-        "haz_sub_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
-        "haz_ext_IDs": []
-      },
-      "source": {
-        "haz_src_db": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
-        "haz_src_URL": "ABCDEFGHIJKLMNOPQRS",
-        "haz_src_org": "ABCDEFGHIJKLMNOPQRS"
-      },
-      "hazard_detail": {
-        "haz_Ab": "KY",
-        "haz_spec": "CHO012",
-        "haz_maxvalue": 0,
-        "haz_maxunits": "unitsTg",
-        "haz_est_type": "esttype_prim",
+        "all_hazs_Ab": "FL",
+        "all_hazs_spec": ["MH0004", "MH0005", "MH0006", "MH0007", "MH0008", "MH0012"],
         "concur_haz": []
       },
       "temporal": {
-        "haz_sdate": "1299-00-04",
-        "haz_fdate": "0186-04-02"
+        "haz_sdate": "2015-11-30",
+        "haz_fdate": "2016-01-28"
       },
-      "spatial": [
-        {
-          "ID_linkage": {
-            "haz_spat_ID": "ABCDEFGHIJKLMNOPQRSTUVWX",
-            "haz_spat_fileloc": "ABCDEFGHIJKLMNOPQ",
-            "haz_spat_colname": [],
-            "haz_spat_rowname": ["ABCDEFG", "ABCDEFGHIJKLMNOPQRS", "ABCD"]
-          },
-          "spatial_info": {
-            "haz_ISO3s": "FRK",
-            "haz_spat_covcode": "lines",
-            "haz_spat_fileread": "spatfstangeot",
-            "haz_spat_res": 0,
-            "haz_spat_resunits": "othershape",
-            "haz_spat_crs": "ESRI:92610",
-            "haz_spat_unit": "unitISO4217C-PHP"
-          },
-          "source": {
-            "haz_spat_srcdb": "ABCDEFGHIJKLMNOPQRSTU",
-            "haz_spat_URL": "ABCDEFGHI",
-            "haz_spat_srcorg": "ABCDEFGHIJK"
+      "spatial": {
+        "ID_linkage": [
+          {
+            "haz_spat_ID": "EC-JRC-GDACS-spat_polygon--spatresother",
+            "haz_spat_fileloc": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=FL&eventid=4315&episodeid=2"
           }
-        },
-        {
-          "ID_linkage": {
-            "haz_spat_ID": "ABCDEF",
-            "haz_spat_fileloc": "ABCDEFGHIJKLMNOPQRSTU",
-            "haz_spat_colname": ["ABCDEFGHIJKLMNOPQRSTUVWXYZABC", "ABCDEFGHIJKLMN", "ABCDEFGHIJKLM", "ABCDEFGHIJKLMNOPQRST"],
-            "haz_spat_rowname": []
-          },
-          "spatial_info": {
-            "haz_ISO3s": "FJZ",
-            "haz_spat_covcode": "polygons",
-            "haz_spat_fileread": "spatfstangeot",
-            "haz_spat_res": 0,
+        ],
+        "spatial_info": [
+          {
+            "haz_ISO3s": "PRY",
+            "haz_spat_covcode": "spat_polygon",
             "haz_spat_resunits": "spatresother",
-            "haz_spat_crs": "EPSG:3",
-            "haz_spat_unit": "unitsm_per_sec"
-          },
-          "source": {
-            "haz_spat_srcdb": "ABCDEFGHIJKLMNOPQRSTUV",
-            "haz_spat_URL": "ABCDEFGHIJKLMNOPQRST",
-            "haz_spat_srcorg": "ABCDE"
+            "haz_spat_fileread": "spatfstanshp",
+            "haz_spat_crs": "EPSG:4326"
           }
-        },
-        {
-          "ID_linkage": {
-            "haz_spat_ID": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
-            "haz_spat_fileloc": "ABCDEFGHIJKLMNOP",
-            "haz_spat_colname": ["ABCDEFGHIJKLMNOPQR", "ABCDEFGHIJKLMNOPQR", "ABCDEFGHIJKLMNOPQRSTUVWX"],
-            "haz_spat_rowname": ["ABCDEFGHIJKLMNOPQRSTUVWX", "ABCDEFGHIJKL", "ABCDEFG", "ABCDEFGHIJKLMNOPQRSTUVWXY", "ABCDEFGHIJKL"]
-          },
-          "spatial_info": {
-            "haz_ISO3s": "IXF",
-            "haz_spat_covcode": "polygons",
-            "haz_spat_fileread": "spatfstangeot",
-            "haz_spat_res": 0,
-            "haz_spat_resunits": "othershape",
-            "haz_spat_crs": "ESRI:9",
-            "haz_spat_unit": "unitISO4217C-AFN"
-          },
-          "source": {
-            "haz_spat_srcdb": "ABCDEFGHIJ",
-            "haz_spat_URL": "ABCDEFGHIJKLMNOPQRSTU",
-            "haz_spat_srcorg": "ABCDE"
+        ],
+        "source": [
+          {
+            "haz_spat_srcdb": "GDACS",
+            "haz_spat_URL": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=FL&eventid=4315&episodeid=2",
+            "haz_spat_srcorg": "EC-JRC"
           }
-        },
-        {
-          "ID_linkage": {
-            "haz_spat_ID": "ABCDEFGHIJK",
-            "haz_spat_fileloc": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
-            "haz_spat_colname": "ABCDEFGHIJKLMNOPQRSTUV",
-            "haz_spat_rowname": "ABCDEFGHIJKLMNOPQR"
-          },
-          "spatial_info": {
-            "haz_ISO3s": "WER",
-            "haz_spat_covcode": "points",
-            "haz_spat_fileread": "spatfstantiff",
-            "haz_spat_res": 0,
-            "haz_spat_resunits": "spatresunknown",
-            "haz_spat_crs": "ESRI:80",
-            "haz_spat_unit": "unitISO4217C-ANG"
-          },
-          "source": {
-            "haz_spat_srcdb": "ABCDEFGHIJKLMN",
-            "haz_spat_URL": "ABCDEFGHIJKLMNOPQRSTUVWXYZAB",
-            "haz_spat_srcorg": "ABCDEFGHIJKLM"
+        ]
+      }
+    },
+    {
+      "ID_linkage": {
+        "event_ID": "FL-2015-11-30-KEN-GCDB_V1",
+        "haz_sub_ID": "FL-2015-11-30-KEN-GCDB_V1-Dfo-hazhmflood-MH0004:MH0005:MH0006:MH0007:MH0008:MH0012-",
+        "haz_ext_IDs": [
+          [
+            {
+              "ext_ID": "0",
+              "ext_ID_db": "GLIDE",
+              "ext_ID_org": "ADRC"
+            }
+          ]
+        ]
+      },
+      "source": {
+        "haz_src_db": "GDACS",
+        "haz_src_URL": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=FL&eventid=4317&episodeid=2",
+        "haz_src_org": "DFO"
+      },
+      "hazard_detail": {
+        "haz_est_type": "esttype_second",
+        "all_hazs_Ab": "FL",
+        "all_hazs_spec": ["MH0004", "MH0005", "MH0006", "MH0007", "MH0008", "MH0012"],
+        "concur_haz": []
+      },
+      "temporal": {
+        "haz_sdate": "2015-11-30",
+        "haz_fdate": "2016-01-05"
+      },
+      "spatial": {
+        "ID_linkage": [
+          {
+            "haz_spat_ID": "EC-JRC-GDACS-spat_polygon--spatresother",
+            "haz_spat_fileloc": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=FL&eventid=4317&episodeid=2"
           }
-        },
-        {
-          "ID_linkage": {
-            "haz_spat_ID": "ABCDEFGHIJKL",
-            "haz_spat_fileloc": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
-            "haz_spat_colname": [],
-            "haz_spat_rowname": ["ABCDEFGH", "ABCDEFGHIJKLMNOPQRSTUVWX", "ABCDEFGHIJ", "ABCDEFGHIJKLMN", "ABCDEFGHI"]
-          },
-          "spatial_info": {
-            "haz_ISO3s": "KUG",
-            "haz_spat_covcode": "raster",
-            "haz_spat_fileread": "spatfstantiff",
-            "haz_spat_res": 0,
-            "haz_spat_resunits": "spatrespoints",
-            "haz_spat_crs": "ESRI:6",
-            "haz_spat_unit": "unitISO4217C-MYR"
-          },
-          "source": {
-            "haz_spat_srcdb": "ABCDEFGHIJKLMNO",
-            "haz_spat_URL": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-            "haz_spat_srcorg": "ABCDEFGH"
+        ],
+        "spatial_info": [
+          {
+            "haz_ISO3s": "KEN",
+            "haz_spat_covcode": "spat_polygon",
+            "haz_spat_resunits": "spatresother",
+            "haz_spat_fileread": "spatfstanshp",
+            "haz_spat_crs": "EPSG:4326"
           }
-        }
-      ]
+        ],
+        "source": [
+          {
+            "haz_spat_srcdb": "GDACS",
+            "haz_spat_URL": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=FL&eventid=4317&episodeid=2",
+            "haz_spat_srcorg": "EC-JRC"
+          }
+        ]
+      }
+    },
+    {
+      "ID_linkage": {
+        "event_ID": "EQ-2016-01-02-IND-GCDB_V1",
+        "haz_sub_ID": "EQ-2016-01-02-IND-GCDB_V1-Neic-hazgeoseis-GH0001:GH0002-",
+        "haz_ext_IDs": []
+      },
+      "source": {
+        "haz_src_db": "GDACS",
+        "haz_src_URL": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1077755&episodeid=1114155",
+        "haz_src_org": "NEIC"
+      },
+      "hazard_detail": {
+        "haz_est_type": "esttype_second",
+        "all_hazs_Ab": "EQ",
+        "all_hazs_spec": ["GH0001", "GH0002"],
+        "concur_haz": [],
+        "haz_maxvalue": 6.7,
+        "haz_maxunits": "unitsrichter"
+      },
+      "temporal": {
+        "haz_sdate": "2016-01-02",
+        "haz_fdate": "2016-01-02"
+      },
+      "spatial": {
+        "ID_linkage": [
+          {
+            "haz_spat_ID": "EC-JRC-GDACS-spat_polygon--spatresother",
+            "haz_spat_fileloc": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1077755&episodeid=1114155"
+          }
+        ],
+        "spatial_info": [
+          {
+            "haz_ISO3s": "IND",
+            "haz_spat_covcode": "spat_polygon",
+            "haz_spat_resunits": "spatresother",
+            "haz_spat_fileread": "spatfstanshp",
+            "haz_spat_crs": "EPSG:4326"
+          }
+        ],
+        "source": [
+          {
+            "haz_spat_srcdb": "GDACS",
+            "haz_spat_URL": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1077755&episodeid=1114155",
+            "haz_spat_srcorg": "EC-JRC"
+          }
+        ]
+      }
+    },
+    {
+      "ID_linkage": {
+        "event_ID": "TC-2016-02-09-FJI-GCDB_V1",
+        "haz_sub_ID": "TC-2016-02-09-FJI-GCDB_V1-Jtwc-hazhmwind-MH0057:MH0059-",
+        "haz_ext_IDs": []
+      },
+      "source": {
+        "haz_src_db": "GDACS",
+        "haz_src_URL": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=TC&eventid=1000252&episodeid=47",
+        "haz_src_org": "JTWC"
+      },
+      "hazard_detail": {
+        "haz_est_type": "esttype_second",
+        "all_hazs_Ab": "TC",
+        "all_hazs_spec": ["MH0057", "MH0059"],
+        "concur_haz": [],
+        "haz_maxvalue": 296.2944,
+        "haz_maxunits": "unitskph"
+      },
+      "temporal": {
+        "haz_sdate": "2016-02-09",
+        "haz_fdate": "2016-02-23"
+      },
+      "spatial": {
+        "ID_linkage": [
+          {
+            "haz_spat_ID": "EC-JRC-GDACS-spat_polygon--spatresother",
+            "haz_spat_fileloc": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=TC&eventid=1000252&episodeid=47"
+          }
+        ],
+        "spatial_info": [
+          {
+            "haz_ISO3s": "FJI",
+            "haz_spat_covcode": "spat_polygon",
+            "haz_spat_resunits": "spatresother",
+            "haz_spat_fileread": "spatfstanshp",
+            "haz_spat_crs": "EPSG:4326"
+          }
+        ],
+        "source": [
+          {
+            "haz_spat_srcdb": "GDACS",
+            "haz_spat_URL": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=TC&eventid=1000252&episodeid=47",
+            "haz_spat_srcorg": "EC-JRC"
+          }
+        ]
+      }
+    },
+    {
+      "ID_linkage": {
+        "event_ID": "FL-2016-03-11-PAK-GCDB_V1",
+        "haz_sub_ID": "FL-2016-03-11-PAK-GCDB_V1-Dfo-hazhmflood-MH0004:MH0005:MH0006:MH0007:MH0008:MH0012-",
+        "haz_ext_IDs": [
+          [
+            {
+              "ext_ID": "FL-2016-000021-PAK",
+              "ext_ID_db": "GLIDE",
+              "ext_ID_org": "ADRC"
+            }
+          ]
+        ]
+      },
+      "source": {
+        "haz_src_db": "GDACS",
+        "haz_src_URL": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=FL&eventid=4339&episodeid=3",
+        "haz_src_org": "DFO"
+      },
+      "hazard_detail": {
+        "haz_est_type": "esttype_second",
+        "all_hazs_Ab": "FL",
+        "all_hazs_spec": ["MH0004", "MH0005", "MH0006", "MH0007", "MH0008", "MH0012"],
+        "concur_haz": []
+      },
+      "temporal": {
+        "haz_sdate": "2016-03-11",
+        "haz_fdate": "2016-04-12"
+      },
+      "spatial": {
+        "ID_linkage": [
+          {
+            "haz_spat_ID": "EC-JRC-GDACS-spat_polygon--spatresother",
+            "haz_spat_fileloc": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=FL&eventid=4339&episodeid=3"
+          }
+        ],
+        "spatial_info": [
+          {
+            "haz_ISO3s": "PAK",
+            "haz_spat_covcode": "spat_polygon",
+            "haz_spat_resunits": "spatresother",
+            "haz_spat_fileread": "spatfstanshp",
+            "haz_spat_crs": "EPSG:4326"
+          }
+        ],
+        "source": [
+          {
+            "haz_spat_srcdb": "GDACS",
+            "haz_spat_URL": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=FL&eventid=4339&episodeid=3",
+            "haz_spat_srcorg": "EC-JRC"
+          }
+        ]
+      }
+    },
+    {
+      "ID_linkage": {
+        "event_ID": "EQ-2016-04-09-AFG-GCDB_V1",
+        "haz_sub_ID": "EQ-2016-04-09-AFG-GCDB_V1-Neic-hazgeoseis-GH0001:GH0002-",
+        "haz_ext_IDs": []
+      },
+      "source": {
+        "haz_src_db": "GDACS",
+        "haz_src_URL": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1084073&episodeid=1124774",
+        "haz_src_org": "NEIC"
+      },
+      "hazard_detail": {
+        "haz_est_type": "esttype_second",
+        "all_hazs_Ab": "EQ",
+        "all_hazs_spec": ["GH0001", "GH0002"],
+        "concur_haz": [],
+        "haz_maxvalue": 6.6,
+        "haz_maxunits": "unitsrichter"
+      },
+      "temporal": {
+        "haz_sdate": "2016-04-09",
+        "haz_fdate": "2016-04-09"
+      },
+      "spatial": {
+        "ID_linkage": [
+          {
+            "haz_spat_ID": "EC-JRC-GDACS-spat_polygon--spatresother",
+            "haz_spat_fileloc": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1084073&episodeid=1124774"
+          }
+        ],
+        "spatial_info": [
+          {
+            "haz_ISO3s": "AFG",
+            "haz_spat_covcode": "spat_polygon",
+            "haz_spat_resunits": "spatresother",
+            "haz_spat_fileread": "spatfstanshp",
+            "haz_spat_crs": "EPSG:4326"
+          }
+        ],
+        "source": [
+          {
+            "haz_spat_srcdb": "GDACS",
+            "haz_spat_URL": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=EQ&eventid=1084073&episodeid=1124774",
+            "haz_spat_srcorg": "EC-JRC"
+          }
+        ]
+      }
     }
   ],
-  "response_Data": [
-    {
-      "ID_linkage": {
-        "event_ID": "ABCDEFGHIJKLM",
-        "res_sub_ID": "ABCDEFGHIJKL",
-        "imp_sub_ID": "ABCDEFGH",
-        "haz_sub_ID": ["ABCDEFGHIJKLMNO", "ABCDEFGHIJKLMNOPQRSTUVWX", "ABCDEFGHIJKLMNOPQRS", "ABCD", "ABCDEFGHIJKLMNOPQ", "ABCDEFGHIJKLMNOPQRSTUVWXYZAB"]
-      }
-    },
-    {
-      "ID_linkage": {
-        "event_ID": "ABCDE",
-        "res_sub_ID": "ABCDEFGHIJ",
-        "imp_sub_ID": "ABCDEFGHIJKLMNOPQR",
-        "haz_sub_ID": ["ABCDEFGHIJKLMNO", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "ABCDEFGHIJKLMNOPQRSTU", "ABCDEFGHIJKLMNOPQRSTUV", "ABCDEFGHIJKLMN", "ABCDEFGHIJKLMNOPQRSTUVWXYZA", "ABCDEFGHIJKLMNOPQRSTUVWXYZAB"]
-      }
-    },
-    {
-      "ID_linkage": {
-        "event_ID": "ABCDEFGHIJ",
-        "res_sub_ID": "ABCDEF",
-        "imp_sub_ID": "ABCDEFGHIJKLM",
-        "haz_sub_ID": "ABCDEFGHIJKLMNOPQRSTUVWXY"
-      }
-    },
-    {
-      "ID_linkage": {
-        "event_ID": "ABCDEFGHIJKLM",
-        "res_sub_ID": "ABCDEFGHIJKLMNOPQR",
-        "imp_sub_ID": "ABCDEFGH",
-        "haz_sub_ID": []
-      }
-    }
-  ],
+  "response_Data": [],
   "taxonomies": {
     "ISO_info": [
       {
@@ -6059,72 +5864,91 @@
     ],
     "src_info": [
       {
-        "src_org_code": "ABCDEFGHIJKLMNOPQRS",
-        "src_org_lab": "ABCD",
-        "src_org_typecode": "orgtyperio",
-        "src_org_typelab": "Others",
-        "src_org_email": "ABCDEFGHIJKLMNOPQ",
-        "src_db_code": "ABCDEFGHIJKL",
-        "src_db_lab": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-        "src_db_attr": "ABCDEFGHIJKLMNOPQRSTUVWX",
-        "src_db_lic": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-        "src_db_URL": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
-        "src_addinfo": "ABCDEFGHIJKLMNOPQRSTUV"
-      },
-      {
-        "src_org_code": "ABCDEFGHIJKL",
-        "src_org_lab": "ABCDEFGHIJKLMNOPQRSTUVWX",
-        "src_org_typecode": "orgtypegov",
-        "src_org_typelab": "Regional Intergovernmental Organisation",
-        "src_org_email": "ABCDE",
-        "src_db_code": "ABCDEFGHIJKLMNOPQRS",
-        "src_db_lab": "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
-        "src_db_attr": "ABCDEFGHIJKLMNOP",
-        "src_db_lic": "ABCDEFGHIJKLMNOPQRSTUV",
-        "src_db_URL": "ABCD",
-        "src_addinfo": "ABCDEFGHIJKLMNOPQR"
-      },
-      {
-        "src_org_code": "ABCDEFGHIJKLMNOPQRSTUVW",
-        "src_org_lab": "ABCDEFGHIJKLMNOPQR",
-        "src_org_typecode": "orgtypeun",
-        "src_org_typelab": "Private Sector",
-        "src_org_email": "ABCD",
-        "src_db_code": "ABCDEFGHIJKLMNOPQRSTUVWX",
-        "src_db_lab": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC",
-        "src_db_attr": "ABCDEFGHIJKLMNOPQ",
-        "src_db_lic": "ABCD",
-        "src_db_URL": "ABCDEFGHIJKLMNOPQR",
-        "src_addinfo": "ABCDEFGHIJKLM"
-      },
-      {
-        "src_org_code": "ABCDEFGHIJKLM",
-        "src_org_lab": "ABCDEFGHIJKLM",
+        "src_org_code": "IFRC",
+        "src_org_lab": "International Federation of Red Cross and Red Crescent Societies (IFRC)",
         "src_org_typecode": "orgtypengo",
-        "src_org_typelab": "News & Media",
-        "src_org_email": "ABCDEFGHIJKLMNOPQ",
-        "src_db_code": "ABCDEFGHIJKLMNOPQRS",
-        "src_db_lab": "ABCDEFGHIJKLMNOPQRSTUVWXY",
-        "src_db_attr": "ABCDEFGHIJKLM",
-        "src_db_lic": "ABCDEFGHIJKLM",
-        "src_db_URL": "ABCDEFGH",
-        "src_addinfo": "ABCDEFGHIJKLMNOPQRSTUVWXYZABC"
+        "src_org_typelab": "Non Governmental Organisation",
+        "src_org_email": "im@ifrc.org",
+        "src_db_code": "Emergency Appeal",
+        "src_db_lab": "IFRC Emergency Appeals Database",
+        "src_db_attr": "custodian",
+        "src_db_lic": "Creative Commons Attribution 3.0 International License",
+        "src_db_URL": "https://goadmin.ifrc.org/api/v2/appeal",
+        "src_addinfo": ""
       },
       {
-        "src_org_code": "ABCDEFGHIJKLMNOPQRSTUVW",
-        "src_org_lab": "ABCDEFGHIJKLMN",
-        "src_org_typecode": "orgtypenews",
-        "src_org_typelab": "Academic & Scientific",
-        "src_org_email": "ABCDEFGHIJKLMN",
-        "src_db_code": "ABCDEFGHIJKLM",
-        "src_db_lab": "ABCDEFGHIJK",
-        "src_db_attr": "ABCDEFGHIJK",
-        "src_db_lic": "ABCDEFGHIJKLMN",
-        "src_db_URL": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-        "src_addinfo": "ABCDEFGHIJKLMNOPQRSTUVWXY"
+        "src_org_code": "IFRC",
+        "src_org_lab": "International Federation of Red Cross and Red Crescent Societies (IFRC)",
+        "src_org_typecode": "orgtypengo",
+        "src_org_typelab": "Non Governmental Organisation",
+        "src_org_email": "im@ifrc.org",
+        "src_db_code": "DREF",
+        "src_db_lab": "IFRC Emergency Appeals Database",
+        "src_db_attr": "custodian",
+        "src_db_lic": "Creative Commons Attribution 3.0 International License",
+        "src_db_URL": "https://goadmin.ifrc.org/api/v2/appeal",
+        "src_addinfo": ""
+      },
+      {
+        "src_org_code": "IFRC",
+        "src_org_lab": "International Federation of Red Cross and Red Crescent Societies (IFRC)",
+        "src_org_typecode": "orgtypengo",
+        "src_org_typelab": "Non Governmental Organisation",
+        "src_org_email": "im@ifrc.org",
+        "src_db_code": "Forecast Based Action",
+        "src_db_lab": "IFRC Emergency Appeals Database",
+        "src_db_attr": "custodian",
+        "src_db_lic": "Creative Commons Attribution 3.0 International License",
+        "src_db_URL": "https://goadmin.ifrc.org/api/v2/appeal",
+        "src_addinfo": ""
+      },
+      {
+        "src_org_code": "IFRC",
+        "src_org_lab": "International Federation of Red Cross and Red Crescent Societies (IFRC)",
+        "src_org_typecode": "orgtypengo",
+        "src_org_typelab": "Non Governmental Organisation",
+        "src_org_email": "im@ifrc.org",
+        "src_db_code": "GO-Maps",
+        "src_db_lab": "IFRC-GO ADM-0 Maps",
+        "src_db_attr": "custodian",
+        "src_db_lic": "Creative Commons Attribution 3.0 International License",
+        "src_db_URL": "https://go-user-library.ifrc.org/maps",
+        "src_addinfo": ""
+      },
+      {
+        "src_org_code": "EC-JRC",
+        "src_org_lab": "European Commission - Joint Research Center",
+        "src_org_typecode": "orgtyperio",
+        "src_org_typelab": "Regional Intergovernmental Organisation",
+        "src_org_email": "coordination@gdacs.org",
+        "src_db_code": "GDACS",
+        "src_db_lab": "Global Disaster Alert and Coordination System (GDACS)",
+        "src_db_attr": "mediator",
+        "src_db_lic": "unknown",
+        "src_db_URL": "www.gdacs.org",
+        "src_addinfo": ""
+      },
+      {
+        "src_org_code": "IFRC",
+        "src_org_lab": "International Federation of Red Cross and Red Crescent Societies (IFRC)",
+        "src_org_typecode": "orgtypengo",
+        "src_org_typelab": "Non Governmental Organisation",
+        "src_org_email": "im@ifrc.org",
+        "src_db_code": "GO-Maps",
+        "src_db_lab": "IFRC-GO ADM-0 Maps",
+        "src_db_attr": "custodian",
+        "src_db_lic": "Creative Commons Attribution 3.0 International License",
+        "src_db_URL": "https://go-user-library.ifrc.org/maps",
+        "src_addinfo": ""
       }
     ],
     "units_info": [
+      {
+        "unit_codes": "unitsna",
+        "units_lab": "Unitless",
+        "unit_groups_code": "unitsgrpunknown",
+        "unit_groups_lab": "Unknown Group"
+      },
       {
         "unit_codes": "unitsunknown",
         "units_lab": "Unknown",
