@@ -103,20 +103,13 @@ nummies<-c("losses_in_dollar", "losses_local_currency",
            "damages_in_crops_ha", "damages_in_roads_mts")
 
 ExtImpDev<-function(xmlly){
-  impacts<-do.call(rbind,lapply(seq_along(xmlly$DESINVENTAR$fichas),
-                       function(i) {
-                         tmp<-t(as.data.frame(unlist(xmlly$DESINVENTAR$fichas[[i]][names(DesCols)])))
-                         rownames(tmp)<-NULL
-                         missies<-names(DesCols)[!names(DesCols)%in%colnames(tmp)]
-                         if(!is.null(missies)) {
-                           filler<-as.data.frame(matrix(NA,1,length(missies)))
-                           colnames(filler)<-missies
-                           tmp%<>%cbind(filler)
-                         }
-                         tmp%<>%dplyr::select(names(DesCols))
-                         colnames(tmp)<-unname(DesCols)
-                         return(tmp)
-                       })) %>% distinct()
+  # Extract all the impact estimate tabular information
+  impacts<-do.call(dplyr::bind_rows,lapply(seq_along(xmlly$DESINVENTAR$fichas),function(i){
+    return(as.data.frame(t(as.data.frame(unlist(xmlly$DESINVENTAR$fichas[[i]])))))
+  })) %>% distinct(); rownames(impacts)<-NULL
+  
+  stop("ExtImpDev - need to rename the columns from the country xml file")
+  
   # Create one single data column, as a character
   impacts$date<-sapply(1:nrow(impacts),function(i) 
     as.character(as.Date(ISOdate(year = impacts$year[i],
@@ -372,6 +365,12 @@ ChangeVarType<-function(ADMout){
 ExtADMDev<-function(xmlly,iso3){
   iso3%<>%str_to_lower()
   # Extract the regions used for the mapping by the database
+  regions<-do.call(dplyr::bind_rows,lapply(seq_along(xmlly$DESINVENTAR$regiones),function(i){
+    return(as.data.frame(t(as.data.frame(unlist(xmlly$DESINVENTAR$regiones[[i]])))))
+  })) %>% distinct(); rownames(regions)<-NULL
+  
+  stop("ExtADMDev not ready to extract all of the variables from the spatial data")
+  
   regions<-do.call(rbind,lapply(seq_along(xmlly$DESINVENTAR$regiones),
                                 function(i) {
                                   tmp<-t(as.data.frame(unlist(xmlly$DESINVENTAR$regiones[[i]][names(RegCols)])))
@@ -827,11 +826,55 @@ convDessie_Monty<-function(){
 
 
 
+# 
+# DesIsos<-list.dirs("./RawData/MostlyImpactData/Desinventar/",recursive = F,full.names = F)
+# 
+# impies<-parallel::mclapply(mc.cores = 10, DesIsos, function(iso3) {
+# 
+#   chk<-GetDessie(iso3,T)
+# 
+#   xmlly<-xml2::as_list(xml2::read_xml(paste0("./RawData/MostlyImpactData/Desinventar/",iso3,"/DI_export_",iso3,".xml")))
+# 
+#   impacts<-do.call(dplyr::bind_rows,lapply(seq_along(xmlly$DESINVENTAR$fichas),function(i){
+#     return(as.data.frame(t(as.data.frame(unlist(xmlly$DESINVENTAR$fichas[[i]])))))
+#   })) %>% distinct(); rownames(impacts)<-NULL
+# 
+#   return(impacts)
+# })
 
 
 
-
-
+# DesIsos<-list.dirs("./RawData/MostlyImpactData/Desinventar/",recursive = F,full.names = F)
+# 
+# desADM<-parallel::mclapply(mc.cores = 10, Des, function(iso3) {
+# 
+#   chk<-GetDessie(iso3,T)
+# 
+#   xmlly<-xml2::as_list(xml2::read_xml(paste0("./RawData/MostlyImpactData/Desinventar/",iso3,"/DI_export_",iso3,".xml")))
+# 
+#   regions<-do.call(dplyr::bind_rows,lapply(seq_along(xmlly$DESINVENTAR$regiones),function(i){
+#     return(as.data.frame(t(as.data.frame(unlist(xmlly$DESINVENTAR$regiones[[i]])))))
+#   })) %>% distinct(); rownames(regions)<-NULL
+# 
+#   maps<-do.call(dplyr::bind_rows,lapply(seq_along(xmlly$DESINVENTAR$level_maps),function(i){
+#     return(as.data.frame(t(as.data.frame(unlist(xmlly$DESINVENTAR$level_maps[[i]])))))
+#   })) %>% distinct(); rownames(maps)<-NULL
+#   # Remove any NAs
+#   maps%<>%filter(!is.na(filename))
+#   # Extract the spatial data
+#   mapsout<-lapply(1:nrow(maps),function(j){
+#     # Extract the file name of the shapefile for the admin boundaries
+#     loccy<-str_split(maps$filename[j],"/",simplify = T); loccy<-loccy[length(loccy)]
+#     # Adminboundary read-in
+#     sf::st_read(paste0("./RawData/MostlyImpactData/Desinventar/",iso3,"/",loccy),quiet=T)%>%as.data.frame()%>%dplyr::select(-geometry)
+#   })
+#   tmp<-tryCatch(do.call(dplyr::bind_rows,mapsout),error=function(e) NA)
+#   if(!is.na(tmp)) {mapsout<-tmp; rm(tmp)}
+# 
+#   saveRDS(list(regions=regions,mapsout=mapsout),paste0("./RawData/MostlyImpactData/Desinventar/Maps/",iso3,"_regionmaps.RData"))
+# 
+#   return(T)
+# })
 
 
 # tmp<-Dessie[nrow(Dessie):1,]%>%filter(imp_value>0)
