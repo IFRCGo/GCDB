@@ -91,12 +91,10 @@ col_tabGCDB<-c("event_ID"="character", # GCDB event ID
                "imp_spat_colIDs"="character",
                "imp_spat_rowIDs"="character",
                "imp_spat_fileloc"="character",
-               "imp_spat_fileread"="character",
                "imp_spat_URL"="character",
                # Spatial info - hazard
                "haz_spat_ID"="character", # ID of the spatial object
                "haz_spat_covcode"="character", # Spatial object type
-               "haz_spat_fileread"="character",
                "haz_spat_res"="character", # Spatial resolution of impact estimate
                "haz_spat_resunits"="character", # Spatial resolution units of impact estimate (e.g. ADM level, raster grid)
                "haz_spat_crs"="character",

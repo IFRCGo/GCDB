@@ -317,7 +317,6 @@
             "imp_spat_covcode": "spat_polygon",
             "imp_spat_res": 0,
             "imp_spat_resunits": "adminlevel",
-            "imp_spat_fileread": "spatfstanshp",
             "imp_spat_crs": "EPSG:4326"
           }
         ],
@@ -380,7 +379,6 @@
             "imp_spat_covcode": "spat_polygon",
             "imp_spat_res": 0,
             "imp_spat_resunits": "adminlevel",
-            "imp_spat_fileread": "spatfstanshp",
             "imp_spat_crs": "EPSG:4326"
           }
         ],
@@ -438,7 +436,6 @@
             "imp_spat_covcode": "spat_polygon",
             "imp_spat_res": 0,
             "imp_spat_resunits": "adminlevel",
-            "imp_spat_fileread": "spatfstanshp",
             "imp_spat_crs": "EPSG:4326"
           }
         ],
@@ -496,7 +493,6 @@
             "imp_spat_covcode": "spat_polygon",
             "imp_spat_res": 0,
             "imp_spat_resunits": "adminlevel",
-            "imp_spat_fileread": "spatfstanshp",
             "imp_spat_crs": "EPSG:4326"
           }
         ],
@@ -559,7 +555,6 @@
             "imp_spat_covcode": "spat_polygon",
             "imp_spat_res": 0,
             "imp_spat_resunits": "adminlevel",
-            "imp_spat_fileread": "spatfstanshp",
             "imp_spat_crs": "EPSG:4326"
           }
         ],
@@ -617,7 +612,6 @@
             "imp_spat_covcode": "spat_polygon",
             "imp_spat_res": 0,
             "imp_spat_resunits": "adminlevel",
-            "imp_spat_fileread": "spatfstanshp",
             "imp_spat_crs": "EPSG:4326"
           }
         ],
@@ -673,7 +667,6 @@
             "haz_ISO3s": "PRY",
             "haz_spat_covcode": "spat_polygon",
             "haz_spat_resunits": "spatresother",
-            "haz_spat_fileread": "spatfstanshp",
             "haz_spat_crs": "EPSG:4326"
           }
         ],
@@ -727,7 +720,6 @@
             "haz_ISO3s": "KEN",
             "haz_spat_covcode": "spat_polygon",
             "haz_spat_resunits": "spatresother",
-            "haz_spat_fileread": "spatfstanshp",
             "haz_spat_crs": "EPSG:4326"
           }
         ],
@@ -775,7 +767,6 @@
             "haz_ISO3s": "IND",
             "haz_spat_covcode": "spat_polygon",
             "haz_spat_resunits": "spatresother",
-            "haz_spat_fileread": "spatfstanshp",
             "haz_spat_crs": "EPSG:4326"
           }
         ],
@@ -823,7 +814,6 @@
             "haz_ISO3s": "FJI",
             "haz_spat_covcode": "spat_polygon",
             "haz_spat_resunits": "spatresother",
-            "haz_spat_fileread": "spatfstanshp",
             "haz_spat_crs": "EPSG:4326"
           }
         ],
@@ -877,7 +867,6 @@
             "haz_ISO3s": "PAK",
             "haz_spat_covcode": "spat_polygon",
             "haz_spat_resunits": "spatresother",
-            "haz_spat_fileread": "spatfstanshp",
             "haz_spat_crs": "EPSG:4326"
           }
         ],
@@ -925,7 +914,6 @@
             "haz_ISO3s": "AFG",
             "haz_spat_covcode": "spat_polygon",
             "haz_spat_resunits": "spatresother",
-            "haz_spat_fileread": "spatfstanshp",
             "haz_spat_crs": "EPSG:4326"
           }
         ],

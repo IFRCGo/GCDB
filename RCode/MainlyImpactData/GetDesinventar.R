@@ -636,7 +636,6 @@ Des2tabGCDB<-function(Dessie){
     imp_spat_covcode="spat_polygon",
     imp_spat_res=0,
     imp_spat_resunits="adminlevel",
-    imp_spat_fileread="spatfstanshp",
     imp_spat_crs="EPSG:4326")
   # Admin level resolution
   Dessie$imp_spat_res[!is.na(Dessie$level1)]<-1; Dessie$imp_spat_res[!is.na(Dessie$level2)]<-2
@@ -720,7 +719,7 @@ convDessie_Monty<-function(){
   # Add temporal information
   temporal<-Dessie%>%dplyr::select(imp_sdate,imp_fdate)
   # Spatial data relevant to the impact estimates
-  # multiple-entry rows: imp_spat_rowname,imp_spat_colname,imp_ISO3s,imp_spat_res,imp_spat_fileread
+  # multiple-entry rows: imp_spat_rowname,imp_spat_colname,imp_ISO3s,imp_spat_res
   spatial<-Add_ImpSpatAll_Monty(
     ID_linkage=data.frame(
       imp_sub_ID=Dessie$imp_sub_ID,
@@ -734,7 +733,6 @@ convDessie_Monty<-function(){
       imp_spat_covcode,
       imp_spat_res,
       imp_spat_resunits,
-      imp_spat_fileread,
       imp_spat_crs
     ),
     source=Dessie%>%dplyr::select(

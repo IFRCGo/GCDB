@@ -117,7 +117,6 @@ CleanGO_app<-function(appeal){
                    imp_spat_covcode="spat_polygon",
                    imp_spat_res=0,
                    imp_spat_resunits="adminlevel",
-                   imp_spat_fileread="spatfstanshp",
                    imp_spat_crs="EPSG:4326",
                    imp_spat_srcorg="IFRC",
                    imp_spat_srcdb="GO-Maps",
@@ -192,7 +191,6 @@ CleanGO_field<-function(fieldr){
                    imp_spat_covcode="spat_polygon",
                    imp_spat_res=0,
                    imp_spat_resunits="adminlevel",
-                   imp_spat_fileread="spatfstanshp",
                    imp_spat_crs="EPSG:4326",
                    imp_spat_srcorg="IFRC",
                    imp_spat_srcdb="GO-Maps",
@@ -304,7 +302,7 @@ convGOApp_Monty<-function(){
   # Add temporal information
   temporal<-appeal%>%distinct(imp_sub_ID,.keep_all = T)%>%dplyr::select(imp_sdate,imp_fdate)
   # Spatial data relevant to the impact estimates
-  # multiple-entry rows: imp_spat_rowname,imp_spat_colname,imp_ISO3s,imp_spat_res,imp_spat_fileread
+  # multiple-entry rows: imp_spat_rowname,imp_spat_colname,imp_ISO3s,imp_spat_res
   spatial<-Add_ImpSpatAll_Monty(
     ID_linkage=data.frame(
       imp_sub_ID=appeal$imp_sub_ID,
@@ -318,7 +316,6 @@ convGOApp_Monty<-function(){
       imp_spat_covcode,
       imp_spat_res,
       imp_spat_resunits,
-      imp_spat_fileread,
       imp_spat_crs
     ),
     source=appeal%>%dplyr::select(

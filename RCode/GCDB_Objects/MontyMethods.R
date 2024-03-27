@@ -221,7 +221,7 @@ Add_ImpSpatID_Monty<-function(dframe){
 }
 
 Add_ImpSpatAll_Monty<-function(ID_linkage,spatial_info,source){
-  # multiple-entry rows: imp_spat_rowname,imp_spat_colname,imp_ISO3s,imp_spat_res,imp_spat_fileread
+  # multiple-entry rows: imp_spat_rowname,imp_spat_colname,imp_ISO3s,imp_spat_res
   lapply(unique(ID_linkage$imp_sub_ID),function(ID){
     # Set out only the entries that we need
     indy<-ID_linkage$imp_sub_ID==ID
@@ -236,7 +236,7 @@ Add_ImpSpatAll_Monty<-function(ID_linkage,spatial_info,source){
     output$ID_linkage<-minout
     output$spatial_info<-spatial_info%>%filter(indy)%>%dplyr::select(
                        imp_ISO3s,imp_spat_covcode,imp_spat_res,imp_spat_resunits,
-                       imp_spat_fileread,imp_spat_crs)
+                       imp_spat_crs)
     output$source<-source%>%filter(indy)
     return(output)
   })
@@ -264,7 +264,7 @@ Add_hazIDlink_Monty<-function(dframe){
 
 
 Add_hazSpatAll_Monty<-function(ID_linkage,spatial_info,source){
-  # multiple-entry rows: haz_spat_rowname,haz_spat_colname,haz_ISO3s,haz_spat_res,haz_spat_fileread
+  # multiple-entry rows: haz_spat_rowname,haz_spat_colname,haz_ISO3s,haz_spat_res
   lapply(ID_linkage$haz_sub_ID,function(ID){
     # Set out only the entries that we need
     indy<-ID_linkage$haz_sub_ID==ID
@@ -279,7 +279,7 @@ Add_hazSpatAll_Monty<-function(ID_linkage,spatial_info,source){
     output$ID_linkage<-minout
     output$spatial_info<-spatial_info%>%filter(indy)%>%dplyr::select(
       haz_ISO3s,haz_spat_covcode,haz_spat_res,haz_spat_resunits,
-      haz_spat_fileread,haz_spat_crs)
+      haz_spat_crs)
     output$source<-source%>%filter(indy)
     return(output)
   })

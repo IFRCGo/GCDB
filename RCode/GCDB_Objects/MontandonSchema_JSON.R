@@ -3,18 +3,6 @@ source("./RCode/Setup/GetPackages.R")
 # https://json-schema.org/learn/glossary
 # Get the RDLS JSON schema
 RDLS<-jsonlite::fromJSON("https://docs.riskdatalibrary.org/en/0__2__0/rdls_schema.json")
-
-
-
-
-
-stop("change _fileread to _format, check _spat_fileloc and _spat_URL")
-stop("Add the resunits to the Monty taxonomies")
-
-
-
-
-
 # Get the taxonomy data
 taxies<-openxlsx::read.xlsx("./ImpactInformationProfiles.xlsx")
 # Country codes and associated regions
@@ -1121,20 +1109,22 @@ Monty$`$defs`$SpatialImpact_obj=list(
           minItems=1,
           uniqueItems=TRUE
         ),
+        imp_lon=list(
+          title="Impact Longitude Coordinate",
+          description="Longitudinal value of the impact estimate",
+          type="number"
+        ),
+        imp_lat=list(
+          title="Impact Latitude Coordinate",
+          description="Latitude value of the impact estimate",
+          type="number"
+        ),
         imp_spat_covcode=list(
           title="Impact Spatial Data Type",
           description="The spatial data type of a given spatial dataset. For example, spatial polygon data which is of administrative boundaries and at admin-level 2. You would enter 'adminlevel' here, which is the correct coded name for administrative boundary spatial data.",
           type="string",
           openCodelist=FALSE,
           enum=spatial_coverage$spat_cov_code
-        ),
-        imp_spat_fileread=list(
-          title="File Type and Software",
-          description="Information on the specific spatial data file format, including providing an understanding of which specific software should be used to read the files.",
-          type="string",
-          codelist="ImpactInformationProfiles.csv",
-          openCodelist=TRUE,
-          enum=taxies%>%filter(list_name=="spatfilesoft")%>%pull(name)%>%unique()%>%na.omit()
         ),
         imp_spat_res=list(
           title="Impact Spatial Resolution Value",
@@ -1240,20 +1230,22 @@ Monty$`$defs`$SpatialHazard_obj=list(
           minItems=1,
           uniqueItems=TRUE
         ),
+        haz_lon=list(
+          title="Hazard Longitude Coordinate",
+          description="Longitudinal value of the hazard estimate",
+          type="number"
+        ),
+        haz_lat=list(
+          title="Hazard Latitude Coordinate",
+          description="Latitude value of the hazard estimate",
+          type="number"
+        ),
         haz_spat_covcode=list(
           title="Hazard Spatial Data Type",
           description="The spatial data type of a given spatial dataset.",
           type="string",
           openCodelist=FALSE,
           enum=list("raster","points","lines","polygons")
-        ),
-        haz_spat_fileread=list(
-          title="File Type and Software",
-          description="Information on the specific spatial data file format, including providing an understanding of which specific software should be used to read the files.",
-          type="string",
-          codelist="ImpactInformationProfiles.csv",
-          openCodelist=TRUE,
-          enum=taxies%>%filter(list_name=="spatfilesoft")%>%pull(name)%>%unique()%>%na.omit()
         ),
         haz_spat_res=list(
           title="Hazard Spatial Resolution Value",
@@ -1281,7 +1273,7 @@ Monty$`$defs`$SpatialHazard_obj=list(
           `$ref`="#/$defs/MeasUnits_obj"
         )
       ),
-      required=list("haz_ISO3s","haz_spat_covcode","haz_spat_fileread","haz_spat_res","haz_spat_resunits")
+      required=list("haz_ISO3s","haz_spat_covcode","haz_spat_res","haz_spat_resunits")
     ),
     source=list(
       title="Source Information of Hazard Spatial Data",
@@ -1352,7 +1344,6 @@ Monty$`$defs`$ISO3_obj=list(
 
 #@@@@@@@@@@@@@@@@@ External Event ID @@@@@@@@@@@@@@@@@@#
 Monty$`$defs`$ExtIDs_obj=list(
-  allOf=list("Ext_IDs"),
   title="External ID Codes",
   description="Any IDs, such as the GLIDE number ID, that are linked to this specific event",
   type="object",
@@ -1389,28 +1380,12 @@ Monty$`$defs`$MeasUnits_obj=list(
   openCodelist=FALSE,
   enum=units_info$unit_codes
 )
-#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#
-#@@@@@@@@@@@@@@@@@@@ CONVERT TO JSON @@@@@@@@@@@@@@@@@@#
-#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#
-Monty_JSONtext<-jsonlite::toJSON(Monty,pretty = F,auto_unbox=T)
-
-#@@@@@@@@@@@@@@@ CONSTRAINED TAXONOMIES @@@@@@@@@@@@@@@#
-### Constrain the GLIDE numbers ###
-Monty_JSONtext<-str_replace_all(str_trim(Monty_JSONtext),
-                                '\"allOf\":\\[\"Ext_IDs\"\\]', 
-                                '"allOf": [{"if":{"properties": {"ext_ID_db": { "const": "GLIDE" }}},"then": {"properties": {"Ext_ID": { "type": "string", "pattern": "^[A-Z]{2}-\\d{4}-\\d{6}-[A-Z]{3}$", "uniqueItems": true }}}}]')
-#@@@@@@@@@@@@@@ UNCONSTRAINED TAXONOMIES @@@@@@@@@@@@@@#
-Monty$`$defs`$ExtIDs_obj<-
-  Monty$`$defs`$ExtIDs_obj[2:length(Monty$`$defs`$ExtIDs_obj)]
 
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#
 #@@@@@@@@@@@@@@@@@@@@ SAVE OUT JSON @@@@@@@@@@@@@@@@@@@#
-#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#
-# Constrained version
-write(Monty_JSONtext,"./Taxonomies/Montandon_Schema_V1-00.json")
-# Unconstrained version
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#)
 write(jsonlite::toJSON(Monty,pretty = T,auto_unbox=T),
-      "./Taxonomies/Montandon_Schema_V1-00_unconstrained.json")
+      "./Taxonomies/Montandon_Schema_V1-00.json")
 
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#
 #@@@@@@@@@@@@@@@@@@ GENERATE EXAMPLE @@@@@@@@@@@@@@@@@@#
@@ -1445,6 +1420,5 @@ write(jsonlite::toJSON(ex_Monty,pretty = T,auto_unbox=T),
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 # Provided an example of the JSON metadata, we can test to see whether it is valid or not
 # jsonvalidate::json_validator(example, Monty)
-stop("Add longitude and latitude point of event")
 
 

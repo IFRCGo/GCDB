@@ -388,7 +388,6 @@ CleanEMDAT_old<-function(EMDAT){
   imp_spat_URL="https://owncloud.unepgrid.ch/index.php/s/Rh2hDmXY84VUrPb",
   imp_spat_res=0,
   imp_spat_resunits="adminlevel",
-  imp_spat_fileread="spatfstanshp",
   imp_spat_crs="EPSG:4326")
   # Admin level resolution
   EMDAT$imp_spat_res[!is.na(EMDAT$Admin1.Code)]<-1; EMDAT$imp_spat_res[!is.na(EMDAT$Admin2.Code)]<-2

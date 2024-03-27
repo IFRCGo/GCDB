@@ -220,7 +220,7 @@ convGLIDE_Monty<-function(){
   # Add temporal information
   temporal<-GLIDE%>%dplyr::select(imp_sdate,imp_fdate)
   # Spatial data relevant to the impact estimates
-  # multiple-entry rows: imp_spat_rowname,imp_spat_colname,imp_ISO3s,imp_spat_res,imp_spat_fileread
+  # multiple-entry rows: imp_spat_rowname,imp_spat_colname,imp_ISO3s,imp_spat_res
   spatial<-Add_ImpSpatAll_Monty(
     ID_linkage=data.frame(
       imp_sub_ID=GLIDE$imp_sub_ID,
@@ -234,7 +234,6 @@ convGLIDE_Monty<-function(){
       imp_spat_covcode,
       imp_spat_res,
       imp_spat_resunits,
-      imp_spat_fileread,
       imp_spat_crs
     ),
     source=GLIDE%>%dplyr::select(
@@ -330,7 +329,6 @@ convGLIDE_Monty<-function(){
       haz_spat_covcode,
       haz_spat_res,
       haz_spat_resunits,
-      haz_spat_fileread,
       haz_spat_crs
     ),
     source=GLIDE%>%dplyr::select(
