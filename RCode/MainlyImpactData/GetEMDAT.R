@@ -22,7 +22,7 @@ PairEMDATspatial<-function(EMDAT,haz="EQ",GAULexist=F){
   write_csv(outer,paste0("./CleanedData/SocioPoliticalData/EMDAT/fully_complete_",haz,".csv"))
   
   EMDAT$imp_spat_ID<-checkers$ID
-  EMDAT$imp_spat_covcode<-"polygon"
+  EMDAT$imp_spat_covcode<-"spat_polygon"
   EMDAT$spat_orig<-"GAUL"
   
   # If some spatial objects aren't found, try accessing ADM level 1
@@ -234,8 +234,6 @@ CleanEMDAT_API<-function(EMDAT){
   EMDAT$event_ID<-GetMonty_ID(EMDAT)
   # Melt the columns and apply the impact categorisation
   EMDAT%<>%ImpLabs(nomDB = "EM-DAT")
-  # Now get rid of the extra columns of data
-  EMDAT%<>%dplyr::select(-which(!colnames(EMDAT)%in%names(col_tabGCDB)))
   # Create an impact-specific ID
   EMDAT%<>%GetGCDB_impID()
   # Make sure to remove all NA impact estimates

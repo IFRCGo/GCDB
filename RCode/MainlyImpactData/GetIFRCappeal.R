@@ -139,6 +139,10 @@ CleanGO_app<-function(appeal){
   appeal%<>%mutate(aid=as.integer(aid))%>%arrange(desc(aid))%>%
     filter(!duplicated(imp_sub_ID))%>%arrange(aid)
   
+  appeal$imp_src_db[appeal$imp_src_db=="Emergency Appeal"]<-"GO-EA"
+  appeal$imp_src_db[appeal$imp_src_db=="DREF"]<-"GO-DREF"
+  appeal$imp_src_db[appeal$imp_src_db=="Forecast Based Action"]<-"GO-FBA"
+  
   return(appeal)
   
 }
@@ -317,7 +321,7 @@ convGOApp_Monty<-function(){
       imp_spat_res,
       imp_spat_resunits,
       imp_spat_crs
-    ),
+    )%>%mutate(imp_lon=NA_real_,imp_lat=NA_real_),
     source=appeal%>%dplyr::select(
       imp_spat_srcdb,
       imp_spat_URL,
@@ -374,26 +378,8 @@ convGOApp_Monty<-function(){
   #@@@@@ Response-level data @@@@@#
   # Nothing to put here as we haven't linked any response data yet
   appMonty$response_Data<-list()
-  
   #@@@@@ Source Data In Taxonomy Field @@@@@#
-  appMonty$taxonomies$src_info<-data.frame(
-    src_org_code="IFRC",
-    src_org_lab="International Federation of Red Cross and Red Crescent Societies (IFRC)",
-    src_org_typecode="orgtypengo",
-    src_org_typelab="Non Governmental Organisation",
-    src_org_email="im@ifrc.org",
-    src_db_code=unique(appeal$imp_src_db),
-    src_db_lab="IFRC Emergency Appeals Database",
-    src_db_attr="custodian",
-    src_db_lic="Creative Commons Attribution 3.0 International License",
-    src_db_URL="https://goadmin.ifrc.org/api/v2/appeal",
-    src_addinfo=""
-  )
-  # Add the source info for the spatial data too!
-  appMonty$taxonomies$src_info%<>%rbind(appMonty$taxonomies$src_info%>%
-    mutate(src_db_code="GO-Maps",
-           src_db_lab="IFRC-GO ADM-0 Maps",
-           src_db_URL="https://go-user-library.ifrc.org/maps"))%>%distinct()
+  appMonty$taxonomies$src_info<-readxl::read_xlsx("./Taxonomies/Monty_DataSources.xlsx")%>%distinct()
   
   if(!dir.exists("./CleanedData/MostlyImpactData/IFRC/")) dir.create("./CleanedData/MostlyImpactData/IFRC/")
   # Write it out just for keep-sake

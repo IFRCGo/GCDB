@@ -111,10 +111,10 @@ Add_EvSpat_Monty<-function(dframe){
       reframe(event_ID=ID,gen_location=paste0('\"',unique(gen_location),collapse = '\",\"','\"'))
   }))
   # and the ISO3C codes
-  output$ev_ISO3s<-lapply(output$event_ID,function(ID){
+  output$ev_ISO3s<-I(lapply(output$event_ID,function(ID){
     # return the ISO3C codes in a list
     unique(dframe$ev_ISO3s[dframe$event_ID==ID])
-  })
+  }))
   # Gimme gimme gimme
   return(output%>%dplyr::select(-event_ID))
 }
@@ -165,9 +165,9 @@ Add_HazTax_Monty<-function(dframe){
   output<-dframe%>%dplyr::select(event_ID,haz_maxvalue,haz_maxunits,haz_est_type,haz_Ab)%>%
     rename(all_hazs_Ab=haz_Ab)
   # Extract all of the haz_spec codes and output a list
-  output$all_hazs_spec<-lapply(output$event_ID,function(ev){
+  output$all_hazs_spec<-I(lapply(output$event_ID,function(ev){
     all_hazs_spec=c(gsub(" ", "",str_split(dframe$haz_spec[dframe$event_ID==ev],":",simplify = T)))
-  })
+  }))
   
   return(output%>%dplyr::select(-event_ID))
 }
