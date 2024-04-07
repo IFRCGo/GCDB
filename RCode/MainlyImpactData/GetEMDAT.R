@@ -208,7 +208,9 @@ CleanEMDAT_API<-function(EMDAT){
   # Make sure the end month is 2 characters
   EMDAT$end_month[nchar(EMDAT$end_month)==1 & !is.na(EMDAT$end_month)]<-
     paste0("0",EMDAT$end_month[nchar(EMDAT$end_month)==1 & !is.na(EMDAT$end_month)])
-  # If the end month is NA, we leave as NA
+  # If the end month is NA, we take the end to be the end of the year
+  EMDAT$end_day[is.na(EMDAT$end_month)]<-"31" 
+  EMDAT$end_month[is.na(EMDAT$end_month)]<-"12"
   # If the end date is NA, assume end of the month
   EMDAT$end_day[is.na(EMDAT$end_day) & !is.na(EMDAT$end_month)]<-
     sapply((1:nrow(EMDAT))[is.na(EMDAT$end_day) & !is.na(EMDAT$end_month)], function(i){
@@ -243,13 +245,15 @@ CleanEMDAT_API<-function(EMDAT){
                   "imp_lat"="latitude",
                   "ev_name"="name")%>%mutate(ev_ISO3s=imp_ISO3s)
   # Add some of the extra details that are EM-DAT specific
-  EMDAT$imp_src_URL<-"https://public.emdat.be/"
-  EMDAT$imp_src_org<-"CRED"
-  EMDAT$imp_spat_srcorg<-""
-  EMDAT$imp_src_db<-"EM-DAT"
-  EMDAT$imp_src_orgtype<-"orgtypeacad"
-  EMDAT$imp_spat_covcode<-"spat_polygon"
-  EMDAT$imp_spat_resunits<-"adminlevel"
+  EMDAT%<>%mutate(imp_src_URL="https://public.emdat.be/",
+                 imp_src_org="CRED",
+                 imp_spat_srcorg="FAO",
+                 imp_spat_srcdb="GAUL",
+                 imp_src_db="EM-DAT",
+                 imp_src_orgtype="orgtypeacad",
+                 imp_spat_covcode="spat_polygon",
+                 imp_spat_resunits="adminlevel",
+                 imp_spat_crs="EPSG:4326")
   # Extract the admin level of each entry
   EMDAT$imp_spat_res<-0
   # extract which entries have adm level 1
@@ -274,7 +278,7 @@ CleanEMDAT_API<-function(EMDAT){
                   (EMDAT$admin_units[[i]])[,grepl("_code",colnames(EMDAT$admin_units[[i]]))]))
   })
   # File location of the admin boundaries dataset
-  EMDAT$imp_spat_fileloc<-"https://data.apps.fao.org/map/catalog/static/search?keyword=HiH_boundaries"
+  EMDAT$imp_spat_fileloc<-EMDAT$imp_spat_URL<-"https://data.apps.fao.org/map/catalog/static/search?keyword=HiH_boundaries"
   # Link to the hazard taxonomy from HIPS
   EMDAT%<>%EMDATHazards_API()
   
@@ -586,19 +590,17 @@ convGOEMDAT_Monty<-function(){
   # IDs
   ID_linkage<-Add_ImpIDlink_Monty(
     do.call(rbind,lapply(1:nrow(EMDAT),function(i) {
-      cbind(EMDAT$all_ext_IDs[[i]],EMDAT[i,]%>%dplyr::select(event_ID, 
-                                                             imp_sub_ID))
-    }))%>%mutate(haz_sub_ID=NA_character_)
+      EMDAT$all_ext_IDs[[i]]%>%mutate(event_ID=EMDAT$event_ID[i],
+                                      imp_sub_ID=EMDAT$imp_sub_ID[i],
+                                      haz_sub_ID=NA_character_)
+    }))
   )
-  
-  
-  
-  
-  
-  
-  
   # Sources for impact data
-  source<-EMDAT%>%dplyr::select(imp_src_db,imp_src_URL,imp_src_org)
+  source<-do.call(rbind,lapply(unique(EMDAT$imp_sub_ID),function(ID){
+    return(EMDAT[EMDAT$imp_sub_ID==ID,]%>%
+             dplyr::select(imp_src_db,imp_src_URL,imp_src_org)%>%
+             slice(1))
+  }))
   # impact estimates
   impact_detail<-EMDAT%>%distinct(imp_sub_ID,.keep_all = T)%>%
     dplyr::select(exp_spec,imp_value,imp_type,imp_units,imp_est_type,imp_unitdate)
@@ -616,7 +618,7 @@ convGOEMDAT_Monty<-function(){
       imp_spat_res,
       imp_spat_resunits,
       imp_spat_crs
-    )%>%mutate(imp_lon=NA_real_,imp_lat=NA_real_),
+    ),
     source=EMDAT%>%dplyr::select(
       imp_spat_srcdb,
       imp_spat_URL,
@@ -637,13 +639,14 @@ convGOEMDAT_Monty<-function(){
   #@@@@@ Event-level data @@@@@#
   # IDs
   ID_linkage<-Add_EvIDlink_Monty(
-    EMDAT%>%dplyr::select(event_ID, ev_name, code, imp_src_db, imp_src_org)%>%
-      rename(ext_ID=code,ext_ID_db=imp_src_db,ext_ID_org=imp_src_org)
+    do.call(rbind,lapply(1:nrow(EMDAT),function(i) {
+      EMDAT$all_ext_IDs[[i]]%>%mutate(event_ID=EMDAT$event_ID[i],
+                                      ev_name=EMDAT$event_ID[i])
+    }))
   )
   # Spatial
   spatial<-Add_EvSpat_Monty(
-    EMDAT%>%dplyr::select(event_ID,imp_ISO3s,location)%>%
-      rename(ev_ISO3s=imp_ISO3s,gen_location=location)
+    EMDAT%>%dplyr::select(event_ID, ev_ISO3s, gen_location)
   )
   # temporal
   temporal<-Add_EvTemp_Monty(
