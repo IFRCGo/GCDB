@@ -1,7 +1,7 @@
 {
   "monty_Info": {
     "class_version": "Monty Schema V1.00",
-    "db_pubdate": "2024-02-21",
+    "db_pubdate": "2024-04-03",
     "helpful_resources": [
       {
         "title": "Global Crisis Data Bank - Concept Note",
@@ -306,9 +306,7 @@
         "ID_linkage": [
           {
             "imp_spat_ID": "GO-ADM0-World-shp",
-            "imp_spat_fileloc": "https://go-user-library.ifrc.org/maps",
-            "imp_spat_colname": "iso3",
-            "imp_spat_rowname": "PRY"
+            "imp_spat_fileloc": "https://go-user-library.ifrc.org/maps"
           }
         ],
         "spatial_info": [
@@ -368,9 +366,7 @@
         "ID_linkage": [
           {
             "imp_spat_ID": "GO-ADM0-World-shp",
-            "imp_spat_fileloc": "https://go-user-library.ifrc.org/maps",
-            "imp_spat_colname": "iso3",
-            "imp_spat_rowname": "KEN"
+            "imp_spat_fileloc": "https://go-user-library.ifrc.org/maps"
           }
         ],
         "spatial_info": [
@@ -425,9 +421,7 @@
         "ID_linkage": [
           {
             "imp_spat_ID": "GO-ADM0-World-shp",
-            "imp_spat_fileloc": "https://go-user-library.ifrc.org/maps",
-            "imp_spat_colname": "iso3",
-            "imp_spat_rowname": "IND"
+            "imp_spat_fileloc": "https://go-user-library.ifrc.org/maps"
           }
         ],
         "spatial_info": [
@@ -482,9 +476,7 @@
         "ID_linkage": [
           {
             "imp_spat_ID": "GO-ADM0-World-shp",
-            "imp_spat_fileloc": "https://go-user-library.ifrc.org/maps",
-            "imp_spat_colname": "iso3",
-            "imp_spat_rowname": "FJI"
+            "imp_spat_fileloc": "https://go-user-library.ifrc.org/maps"
           }
         ],
         "spatial_info": [
@@ -544,9 +536,7 @@
         "ID_linkage": [
           {
             "imp_spat_ID": "GO-ADM0-World-shp",
-            "imp_spat_fileloc": "https://go-user-library.ifrc.org/maps",
-            "imp_spat_colname": "iso3",
-            "imp_spat_rowname": "PAK"
+            "imp_spat_fileloc": "https://go-user-library.ifrc.org/maps"
           }
         ],
         "spatial_info": [
@@ -601,9 +591,7 @@
         "ID_linkage": [
           {
             "imp_spat_ID": "GO-ADM0-World-shp",
-            "imp_spat_fileloc": "https://go-user-library.ifrc.org/maps",
-            "imp_spat_colname": "iso3",
-            "imp_spat_rowname": "AFG"
+            "imp_spat_fileloc": "https://go-user-library.ifrc.org/maps"
           }
         ],
         "spatial_info": [
@@ -932,2062 +920,2062 @@
     "ISO_info": [
       {
         "ISO3": "AFG",
-        "Country": "Afghanistan",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "South Asia",
-        "Continent": "Asia",
-        "UNSubRegion": "Southern Asia",
-        "WorldBankIncomeGroups": "Low Income"
+        "country": "Afghanistan",
+        "unregion": "Asia",
+        "worldbankregion": "South Asia",
+        "continent": "Asia",
+        "unsubregion": "Southern Asia",
+        "worldbankincomegroup": "Low Income"
       },
       {
         "ISO3": "ALB",
-        "Country": "Albania",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Southern Europe",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Albania",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Southern Europe",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "DZA",
-        "Country": "Algeria",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Middle East & North Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Northern Africa",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Algeria",
+        "unregion": "Africa",
+        "worldbankregion": "Middle East & North Africa",
+        "continent": "Africa",
+        "unsubregion": "Northern Africa",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "AND",
-        "Country": "Andorra",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Southern Europe",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Andorra",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Southern Europe",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "AGO",
-        "Country": "Angola",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Middle Africa",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Angola",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Middle Africa",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "AIA",
-        "Country": "Anguilla",
-        "UNRegion": "Not Classified",
-        "WorldBankRegions": "Not Classified",
-        "Continent": "North America",
-        "UNSubRegion": "Not Classified",
-        "WorldBankIncomeGroups": "Not Classified"
+        "country": "Anguilla",
+        "unregion": "Not Classified",
+        "worldbankregion": "Not Classified",
+        "continent": "North America",
+        "unsubregion": "Not Classified",
+        "worldbankincomegroup": "Not Classified"
       },
       {
         "ISO3": "ATG",
-        "Country": "Antigua and Barbuda",
-        "UNRegion": "Latin America and the Caribbean",
-        "WorldBankRegions": "Latin America & Caribbean",
-        "Continent": "North America",
-        "UNSubRegion": "Caribbean",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Antigua and Barbuda",
+        "unregion": "Latin America and the Caribbean",
+        "worldbankregion": "Latin America & Caribbean",
+        "continent": "North America",
+        "unsubregion": "Caribbean",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "ARG",
-        "Country": "Argentina",
-        "UNRegion": "Latin America and the Caribbean",
-        "WorldBankRegions": "Latin America & Caribbean",
-        "Continent": "South America",
-        "UNSubRegion": "South America",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Argentina",
+        "unregion": "Latin America and the Caribbean",
+        "worldbankregion": "Latin America & Caribbean",
+        "continent": "South America",
+        "unsubregion": "South America",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "ARM",
-        "Country": "Armenia",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Asia",
-        "UNSubRegion": "Western Asia",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Armenia",
+        "unregion": "Asia",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Asia",
+        "unsubregion": "Western Asia",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "AUS",
-        "Country": "Australia",
-        "UNRegion": "Oceania",
-        "WorldBankRegions": "East Asia & Pacific",
-        "Continent": "Oceania",
-        "UNSubRegion": "Australia/New Zealand",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Australia",
+        "unregion": "Oceania",
+        "worldbankregion": "East Asia & Pacific",
+        "continent": "Oceania",
+        "unsubregion": "Australia/New Zealand",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "AUT",
-        "Country": "Austria",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Western Europe",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Austria",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Western Europe",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "AZE",
-        "Country": "Azerbaijan",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Asia",
-        "UNSubRegion": "Western Asia",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Azerbaijan",
+        "unregion": "Asia",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Asia",
+        "unsubregion": "Western Asia",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "BHS",
-        "Country": "Bahamas",
-        "UNRegion": "Latin America and the Caribbean",
-        "WorldBankRegions": "Latin America & Caribbean",
-        "Continent": "North America",
-        "UNSubRegion": "Caribbean",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Bahamas",
+        "unregion": "Latin America and the Caribbean",
+        "worldbankregion": "Latin America & Caribbean",
+        "continent": "North America",
+        "unsubregion": "Caribbean",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "BHR",
-        "Country": "Bahrain",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "Middle East & North Africa",
-        "Continent": "Asia",
-        "UNSubRegion": "Western Asia",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Bahrain",
+        "unregion": "Asia",
+        "worldbankregion": "Middle East & North Africa",
+        "continent": "Asia",
+        "unsubregion": "Western Asia",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "BGD",
-        "Country": "Bangladesh",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "South Asia",
-        "Continent": "Asia",
-        "UNSubRegion": "Southern Asia",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Bangladesh",
+        "unregion": "Asia",
+        "worldbankregion": "South Asia",
+        "continent": "Asia",
+        "unsubregion": "Southern Asia",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "BRB",
-        "Country": "Barbados",
-        "UNRegion": "Latin America and the Caribbean",
-        "WorldBankRegions": "Latin America & Caribbean",
-        "Continent": "North America",
-        "UNSubRegion": "Caribbean",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Barbados",
+        "unregion": "Latin America and the Caribbean",
+        "worldbankregion": "Latin America & Caribbean",
+        "continent": "North America",
+        "unsubregion": "Caribbean",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "BLR",
-        "Country": "Belarus",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Eastern Europe",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Belarus",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Eastern Europe",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "BEL",
-        "Country": "Belgium",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Western Europe",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Belgium",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Western Europe",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "BLZ",
-        "Country": "Belize",
-        "UNRegion": "Latin America and the Caribbean",
-        "WorldBankRegions": "Latin America & Caribbean",
-        "Continent": "North America",
-        "UNSubRegion": "Central America",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Belize",
+        "unregion": "Latin America and the Caribbean",
+        "worldbankregion": "Latin America & Caribbean",
+        "continent": "North America",
+        "unsubregion": "Central America",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "BEN",
-        "Country": "Benin",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Western Africa",
-        "WorldBankIncomeGroups": "Low Income"
+        "country": "Benin",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Western Africa",
+        "worldbankincomegroup": "Low Income"
       },
       {
         "ISO3": "BTN",
-        "Country": "Bhutan",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "South Asia",
-        "Continent": "Asia",
-        "UNSubRegion": "Southern Asia",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Bhutan",
+        "unregion": "Asia",
+        "worldbankregion": "South Asia",
+        "continent": "Asia",
+        "unsubregion": "Southern Asia",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "BOL",
-        "Country": "Bolivia (Plurinational State of)",
-        "UNRegion": "Latin America and the Caribbean",
-        "WorldBankRegions": "Latin America & Caribbean",
-        "Continent": "South America",
-        "UNSubRegion": "South America",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Bolivia (Plurinational State of)",
+        "unregion": "Latin America and the Caribbean",
+        "worldbankregion": "Latin America & Caribbean",
+        "continent": "South America",
+        "unsubregion": "South America",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "BIH",
-        "Country": "Bosnia and Herzegovina",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Southern Europe",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Bosnia and Herzegovina",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Southern Europe",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "BWA",
-        "Country": "Botswana",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Southern Africa",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Botswana",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Southern Africa",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "BRA",
-        "Country": "Brazil",
-        "UNRegion": "Latin America and the Caribbean",
-        "WorldBankRegions": "Latin America & Caribbean",
-        "Continent": "South America",
-        "UNSubRegion": "South America",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Brazil",
+        "unregion": "Latin America and the Caribbean",
+        "worldbankregion": "Latin America & Caribbean",
+        "continent": "South America",
+        "unsubregion": "South America",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "VGB",
-        "Country": "British Virgin Islands",
-        "UNRegion": "Not Classified",
-        "WorldBankRegions": "Not Classified",
-        "Continent": "North America",
-        "UNSubRegion": "Not Classified",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "British Virgin Islands",
+        "unregion": "Not Classified",
+        "worldbankregion": "Not Classified",
+        "continent": "North America",
+        "unsubregion": "Not Classified",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "BRN",
-        "Country": "Brunei Darussalam",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "East Asia & Pacific",
-        "Continent": "Asia",
-        "UNSubRegion": "South-Eastern Asia",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Brunei Darussalam",
+        "unregion": "Asia",
+        "worldbankregion": "East Asia & Pacific",
+        "continent": "Asia",
+        "unsubregion": "South-Eastern Asia",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "BGR",
-        "Country": "Bulgaria",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Eastern Europe",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Bulgaria",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Eastern Europe",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "BFA",
-        "Country": "Burkina Faso",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Western Africa",
-        "WorldBankIncomeGroups": "Low Income"
+        "country": "Burkina Faso",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Western Africa",
+        "worldbankincomegroup": "Low Income"
       },
       {
         "ISO3": "BDI",
-        "Country": "Burundi",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Eastern Africa",
-        "WorldBankIncomeGroups": "Low Income"
+        "country": "Burundi",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Eastern Africa",
+        "worldbankincomegroup": "Low Income"
       },
       {
         "ISO3": "CPV",
-        "Country": "Cabo Verde",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Western Africa",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Cabo Verde",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Western Africa",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "KHM",
-        "Country": "Cambodia",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "East Asia & Pacific",
-        "Continent": "Asia",
-        "UNSubRegion": "South-Eastern Asia",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Cambodia",
+        "unregion": "Asia",
+        "worldbankregion": "East Asia & Pacific",
+        "continent": "Asia",
+        "unsubregion": "South-Eastern Asia",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "CMR",
-        "Country": "Cameroon",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Middle Africa",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Cameroon",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Middle Africa",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "CAN",
-        "Country": "Canada",
-        "UNRegion": "Northern America",
-        "WorldBankRegions": "North America",
-        "Continent": "North America",
-        "UNSubRegion": "Northern America",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Canada",
+        "unregion": "Northern America",
+        "worldbankregion": "North America",
+        "continent": "North America",
+        "unsubregion": "Northern America",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "CAF",
-        "Country": "Central African Republic",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Middle Africa",
-        "WorldBankIncomeGroups": "Low Income"
+        "country": "Central African Republic",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Middle Africa",
+        "worldbankincomegroup": "Low Income"
       },
       {
         "ISO3": "TCD",
-        "Country": "Chad",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Middle Africa",
-        "WorldBankIncomeGroups": "Low Income"
+        "country": "Chad",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Middle Africa",
+        "worldbankincomegroup": "Low Income"
       },
       {
         "ISO3": "CHL",
-        "Country": "Chile",
-        "UNRegion": "Latin America and the Caribbean",
-        "WorldBankRegions": "Latin America & Caribbean",
-        "Continent": "South America",
-        "UNSubRegion": "South America",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Chile",
+        "unregion": "Latin America and the Caribbean",
+        "worldbankregion": "Latin America & Caribbean",
+        "continent": "South America",
+        "unsubregion": "South America",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "CHN",
-        "Country": "China",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "East Asia & Pacific",
-        "Continent": "Asia",
-        "UNSubRegion": "Eastern Asia",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "China",
+        "unregion": "Asia",
+        "worldbankregion": "East Asia & Pacific",
+        "continent": "Asia",
+        "unsubregion": "Eastern Asia",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "COL",
-        "Country": "Colombia",
-        "UNRegion": "Latin America and the Caribbean",
-        "WorldBankRegions": "Latin America & Caribbean",
-        "Continent": "South America",
-        "UNSubRegion": "South America",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Colombia",
+        "unregion": "Latin America and the Caribbean",
+        "worldbankregion": "Latin America & Caribbean",
+        "continent": "South America",
+        "unsubregion": "South America",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "COM",
-        "Country": "Comoros",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Eastern Africa",
-        "WorldBankIncomeGroups": "Low Income"
+        "country": "Comoros",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Eastern Africa",
+        "worldbankincomegroup": "Low Income"
       },
       {
         "ISO3": "COG",
-        "Country": "Congo",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Middle Africa",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Congo",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Middle Africa",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "COK",
-        "Country": "Cook Islands",
-        "UNRegion": "Oceania",
-        "WorldBankRegions": "Not Classified",
-        "Continent": "Oceania",
-        "UNSubRegion": "Polynesia",
-        "WorldBankIncomeGroups": "Not Classified"
+        "country": "Cook Islands",
+        "unregion": "Oceania",
+        "worldbankregion": "Not Classified",
+        "continent": "Oceania",
+        "unsubregion": "Polynesia",
+        "worldbankincomegroup": "Not Classified"
       },
       {
         "ISO3": "CRI",
-        "Country": "Costa Rica",
-        "UNRegion": "Latin America and the Caribbean",
-        "WorldBankRegions": "Latin America & Caribbean",
-        "Continent": "North America",
-        "UNSubRegion": "Central America",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Costa Rica",
+        "unregion": "Latin America and the Caribbean",
+        "worldbankregion": "Latin America & Caribbean",
+        "continent": "North America",
+        "unsubregion": "Central America",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "CIV",
-        "Country": "Côte d'Ivoire",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Western Africa",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Côte d'Ivoire",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Western Africa",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "HRV",
-        "Country": "Croatia",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Southern Europe",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Croatia",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Southern Europe",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "CUB",
-        "Country": "Cuba",
-        "UNRegion": "Latin America and the Caribbean",
-        "WorldBankRegions": "Latin America & Caribbean",
-        "Continent": "North America",
-        "UNSubRegion": "Caribbean",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Cuba",
+        "unregion": "Latin America and the Caribbean",
+        "worldbankregion": "Latin America & Caribbean",
+        "continent": "North America",
+        "unsubregion": "Caribbean",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "CYP",
-        "Country": "Cyprus",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Asia",
-        "UNSubRegion": "Western Asia",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Cyprus",
+        "unregion": "Asia",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Asia",
+        "unsubregion": "Western Asia",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "CZE",
-        "Country": "Czechia",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Eastern Europe",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Czechia",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Eastern Europe",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "PRK",
-        "Country": "Democratic People's Republic of Korea",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "East Asia & Pacific",
-        "Continent": "Asia",
-        "UNSubRegion": "Eastern Asia",
-        "WorldBankIncomeGroups": "Low Income"
+        "country": "Democratic People's Republic of Korea",
+        "unregion": "Asia",
+        "worldbankregion": "East Asia & Pacific",
+        "continent": "Asia",
+        "unsubregion": "Eastern Asia",
+        "worldbankincomegroup": "Low Income"
       },
       {
         "ISO3": "COD",
-        "Country": "Democratic Republic of the Congo",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Middle Africa",
-        "WorldBankIncomeGroups": "Low Income"
+        "country": "Democratic Republic of the Congo",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Middle Africa",
+        "worldbankincomegroup": "Low Income"
       },
       {
         "ISO3": "DNK",
-        "Country": "Denmark",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Northern Europe",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Denmark",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Northern Europe",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "DJI",
-        "Country": "Djibouti",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Middle East & North Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Eastern Africa",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Djibouti",
+        "unregion": "Africa",
+        "worldbankregion": "Middle East & North Africa",
+        "continent": "Africa",
+        "unsubregion": "Eastern Africa",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "DMA",
-        "Country": "Dominica",
-        "UNRegion": "Latin America and the Caribbean",
-        "WorldBankRegions": "Latin America & Caribbean",
-        "Continent": "North America",
-        "UNSubRegion": "Caribbean",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Dominica",
+        "unregion": "Latin America and the Caribbean",
+        "worldbankregion": "Latin America & Caribbean",
+        "continent": "North America",
+        "unsubregion": "Caribbean",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "DOM",
-        "Country": "Dominican Republic",
-        "UNRegion": "Latin America and the Caribbean",
-        "WorldBankRegions": "Latin America & Caribbean",
-        "Continent": "North America",
-        "UNSubRegion": "Caribbean",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Dominican Republic",
+        "unregion": "Latin America and the Caribbean",
+        "worldbankregion": "Latin America & Caribbean",
+        "continent": "North America",
+        "unsubregion": "Caribbean",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "ECU",
-        "Country": "Ecuador",
-        "UNRegion": "Latin America and the Caribbean",
-        "WorldBankRegions": "Latin America & Caribbean",
-        "Continent": "South America",
-        "UNSubRegion": "South America",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Ecuador",
+        "unregion": "Latin America and the Caribbean",
+        "worldbankregion": "Latin America & Caribbean",
+        "continent": "South America",
+        "unsubregion": "South America",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "EGY",
-        "Country": "Egypt",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Middle East & North Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Northern Africa",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Egypt",
+        "unregion": "Africa",
+        "worldbankregion": "Middle East & North Africa",
+        "continent": "Africa",
+        "unsubregion": "Northern Africa",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "SLV",
-        "Country": "El Salvador",
-        "UNRegion": "Latin America and the Caribbean",
-        "WorldBankRegions": "Latin America & Caribbean",
-        "Continent": "North America",
-        "UNSubRegion": "Central America",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "El Salvador",
+        "unregion": "Latin America and the Caribbean",
+        "worldbankregion": "Latin America & Caribbean",
+        "continent": "North America",
+        "unsubregion": "Central America",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "GNQ",
-        "Country": "Equatorial Guinea",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Middle Africa",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Equatorial Guinea",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Middle Africa",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "ERI",
-        "Country": "Eritrea",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Eastern Africa",
-        "WorldBankIncomeGroups": "Low Income"
+        "country": "Eritrea",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Eastern Africa",
+        "worldbankincomegroup": "Low Income"
       },
       {
         "ISO3": "EST",
-        "Country": "Estonia",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Northern Europe",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Estonia",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Northern Europe",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "ETH",
-        "Country": "Ethiopia",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Eastern Africa",
-        "WorldBankIncomeGroups": "Low Income"
+        "country": "Ethiopia",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Eastern Africa",
+        "worldbankincomegroup": "Low Income"
       },
       {
         "ISO3": "FJI",
-        "Country": "Fiji",
-        "UNRegion": "Oceania",
-        "WorldBankRegions": "East Asia & Pacific",
-        "Continent": "Oceania",
-        "UNSubRegion": "Melanesia",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Fiji",
+        "unregion": "Oceania",
+        "worldbankregion": "East Asia & Pacific",
+        "continent": "Oceania",
+        "unsubregion": "Melanesia",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "FIN",
-        "Country": "Finland",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Northern Europe",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Finland",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Northern Europe",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "FRA",
-        "Country": "France",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Western Europe",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "France",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Western Europe",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "GAB",
-        "Country": "Gabon",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Middle Africa",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Gabon",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Middle Africa",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "GMB",
-        "Country": "Gambia",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Western Africa",
-        "WorldBankIncomeGroups": "Low Income"
+        "country": "Gambia",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Western Africa",
+        "worldbankincomegroup": "Low Income"
       },
       {
         "ISO3": "GEO",
-        "Country": "Georgia",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Asia",
-        "UNSubRegion": "Western Asia",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Georgia",
+        "unregion": "Asia",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Asia",
+        "unsubregion": "Western Asia",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "DEU",
-        "Country": "Germany",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Western Europe",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Germany",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Western Europe",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "GHA",
-        "Country": "Ghana",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Western Africa",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Ghana",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Western Africa",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "GRC",
-        "Country": "Greece",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Southern Europe",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Greece",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Southern Europe",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "GRD",
-        "Country": "Grenada",
-        "UNRegion": "Latin America and the Caribbean",
-        "WorldBankRegions": "Latin America & Caribbean",
-        "Continent": "North America",
-        "UNSubRegion": "Caribbean",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Grenada",
+        "unregion": "Latin America and the Caribbean",
+        "worldbankregion": "Latin America & Caribbean",
+        "continent": "North America",
+        "unsubregion": "Caribbean",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "GTM",
-        "Country": "Guatemala",
-        "UNRegion": "Latin America and the Caribbean",
-        "WorldBankRegions": "Latin America & Caribbean",
-        "Continent": "North America",
-        "UNSubRegion": "Central America",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Guatemala",
+        "unregion": "Latin America and the Caribbean",
+        "worldbankregion": "Latin America & Caribbean",
+        "continent": "North America",
+        "unsubregion": "Central America",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "GIN",
-        "Country": "Guinea",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Western Africa",
-        "WorldBankIncomeGroups": "Low Income"
+        "country": "Guinea",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Western Africa",
+        "worldbankincomegroup": "Low Income"
       },
       {
         "ISO3": "GNB",
-        "Country": "Guinea-Bissau",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Western Africa",
-        "WorldBankIncomeGroups": "Low Income"
+        "country": "Guinea-Bissau",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Western Africa",
+        "worldbankincomegroup": "Low Income"
       },
       {
         "ISO3": "GUY",
-        "Country": "Guyana",
-        "UNRegion": "Latin America and the Caribbean",
-        "WorldBankRegions": "Latin America & Caribbean",
-        "Continent": "South America",
-        "UNSubRegion": "South America",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Guyana",
+        "unregion": "Latin America and the Caribbean",
+        "worldbankregion": "Latin America & Caribbean",
+        "continent": "South America",
+        "unsubregion": "South America",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "HTI",
-        "Country": "Haiti",
-        "UNRegion": "Latin America and the Caribbean",
-        "WorldBankRegions": "Latin America & Caribbean",
-        "Continent": "North America",
-        "UNSubRegion": "Caribbean",
-        "WorldBankIncomeGroups": "Low Income"
+        "country": "Haiti",
+        "unregion": "Latin America and the Caribbean",
+        "worldbankregion": "Latin America & Caribbean",
+        "continent": "North America",
+        "unsubregion": "Caribbean",
+        "worldbankincomegroup": "Low Income"
       },
       {
         "ISO3": "VAT",
-        "Country": "Holy See",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Not Classified",
-        "Continent": "Europe",
-        "UNSubRegion": "Southern Europe",
-        "WorldBankIncomeGroups": "Not Classified"
+        "country": "Holy See",
+        "unregion": "Europe",
+        "worldbankregion": "Not Classified",
+        "continent": "Europe",
+        "unsubregion": "Southern Europe",
+        "worldbankincomegroup": "Not Classified"
       },
       {
         "ISO3": "HND",
-        "Country": "Honduras",
-        "UNRegion": "Latin America and the Caribbean",
-        "WorldBankRegions": "Latin America & Caribbean",
-        "Continent": "North America",
-        "UNSubRegion": "Central America",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Honduras",
+        "unregion": "Latin America and the Caribbean",
+        "worldbankregion": "Latin America & Caribbean",
+        "continent": "North America",
+        "unsubregion": "Central America",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "HUN",
-        "Country": "Hungary",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Eastern Europe",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Hungary",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Eastern Europe",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "ISL",
-        "Country": "Iceland",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Northern Europe",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Iceland",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Northern Europe",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "IND",
-        "Country": "India",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "South Asia",
-        "Continent": "Asia",
-        "UNSubRegion": "Southern Asia",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "India",
+        "unregion": "Asia",
+        "worldbankregion": "South Asia",
+        "continent": "Asia",
+        "unsubregion": "Southern Asia",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "IDN",
-        "Country": "Indonesia",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "East Asia & Pacific",
-        "Continent": "Asia",
-        "UNSubRegion": "South-Eastern Asia",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Indonesia",
+        "unregion": "Asia",
+        "worldbankregion": "East Asia & Pacific",
+        "continent": "Asia",
+        "unsubregion": "South-Eastern Asia",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "IRN",
-        "Country": "Iran (Islamic Republic of)",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "Middle East & North Africa",
-        "Continent": "Asia",
-        "UNSubRegion": "Southern Asia",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Iran (Islamic Republic of)",
+        "unregion": "Asia",
+        "worldbankregion": "Middle East & North Africa",
+        "continent": "Asia",
+        "unsubregion": "Southern Asia",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "IRQ",
-        "Country": "Iraq",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "Middle East & North Africa",
-        "Continent": "Asia",
-        "UNSubRegion": "Western Asia",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Iraq",
+        "unregion": "Asia",
+        "worldbankregion": "Middle East & North Africa",
+        "continent": "Asia",
+        "unsubregion": "Western Asia",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "IRL",
-        "Country": "Ireland",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Northern Europe",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Ireland",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Northern Europe",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "ISR",
-        "Country": "Israel",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "Middle East & North Africa",
-        "Continent": "Asia",
-        "UNSubRegion": "Western Asia",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Israel",
+        "unregion": "Asia",
+        "worldbankregion": "Middle East & North Africa",
+        "continent": "Asia",
+        "unsubregion": "Western Asia",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "ITA",
-        "Country": "Italy",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Southern Europe",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Italy",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Southern Europe",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "JAM",
-        "Country": "Jamaica",
-        "UNRegion": "Latin America and the Caribbean",
-        "WorldBankRegions": "Latin America & Caribbean",
-        "Continent": "North America",
-        "UNSubRegion": "Caribbean",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Jamaica",
+        "unregion": "Latin America and the Caribbean",
+        "worldbankregion": "Latin America & Caribbean",
+        "continent": "North America",
+        "unsubregion": "Caribbean",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "JPN",
-        "Country": "Japan",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "East Asia & Pacific",
-        "Continent": "Asia",
-        "UNSubRegion": "Eastern Asia",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Japan",
+        "unregion": "Asia",
+        "worldbankregion": "East Asia & Pacific",
+        "continent": "Asia",
+        "unsubregion": "Eastern Asia",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "JOR",
-        "Country": "Jordan",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "Middle East & North Africa",
-        "Continent": "Asia",
-        "UNSubRegion": "Western Asia",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Jordan",
+        "unregion": "Asia",
+        "worldbankregion": "Middle East & North Africa",
+        "continent": "Asia",
+        "unsubregion": "Western Asia",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "KAZ",
-        "Country": "Kazakhstan",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Asia",
-        "UNSubRegion": "Central Asia",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Kazakhstan",
+        "unregion": "Asia",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Asia",
+        "unsubregion": "Central Asia",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "KEN",
-        "Country": "Kenya",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Eastern Africa",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Kenya",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Eastern Africa",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "KIR",
-        "Country": "Kiribati",
-        "UNRegion": "Oceania",
-        "WorldBankRegions": "East Asia & Pacific",
-        "Continent": "Oceania",
-        "UNSubRegion": "Micronesia",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Kiribati",
+        "unregion": "Oceania",
+        "worldbankregion": "East Asia & Pacific",
+        "continent": "Oceania",
+        "unsubregion": "Micronesia",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "KWT",
-        "Country": "Kuwait",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "Middle East & North Africa",
-        "Continent": "Asia",
-        "UNSubRegion": "Western Asia",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Kuwait",
+        "unregion": "Asia",
+        "worldbankregion": "Middle East & North Africa",
+        "continent": "Asia",
+        "unsubregion": "Western Asia",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "KGZ",
-        "Country": "Kyrgyzstan",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Asia",
-        "UNSubRegion": "Central Asia",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Kyrgyzstan",
+        "unregion": "Asia",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Asia",
+        "unsubregion": "Central Asia",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "LAO",
-        "Country": "Lao People's Democratic Republic",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "East Asia & Pacific",
-        "Continent": "Asia",
-        "UNSubRegion": "South-Eastern Asia",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Lao People's Democratic Republic",
+        "unregion": "Asia",
+        "worldbankregion": "East Asia & Pacific",
+        "continent": "Asia",
+        "unsubregion": "South-Eastern Asia",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "LVA",
-        "Country": "Latvia",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Northern Europe",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Latvia",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Northern Europe",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "LBN",
-        "Country": "Lebanon",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "Middle East & North Africa",
-        "Continent": "Asia",
-        "UNSubRegion": "Western Asia",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Lebanon",
+        "unregion": "Asia",
+        "worldbankregion": "Middle East & North Africa",
+        "continent": "Asia",
+        "unsubregion": "Western Asia",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "LSO",
-        "Country": "Lesotho",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Southern Africa",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Lesotho",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Southern Africa",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "LBR",
-        "Country": "Liberia",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Western Africa",
-        "WorldBankIncomeGroups": "Low Income"
+        "country": "Liberia",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Western Africa",
+        "worldbankincomegroup": "Low Income"
       },
       {
         "ISO3": "LBY",
-        "Country": "Libya",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Middle East & North Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Northern Africa",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Libya",
+        "unregion": "Africa",
+        "worldbankregion": "Middle East & North Africa",
+        "continent": "Africa",
+        "unsubregion": "Northern Africa",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "LIE",
-        "Country": "Liechtenstein",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Western Europe",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Liechtenstein",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Western Europe",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "LTU",
-        "Country": "Lithuania",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Northern Europe",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Lithuania",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Northern Europe",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "LUX",
-        "Country": "Luxembourg",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Western Europe",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Luxembourg",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Western Europe",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "MDG",
-        "Country": "Madagascar",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Eastern Africa",
-        "WorldBankIncomeGroups": "Low Income"
+        "country": "Madagascar",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Eastern Africa",
+        "worldbankincomegroup": "Low Income"
       },
       {
         "ISO3": "MWI",
-        "Country": "Malawi",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Eastern Africa",
-        "WorldBankIncomeGroups": "Low Income"
+        "country": "Malawi",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Eastern Africa",
+        "worldbankincomegroup": "Low Income"
       },
       {
         "ISO3": "MYS",
-        "Country": "Malaysia",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "East Asia & Pacific",
-        "Continent": "Asia",
-        "UNSubRegion": "South-Eastern Asia",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Malaysia",
+        "unregion": "Asia",
+        "worldbankregion": "East Asia & Pacific",
+        "continent": "Asia",
+        "unsubregion": "South-Eastern Asia",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "MDV",
-        "Country": "Maldives",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "South Asia",
-        "Continent": "Asia",
-        "UNSubRegion": "Southern Asia",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Maldives",
+        "unregion": "Asia",
+        "worldbankregion": "South Asia",
+        "continent": "Asia",
+        "unsubregion": "Southern Asia",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "MLI",
-        "Country": "Mali",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Western Africa",
-        "WorldBankIncomeGroups": "Low Income"
+        "country": "Mali",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Western Africa",
+        "worldbankincomegroup": "Low Income"
       },
       {
         "ISO3": "MLT",
-        "Country": "Malta",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Middle East & North Africa",
-        "Continent": "Europe",
-        "UNSubRegion": "Southern Europe",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Malta",
+        "unregion": "Europe",
+        "worldbankregion": "Middle East & North Africa",
+        "continent": "Europe",
+        "unsubregion": "Southern Europe",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "MHL",
-        "Country": "Marshall Islands",
-        "UNRegion": "Oceania",
-        "WorldBankRegions": "East Asia & Pacific",
-        "Continent": "Oceania",
-        "UNSubRegion": "Micronesia",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Marshall Islands",
+        "unregion": "Oceania",
+        "worldbankregion": "East Asia & Pacific",
+        "continent": "Oceania",
+        "unsubregion": "Micronesia",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "MRT",
-        "Country": "Mauritania",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Western Africa",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Mauritania",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Western Africa",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "MUS",
-        "Country": "Mauritius",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Eastern Africa",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Mauritius",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Eastern Africa",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "MEX",
-        "Country": "Mexico",
-        "UNRegion": "Latin America and the Caribbean",
-        "WorldBankRegions": "Latin America & Caribbean",
-        "Continent": "North America",
-        "UNSubRegion": "Central America",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Mexico",
+        "unregion": "Latin America and the Caribbean",
+        "worldbankregion": "Latin America & Caribbean",
+        "continent": "North America",
+        "unsubregion": "Central America",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "FSM",
-        "Country": "Micronesia (Federated States of)",
-        "UNRegion": "Oceania",
-        "WorldBankRegions": "East Asia & Pacific",
-        "Continent": "Oceania",
-        "UNSubRegion": "Micronesia",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Micronesia (Federated States of)",
+        "unregion": "Oceania",
+        "worldbankregion": "East Asia & Pacific",
+        "continent": "Oceania",
+        "unsubregion": "Micronesia",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "MCO",
-        "Country": "Monaco",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Western Europe",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Monaco",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Western Europe",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "MNG",
-        "Country": "Mongolia",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "East Asia & Pacific",
-        "Continent": "Asia",
-        "UNSubRegion": "Eastern Asia",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Mongolia",
+        "unregion": "Asia",
+        "worldbankregion": "East Asia & Pacific",
+        "continent": "Asia",
+        "unsubregion": "Eastern Asia",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "MNE",
-        "Country": "Montenegro",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Southern Europe",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Montenegro",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Southern Europe",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "MSR",
-        "Country": "Montserrat",
-        "UNRegion": "Not Classified",
-        "WorldBankRegions": "Not Classified",
-        "Continent": "North America",
-        "UNSubRegion": "Not Classified",
-        "WorldBankIncomeGroups": "Not Classified"
+        "country": "Montserrat",
+        "unregion": "Not Classified",
+        "worldbankregion": "Not Classified",
+        "continent": "North America",
+        "unsubregion": "Not Classified",
+        "worldbankincomegroup": "Not Classified"
       },
       {
         "ISO3": "MAR",
-        "Country": "Morocco",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Middle East & North Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Northern Africa",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Morocco",
+        "unregion": "Africa",
+        "worldbankregion": "Middle East & North Africa",
+        "continent": "Africa",
+        "unsubregion": "Northern Africa",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "MOZ",
-        "Country": "Mozambique",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Eastern Africa",
-        "WorldBankIncomeGroups": "Low Income"
+        "country": "Mozambique",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Eastern Africa",
+        "worldbankincomegroup": "Low Income"
       },
       {
         "ISO3": "MMR",
-        "Country": "Myanmar",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "East Asia & Pacific",
-        "Continent": "Asia",
-        "UNSubRegion": "South-Eastern Asia",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Myanmar",
+        "unregion": "Asia",
+        "worldbankregion": "East Asia & Pacific",
+        "continent": "Asia",
+        "unsubregion": "South-Eastern Asia",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "NAM",
-        "Country": "Namibia",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Southern Africa",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Namibia",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Southern Africa",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "NRU",
-        "Country": "Nauru",
-        "UNRegion": "Oceania",
-        "WorldBankRegions": "East Asia & Pacific",
-        "Continent": "Oceania",
-        "UNSubRegion": "Micronesia",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Nauru",
+        "unregion": "Oceania",
+        "worldbankregion": "East Asia & Pacific",
+        "continent": "Oceania",
+        "unsubregion": "Micronesia",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "NPL",
-        "Country": "Nepal",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "South Asia",
-        "Continent": "Asia",
-        "UNSubRegion": "Southern Asia",
-        "WorldBankIncomeGroups": "Low Income"
+        "country": "Nepal",
+        "unregion": "Asia",
+        "worldbankregion": "South Asia",
+        "continent": "Asia",
+        "unsubregion": "Southern Asia",
+        "worldbankincomegroup": "Low Income"
       },
       {
         "ISO3": "NLD",
-        "Country": "Netherlands",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Western Europe",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Netherlands",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Western Europe",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "NZL",
-        "Country": "New Zealand",
-        "UNRegion": "Oceania",
-        "WorldBankRegions": "East Asia & Pacific",
-        "Continent": "Oceania",
-        "UNSubRegion": "Australia/New Zealand",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "New Zealand",
+        "unregion": "Oceania",
+        "worldbankregion": "East Asia & Pacific",
+        "continent": "Oceania",
+        "unsubregion": "Australia/New Zealand",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "NIC",
-        "Country": "Nicaragua",
-        "UNRegion": "Latin America and the Caribbean",
-        "WorldBankRegions": "Latin America & Caribbean",
-        "Continent": "North America",
-        "UNSubRegion": "Central America",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Nicaragua",
+        "unregion": "Latin America and the Caribbean",
+        "worldbankregion": "Latin America & Caribbean",
+        "continent": "North America",
+        "unsubregion": "Central America",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "NER",
-        "Country": "Niger",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Western Africa",
-        "WorldBankIncomeGroups": "Low Income"
+        "country": "Niger",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Western Africa",
+        "worldbankincomegroup": "Low Income"
       },
       {
         "ISO3": "NGA",
-        "Country": "Nigeria",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Western Africa",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Nigeria",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Western Africa",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "NIU",
-        "Country": "Niue",
-        "UNRegion": "Oceania",
-        "WorldBankRegions": "Not Classified",
-        "Continent": "Oceania",
-        "UNSubRegion": "Polynesia",
-        "WorldBankIncomeGroups": "Not Classified"
+        "country": "Niue",
+        "unregion": "Oceania",
+        "worldbankregion": "Not Classified",
+        "continent": "Oceania",
+        "unsubregion": "Polynesia",
+        "worldbankincomegroup": "Not Classified"
       },
       {
         "ISO3": "NOR",
-        "Country": "Norway",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Northern Europe",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Norway",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Northern Europe",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "OMN",
-        "Country": "Oman",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "Middle East & North Africa",
-        "Continent": "Asia",
-        "UNSubRegion": "Western Asia",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Oman",
+        "unregion": "Asia",
+        "worldbankregion": "Middle East & North Africa",
+        "continent": "Asia",
+        "unsubregion": "Western Asia",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "PAK",
-        "Country": "Pakistan",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "South Asia",
-        "Continent": "Asia",
-        "UNSubRegion": "Southern Asia",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Pakistan",
+        "unregion": "Asia",
+        "worldbankregion": "South Asia",
+        "continent": "Asia",
+        "unsubregion": "Southern Asia",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "PLW",
-        "Country": "Palau",
-        "UNRegion": "Oceania",
-        "WorldBankRegions": "East Asia & Pacific",
-        "Continent": "Asia",
-        "UNSubRegion": "Micronesia",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Palau",
+        "unregion": "Oceania",
+        "worldbankregion": "East Asia & Pacific",
+        "continent": "Asia",
+        "unsubregion": "Micronesia",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "PAN",
-        "Country": "Panama",
-        "UNRegion": "Latin America and the Caribbean",
-        "WorldBankRegions": "Latin America & Caribbean",
-        "Continent": "North America",
-        "UNSubRegion": "Central America",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Panama",
+        "unregion": "Latin America and the Caribbean",
+        "worldbankregion": "Latin America & Caribbean",
+        "continent": "North America",
+        "unsubregion": "Central America",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "PNG",
-        "Country": "Papua New Guinea",
-        "UNRegion": "Oceania",
-        "WorldBankRegions": "East Asia & Pacific",
-        "Continent": "Oceania",
-        "UNSubRegion": "Melanesia",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Papua New Guinea",
+        "unregion": "Oceania",
+        "worldbankregion": "East Asia & Pacific",
+        "continent": "Oceania",
+        "unsubregion": "Melanesia",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "PRY",
-        "Country": "Paraguay",
-        "UNRegion": "Latin America and the Caribbean",
-        "WorldBankRegions": "Latin America & Caribbean",
-        "Continent": "South America",
-        "UNSubRegion": "South America",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Paraguay",
+        "unregion": "Latin America and the Caribbean",
+        "worldbankregion": "Latin America & Caribbean",
+        "continent": "South America",
+        "unsubregion": "South America",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "PER",
-        "Country": "Peru",
-        "UNRegion": "Latin America and the Caribbean",
-        "WorldBankRegions": "Latin America & Caribbean",
-        "Continent": "South America",
-        "UNSubRegion": "South America",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Peru",
+        "unregion": "Latin America and the Caribbean",
+        "worldbankregion": "Latin America & Caribbean",
+        "continent": "South America",
+        "unsubregion": "South America",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "PHL",
-        "Country": "Philippines",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "East Asia & Pacific",
-        "Continent": "Asia",
-        "UNSubRegion": "South-Eastern Asia",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Philippines",
+        "unregion": "Asia",
+        "worldbankregion": "East Asia & Pacific",
+        "continent": "Asia",
+        "unsubregion": "South-Eastern Asia",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "POL",
-        "Country": "Poland",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Eastern Europe",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Poland",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Eastern Europe",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "PRT",
-        "Country": "Portugal",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Southern Europe",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Portugal",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Southern Europe",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "QAT",
-        "Country": "Qatar",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "Middle East & North Africa",
-        "Continent": "Asia",
-        "UNSubRegion": "Western Asia",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Qatar",
+        "unregion": "Asia",
+        "worldbankregion": "Middle East & North Africa",
+        "continent": "Asia",
+        "unsubregion": "Western Asia",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "KOR",
-        "Country": "Republic of Korea",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "East Asia & Pacific",
-        "Continent": "Asia",
-        "UNSubRegion": "Eastern Asia",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Republic of Korea",
+        "unregion": "Asia",
+        "worldbankregion": "East Asia & Pacific",
+        "continent": "Asia",
+        "unsubregion": "Eastern Asia",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "MDA",
-        "Country": "Republic of Moldova",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Eastern Europe",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Republic of Moldova",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Eastern Europe",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "ROU",
-        "Country": "Romania",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Eastern Europe",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Romania",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Eastern Europe",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "RUS",
-        "Country": "Russian Federation",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Eastern Europe",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Russian Federation",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Eastern Europe",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "RWA",
-        "Country": "Rwanda",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Eastern Africa",
-        "WorldBankIncomeGroups": "Low Income"
+        "country": "Rwanda",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Eastern Africa",
+        "worldbankincomegroup": "Low Income"
       },
       {
         "ISO3": "KNA",
-        "Country": "Saint Kitts and Nevis",
-        "UNRegion": "Latin America and the Caribbean",
-        "WorldBankRegions": "Latin America & Caribbean",
-        "Continent": "North America",
-        "UNSubRegion": "Caribbean",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Saint Kitts and Nevis",
+        "unregion": "Latin America and the Caribbean",
+        "worldbankregion": "Latin America & Caribbean",
+        "continent": "North America",
+        "unsubregion": "Caribbean",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "LCA",
-        "Country": "Saint Lucia",
-        "UNRegion": "Latin America and the Caribbean",
-        "WorldBankRegions": "Latin America & Caribbean",
-        "Continent": "North America",
-        "UNSubRegion": "Caribbean",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Saint Lucia",
+        "unregion": "Latin America and the Caribbean",
+        "worldbankregion": "Latin America & Caribbean",
+        "continent": "North America",
+        "unsubregion": "Caribbean",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "VCT",
-        "Country": "Saint Vincent and the Grenadines",
-        "UNRegion": "Latin America and the Caribbean",
-        "WorldBankRegions": "Latin America & Caribbean",
-        "Continent": "North America",
-        "UNSubRegion": "Caribbean",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Saint Vincent and the Grenadines",
+        "unregion": "Latin America and the Caribbean",
+        "worldbankregion": "Latin America & Caribbean",
+        "continent": "North America",
+        "unsubregion": "Caribbean",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "WSM",
-        "Country": "Samoa",
-        "UNRegion": "Oceania",
-        "WorldBankRegions": "East Asia & Pacific",
-        "Continent": "Oceania",
-        "UNSubRegion": "Polynesia",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Samoa",
+        "unregion": "Oceania",
+        "worldbankregion": "East Asia & Pacific",
+        "continent": "Oceania",
+        "unsubregion": "Polynesia",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "SMR",
-        "Country": "San Marino",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Southern Europe",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "San Marino",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Southern Europe",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "STP",
-        "Country": "Sao Tome and Principe",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Middle Africa",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Sao Tome and Principe",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Middle Africa",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "SAU",
-        "Country": "Saudi Arabia",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "Middle East & North Africa",
-        "Continent": "Asia",
-        "UNSubRegion": "Western Asia",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Saudi Arabia",
+        "unregion": "Asia",
+        "worldbankregion": "Middle East & North Africa",
+        "continent": "Asia",
+        "unsubregion": "Western Asia",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "SEN",
-        "Country": "Senegal",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Western Africa",
-        "WorldBankIncomeGroups": "Low Income"
+        "country": "Senegal",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Western Africa",
+        "worldbankincomegroup": "Low Income"
       },
       {
         "ISO3": "SRB",
-        "Country": "Serbia",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Southern Europe",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Serbia",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Southern Europe",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "SYC",
-        "Country": "Seychelles",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Eastern Africa",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Seychelles",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Eastern Africa",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "SLE",
-        "Country": "Sierra Leone",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Western Africa",
-        "WorldBankIncomeGroups": "Low Income"
+        "country": "Sierra Leone",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Western Africa",
+        "worldbankincomegroup": "Low Income"
       },
       {
         "ISO3": "SGP",
-        "Country": "Singapore",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "East Asia & Pacific",
-        "Continent": "Asia",
-        "UNSubRegion": "South-Eastern Asia",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Singapore",
+        "unregion": "Asia",
+        "worldbankregion": "East Asia & Pacific",
+        "continent": "Asia",
+        "unsubregion": "South-Eastern Asia",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "SVK",
-        "Country": "Slovakia",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Eastern Europe",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Slovakia",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Eastern Europe",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "SVN",
-        "Country": "Slovenia",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Southern Europe",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Slovenia",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Southern Europe",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "SLB",
-        "Country": "Solomon Islands",
-        "UNRegion": "Oceania",
-        "WorldBankRegions": "East Asia & Pacific",
-        "Continent": "Oceania",
-        "UNSubRegion": "Melanesia",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Solomon Islands",
+        "unregion": "Oceania",
+        "worldbankregion": "East Asia & Pacific",
+        "continent": "Oceania",
+        "unsubregion": "Melanesia",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "SOM",
-        "Country": "Somalia",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Eastern Africa",
-        "WorldBankIncomeGroups": "Low Income"
+        "country": "Somalia",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Eastern Africa",
+        "worldbankincomegroup": "Low Income"
       },
       {
         "ISO3": "ZAF",
-        "Country": "South Africa",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Southern Africa",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "South Africa",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Southern Africa",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "SSD",
-        "Country": "South Sudan",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Eastern Africa",
-        "WorldBankIncomeGroups": "Low Income"
+        "country": "South Sudan",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Eastern Africa",
+        "worldbankincomegroup": "Low Income"
       },
       {
         "ISO3": "ESP",
-        "Country": "Spain",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Southern Europe",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Spain",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Southern Europe",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "LKA",
-        "Country": "Sri Lanka",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "South Asia",
-        "Continent": "Asia",
-        "UNSubRegion": "Southern Asia",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Sri Lanka",
+        "unregion": "Asia",
+        "worldbankregion": "South Asia",
+        "continent": "Asia",
+        "unsubregion": "Southern Asia",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "PSE",
-        "Country": "State of Palestine",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "Middle East & North Africa",
-        "Continent": "Asia",
-        "UNSubRegion": "Western Asia",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "State of Palestine",
+        "unregion": "Asia",
+        "worldbankregion": "Middle East & North Africa",
+        "continent": "Asia",
+        "unsubregion": "Western Asia",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "SDN",
-        "Country": "Sudan",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Northern Africa",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Sudan",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Northern Africa",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "SUR",
-        "Country": "Suriname",
-        "UNRegion": "Latin America and the Caribbean",
-        "WorldBankRegions": "Latin America & Caribbean",
-        "Continent": "South America",
-        "UNSubRegion": "South America",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Suriname",
+        "unregion": "Latin America and the Caribbean",
+        "worldbankregion": "Latin America & Caribbean",
+        "continent": "South America",
+        "unsubregion": "South America",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "SWZ",
-        "Country": "Swaziland",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Southern Africa",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Swaziland",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Southern Africa",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "SWE",
-        "Country": "Sweden",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Northern Europe",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Sweden",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Northern Europe",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "CHE",
-        "Country": "Switzerland",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Western Europe",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Switzerland",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Western Europe",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "SYR",
-        "Country": "Syrian Arab Republic",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "Middle East & North Africa",
-        "Continent": "Asia",
-        "UNSubRegion": "Western Asia",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Syrian Arab Republic",
+        "unregion": "Asia",
+        "worldbankregion": "Middle East & North Africa",
+        "continent": "Asia",
+        "unsubregion": "Western Asia",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "TJK",
-        "Country": "Tajikistan",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Asia",
-        "UNSubRegion": "Central Asia",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Tajikistan",
+        "unregion": "Asia",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Asia",
+        "unsubregion": "Central Asia",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "THA",
-        "Country": "Thailand",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "East Asia & Pacific",
-        "Continent": "Asia",
-        "UNSubRegion": "South-Eastern Asia",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Thailand",
+        "unregion": "Asia",
+        "worldbankregion": "East Asia & Pacific",
+        "continent": "Asia",
+        "unsubregion": "South-Eastern Asia",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "MKD",
-        "Country": "The former Yugoslav Republic of Macedonia",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Southern Europe",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "The former Yugoslav Republic of Macedonia",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Southern Europe",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "TLS",
-        "Country": "Timor-Leste",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "East Asia & Pacific",
-        "Continent": "Asia",
-        "UNSubRegion": "South-Eastern Asia",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Timor-Leste",
+        "unregion": "Asia",
+        "worldbankregion": "East Asia & Pacific",
+        "continent": "Asia",
+        "unsubregion": "South-Eastern Asia",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "TGO",
-        "Country": "Togo",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Western Africa",
-        "WorldBankIncomeGroups": "Low Income"
+        "country": "Togo",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Western Africa",
+        "worldbankincomegroup": "Low Income"
       },
       {
         "ISO3": "TKL",
-        "Country": "Tokelau",
-        "UNRegion": "Not Classified",
-        "WorldBankRegions": "Not Classified",
-        "Continent": "Oceania",
-        "UNSubRegion": "Not Classified",
-        "WorldBankIncomeGroups": "Not Classified"
+        "country": "Tokelau",
+        "unregion": "Not Classified",
+        "worldbankregion": "Not Classified",
+        "continent": "Oceania",
+        "unsubregion": "Not Classified",
+        "worldbankincomegroup": "Not Classified"
       },
       {
         "ISO3": "TON",
-        "Country": "Tonga",
-        "UNRegion": "Oceania",
-        "WorldBankRegions": "East Asia & Pacific",
-        "Continent": "Oceania",
-        "UNSubRegion": "Polynesia",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Tonga",
+        "unregion": "Oceania",
+        "worldbankregion": "East Asia & Pacific",
+        "continent": "Oceania",
+        "unsubregion": "Polynesia",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "TTO",
-        "Country": "Trinidad and Tobago",
-        "UNRegion": "Latin America and the Caribbean",
-        "WorldBankRegions": "Latin America & Caribbean",
-        "Continent": "South America",
-        "UNSubRegion": "Caribbean",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Trinidad and Tobago",
+        "unregion": "Latin America and the Caribbean",
+        "worldbankregion": "Latin America & Caribbean",
+        "continent": "South America",
+        "unsubregion": "Caribbean",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "TUN",
-        "Country": "Tunisia",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Middle East & North Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Northern Africa",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Tunisia",
+        "unregion": "Africa",
+        "worldbankregion": "Middle East & North Africa",
+        "continent": "Africa",
+        "unsubregion": "Northern Africa",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "TUR",
-        "Country": "Turkey",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Asia",
-        "UNSubRegion": "Western Asia",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Turkey",
+        "unregion": "Asia",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Asia",
+        "unsubregion": "Western Asia",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "TKM",
-        "Country": "Turkmenistan",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Asia",
-        "UNSubRegion": "Central Asia",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Turkmenistan",
+        "unregion": "Asia",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Asia",
+        "unsubregion": "Central Asia",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "TCA",
-        "Country": "Turks and Caicos Islands",
-        "UNRegion": "Not Classified",
-        "WorldBankRegions": "Not Classified",
-        "Continent": "North America",
-        "UNSubRegion": "Not Classified",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Turks and Caicos Islands",
+        "unregion": "Not Classified",
+        "worldbankregion": "Not Classified",
+        "continent": "North America",
+        "unsubregion": "Not Classified",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "TUV",
-        "Country": "Tuvalu",
-        "UNRegion": "Oceania",
-        "WorldBankRegions": "East Asia & Pacific",
-        "Continent": "Oceania",
-        "UNSubRegion": "Polynesia",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Tuvalu",
+        "unregion": "Oceania",
+        "worldbankregion": "East Asia & Pacific",
+        "continent": "Oceania",
+        "unsubregion": "Polynesia",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "UGA",
-        "Country": "Uganda",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Eastern Africa",
-        "WorldBankIncomeGroups": "Low Income"
+        "country": "Uganda",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Eastern Africa",
+        "worldbankincomegroup": "Low Income"
       },
       {
         "ISO3": "UKR",
-        "Country": "Ukraine",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Eastern Europe",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Ukraine",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Eastern Europe",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "ARE",
-        "Country": "United Arab Emirates",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "Middle East & North Africa",
-        "Continent": "Asia",
-        "UNSubRegion": "Western Asia",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "United Arab Emirates",
+        "unregion": "Asia",
+        "worldbankregion": "Middle East & North Africa",
+        "continent": "Asia",
+        "unsubregion": "Western Asia",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "GBR",
-        "Country": "United Kingdom",
-        "UNRegion": "Europe",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Europe",
-        "UNSubRegion": "Northern Europe",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "United Kingdom",
+        "unregion": "Europe",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Europe",
+        "unsubregion": "Northern Europe",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "TZA",
-        "Country": "United Republic of Tanzania",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Eastern Africa",
-        "WorldBankIncomeGroups": "Low Income"
+        "country": "United Republic of Tanzania",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Eastern Africa",
+        "worldbankincomegroup": "Low Income"
       },
       {
         "ISO3": "USA",
-        "Country": "United States",
-        "UNRegion": "Northern America",
-        "WorldBankRegions": "North America",
-        "Continent": "North America",
-        "UNSubRegion": "Northern America",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "United States",
+        "unregion": "Northern America",
+        "worldbankregion": "North America",
+        "continent": "North America",
+        "unsubregion": "Northern America",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "URY",
-        "Country": "Uruguay",
-        "UNRegion": "Latin America and the Caribbean",
-        "WorldBankRegions": "Latin America & Caribbean",
-        "Continent": "South America",
-        "UNSubRegion": "South America",
-        "WorldBankIncomeGroups": "High Income"
+        "country": "Uruguay",
+        "unregion": "Latin America and the Caribbean",
+        "worldbankregion": "Latin America & Caribbean",
+        "continent": "South America",
+        "unsubregion": "South America",
+        "worldbankincomegroup": "High Income"
       },
       {
         "ISO3": "UZB",
-        "Country": "Uzbekistan",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "Europe & Central Asia",
-        "Continent": "Asia",
-        "UNSubRegion": "Central Asia",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Uzbekistan",
+        "unregion": "Asia",
+        "worldbankregion": "Europe & Central Asia",
+        "continent": "Asia",
+        "unsubregion": "Central Asia",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "VUT",
-        "Country": "Vanuatu",
-        "UNRegion": "Oceania",
-        "WorldBankRegions": "East Asia & Pacific",
-        "Continent": "Oceania",
-        "UNSubRegion": "Melanesia",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Vanuatu",
+        "unregion": "Oceania",
+        "worldbankregion": "East Asia & Pacific",
+        "continent": "Oceania",
+        "unsubregion": "Melanesia",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "VEN",
-        "Country": "Venezuela (Bolivarian Republic of)",
-        "UNRegion": "Latin America and the Caribbean",
-        "WorldBankRegions": "Latin America & Caribbean",
-        "Continent": "South America",
-        "UNSubRegion": "South America",
-        "WorldBankIncomeGroups": "Upper Middle Income"
+        "country": "Venezuela (Bolivarian Republic of)",
+        "unregion": "Latin America and the Caribbean",
+        "worldbankregion": "Latin America & Caribbean",
+        "continent": "South America",
+        "unsubregion": "South America",
+        "worldbankincomegroup": "Upper Middle Income"
       },
       {
         "ISO3": "VNM",
-        "Country": "Viet Nam",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "East Asia & Pacific",
-        "Continent": "Asia",
-        "UNSubRegion": "South-Eastern Asia",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Viet Nam",
+        "unregion": "Asia",
+        "worldbankregion": "East Asia & Pacific",
+        "continent": "Asia",
+        "unsubregion": "South-Eastern Asia",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "YEM",
-        "Country": "Yemen",
-        "UNRegion": "Asia",
-        "WorldBankRegions": "Middle East & North Africa",
-        "Continent": "Asia",
-        "UNSubRegion": "Western Asia",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Yemen",
+        "unregion": "Asia",
+        "worldbankregion": "Middle East & North Africa",
+        "continent": "Asia",
+        "unsubregion": "Western Asia",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "ZMB",
-        "Country": "Zambia",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Eastern Africa",
-        "WorldBankIncomeGroups": "Lower Middle Income"
+        "country": "Zambia",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Eastern Africa",
+        "worldbankincomegroup": "Lower Middle Income"
       },
       {
         "ISO3": "ZWE",
-        "Country": "Zimbabwe",
-        "UNRegion": "Africa",
-        "WorldBankRegions": "Sub-Saharan Africa",
-        "Continent": "Africa",
-        "UNSubRegion": "Eastern Africa",
-        "WorldBankIncomeGroups": "Low Income"
+        "country": "Zimbabwe",
+        "unregion": "Africa",
+        "worldbankregion": "Sub-Saharan Africa",
+        "continent": "Africa",
+        "unsubregion": "Eastern Africa",
+        "worldbankincomegroup": "Low Income"
       },
       {
         "ISO3": "ALA",
-        "Country": "Åland Islands",
-        "Continent": "Europe"
+        "country": "Åland Islands",
+        "continent": "Europe"
       },
       {
         "ISO3": "ASM",
-        "Country": "American Samoa",
-        "Continent": "Oceania"
+        "country": "American Samoa",
+        "continent": "Oceania"
       },
       {
         "ISO3": "ATA",
-        "Country": "Antarctica",
-        "Continent": "Antarctica"
+        "country": "Antarctica",
+        "continent": "Antarctica"
       },
       {
         "ISO3": "ABW",
-        "Country": "Aruba",
-        "Continent": "South America"
+        "country": "Aruba",
+        "continent": "South America"
       },
       {
         "ISO3": "BMU",
-        "Country": "Bermuda",
-        "Continent": "North America"
+        "country": "Bermuda",
+        "continent": "North America"
       },
       {
         "ISO3": "BES",
-        "Country": "Caribbean Netherlands",
-        "Continent": "South America"
+        "country": "Caribbean Netherlands",
+        "continent": "South America"
       },
       {
         "ISO3": "BVT",
-        "Country": "Bouvet Island",
-        "Continent": "Antarctica"
+        "country": "Bouvet Island",
+        "continent": "Antarctica"
       },
       {
         "ISO3": "IOT",
-        "Country": "British Indian Ocean Territory",
-        "Continent": "Asia"
+        "country": "British Indian Ocean Territory",
+        "continent": "Asia"
       },
       {
         "ISO3": "CYM",
-        "Country": "Cayman Islands",
-        "Continent": "North America"
+        "country": "Cayman Islands",
+        "continent": "North America"
       },
       {
         "ISO3": "CXR",
-        "Country": "Christmas Island",
-        "Continent": "Asia"
+        "country": "Christmas Island",
+        "continent": "Asia"
       },
       {
         "ISO3": "CCK",
-        "Country": "Cocos (Keeling) Islands",
-        "Continent": "Asia"
+        "country": "Cocos (Keeling) Islands",
+        "continent": "Asia"
       },
       {
         "ISO3": "CUW",
-        "Country": "Curaçao",
-        "Continent": "South America"
+        "country": "Curaçao",
+        "continent": "South America"
       },
       {
         "ISO3": "FLK",
-        "Country": "Falkland Islands",
-        "Continent": "South America"
+        "country": "Falkland Islands",
+        "continent": "South America"
       },
       {
         "ISO3": "FRO",
-        "Country": "Faroe Islands",
-        "Continent": "Europe"
+        "country": "Faroe Islands",
+        "continent": "Europe"
       },
       {
         "ISO3": "GUF",
-        "Country": "French Guiana",
-        "Continent": "South America"
+        "country": "French Guiana",
+        "continent": "South America"
       },
       {
         "ISO3": "PYF",
-        "Country": "French Polynesia",
-        "Continent": "Oceania"
+        "country": "French Polynesia",
+        "continent": "Oceania"
       },
       {
         "ISO3": "ATF",
-        "Country": "French Southern Territories",
-        "Continent": "Africa"
+        "country": "French Southern Territories",
+        "continent": "Africa"
       },
       {
         "ISO3": "GIB",
-        "Country": "Gibraltar",
-        "Continent": "Europe"
+        "country": "Gibraltar",
+        "continent": "Europe"
       },
       {
         "ISO3": "GRL",
-        "Country": "Greenland",
-        "Continent": "North America"
+        "country": "Greenland",
+        "continent": "North America"
       },
       {
         "ISO3": "GLP",
-        "Country": "Guadeloupe",
-        "Continent": "North America"
+        "country": "Guadeloupe",
+        "continent": "North America"
       },
       {
         "ISO3": "GUM",
-        "Country": "Guam",
-        "Continent": "Asia"
+        "country": "Guam",
+        "continent": "Asia"
       },
       {
         "ISO3": "GGY",
-        "Country": "Guernsey",
-        "Continent": "Europe"
+        "country": "Guernsey",
+        "continent": "Europe"
       },
       {
         "ISO3": "HMD",
-        "Country": "Heard & McDonald Islands",
-        "Continent": "Antarctica"
+        "country": "Heard & McDonald Islands",
+        "continent": "Antarctica"
       },
       {
         "ISO3": "HKG",
-        "Country": "Hong Kong SAR China",
-        "Continent": "Asia"
+        "country": "Hong Kong SAR China",
+        "continent": "Asia"
       },
       {
         "ISO3": "IMN",
-        "Country": "Isle of Man",
-        "Continent": "Europe"
+        "country": "Isle of Man",
+        "continent": "Europe"
       },
       {
         "ISO3": "JEY",
-        "Country": "Jersey",
-        "Continent": "Europe"
+        "country": "Jersey",
+        "continent": "Europe"
       },
       {
         "ISO3": "XKX"
       },
       {
         "ISO3": "MAC",
-        "Country": "Macao SAR China",
-        "Continent": "Asia"
+        "country": "Macao SAR China",
+        "continent": "Asia"
       },
       {
         "ISO3": "MTQ",
-        "Country": "Martinique",
-        "Continent": "North America"
+        "country": "Martinique",
+        "continent": "North America"
       },
       {
         "ISO3": "MYT",
-        "Country": "Mayotte",
-        "Continent": "Africa"
+        "country": "Mayotte",
+        "continent": "Africa"
       },
       {
         "ISO3": "NCL",
-        "Country": "New Caledonia",
-        "Continent": "Oceania"
+        "country": "New Caledonia",
+        "continent": "Oceania"
       },
       {
         "ISO3": "NFK",
-        "Country": "Norfolk Island",
-        "Continent": "Oceania"
+        "country": "Norfolk Island",
+        "continent": "Oceania"
       },
       {
         "ISO3": "MNP",
-        "Country": "Northern Mariana Islands",
-        "Continent": "Asia"
+        "country": "Northern Mariana Islands",
+        "continent": "Asia"
       },
       {
         "ISO3": "PCN",
-        "Country": "Pitcairn Islands",
-        "Continent": "Oceania"
+        "country": "Pitcairn Islands",
+        "continent": "Oceania"
       },
       {
         "ISO3": "PRI",
-        "Country": "Puerto Rico",
-        "Continent": "North America"
+        "country": "Puerto Rico",
+        "continent": "North America"
       },
       {
         "ISO3": "REU",
-        "Country": "Réunion",
-        "Continent": "Africa"
+        "country": "Réunion",
+        "continent": "Africa"
       },
       {
         "ISO3": "BLM",
-        "Country": "St. Barthélemy",
-        "Continent": "North America"
+        "country": "St. Barthélemy",
+        "continent": "North America"
       },
       {
         "ISO3": "SHN",
-        "Country": "St. Helena",
-        "Continent": "Africa"
+        "country": "St. Helena",
+        "continent": "Africa"
       },
       {
         "ISO3": "MAF",
-        "Country": "Saint Martin (French part)",
-        "Continent": "North America"
+        "country": "Saint Martin (French part)",
+        "continent": "North America"
       },
       {
         "ISO3": "SPM",
-        "Country": "St. Pierre & Miquelon",
-        "Continent": "North America"
+        "country": "St. Pierre & Miquelon",
+        "continent": "North America"
       },
       {
         "ISO3": "SXM",
-        "Country": "Sint Maarten",
-        "Continent": "North America"
+        "country": "Sint Maarten",
+        "continent": "North America"
       },
       {
         "ISO3": "SGS",
-        "Country": "South Georgia & South Sandwich Islands",
-        "Continent": "Antarctica"
+        "country": "South Georgia & South Sandwich Islands",
+        "continent": "Antarctica"
       },
       {
         "ISO3": "SJM",
-        "Country": "Svalbard & Jan Mayen",
-        "Continent": "Europe"
+        "country": "Svalbard & Jan Mayen",
+        "continent": "Europe"
       },
       {
         "ISO3": "TWN",
-        "Country": "Taiwan",
-        "Continent": "Asia"
+        "country": "Taiwan",
+        "continent": "Asia"
       },
       {
         "ISO3": "XTX"
       },
       {
         "ISO3": "UMI",
-        "Country": "United States Minor Outlying Islands (the)",
-        "Continent": "Oceania"
+        "country": "United States Minor Outlying Islands (the)",
+        "continent": "Oceania"
       },
       {
         "ISO3": "VIR",
-        "Country": "U.S. Virgin Islands",
-        "Continent": "North America"
+        "country": "U.S. Virgin Islands",
+        "continent": "North America"
       },
       {
         "ISO3": "WLF",
-        "Country": "Wallis & Futuna",
-        "Continent": "Oceania"
+        "country": "Wallis & Futuna",
+        "continent": "Oceania"
       },
       {
         "ISO3": "ESH",
-        "Country": "Western Sahara",
-        "Continent": "Africa"
+        "country": "Western Sahara",
+        "continent": "Africa"
       }
     ],
     "exp_class": [
@@ -5852,82 +5840,208 @@
     ],
     "src_info": [
       {
-        "src_org_code": "IFRC",
-        "src_org_lab": "International Federation of Red Cross and Red Crescent Societies (IFRC)",
-        "src_org_typecode": "orgtypengo",
-        "src_org_typelab": "Non Governmental Organisation",
-        "src_org_email": "im@ifrc.org",
-        "src_db_code": "Emergency Appeal",
-        "src_db_lab": "IFRC Emergency Appeals Database",
-        "src_db_attr": "custodian",
-        "src_db_lic": "Creative Commons Attribution 3.0 International License",
-        "src_db_URL": "https://goadmin.ifrc.org/api/v2/appeal",
-        "src_addinfo": ""
+        "src_db_code": "EMDAT",
+        "src_db_lab": "Emergency Events Database",
+        "src_org_code": "CRED",
+        "src_org_lab": "Centre for Research on the Epidemiology of Disasters (CRED) University of Louvain",
+        "src_orgtype_code": "orgtypeacad",
+        "src_orgtype_lab": "Academic & Scientific",
+        "src_org_email": "contact@emdat.be",
+        "src_db_url": "https://public.emdat.be/",
+        "src_db_attr": "curator",
+        "src_db_lic": "Bespoke: https://doc.emdat.be/docs/legal/database-license-agreement/"
       },
       {
-        "src_org_code": "IFRC",
-        "src_org_lab": "International Federation of Red Cross and Red Crescent Societies (IFRC)",
-        "src_org_typecode": "orgtypengo",
-        "src_org_typelab": "Non Governmental Organisation",
-        "src_org_email": "im@ifrc.org",
-        "src_db_code": "DREF",
-        "src_db_lab": "IFRC Emergency Appeals Database",
+        "src_db_code": "Desinventar",
+        "src_db_lab": "Disaster Inventory System (Desinventar)",
+        "src_org_code": "UNDRR",
+        "src_org_lab": "United Nations Disaster Risk Reduction (UNDRR)",
+        "src_orgtype_code": "orgtypegov",
+        "src_orgtype_lab": "Governmental",
+        "src_org_email": "undrr-bonn@un.org",
+        "src_db_url": "https://www.desinventar.net/download.html",
         "src_db_attr": "custodian",
-        "src_db_lic": "Creative Commons Attribution 3.0 International License",
-        "src_db_URL": "https://goadmin.ifrc.org/api/v2/appeal",
-        "src_addinfo": ""
+        "src_db_lic": "Apache-2-like"
       },
       {
-        "src_org_code": "IFRC",
-        "src_org_lab": "International Federation of Red Cross and Red Crescent Societies (IFRC)",
-        "src_org_typecode": "orgtypengo",
-        "src_org_typelab": "Non Governmental Organisation",
-        "src_org_email": "im@ifrc.org",
-        "src_db_code": "Forecast Based Action",
-        "src_db_lab": "IFRC Emergency Appeals Database",
+        "src_db_code": "UNO_damass",
+        "src_db_lab": "UNOSAT Satellite Image-based Damage Assessment Data",
+        "src_org_code": "UNOSAT",
+        "src_org_lab": "United Nations Satellite Centre (UNOSAT)",
+        "src_orgtype_code": "orgtypeun",
+        "src_orgtype_lab": "UN & International Organisations",
+        "src_org_email": "unosat@unitar.org",
+        "src_db_url": "https://unosat.org/products/",
         "src_db_attr": "custodian",
-        "src_db_lic": "Creative Commons Attribution 3.0 International License",
-        "src_db_URL": "https://goadmin.ifrc.org/api/v2/appeal",
-        "src_addinfo": ""
+        "src_db_lic": "CCA"
       },
       {
-        "src_org_code": "IFRC",
-        "src_org_lab": "International Federation of Red Cross and Red Crescent Societies (IFRC)",
-        "src_org_typecode": "orgtypengo",
-        "src_org_typelab": "Non Governmental Organisation",
-        "src_org_email": "im@ifrc.org",
-        "src_db_code": "GO-Maps",
-        "src_db_lab": "IFRC-GO ADM-0 Maps",
+        "src_db_code": "COP_damass",
+        "src_db_lab": "Copernicus EMS Satellite Image-based Damage Assessment Data",
+        "src_org_code": "COPERNICUS",
+        "src_org_lab": "Copernicus Emergency Management Services (EMS)",
+        "src_orgtype_code": "orgtyperio",
+        "src_orgtype_lab": "Regional Intergovernmental Organisation",
+        "src_org_email": "echo-ercc@ec.europe.eu",
+        "src_db_url": "https://emergency.copernicus.eu/",
         "src_db_attr": "custodian",
-        "src_db_lic": "Creative Commons Attribution 3.0 International License",
-        "src_db_URL": "https://go-user-library.ifrc.org/maps",
-        "src_addinfo": ""
+        "src_db_lic": "CCA"
       },
       {
-        "src_org_code": "EC-JRC",
-        "src_org_lab": "European Commission - Joint Research Center",
-        "src_org_typecode": "orgtyperio",
-        "src_org_typelab": "Regional Intergovernmental Organisation",
-        "src_org_email": "coordination@gdacs.org",
+        "src_db_code": "GO-EA",
+        "src_db_lab": "IFRC Emergency Appeals (EA)",
+        "src_org_code": "IFRC",
+        "src_org_lab": "International Federation of Red Cross Red Crescent Societies (IFRC)",
+        "src_orgtype_code": "orgtypengo",
+        "src_orgtype_lab": "Non Governmental Organisation",
+        "src_org_email": "im@ifrc.org",
+        "src_db_url": "https://goadmin.ifrc.org/api/v2/appeal",
+        "src_db_attr": "custodian",
+        "src_db_lic": "CCA 3.0"
+      },
+      {
+        "src_db_code": "GO-DREF",
+        "src_db_lab": "IFRC Disaster Response Emergency Funding (DREF)",
+        "src_org_code": "IFRC",
+        "src_org_lab": "International Federation of Red Cross Red Crescent Societies (IFRC)",
+        "src_orgtype_code": "orgtypengo",
+        "src_orgtype_lab": "Non Governmental Organisation",
+        "src_org_email": "im@ifrc.org",
+        "src_db_url": "https://goadmin.ifrc.org/api/v2/appeal",
+        "src_db_attr": "custodian",
+        "src_db_lic": "CCA 3.0"
+      },
+      {
+        "src_db_code": "GO-FBA",
+        "src_db_lab": "IFRC Forecast Based Action",
+        "src_org_code": "IFRC",
+        "src_org_lab": "International Federation of Red Cross Red Crescent Societies (IFRC)",
+        "src_orgtype_code": "orgtypengo",
+        "src_orgtype_lab": "Non Governmental Organisation",
+        "src_org_email": "im@ifrc.org",
+        "src_db_url": "https://goadmin.ifrc.org/api/v2/appeal",
+        "src_db_attr": "custodian",
+        "src_db_lic": "CCA 3.0"
+      },
+      {
+        "src_db_code": "GO-EAP",
+        "src_db_lab": "IFRC Emergency Action Protocol Funding (EAP)",
+        "src_org_code": "IFRC",
+        "src_org_lab": "International Federation of Red Cross Red Crescent Societies (IFRC)",
+        "src_orgtype_code": "orgtypengo",
+        "src_orgtype_lab": "Non Governmental Organisation",
+        "src_org_email": "im@ifrc.org",
+        "src_db_url": "https://goadmin.ifrc.org/api/v2/appeal",
+        "src_db_attr": "custodian",
+        "src_db_lic": "CCA 3.0"
+      },
+      {
+        "src_db_code": "GO-sEAP",
+        "src_db_lab": "IFRC simplified Emergency Action Protocol Funding (sEAP)",
+        "src_org_code": "IFRC",
+        "src_org_lab": "International Federation of Red Cross Red Crescent Societies (IFRC)",
+        "src_orgtype_code": "orgtypengo",
+        "src_orgtype_lab": "Non Governmental Organisation",
+        "src_org_email": "im@ifrc.org",
+        "src_db_url": "https://goadmin.ifrc.org/api/v2/appeal",
+        "src_db_attr": "custodian",
+        "src_db_lic": "CCA 3.0"
+      },
+      {
+        "src_db_code": "GO-AA",
+        "src_db_lab": "IFRC Anticipatory Action (AA)",
+        "src_org_code": "IFRC",
+        "src_org_lab": "International Federation of Red Cross Red Crescent Societies (IFRC)",
+        "src_orgtype_code": "orgtypengo",
+        "src_orgtype_lab": "Non Governmental Organisation",
+        "src_org_email": "im@ifrc.org",
+        "src_db_url": "https://goadmin.ifrc.org/api/v2/appeal",
+        "src_db_attr": "custodian",
+        "src_db_lic": "CCA 3.0"
+      },
+      {
+        "src_db_code": "GO-iDREF",
+        "src_db_lab": "IFRC Imminent Disaster Response Emergency Funding (iDREF)",
+        "src_org_code": "IFRC",
+        "src_org_lab": "International Federation of Red Cross Red Crescent Societies (IFRC)",
+        "src_orgtype_code": "orgtypengo",
+        "src_orgtype_lab": "Non Governmental Organisation",
+        "src_org_email": "im@ifrc.org",
+        "src_db_url": "https://goadmin.ifrc.org/api/v2/appeal",
+        "src_db_attr": "custodian",
+        "src_db_lic": "CCA 3.0"
+      },
+      {
+        "src_db_code": "GO-FR",
+        "src_db_lab": "IFRC Field Reports (FR)",
+        "src_org_code": "IFRC",
+        "src_org_lab": "International Federation of Red Cross Red Crescent Societies (IFRC)",
+        "src_orgtype_code": "orgtypengo",
+        "src_orgtype_lab": "Non Governmental Organisation",
+        "src_org_email": "im@ifrc.org",
+        "src_db_url": "https://goadmin.ifrc.org/api/v2/field-report",
+        "src_db_attr": "custodian",
+        "src_db_lic": "CCA 3.0"
+      },
+      {
+        "src_db_code": "GIDD",
+        "src_db_lab": "Global Internal Displacement Database (GIDD)",
+        "src_org_code": "IDMC",
+        "src_org_lab": "Internal Monitoring Displacement Centre (IDMC)",
+        "src_orgtype_code": "orgtypengo",
+        "src_orgtype_lab": "Non Governmental Organisation",
+        "src_org_email": "info@idmc.ch",
+        "src_db_url": "www.internal-displacement.org",
+        "src_db_attr": "curator",
+        "src_db_lic": "unknown"
+      },
+      {
         "src_db_code": "GDACS",
         "src_db_lab": "Global Disaster Alert and Coordination System (GDACS)",
+        "src_org_code": "EC-JRC",
+        "src_org_lab": "European Commission - Joint Research Center",
+        "src_orgtype_code": "orgtyperio",
+        "src_orgtype_lab": "Regional Intergovernmental Organisation",
+        "src_org_email": "coordination@gdacs.org",
+        "src_db_url": "www.gdacs.org",
         "src_db_attr": "mediator",
-        "src_db_lic": "unknown",
-        "src_db_URL": "www.gdacs.org",
-        "src_addinfo": ""
+        "src_db_lic": "unknown"
       },
       {
-        "src_org_code": "IFRC",
-        "src_org_lab": "International Federation of Red Cross and Red Crescent Societies (IFRC)",
-        "src_org_typecode": "orgtypengo",
-        "src_org_typelab": "Non Governmental Organisation",
-        "src_org_email": "im@ifrc.org",
+        "src_db_code": "GLIDE",
+        "src_db_lab": "GLobal IDEntifier numbers (GLIDE)",
+        "src_org_code": "ADRC",
+        "src_org_lab": "Asian Disaster Reduction Center (ADRC)",
+        "src_orgtype_code": "orgtyperio",
+        "src_orgtype_lab": "Regional Intergovernmental Organisation",
+        "src_org_email": "gliderep@adrc.asia",
+        "src_db_url": "https://glidenumber.net",
+        "src_db_attr": "custodian",
+        "src_db_lic": "unknown"
+      },
+      {
         "src_db_code": "GO-Maps",
         "src_db_lab": "IFRC-GO ADM-0 Maps",
+        "src_org_code": "IFRC",
+        "src_org_lab": "International Federation of Red Cross Red Crescent Societies (IFRC)",
+        "src_orgtype_code": "orgtypengo",
+        "src_orgtype_lab": "Non Governmental Organisation",
+        "src_org_email": "im@ifrc.org",
+        "src_db_url": "https://go-user-library.ifrc.org/maps",
         "src_db_attr": "custodian",
-        "src_db_lic": "Creative Commons Attribution 3.0 International License",
-        "src_db_URL": "https://go-user-library.ifrc.org/maps",
-        "src_addinfo": ""
+        "src_db_lic": "CCA 3.0"
+      },
+      {
+        "src_db_code": "Shakemaps",
+        "src_db_lab": "Earthquake Catalog",
+        "src_org_code": "USGS",
+        "src_org_lab": "United States Geological Survey (USGS)",
+        "src_orgtype_code": "orgtypegov",
+        "src_orgtype_lab": "Governmental",
+        "src_org_email": "usgsstore@usgs.gov",
+        "src_db_url": "https://www.usgs.gov/survey-manual/11006-use-copyrighted-material-usgs-information-products",
+        "src_db_attr": "custodian",
+        "src_db_lic": "U.S Public Domain"
       }
     ],
     "units_info": [

@@ -14,30 +14,21 @@ add_tabGCDBinfo<-function(){
 # risk data-related fields
                # Basic event-level information
 col_tabGCDB<-c("event_ID"="character", # GCDB event ID
-               "ext_IDs"="character", # external ID numbers, such as the GLIDE number of impacting-hazard (note: not necessarily the primary hazard)
-               "ext_ID_dbs"="character", # Source database of the external ID
-               "ext_ID_orgs"="character", # Source organisation of the external ID
+               "all_ext_IDs"="list", # external ID numbers, such as the GLIDE number of impacting-hazard (note: not necessarily the primary hazard)
                "ev_name"="character", # Name of the event in any language
-               "ev_name_lang"="character", # Language that the event name is written in (ISO 639-2 standard code)
                "location"="character", # general description of hazard location
                "ev_ISO3s"="character", # ISO3-codes
-               "regions"="character", # Local-continent/region/multi-country grouping
                "ev_sdate"="character", # Start date of the event or the impacting-hazard
                "ev_fdate"="character", # Finish date of the event or the impacting-hazard
-               # Add triggering hazard details
-               "prim_haz_Ab"="character", # Primary (triggering) hazard 2-letter abbreviation
-               "prim_haz_type"="character", # Primary (triggering) hazard  type
-               "prim_haz_cluster"="character", # Primary (triggering) hazard cluster 
-               "prim_haz_spec"="character", # Primary (triggering) specific hazard 
                
                # Impact information
                "imp_ISO3s"="character", # country ISO3-C codes for the impact data
                "imp_sub_ID"="character", # ID of each impact element in the overall event
                "imp_sdate"="character", # Start date of the impact estimate (in case it aggregates over a range of dates)
                "imp_fdate"="character", # End date of the impact estimate (in case it aggregates over a range of dates)
-               "imp_cat"="character", # Impact category
-               "imp_subcat"="character", # Impact subcategory
-               "imp_det"="character", # Impact subsubcategory
+               "exp_cat"="character", # Impact category
+               "exp_subcat"="character", # Impact subcategory
+               "exp_spec"="character", # Impact subsubcategory
                "imp_value"="numeric", # Impact quantity
                "imp_type"="character", # Impact units
                "imp_units"="character", # Impact type (e.g. excess mortality, displacement stock)
@@ -45,14 +36,6 @@ col_tabGCDB<-c("event_ID"="character", # GCDB event ID
                "imp_est_type"="character", # Estimate type: primary, secondary, modelled
                "imp_src_db"="character", # Source database name of impact estimate or the curated estimate
                "imp_src_org"="character", # Source organisation of impact estimate or the curated estimate
-               "imp_src_orgtype"="character", # Source organisation type
-               "imp_src_URL"="character", # URL of the impact estimate
-               "imp_src_dbdesc"="character", # General database description
-               "imp_src_orgatt"="character", # Attribution of the data to the source organisation (e.g. host, curator, etc)
-               "imp_src_addinfo"="character", # Additional information about the impact source
-               "imp_src_email"="character", # Email address of the source organisation
-               "imp_src_phone"="character", # Phone number of the source organisation
-               "imp_src_lic"="character", # licenses of the data from the provided organisation
                
                # Hazard information (can change from impact to impact for the same event)
                "haz_ISO3s"="character", # country ISO3-C codes for the hazard data
@@ -180,7 +163,6 @@ ImpLabs<-function(ImpDB,nomDB="Desinventar",dropName=T){
     left_join(dplyr::select(imptax,-c("imp_src_orgtype","imp_src_org","imp_src_db")),by="VarName")
   # Spit it out!
   if(dropName) return(ImpDB) else return(dplyr::select(ImpDB,-VarName))
-  
 }
 
 # tmp<-googledrive::drive_download("https://docs.google.com/spreadsheets/d/1agqy6DV5VmJuaamVaXZE7jfkDOC5AOhM/edit?usp=sharing&ouid=109118346520870360454&rtpof=true&sd=true",overwrite = T)

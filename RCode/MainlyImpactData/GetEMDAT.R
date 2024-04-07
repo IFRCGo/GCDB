@@ -92,6 +92,22 @@ PairEMDATspatial<-function(EMDAT,haz="EQ",GAULexist=F){
 #   return(colConv)
 # }
 
+EMDATHazards_API<-function(EMDAT){
+  EMDAT$subgroup%<>%str_to_lower()
+  EMDAT$type%<>%str_to_lower()
+  EMDAT$subtype%<>%str_to_lower()
+  # Read in the EMDAT-HIPS taxonomy conversion dataframe
+  colConv<-openxlsx::read.xlsx("./Taxonomies/MostlyImpactData/EMDAT_HIP_API.xlsx")
+  colConv$subgroup%<>%str_to_lower()
+  colConv$type%<>%str_to_lower()
+  colConv$subtype%<>%str_to_lower()
+  # Reduce the translated vector and merge
+  EMDAT%<>%left_join(colConv,by = c("subgroup","type","subtype"),
+                     relationship="many-to-one")
+  
+  EMDAT%>%dplyr::select(-c(group,subgroup,type,subtype,associated_types))
+} 
+
 EMDATHazards<-function(EMDAT){
   EMDAT$Disaster.Subgroup%<>%str_to_lower()
   EMDAT$Disaster.Type%<>%str_to_lower()
@@ -158,16 +174,26 @@ EMDATHazards_old<-function(EMDAT){
   
 } 
 
-
 CleanEMDAT_API<-function(EMDAT){
-  # Replace empty values
-  # EMDAT[EMDAT=="Source:"]<-NA
   # Some of the column names are messed up due to presence of non-letters
-  colnames(EMDAT)[c(20,37:42)]<-
-    c("AID.Contribution","Reconstruction.Costs","Reconstruction.Costs.Adjusted",
-      "Insured.Damages","Insured.Damages.Adjusted","Total.Damages","Total.Damages.Adjusted")
+  EMDAT%<>%rename("AID.Contribution"="aid_contribution",
+                  "Reconstruction.Costs"="reconstr_dam",
+                  "Reconstruction.Costs.Adjusted"="reconstr_dam_adj",
+                  "Insured.Damages"="insur_dam",
+                  "Insured.Damages.Adjusted"="insur_dam_adj",
+                  "Total.Damages"="total_dam",
+                  "Total.Damages.Adjusted"="total_dam_adj",
+                  "Total.Deaths"="total_deaths",
+                  "No.Injured"="no_injured",
+                  "No.Affected"="no_affected",
+                  "No.Homeless"="no_homeless",
+                  "Total.Affected"="total_affected")
   # Also, make sure to convert to the full value in US dollars
-  for(i in c(20,37:42)) EMDAT[,i]<-1000*as.numeric(EMDAT[,i])
+  EMDAT[,c("AID.Contribution","Reconstruction.Costs","Reconstruction.Costs.Adjusted",
+           "Insured.Damages","Insured.Damages.Adjusted","Total.Damages",
+           "Total.Damages.Adjusted")]<-1000*EMDAT[,c("AID.Contribution","Reconstruction.Costs","Reconstruction.Costs.Adjusted",
+                                                                "Insured.Damages","Insured.Damages.Adjusted","Total.Damages",
+                                                                "Total.Damages.Adjusted")]
   # For dates with no start day, make it the middle of the month
   EMDAT$start_day[is.na(EMDAT$start_day)]<-15
   # Make sure the start date is 2 characters
@@ -182,64 +208,115 @@ CleanEMDAT_API<-function(EMDAT){
   # Make sure the end month is 2 characters
   EMDAT$end_month[nchar(EMDAT$end_month)==1 & !is.na(EMDAT$end_month)]<-
     paste0("0",EMDAT$end_month[nchar(EMDAT$end_month)==1 & !is.na(EMDAT$end_month)])
+  # If the end month is NA, we leave as NA
+  # If the end date is NA, assume end of the month
+  EMDAT$end_day[is.na(EMDAT$end_day) & !is.na(EMDAT$end_month)]<-
+    sapply((1:nrow(EMDAT))[is.na(EMDAT$end_day) & !is.na(EMDAT$end_month)], function(i){
+      # Go to the next month and then subtract one day to make it the end of the original month
+      monthy<-as.character(as.numeric(EMDAT$end_month[i])+1)
+      # Checks for the character
+      if(nchar(monthy)==1) monthy<-paste0("0",monthy)
+      if(monthy=="13") return("31")
+      # Create the date variable, subtract one day from it then extract the date
+      format(as.Date(paste0(c(EMDAT$end_year[i],monthy,
+                              "01"),collapse = "-"))-1,"%d")
+    },simplify = T)
   # Start date in one
-  EMDAT$imp_sdate<-EMDAT$ev_sdate<-EMDAT$imp_unitdate<-sapply(1:nrow(EMDAT),function(i) paste0(c(EMDAT$start_year[i],
-                                                                                                 EMDAT$start_month[i],
-                                                                                                 EMDAT$start_day[i]),collapse = "-"),simplify = T)
+  EMDAT$ev_sdate<-EMDAT$imp_unitdate<-sapply(1:nrow(EMDAT),function(i) paste0(c(EMDAT$start_year[i],
+                                                                                EMDAT$start_month[i],
+                                                                                EMDAT$start_day[i]),collapse = "-"),simplify = T)
   # End date in one
-  EMDAT$imp_fdate<-EMDAT$ev_fdate<-sapply(1:nrow(EMDAT),function(i) paste0(c(EMDAT$end_year[i],
-                                                                             EMDAT$end_month[i],
-                                                                             EMDAT$end_day[i]),collapse = "-"),simplify = T)
+  EMDAT$ev_fdate<-sapply(1:nrow(EMDAT),function(i) paste0(c(EMDAT$end_year[i],
+                                                            EMDAT$end_month[i],
+                                                            EMDAT$end_day[i]),collapse = "-"),simplify = T)
+  # imp_sdate and imp_fdate are not what you would expect, they are related to the impact record not the event start/ends dates:EMDAT$imp_sdate<-
+  EMDAT%<>%rename("imp_fdate"="entry_date")%>%mutate(imp_sdate=ev_sdate)
   # Remove everything we dont need
   EMDAT%<>%dplyr::select(-c(start_day,start_month,start_year,
                             end_day,end_month,end_year,
                             country,region))
-  # Column renaming
-  colnames(EMDAT)[colnames(EMDAT)=="name"]<-"ev_name"; colnames(EMDAT)[colnames(EMDAT)=="iso"]<-"imp_ISO3s"
-  EMDAT$ev_name_lang<-"lang_eng"
-  # Add some of the extra details that are Desinventar-specific
-  EMDAT$imp_est_type<-"esttype_prim"
-  EMDAT$src_URL<-"https://public.emdat.be/"
-  EMDAT$imp_spat_srcorg<-EMDAT$imp_src_org<-"CRED-UCLou"
+  # Rename lots of the variables
+  EMDAT%<>%rename("imp_ISO3s"="iso",
+                  "ext_ID"="disno",
+                  "gen_location"="location",
+                  "imp_lon"="longitude",
+                  "imp_lat"="latitude",
+                  "ev_name"="name")%>%mutate(ev_ISO3s=imp_ISO3s)
+  # Add some of the extra details that are EM-DAT specific
+  EMDAT$imp_src_URL<-"https://public.emdat.be/"
+  EMDAT$imp_src_org<-"CRED"
+  EMDAT$imp_spat_srcorg<-""
   EMDAT$imp_src_db<-"EM-DAT"
   EMDAT$imp_src_orgtype<-"orgtypeacad"
   EMDAT$imp_spat_covcode<-"spat_polygon"
-  
-  stop("EMDAT imp_spat_ID needs sorting out. Add directly from GAUL by stripping out the geo elements and doing left_join")
-  
-  EMDAT$spat_res<-"ADM-0"
-  EMDAT$spat_res[grepl(x = EMDAT$admin_units,"adm1_")]<-"ADM-1" 
-  EMDAT$spat_res[grepl(x = EMDAT$admin_units,"adm2_")]<-"ADM-2"
-  
-  # Change colnames to allow the hazard taxonomies to be merged
-  colnames(EMDAT)[colnames(EMDAT)%in%c("group","subgroup","type","subtype")]<-
-    paste0("Disaster.",colnames(EMDAT)[colnames(EMDAT)%in%c("group","subgroup","type","subtype")]%>%
-             stringi::stri_trans_totitle())
+  EMDAT$imp_spat_resunits<-"adminlevel"
+  # Extract the admin level of each entry
+  EMDAT$imp_spat_res<-0
+  # extract which entries have adm level 1
+  adm1s<-sapply(1:nrow(EMDAT),function(i) {
+    ifelse(is.null(EMDAT$admin_units[[i]]),F,
+           grepl(x = colnames(EMDAT$admin_units[[i]]),"adm1_"))
+    },simplify = T)
+  # extract which entries have adm level 2
+  adm2s<-sapply(1:nrow(EMDAT),function(i) {
+    ifelse(is.null(EMDAT$admin_units[[i]]),F,
+           grepl(x = colnames(EMDAT$admin_units[[i]]),"adm2_"))
+  },simplify = T)
+  # Set the admin levels
+  EMDAT$imp_spat_res[adm1s]<-1; EMDAT$imp_spat_res[adm2s]<-2
+  # EMDAT, for now, uses GAUL ADM dataset
+  EMDAT$imp_spat_ID<-lapply(1:nrow(EMDAT),function(i){
+    # If no admin units are included, return simplest ID
+    if(is.null(EMDAT$admin_units[[i]])) return(paste0("FAO-GAUL-ADM0-",EMDAT$imp_ISO3s[i]))
+    # Otherwise, combine to make the imp_spat_ID
+    return(paste0("FAO-GAUL-ADM",EMDAT$imp_spat_res[i],"-",
+                  EMDAT$imp_ISO3s[i],"-",
+                  (EMDAT$admin_units[[i]])[,grepl("_code",colnames(EMDAT$admin_units[[i]]))]))
+  })
+  # File location of the admin boundaries dataset
+  EMDAT$imp_spat_fileloc<-"https://data.apps.fao.org/map/catalog/static/search?keyword=HiH_boundaries"
   # Link to the hazard taxonomy from HIPS
-  EMDAT%<>%EMDATHazards()
+  EMDAT%<>%EMDATHazards_API()
   
   if(nrow(EMDAT)==0) return(EMDAT)
   
-  # Sort the IDs variable:
-  EMDAT$GLIDE<-EMDAT$external_ids
-  EMDAT$Glide[ind]<-paste0(EMDAT$haz_Ab[ind],"-",EMDAT$Glide[ind])
-  # Ensure column name aligns with imp_GCDB object
-  colnames(EMDAT)[colnames(EMDAT)=="Glide"]<-"GLIDE"
-  
-  
-  
-  
-  
   # Generate the GCDB ID
   EMDAT$event_ID<-GetMonty_ID(EMDAT)
+  # Sort the IDs variable:
+  EMDAT$all_ext_IDs<-lapply(1:nrow(EMDAT), function(i){
+    # First extract EM-DAT event ID
+    out<-data.frame(ext_ID=EMDAT$ext_ID[i],
+               ext_ID_db="EMDAT",
+               ext_ID_org="CRED")
+    # If no other external IDs are provided, return only the Em-DAT ID
+    if(is.na(EMDAT$external_ids[i])) return(out)
+    # Otherwise, add the others!
+    exties<-str_split(EMDAT$external_ids[i],"\\|")
+    # For each external ID, change into correct format
+    do.call(rbind,lapply(exties,function(x){
+      # Extract ID & org/db info from the string
+      exex<-as.data.frame(str_split(x,":",simplify = T))%>%
+        setNames(c("ext_ID_db","ext_ID"))%>%
+        mutate(ext_ID_org=ext_ID_db)
+      # Correct for the fact that EM-DAT confuses organisation and database names
+      exex$ext_ID_org[exex$ext_ID_db=="USGS"]<-"USGS"
+      exex$ext_ID_db[exex$ext_ID_db=="USGS"]<-"Atlas"
+      exex$ext_ID_org[exex$ext_ID_db=="GLIDE"]<-"ADRC"
+      exex$ext_ID_org[exex$ext_ID_db=="DFO"]<-"UniColumbia"
+      
+      rbind(out,exex)
+    }))
+  })
+  # Check for any unknown/unprogrammed external IDs
+  if(any(!(do.call(rbind,EMDAT$all_ext_IDs)%>%pull(ext_ID_db)%in%c("EMDAT","Atlas","GLIDE","DFO")))) warning("External IDs from unknown organisations found in EM-DAT database")
   # Melt the columns and apply the impact categorisation
-  EMDAT%<>%ImpLabs(nomDB = "EM-DAT")
-  # Create an impact-specific ID
-  EMDAT%<>%GetGCDB_impID()
+  EMDAT%<>%ImpLabs(nomDB = "EM-DAT",dropName = T)
   # Make sure to remove all NA impact estimates
   EMDAT%<>%filter(!is.na(imp_value))
+  # Create an impact-specific ID
+  EMDAT%<>%GetGCDB_impID()
   # Add missing columns & reorder the dataframe to fit imp_GCDB object
-  EMDAT%>%AddEmptyColImp()
+  EMDAT%>%dplyr::select(any_of(MontyJSONnames()))%>%filter(!is.na(haz_spec) & imp_value>0)
 }
 
 CleanEMDAT<-function(EMDAT){
@@ -474,6 +551,7 @@ API_EMDAT<-function(){
           insur_dam
           insur_dam_adj
           total_dam
+          total_dam_adj
           cpi
           admin_units
           entry_date
@@ -493,6 +571,122 @@ API_EMDAT<-function(){
   jsonlite::fromJSON(client$exec(q$queries$monty))$data$public_emdat$data%>%
     CleanEMDAT_API()
 }
+
+convGOEMDAT_Monty<-function(){
+  # Get the Emergency Appeal data from GO
+  EMDAT<-API_EMDAT()
+  # Clean using the old GCDB structure
+  EMDAT%<>%filter(!is.na(haz_spec) & imp_value>0)
+  # Get rid of repeated entries
+  EMDAT%<>%distinct()%>%
+    arrange(ev_sdate)
+  # Load the Monty JSON template
+  emdMonty<-jsonlite::fromJSON("./Taxonomies/Montandon_JSON-Example.json")
+  #@@@@@ Impact-level data @@@@@#
+  # IDs
+  ID_linkage<-Add_ImpIDlink_Monty(
+    do.call(rbind,lapply(1:nrow(EMDAT),function(i) {
+      cbind(EMDAT$all_ext_IDs[[i]],EMDAT[i,]%>%dplyr::select(event_ID, 
+                                                             imp_sub_ID))
+    }))%>%mutate(haz_sub_ID=NA_character_)
+  )
+  
+  
+  
+  
+  
+  
+  
+  # Sources for impact data
+  source<-EMDAT%>%dplyr::select(imp_src_db,imp_src_URL,imp_src_org)
+  # impact estimates
+  impact_detail<-EMDAT%>%distinct(imp_sub_ID,.keep_all = T)%>%
+    dplyr::select(exp_spec,imp_value,imp_type,imp_units,imp_est_type,imp_unitdate)
+  # Add temporal information
+  temporal<-EMDAT%>%distinct(imp_sub_ID,.keep_all = T)%>%dplyr::select(imp_sdate,imp_fdate)
+  # Spatial data relevant to the impact estimates
+  # multiple-entry rows: imp_ISO3s,imp_spat_res
+  spatial<-Add_ImpSpatAll_Monty(
+    ID_linkage=EMDAT%>%dplyr::select(imp_sub_ID,imp_spat_ID,imp_spat_fileloc),
+    spatial_info=EMDAT%>%dplyr::select(
+      imp_ISO3s,
+      imp_lon,
+      imp_lat,
+      imp_spat_covcode,
+      imp_spat_res,
+      imp_spat_resunits,
+      imp_spat_crs
+    )%>%mutate(imp_lon=NA_real_,imp_lat=NA_real_),
+    source=EMDAT%>%dplyr::select(
+      imp_spat_srcdb,
+      imp_spat_URL,
+      imp_spat_srcorg
+    )
+  )
+  
+  # Gather it all and store it in the template!
+  # (I know this is hideous, but I don't understand how JSON files can have lists that are also S3 data.frames)
+  emdMonty$impact_Data<-data.frame(imp_sub_ID=unique(EMDAT$imp_sub_ID))
+  emdMonty$impact_Data$ID_linkage=ID_linkage
+  emdMonty$impact_Data$source=source
+  emdMonty$impact_Data$impact_detail=impact_detail
+  emdMonty$impact_Data$temporal=temporal
+  emdMonty$impact_Data$spatial=spatial
+  emdMonty$impact_Data$imp_sub_ID<-NULL
+  
+  #@@@@@ Event-level data @@@@@#
+  # IDs
+  ID_linkage<-Add_EvIDlink_Monty(
+    EMDAT%>%dplyr::select(event_ID, ev_name, code, imp_src_db, imp_src_org)%>%
+      rename(ext_ID=code,ext_ID_db=imp_src_db,ext_ID_org=imp_src_org)
+  )
+  # Spatial
+  spatial<-Add_EvSpat_Monty(
+    EMDAT%>%dplyr::select(event_ID,imp_ISO3s,location)%>%
+      rename(ev_ISO3s=imp_ISO3s,gen_location=location)
+  )
+  # temporal
+  temporal<-Add_EvTemp_Monty(
+    EMDAT%>%dplyr::select(event_ID,imp_sdate,imp_fdate,ev_sdate,ev_fdate)
+  )
+  # Hazards
+  hazs<-EMDAT%>%dplyr::select(event_ID, haz_Ab, haz_spec)
+  allhaz_class<-Add_EvHazTax_Monty(
+    do.call(rbind,lapply(1:nrow(hazs),function(i){
+      specs<-c(str_split(hazs$haz_spec[i],":",simplify = T))
+      outsy<-hazs[rep(i,length(specs)),]
+      outsy$haz_spec<-specs
+      return(outsy)
+    }))
+  )
+  # Gather it all and store it in the template!
+  emdMonty$event_Level<-data.frame(ev=ID_linkage$event_ID)
+  emdMonty$event_Level$ID_linkage<-ID_linkage
+  emdMonty$event_Level$temporal<-temporal
+  emdMonty$event_Level$spatial<-spatial
+  emdMonty$event_Level$allhaz_class<-allhaz_class
+  emdMonty$event_Level$ev<-NULL
+  #@@@@@ Hazard-level data @@@@@#
+  # Nothing to put here as we haven't linked any hazard data yet
+  emdMonty$hazard_Data<-list()
+  
+  #@@@@@ Response-level data @@@@@#
+  # Nothing to put here as we haven't linked any response data yet
+  emdMonty$response_Data<-list()
+  #@@@@@ Source Data In Taxonomy Field @@@@@#
+  emdMonty$taxonomies$src_info<-readxl::read_xlsx("./Taxonomies/Monty_DataSources.xlsx")%>%distinct()
+  
+  #@@@@@ Checks and validation @@@@@#
+  emdMonty%<>%checkMonty()
+  
+  if(!dir.exists("./CleanedData/MostlyImpactData/IFRC/")) dir.create("./CleanedData/MostlyImpactData/IFRC/")
+  # Write it out just for keep-sake
+  write(jsonlite::toJSON(emdMonty,pretty = T,auto_unbox=T),
+        paste0("./CleanedData/MostlyImpactData/IFRC/EMDAT_",Sys.Date(),".json"))
+  
+  return(emdMonty)
+}
+
 
 GetEMDAT<-function(new_format=T){
   # EMDAT file

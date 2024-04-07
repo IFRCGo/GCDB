@@ -16,7 +16,7 @@ othcounties<-counties%>%filter(ISO.Code=="damndaniel"); othcounties[1:nrow(tmp),
 counties%<>%rbind(othcounties%>%mutate(ISO.Code=tmp$ISO.Code,Country=tmp$Country,Continent=tmp$continent))%>%
   filter(!duplicated(ISO.Code)); rm(tmp,othcounties)
 counties%<>%dplyr::select(ISO.Code,Country,UN.Region,World.Bank.Regions,Continent,UN.Sub.Region,World.Bank.Income.Groups)%>%
-  setNames(c("ISO3","Country","UNRegion","WorldBankRegions","Continent","UNSubRegion","WorldBankIncomeGroups"))
+  setNames(c("ISO3","country","unregion","worldbankregion","continent","unsubregion","worldbankincomegroups"))
 # Create the data frames of the taxonomies to be saved out later
 # exposure taxonomy
 exp_class<-taxies%>%filter(list_name=="exp_subcats")%>%dplyr::select(name,label,link_group)%>%
@@ -171,23 +171,23 @@ Monty$properties$taxonomies<-list(
             type="string",
             codelist="IsoContinentRegion.csv",
             openCodelist=FALSE,
-            enum=counties$Country%>%na.omit()%>%unique()
+            enum=counties$country%>%na.omit()%>%unique()
           ),
-          region_UN=list(
+          unregion=list(
             title="UN-Defined Region",
             description="The region, as defined by the UN",
             type="string",
             codelist="IsoContinentRegion.csv",
             openCodelist=FALSE,
-            enum=counties$UNRegion%>%na.omit()%>%unique()
+            enum=counties$unregion%>%na.omit()%>%unique()
           ),
-          region_WB=list(
+          worldbankregion=list(
             title="World Bank-Defined Region",
             description="The region, as defined by the World Bank",
             type="string",
             codelist="IsoContinentRegion.csv",
             openCodelist=FALSE,
-            enum=counties$WorldBankRegions%>%na.omit()%>%unique()
+            enum=counties$worldbankregion%>%na.omit()%>%unique()
           ),
           continent=list(
             title="Continent",
@@ -195,23 +195,23 @@ Monty$properties$taxonomies<-list(
             type="string",
             codelist="IsoContinentRegion.csv",
             openCodelist=FALSE,
-            enum=counties$Continent%>%na.omit()%>%unique()
+            enum=counties$continent%>%na.omit()%>%unique()
           ),
-          subregion_UN=list(
+          unsubregion=list(
             title="UN-Defined Sub-Region",
             description="The sub-region, as defined by the UN",
             type="string",
             codelist="IsoContinentRegion.csv",
             openCodelist=FALSE,
-            enum=counties$UNSubRegion%>%na.omit()%>%unique()
+            enum=counties$unsubregion%>%na.omit()%>%unique()
           ),
-          income_WB=list(
+          worldbankincomegroup=list(
             title="Country Income Group",
             description="The country income group, as defined by the World Bank",
             type="string",
             codelist="IsoContinentRegion.csv",
             openCodelist=FALSE,
-            enum=counties$WorldBankIncomeGroups%>%na.omit()%>%unique()
+            enum=counties$worldbankincomegroup%>%na.omit()%>%unique()
           )
         )
       )
@@ -375,12 +375,12 @@ Monty$properties$taxonomies<-list(
             description="The organisation name, in the format '<name> (<acronym>)'.",
             type="string"
           ), 
-          src_org_typecode=list(
+          src_orgtype_code=list(
             title="Organisation Type Code",
             description="The code name of the organisation type. See the taxonomy for organisation type under 'organtypes'.",
             `$ref`="#/$defs/SrcOrgType_obj"
           ),
-          src_org_typelab=list(
+          src_orgtype_lab=list(
             title="Organisation Type Label",
             description="The label name of the organisation type. See the taxonomy for organisation type under 'organtypes'.",
             type="string",
@@ -1079,21 +1079,9 @@ Monty$`$defs`$SpatialImpact_obj=list(
           description="Location of where the spatial data can be found. Note that this can be either a local folder or a direct URL to the source.",
           type="string",
           minLength=1
-        ),
-        imp_spat_colname=list(
-          title="Spatial Data Column Indices",
-          description="Indices of the specific spatial file columns which are referred to by the impact estimate",
-          type="array",
-          items=list(type="string")
-        ),
-        imp_spat_rowname=list(
-          title="Spatial Data Row Indices",
-          description="Indices of the specific spatial file rows which are referred to by the impact estimate",
-          type="array",
-          items=list(type="string")
         )
       ),
-      required=list("imp_spat_ID","imp_spat_fileloc","imp_spat_colname","imp_spat_rowname")
+      required=list("imp_spat_ID","imp_spat_fileloc")
     ),
     
     spatial_info=list(
@@ -1201,21 +1189,9 @@ Monty$`$defs`$SpatialHazard_obj=list(
           description="Location of where the spatial data can be found. Note that this can be either a local folder or a direct URL to the source.",
           type="string",
           minLength=1
-        ),
-        haz_spat_colname=list(
-          title="Spatial Data Column Indices",
-          description="Indices of the specific spatial file columns which are referred to by the hazard data.",
-          type="array",
-          items=list(type="string")
-        ),
-        haz_spat_rowname=list(
-          title="Spatial Data Row Indices",
-          description="Indices of the specific spatial file rows which are referred to by the hazard data",
-          type="array",
-          items=list(type="string")
         )
       ),
-      required=list("haz_spat_ID","haz_spat_fileloc","haz_spat_colname","haz_spat_rowname")
+      required=list("haz_spat_ID","haz_spat_fileloc")
     ),
     spatial_info=list(
       title="Spatial Data Information",
@@ -1420,5 +1396,14 @@ write(jsonlite::toJSON(ex_Monty,pretty = T,auto_unbox=T),
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 # Provided an example of the JSON metadata, we can test to see whether it is valid or not
 # jsonvalidate::json_validator(example, Monty)
+
+
+
+
+
+
+
+
+
 
 

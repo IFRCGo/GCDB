@@ -80,7 +80,7 @@ GetPackages<-function(packred){
   
   if(!packred) list.of.packages<-c(list.of.packages,
                                    "codetools","latex2exp","fixest",
-                                   "rJava","OpenStreetMap","osmdata",
+                                   "OpenStreetMap","osmdata",#"rJava",
                                    "tidyRSS","geojsonR", "tiff", "gstat",
                                    "FactoMineR","factoextra","xtable",
                                    "gsubfn","mapsapi","leaflet", "ssh","RPostgres",

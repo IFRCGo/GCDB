@@ -97,15 +97,13 @@ CleanGO_app<-function(appeal){
 
   appeal$country<-NULL
   
-  appeal$created_at<-str_split(appeal$created_at," ",simplify = T)[,1]
-  appeal$modified_at<-str_split(appeal$modified_at," ",simplify = T)[,1]
   appeal$start_date<-str_split(appeal$start_date,"T",simplify = T)[,1]
   appeal$end_date<-str_split(appeal$end_date,"T",simplify = T)[,1]
   
   appeal%<>%mutate(imp_ISO3s=imp_ISO3s,ev_ISO3s=imp_ISO3s,region=region,
                    ev_name=str_replace_all(name,'"',""),location=str_replace_all(name,'"',""),
                    ev_name_lang="lang_eng",
-                   imp_sdate=as.character(as.Date(created_at)),imp_fdate=as.character(as.Date(end_date)),
+                   imp_sdate=as.character(as.Date(start_date)),imp_fdate=as.character(as.Date(end_date)),
                    ev_sdate=as.character(as.Date(start_date)),ev_fdate=as.character(as.Date(end_date)),
                    # ev_sdate=as.character(as.Date(created_at)),ev_fdate=as.character(as.Date(created_at)),
                    imp_unitdate=as.character(as.Date(modified_at)),
@@ -184,7 +182,7 @@ CleanGO_field<-function(fieldr){
   fieldr$country<-fieldr$region<-NULL
   
   fieldr%<>%mutate(imp_ISO3s=imp_ISO3s,region=region,
-                   imp_sdate=as.character(as.Date(created_at)),imp_fdate=as.character(as.Date(updated_at)),
+                   imp_sdate=as.character(as.Date(start_date)),imp_fdate=as.character(as.Date(report_date)),
                    ev_sdate=as.character(as.Date(start_date)),ev_fdate=as.character(as.Date(report_date)),
                    imp_unitdate=as.character(as.Date(report_date)),
                    imp_src_URL="https://goadmin.ifrc.org/api/v2/field_reports",
@@ -286,7 +284,7 @@ convGOApp_Monty<-function(){
   # Clean using the old GCDB structure
   appeal%<>%CleanGO_app()%>%filter(!is.na(haz_spec) & imp_value>0)
   # Get rid of repeated entries
-  appeal%<>%distinct(imp_sub_ID,.keep_all = TRUE)%>%
+  appeal%<>%distinct()%>%
     arrange(ev_sdate)
   # Load the Monty JSON template
   appMonty<-jsonlite::fromJSON("./Taxonomies/Montandon_JSON-Example.json")
@@ -380,6 +378,9 @@ convGOApp_Monty<-function(){
   appMonty$response_Data<-list()
   #@@@@@ Source Data In Taxonomy Field @@@@@#
   appMonty$taxonomies$src_info<-readxl::read_xlsx("./Taxonomies/Monty_DataSources.xlsx")%>%distinct()
+  
+  #@@@@@ Checks and validation @@@@@#
+  appMonty%<>%checkMonty()
   
   if(!dir.exists("./CleanedData/MostlyImpactData/IFRC/")) dir.create("./CleanedData/MostlyImpactData/IFRC/")
   # Write it out just for keep-sake
