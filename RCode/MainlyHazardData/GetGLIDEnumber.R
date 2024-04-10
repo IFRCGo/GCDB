@@ -1,10 +1,3 @@
-# Names of the output of the GLIDEcols that we want to keep
-GLIDEcols<-c("comments","year","docid","latitude","homeless","source","idsource",
-             "killed","affected","duration","number","injured","month","geocode",
-             "location","magnitude","time","id","event","day","status","longitude")
-# Skeleton for empty output
-glide_skel<-data.frame(matrix(NA_character_,nrow = 1,ncol = 22)); colnames(glide_skel)<-GLIDEcols
-
 GLIDEHazards<-function(GLIDE){
   # Read in the GLIDE-HIPS taxonomy conversion dataframe
   colConv<-openxlsx::read.xlsx("./Taxonomies/MostlyImpactData/GLIDE-HIP.xlsx")
@@ -14,6 +7,12 @@ GLIDEHazards<-function(GLIDE){
 } 
 
 GetGLIDEnum<-function(DF,numonly=T){
+  # Names of the output of the GLIDEcols that we want to keep
+  GLIDEcols<-c("comments","year","docid","latitude","homeless","source","idsource",
+               "killed","affected","duration","number","injured","month","geocode",
+               "location","magnitude","time","id","event","day","status","longitude")
+  # Skeleton for empty output
+  glide_skel<-data.frame(matrix(NA_character_,nrow = 1,ncol = length(GLIDEcols))); colnames(glide_skel)<-GLIDEcols
   # Needs to contain the columns: ev_sdate, ev_ISO3s & haz
   # Make sure dates are not in character format
   DF$ev_sdate%<>%as.Date()
@@ -116,7 +115,7 @@ GetGLIDEimps<-function(){
   colnames(GLIDE)<-c("ev_name",
                    "Year",
                    "docid", # Nope!
-                   "Latitude", # Nope!
+                   "imp_lat", # Nope!
                    "imptyphomles",
                    "imp_src_org",
                    "idsource", # Nope!
@@ -134,16 +133,13 @@ GetGLIDEimps<-function(){
                    "haz_Ab",
                    "day",
                    "status", # Nope!
-                   "Longitude")
-  GLIDE$ev_name_lang<-"lang_eng"
+                   "imp_lon")
   # The source reference isn't well structured, use NLP to extract organisation name
   GLIDE$imp_src_db<-"GLIDE"
   # Set database to be the same as the organisation as we don't know better. Also, housekeeping
   GLIDE$imp_spat_ID<-NA
   # Sort out the ISO3 values to remove the NaNs
   GLIDE$imp_ISO3s[GLIDE$imp_ISO3s=="---"]<-NA_character_
-  # House keeping
-  GLIDE$haz_Ab[GLIDE$haz_Ab=="HT"]<-"HW"
   # Make sure the start date is 2 characters
   GLIDE$day[nchar(GLIDE$day)==1 & !is.na(GLIDE$day)]<-
     paste0("0",GLIDE$day[nchar(GLIDE$day)==1 & !is.na(GLIDE$day)])
@@ -171,8 +167,7 @@ GetGLIDEimps<-function(){
   # Instead of as a factor
   GLIDE$imp_type%<>%as.character()
   # Get the continent name & add on the impact taxonomy layers
-  GLIDE%<>%mutate(region=convIso3Continent(imp_ISO3s),
-                imp_cat="impcatpop",
+  GLIDE%<>%mutate(imp_cat="impcatpop",
                 imp_subcat="imptypepopcnt",
                 imp_det="impdetallpeop",
                 imp_units="unitscount",
@@ -180,11 +175,12 @@ GetGLIDEimps<-function(){
   # Try to extract as much as possible from the estimated magnitude and its units
   GLIDE%<>%modGLIDEmagunits()
   # Get rid of all zero values as we can't be sure that they are actual estimates
+  stop("Shouldn't do this... we should create events even if impacts don't exist. Should filter impacts database after events has been created")
   GLIDE%<>%filter(imp_value>0)
   # And the sub IDs
   GLIDE%<>%GetGCDB_impID()
   # Make it into a GCDB_table-like object
-  GLIDE%>%AddEmptyColImp()
+  GLIDE%>%dplyr::select(any_of(MontyJSONnames()))
 }
 
 

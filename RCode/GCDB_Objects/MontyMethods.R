@@ -123,9 +123,15 @@ Add_EvSpat_Monty<-function(dframe){
 Add_EvTemp_Monty<-function(dframe){
   # Take the event start date as the minimum and maximum dates
   do.call(rbind,lapply(unique(dframe$event_ID),function(ID){
-    dframe%>%filter(event_ID==ID)%>%
-      reframe(ev_sdate=as.character(min(as.Date(ev_sdate))),
-            ev_fdate=as.character(max(as.Date(ev_fdate))))
+    tryCatch(dframe%>%filter(event_ID==ID)%>%
+      reframe(ev_sdate=as.character(min(as.Date(ev_sdate),na.rm = T)),
+            ev_fdate=as.character(max(as.Date(ev_fdate),na.rm = T))),
+      error=function(e) {
+        tmp<-dframe%>%filter(event_ID==ID)
+        warning(paste0("ev_sdate=",paste0(tmp$ev_sdate,collapse = " : "),
+                       ".    ev_fdate=",paste0(tmp$ev_fdate,collapse = " : ")))
+        dframe%>%dplyr::select(ev_sdate,ev_fdate)%>%slice(1)
+      })
   }))
 }
 
@@ -935,7 +941,7 @@ checkCharMonty<-function(Monty){
   if(any(duplicated(Monty$hazard_Data$ID_linkage$haz_sub_ID))) warning("duplicated haz_sub_IDs found in the Monty object")
   
   # Check external IDs (only GLIDE numbers for now)
-  lapply(Monty$event_Level$ID_linkage$all_ext_IDs,function(x){
+  Monty$event_Level$ID_linkage$all_ext_IDs<-lapply(Monty$event_Level$ID_linkage$all_ext_IDs,function(x){
     if(any(x$ext_ID_db=="GLIDE")) {
       x%<>%filter(!(ext_ID_db=="GLIDE" & !grepl("^[A-Z]{2}-\\d{4}-\\d{6}-[A-Z]{3}$",ext_ID)))
     } 
@@ -943,7 +949,6 @@ checkCharMonty<-function(Monty){
   })
   
   return(Monty)
-  
 }
 
 checkMonty<-function(Monty){

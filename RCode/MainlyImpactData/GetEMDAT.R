@@ -46,52 +46,6 @@ PairEMDATspatial<-function(EMDAT,haz="EQ",GAULexist=F){
   
 }
 
-# PostModEMDAT<-function(colConv){
-#   # hazard Types
-#   colConv$haz_type[colConv$hazEM%in%c("FL","ST","TC","DR","ET","SN","CW","HW","SS")]<-"haztypehydromet"
-#   colConv$haz_type[colConv$hazEM%in%c("EQ","LS","TS","VO","AV")]<-"haztypegeohaz"
-#   colConv$haz_type[colConv$hazEM=="WF"]<-"haztypeenviron"
-#   colConv$haz_type[colConv$hazEM=="EP"]<-"haztypebio"
-#   colConv$haz_type[grepl("cyclone & flood",colConv$Disaster.Subtype,ignore.case = T)]<-"haztypehydromet"
-#   
-#   # Hazard clusters
-#   colConv$haz_cluster[colConv$hazEM=="DR"]<-"hazhmprecip,hazhmtemp"
-#   colConv$haz_cluster[colConv$hazEM=="FL"]<-"hazhmflood"
-#   colConv$haz_cluster[colConv$hazEM=="ST"]<-"hazhmconv,hazhmwind,hazhmpress,hazhmflood"
-#   colConv$haz_cluster[grepl("rain",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmprecip"
-#   colConv$haz_cluster[grepl("wind",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmwind,hazhmpress"
-#   colConv$haz_cluster[grepl("lightning",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmconv"
-#   colConv$haz_cluster[colConv$hazEM=="ET"]<-"hazhmtemp"
-#   colConv$haz_cluster[colConv$hazEM=="TC"]<-"hazhmwind,hazhmpress,hazhmconv,hazhmflood"
-#   colConv$haz_cluster[colConv$hazEM=="TS"]<-"hazgeoother,hazhmmarine,hazhmflood"
-#   colConv$haz_cluster[colConv$hazEM=="EQ"]<-"hazgeoseis"
-#   colConv$haz_cluster[colConv$hazEM=="VO"]<-"hazgeovolc"
-#   colConv$haz_cluster[colConv$hazEM=="WF"]<-"hazenvenvdeg"
-#   colConv$haz_cluster[grepl("hail",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmprecip"
-#   colConv$haz_cluster[colConv$hazEM=="LS"]<-"hazgeoseis,hazenvenvdeg,hazgeovolc,hazgeoother"
-#   colConv$haz_cluster[grepl("rock",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmterr"
-#   colConv$haz_cluster[grepl("mud",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmterr"
-#   colConv$haz_cluster[grepl("liquefaction",colConv$Disaster.Subtype,ignore.case = T)]<-"hazgeoseis,hazgeoother"
-#   colConv$haz_cluster[colConv$hazEM=="AV"]<-"hazhmterr"
-#   colConv$haz_cluster[grepl("tidal",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmmarine,hazhmflood"
-#   colConv$haz_cluster[grepl("wave",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmmarine,hazhmflood"
-#   colConv$haz_cluster[grepl("coastal flood",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmflood,hazhmmarine"
-#   colConv$haz_cluster[grepl("surge",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmmarine,hazhmflood,hazhmwind"
-#   colConv$haz_cluster[grepl("hail",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmprecip"
-#   colConv$haz_cluster[grepl("tropical storm",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmwind"
-#   colConv$haz_cluster[grepl("convective storm",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmconv"
-#   colConv$haz_cluster[grepl("cold wave",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmtemp"
-#   
-#   # Specific Hazards
-#   colConv$haz_spec[colConv$hazEM=="EQ"]<-"GH0001,GH0002"
-#   colConv$haz_potlink[colConv$hazEM=="EQ"]<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
-#   
-#   # Save it out
-#   openxlsx::write.xlsx(colConv,"./Taxonomies/MostlyImpactData/EMDAT_HIP.xlsx")
-#   
-#   return(colConv)
-# }
-
 EMDATHazards_API<-function(EMDAT){
   EMDAT$subgroup%<>%str_to_lower()
   EMDAT$type%<>%str_to_lower()
@@ -208,6 +162,9 @@ CleanEMDAT_API<-function(EMDAT){
   # Make sure the end month is 2 characters
   EMDAT$end_month[nchar(EMDAT$end_month)==1 & !is.na(EMDAT$end_month)]<-
     paste0("0",EMDAT$end_month[nchar(EMDAT$end_month)==1 & !is.na(EMDAT$end_month)])
+  # If the start month is NA, we take the start to be the start of the year
+  EMDAT$start_day[is.na(EMDAT$start_month)]<-"01" 
+  EMDAT$start_month[is.na(EMDAT$start_month)]<-"01"
   # If the end month is NA, we take the end to be the end of the year
   EMDAT$end_day[is.na(EMDAT$end_month)]<-"31" 
   EMDAT$end_month[is.na(EMDAT$end_month)]<-"12"
@@ -580,6 +537,7 @@ convGOEMDAT_Monty<-function(){
   # Get the Emergency Appeal data from GO
   EMDAT<-API_EMDAT()
   # Clean using the old GCDB structure
+  stop("Don't filter out the imp_value<=0 here but after the events_Level object has been created")
   EMDAT%<>%filter(!is.na(haz_spec) & imp_value>0)
   # Get rid of repeated entries
   EMDAT%<>%distinct()%>%
@@ -690,7 +648,6 @@ convGOEMDAT_Monty<-function(){
   return(emdMonty)
 }
 
-
 GetEMDAT<-function(new_format=T){
   # EMDAT file
   # filez<-paste0("./RawData/MostlyImpactData/EMDAT/emdat_public_",haz,"_20230526.xlsx")
@@ -724,24 +681,56 @@ GetEMDAT<-function(new_format=T){
 # filez<-list.files("../../CleanedData/MostlyImpactData/EMDAT/",include.dirs = T,all.files = T,recursive = T,ignore.case = T)
 # EMDAT<-do.call(rbind,lapply(filez,function(fff) {openxlsx::read.xlsx(paste0("../../CleanedData/MostlyImpactData/EMDAT/",fff),startRow = 7)}))
 
-convEMDAT2Monty<-function(){
-  # Extract the data
-  EMDAT<-API_EMDAT()
-  
-  
-  
-  
-  
-}
 
 
 
 
 
-
-
-
-
+# PostModEMDAT<-function(colConv){
+#   # hazard Types
+#   colConv$haz_type[colConv$hazEM%in%c("FL","ST","TC","DR","ET","SN","CW","HW","SS")]<-"haztypehydromet"
+#   colConv$haz_type[colConv$hazEM%in%c("EQ","LS","TS","VO","AV")]<-"haztypegeohaz"
+#   colConv$haz_type[colConv$hazEM=="WF"]<-"haztypeenviron"
+#   colConv$haz_type[colConv$hazEM=="EP"]<-"haztypebio"
+#   colConv$haz_type[grepl("cyclone & flood",colConv$Disaster.Subtype,ignore.case = T)]<-"haztypehydromet"
+#   
+#   # Hazard clusters
+#   colConv$haz_cluster[colConv$hazEM=="DR"]<-"hazhmprecip,hazhmtemp"
+#   colConv$haz_cluster[colConv$hazEM=="FL"]<-"hazhmflood"
+#   colConv$haz_cluster[colConv$hazEM=="ST"]<-"hazhmconv,hazhmwind,hazhmpress,hazhmflood"
+#   colConv$haz_cluster[grepl("rain",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmprecip"
+#   colConv$haz_cluster[grepl("wind",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmwind,hazhmpress"
+#   colConv$haz_cluster[grepl("lightning",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmconv"
+#   colConv$haz_cluster[colConv$hazEM=="ET"]<-"hazhmtemp"
+#   colConv$haz_cluster[colConv$hazEM=="TC"]<-"hazhmwind,hazhmpress,hazhmconv,hazhmflood"
+#   colConv$haz_cluster[colConv$hazEM=="TS"]<-"hazgeoother,hazhmmarine,hazhmflood"
+#   colConv$haz_cluster[colConv$hazEM=="EQ"]<-"hazgeoseis"
+#   colConv$haz_cluster[colConv$hazEM=="VO"]<-"hazgeovolc"
+#   colConv$haz_cluster[colConv$hazEM=="WF"]<-"hazenvenvdeg"
+#   colConv$haz_cluster[grepl("hail",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmprecip"
+#   colConv$haz_cluster[colConv$hazEM=="LS"]<-"hazgeoseis,hazenvenvdeg,hazgeovolc,hazgeoother"
+#   colConv$haz_cluster[grepl("rock",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmterr"
+#   colConv$haz_cluster[grepl("mud",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmterr"
+#   colConv$haz_cluster[grepl("liquefaction",colConv$Disaster.Subtype,ignore.case = T)]<-"hazgeoseis,hazgeoother"
+#   colConv$haz_cluster[colConv$hazEM=="AV"]<-"hazhmterr"
+#   colConv$haz_cluster[grepl("tidal",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmmarine,hazhmflood"
+#   colConv$haz_cluster[grepl("wave",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmmarine,hazhmflood"
+#   colConv$haz_cluster[grepl("coastal flood",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmflood,hazhmmarine"
+#   colConv$haz_cluster[grepl("surge",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmmarine,hazhmflood,hazhmwind"
+#   colConv$haz_cluster[grepl("hail",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmprecip"
+#   colConv$haz_cluster[grepl("tropical storm",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmwind"
+#   colConv$haz_cluster[grepl("convective storm",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmconv"
+#   colConv$haz_cluster[grepl("cold wave",colConv$Disaster.Subtype,ignore.case = T)]<-"hazhmtemp"
+#   
+#   # Specific Hazards
+#   colConv$haz_spec[colConv$hazEM=="EQ"]<-"GH0001,GH0002"
+#   colConv$haz_potlink[colConv$hazEM=="EQ"]<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
+#   
+#   # Save it out
+#   openxlsx::write.xlsx(colConv,"./Taxonomies/MostlyImpactData/EMDAT_HIP.xlsx")
+#   
+#   return(colConv)
+# }
 
 
 
