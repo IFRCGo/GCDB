@@ -277,7 +277,7 @@ CleanEMDAT_API<-function(EMDAT){
   # Create an impact-specific ID
   EMDAT%<>%GetGCDB_impID()
   # Add missing columns & reorder the dataframe to fit imp_GCDB object
-  EMDAT%>%dplyr::select(any_of(MontyJSONnames()))%>%filter(!is.na(haz_spec) & imp_value>0)
+  EMDAT%>%dplyr::select(any_of(MontyJSONnames()))
 }
 
 CleanEMDAT<-function(EMDAT){
