@@ -297,7 +297,7 @@ convGOApp_Monty<-function(){
       rename(ext_ID=code)
   )
   # Sources for impact data
-  source<-appeal%>%dplyr::select(imp_src_db,imp_src_URL,imp_src_org)
+  srcy<-appeal%>%dplyr::select(imp_src_db,imp_src_URL,imp_src_org)
   # impact estimates
   impact_detail<-appeal%>%distinct(imp_sub_ID,.keep_all = T)%>%
     dplyr::select(exp_spec,imp_value,imp_type,imp_units,imp_est_type,imp_unitdate)
@@ -331,7 +331,7 @@ convGOApp_Monty<-function(){
   # (I know this is hideous, but I don't understand how JSON files can have lists that are also S3 data.frames)
   appMonty$impact_Data<-data.frame(imp_sub_ID=unique(appeal$imp_sub_ID))
   appMonty$impact_Data$ID_linkage=ID_linkage
-  appMonty$impact_Data$source=source
+  appMonty$impact_Data$source=srcy
   appMonty$impact_Data$impact_detail=impact_detail
   appMonty$impact_Data$temporal=temporal
   appMonty$impact_Data$spatial=spatial
@@ -350,7 +350,7 @@ convGOApp_Monty<-function(){
   )
   # temporal
   temporal<-Add_EvTemp_Monty(
-    appeal%>%dplyr::select(event_ID,imp_sdate,imp_fdate,ev_sdate,ev_fdate)
+    appeal%>%dplyr::select(event_ID,ev_sdate,ev_fdate)
   )
   # Hazards
   hazs<-appeal%>%dplyr::select(event_ID, haz_Ab, haz_spec)

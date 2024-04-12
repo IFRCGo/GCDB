@@ -46,14 +46,15 @@ stripevent_ID<-function(ID){
 
 GetGCDB_impID<-function(impies){
   # For empty spatial IDs
-  if(!any(colnames(impies)=="imp_spat_ID")) {impies$imp_spat_ID<-NA_character_
-  } else impies$tmp<-unlist(lapply(impies$imp_spat_ID, function(x) paste0(x,collapse=":")))
-  # 
-  impies$imp_sub_ID<-impies%>%dplyr::select(c(event_ID,imp_src_db,exp_spec,imp_type,imp_sdate,imp_fdate,imp_units,tmp))%>%
+  if(any(colnames(impies)=="imp_spat_ID")) impies$tmp<-unlist(lapply(impies$imp_spat_ID, function(x) paste0(x,collapse=":")))
+  # Compile the ID
+  impies$imp_sub_ID<-impies%>%dplyr::select(dplyr::any_of(c("event_ID","imp_src_db","exp_spec","imp_type","imp_sdate","imp_fdate","imp_units","tmp","imp_lon","imp_lat")))%>%
     mutate(imp_src_db=stringr::str_remove(stringi::stri_trans_totitle(imp_src_db),pattern = " "))%>%
     apply(1,function(x) paste0(x,collapse = "-"))
-  
-  return(impies%>%dplyr::select(-tmp))
+  # Make sure that no duplicates exist...
+  impies%>%group_by(imp_sub_ID)%>%
+    mutate(imp_sub_ID=paste0(imp_sub_ID,"_",1:length(imp_sub_ID)))%>%
+    dplyr::select(-any_of(c("tmp")))%>%as.data.frame()
 }
 
 GetGCDB_hazID<-function(impies){

@@ -362,7 +362,7 @@ CleanEMDAT<-function(EMDAT){
   # Now get rid of the extra columns of data
   EMDAT%<>%dplyr::select(-which(!colnames(EMDAT)%in%names(col_tabGCDB)))
   # Create an impact-specific ID
-  EMDAT%<>%GetGCDB_impID()
+  EMDAT%<>%distinct()%>%GetGCDB_impID()
   # Make sure to remove all NA impact estimates
   EMDAT%<>%filter(!is.na(imp_value))
   # Add missing columns & reorder the dataframe to fit imp_GCDB object
@@ -554,7 +554,7 @@ convGOEMDAT_Monty<-function(){
     }))
   )
   # Sources for impact data
-  source<-do.call(rbind,lapply(unique(EMDAT$imp_sub_ID),function(ID){
+  srcy<-do.call(rbind,lapply(unique(EMDAT$imp_sub_ID),function(ID){
     return(EMDAT[EMDAT$imp_sub_ID==ID,]%>%
              dplyr::select(imp_src_db,imp_src_URL,imp_src_org)%>%
              slice(1))
@@ -588,7 +588,7 @@ convGOEMDAT_Monty<-function(){
   # (I know this is hideous, but I don't understand how JSON files can have lists that are also S3 data.frames)
   emdMonty$impact_Data<-data.frame(imp_sub_ID=unique(EMDAT$imp_sub_ID))
   emdMonty$impact_Data$ID_linkage=ID_linkage
-  emdMonty$impact_Data$source=source
+  emdMonty$impact_Data$source=srcy
   emdMonty$impact_Data$impact_detail=impact_detail
   emdMonty$impact_Data$temporal=temporal
   emdMonty$impact_Data$spatial=spatial
@@ -608,7 +608,7 @@ convGOEMDAT_Monty<-function(){
   )
   # temporal
   temporal<-Add_EvTemp_Monty(
-    EMDAT%>%dplyr::select(event_ID,imp_sdate,imp_fdate,ev_sdate,ev_fdate)
+    EMDAT%>%dplyr::select(event_ID,ev_sdate,ev_fdate)
   )
   # Hazards
   hazs<-EMDAT%>%dplyr::select(event_ID, haz_Ab, haz_spec)
@@ -640,10 +640,10 @@ convGOEMDAT_Monty<-function(){
   #@@@@@ Checks and validation @@@@@#
   emdMonty%<>%checkMonty()
   
-  if(!dir.exists("./CleanedData/MostlyImpactData/IFRC/")) dir.create("./CleanedData/MostlyImpactData/IFRC/")
+  if(!dir.exists("./CleanedData/MostlyImpactData/CRED/")) dir.create("./CleanedData/MostlyImpactData/CRED/")
   # Write it out just for keep-sake
   write(jsonlite::toJSON(emdMonty,pretty = T,auto_unbox=T),
-        paste0("./CleanedData/MostlyImpactData/IFRC/EMDAT_",Sys.Date(),".json"))
+        paste0("./CleanedData/MostlyImpactData/CRED/EMDAT_",Sys.Date(),".json"))
   
   return(emdMonty)
 }

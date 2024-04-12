@@ -13,7 +13,7 @@ GIDDHazards<-function(GIDD){
   GIDD$HazardCategory%<>%str_to_lower()
   GIDD$HazardType%<>%str_to_lower()
   GIDD$HazardSubType%<>%str_to_lower()
-  # Read in the EMDAT-HIPS taxonomy conversion dataframe
+  # Read in the GIDD-HIPS taxonomy conversion dataframe
   colConv<-openxlsx::read.xlsx("./Taxonomies/MostlyImpactData/GIDD-HIP.xlsx")
   colConv$HazardCategory%<>%str_to_lower()
   colConv$HazardType%<>%str_to_lower()
@@ -48,7 +48,7 @@ GetGIDD<-function(){
   colnames(GIDD)[colnames(GIDD)=="EventName"]<-"ev_name"
   GIDD$ev_name_lang<-"lang_eng"
   # Rename ISO3 variable
-  colnames(GIDD)[colnames(GIDD)=="ISO3"]<-imp_ISO3s
+  colnames(GIDD)[colnames(GIDD)=="ISO3"]<-"imp_ISO3s"
   # Add the continent, then remove the unnecesary layers
   GIDD%<>%mutate(region=convIso3Continent(imp_ISO3s))%>%
     filter(!is.na(region))
@@ -84,38 +84,27 @@ convGIDD_Monty<-function(GIDD){
   #@@@@@ Impact-level data @@@@@#
   # IDs
   ID_linkage<-Add_ImpIDlink_Monty(
-    rbind(GIDD%>%mutate(ext_ID_db="GIDD",ext_ID_org="IDMC")%>%
-            dplyr::select(event_ID, imp_sub_ID, haz_sub_ID, GIDD_ID,
-                          ext_ID_db,ext_ID_org)%>%
-            rename(ext_ID=GIDD_ID)%>%
-            dplyr::select(event_ID, imp_sub_ID, haz_sub_ID, 
-                          ext_ID, ext_ID_db, ext_ID_org),
-          GIDD%>%filter(!is.na(ext_IDs))%>%mutate(ext_ID_db="GIDD",ext_ID_org="IDMC")%>%
-            dplyr::select(event_ID, imp_sub_ID, haz_sub_ID, ext_IDs, ext_ID_dbs, ext_ID_orgs)%>%
-            rename(ext_ID=ext_IDs,ext_ID_db=ext_ID_dbs,ext_ID_org=ext_ID_orgs)%>%
-            dplyr::select(event_ID, imp_sub_ID, haz_sub_ID, 
-                          ext_ID, ext_ID_db, ext_ID_org)
-    )
+    do.call(rbind,lapply(1:nrow(GIDD),function(i) {
+      GIDD$all_ext_IDs[[i]]%>%mutate(event_ID=GIDD$event_ID[i],
+                                      imp_sub_ID=GIDD$imp_sub_ID[i],
+                                      haz_sub_ID=NA_character_)
+    }))
   )
   # Sources for impact data
-  source<-GIDD%>%dplyr::select(imp_src_db,imp_src_URL,imp_src_org)
+  srcy<-GIDD%>%dplyr::select(imp_src_db,imp_src_URL,imp_src_org)
   # impact estimates
   impact_detail<-GIDD%>%
     dplyr::select(exp_spec,imp_value,imp_type,imp_units,imp_est_type,imp_unitdate)
   # Add temporal information
   temporal<-GIDD%>%dplyr::select(imp_sdate,imp_fdate)
   # Spatial data relevant to the impact estimates
-  # multiple-entry rows: imp_spat_rowname,imp_spat_colname,imp_ISO3s,imp_spat_res
+  # multiple-entry rows: imp_ISO3s,imp_spat_res
   spatial<-Add_ImpSpatAll_Monty(
-    ID_linkage=data.frame(
-      imp_sub_ID=GIDD$imp_sub_ID,
-      imp_spat_ID="GO-ADM0-World-shp",
-      imp_spat_fileloc="https://go-user-library.ifrc.org/maps",
-      imp_spat_colname="iso3",
-      imp_spat_rowname=GIDD$imp_ISO3s
-    ),
+    ID_linkage=GIDD%>%dplyr::select(imp_sub_ID,imp_spat_ID,imp_spat_fileloc),
     spatial_info=GIDD%>%dplyr::select(
       imp_ISO3s,
+      imp_lon,
+      imp_lat,
       imp_spat_covcode,
       imp_spat_res,
       imp_spat_resunits,
@@ -127,11 +116,12 @@ convGIDD_Monty<-function(GIDD){
       imp_spat_srcorg
     )
   )
+  
   # Gather it all and store it in the template!
   # (I know this is hideous, but I don't understand how JSON files can have lists that are also S3 data.frames)
   gMonty$impact_Data<-data.frame(imp_sub_ID=unique(GIDD$imp_sub_ID))
   gMonty$impact_Data$ID_linkage=ID_linkage
-  gMonty$impact_Data$source=source
+  gMonty$impact_Data$source=srcy
   gMonty$impact_Data$impact_detail=impact_detail
   gMonty$impact_Data$temporal=temporal
   gMonty$impact_Data$spatial=spatial
@@ -140,23 +130,19 @@ convGIDD_Monty<-function(GIDD){
   #@@@@@ Event-level data @@@@@#
   # IDs
   ID_linkage<-Add_EvIDlink_Monty(
-    # By default, only GIDD eventIDs are used
-    rbind(GIDD%>%mutate(ext_ID_db="GIDD",ext_ID_org="IDMC")%>%
-            dplyr::select(event_ID, ev_name, GIDD_ID,ext_ID_db,ext_ID_org)%>%
-            rename(ext_ID=GIDD_ID),
-          GIDD%>%filter(!is.na(ext_IDs))%>%
-            dplyr::select(event_ID, ev_name, ext_IDs,ext_ID_dbs,ext_ID_orgs)%>%
-            rename(ext_ID=ext_IDs,ext_ID_db=ext_ID_dbs,ext_ID_org=ext_ID_orgs)
-    )
+    do.call(rbind,lapply(1:nrow(GIDD),function(i){
+      GIDD$all_ext_IDs[[i]]%>%
+        mutate(event_ID=GIDD$event_ID[i],
+               ev_name=GIDD$ev_name[i])
+    }))
   )
   # Spatial
   spatial<-Add_EvSpat_Monty(
-    GIDD%>%dplyr::select(event_ID,imp_ISO3s,location)%>%
-      rename(ev_ISO3s=imp_ISO3s,gen_location=location)
+    GIDD%>%dplyr::select(event_ID, ev_ISO3s, gen_location)
   )
   # temporal
   temporal<-Add_EvTemp_Monty(
-    GIDD%>%dplyr::select(event_ID,imp_sdate,imp_fdate,ev_sdate,ev_fdate)
+    GIDD%>%dplyr::select(event_ID,ev_sdate,ev_fdate)
   )
   # Hazards
   hazs<-GIDD%>%dplyr::select(event_ID, haz_Ab, haz_spec)
@@ -175,48 +161,23 @@ convGIDD_Monty<-function(GIDD){
   gMonty$event_Level$spatial<-spatial
   gMonty$event_Level$allhaz_class<-allhaz_class
   gMonty$event_Level$ev<-NULL
-  
-  
   #@@@@@ Hazard-level data @@@@@#
+  # Nothing to put here as we haven't linked any hazard data yet
   gMonty$hazard_Data<-list()
+  
   #@@@@@ Response-level data @@@@@#
   # Nothing to put here as we haven't linked any response data yet
   gMonty$response_Data<-list()
-  
-  
   #@@@@@ Source Data In Taxonomy Field @@@@@#
-  gMonty$taxonomies$src_info<-data.frame(
-    src_org_code="IDMC",
-    src_org_lab="Internal Displacement Monitoring Centre (IDMC)",
-    src_org_typecode="orgtypengo",
-    src_org_typelab="Non Governmental Organisation",
-    src_org_email="info@idmc.ch",
-    src_db_code="GIDD",
-    src_db_lab="Global Internal Displacement Database (GIDD)",
-    src_db_attr="curator",
-    src_db_lic="unknown",
-    src_db_URL="www.internal-displacement.org",
-    src_addinfo=""
-  )
-  # And the impact modelling spatial data
-  gMonty$taxonomies$src_info%<>%rbind(data.frame(
-    src_org_code="IFRC",
-    src_org_lab="International Federation of Red Cross and Red Crescent Societies (IFRC)",
-    src_org_typecode="orgtypengo",
-    src_org_typelab="Non Governmental Organisation",
-    src_org_email="im@ifrc.org",
-    src_db_code="GO-Maps",
-    src_db_lab="IFRC-GO ADM-0 Maps",
-    src_db_attr="custodian",
-    src_db_lic="Creative Commons Attribution 3.0 International License",
-    src_db_URL="https://go-user-library.ifrc.org/maps",
-    src_addinfo=""
-  ))
-  # Create the path for the output
-  dir.create("./CleanedData/MostlyHazardData/GIDD",showWarnings = F)
+  gMonty$taxonomies$src_info<-readxl::read_xlsx("./Taxonomies/Monty_DataSources.xlsx")%>%distinct()
+  
+  #@@@@@ Checks and validation @@@@@#
+  gMonty%<>%checkMonty()
+  
+  if(!dir.exists("./CleanedData/MostlyImpactData/IDMC/")) dir.create("./CleanedData/MostlyImpactData/IDMC/")
   # Write it out just for keep-sake
   write(jsonlite::toJSON(gMonty,pretty = T,auto_unbox=T),
-        paste0("./CleanedData/MostlyHazardData/GIDD/GIDD_",Sys.Date(),".json"))
+        paste0("./CleanedData/MostlyImpactData/IDMC/GIDD_",Sys.Date(),".json"))
   
   return(gMonty)
 }
@@ -229,30 +190,25 @@ convIDU_Monty<-function(IDU){
   #@@@@@ Impact-level data @@@@@#
   # IDs
   ID_linkage<-Add_ImpIDlink_Monty(
-    rbind(IDU%>%mutate(ext_ID_db="IDU",ext_ID_org="IDMC")%>%
+    IDU%>%mutate(ext_ID_db="IDU",ext_ID_org="IDMC",haz_sub_ID=NA_character_)%>%
             dplyr::select(event_ID, imp_sub_ID, haz_sub_ID, 
                           ext_ID, ext_ID_db, ext_ID_org)
-    )
   )
   # Sources for impact data
-  source<-IDU%>%dplyr::select(imp_src_db,imp_src_URL,imp_src_org)
+  srcy<-IDU%>%dplyr::select(imp_src_db,imp_src_URL,imp_src_org)
   # impact estimates
-  impact_detail<-IDU%>%
+  impact_detail<-IDU%>%mutate()%>%
     dplyr::select(exp_spec,imp_value,imp_type,imp_units,imp_est_type,imp_unitdate)
   # Add temporal information
   temporal<-IDU%>%dplyr::select(imp_sdate,imp_fdate)
   # Spatial data relevant to the impact estimates
-  # multiple-entry rows: imp_spat_rowname,imp_spat_colname,imp_ISO3s,imp_spat_res
+  # multiple-entry rows: imp_ISO3s,imp_spat_res
   spatial<-Add_ImpSpatAll_Monty(
-    ID_linkage=data.frame(
-      imp_sub_ID=IDU$imp_sub_ID,
-      imp_spat_ID="GO-ADM0-World-shp",
-      imp_spat_fileloc="https://go-user-library.ifrc.org/maps",
-      imp_spat_colname="iso3",
-      imp_spat_rowname=IDU$imp_ISO3s
-    ),
+    ID_linkage=IDU%>%dplyr::select(imp_sub_ID,imp_spat_ID,imp_spat_fileloc),
     spatial_info=IDU%>%dplyr::select(
       imp_ISO3s,
+      imp_lon,
+      imp_lat,
       imp_spat_covcode,
       imp_spat_res,
       imp_spat_resunits,
@@ -264,11 +220,12 @@ convIDU_Monty<-function(IDU){
       imp_spat_srcorg
     )
   )
+  
   # Gather it all and store it in the template!
   # (I know this is hideous, but I don't understand how JSON files can have lists that are also S3 data.frames)
   gMonty$impact_Data<-data.frame(imp_sub_ID=unique(IDU$imp_sub_ID))
   gMonty$impact_Data$ID_linkage=ID_linkage
-  gMonty$impact_Data$source=source
+  gMonty$impact_Data$source=srcy
   gMonty$impact_Data$impact_detail=impact_detail
   gMonty$impact_Data$temporal=temporal
   gMonty$impact_Data$spatial=spatial
@@ -277,22 +234,16 @@ convIDU_Monty<-function(IDU){
   #@@@@@ Event-level data @@@@@#
   # IDs
   ID_linkage<-Add_EvIDlink_Monty(
-    # By default, only IDU eventIDs are used
-    rbind(IDU%>%mutate(ext_ID_db="IDU",ext_ID_org="IDMC")%>%
-            dplyr::select(event_ID, ev_name, ext_ID,ext_ID_db,ext_ID_org),
-          IDU%>%filter(!is.na(ext_IDs))%>%
-            dplyr::select(event_ID, ev_name, ext_IDs,ext_ID_dbs,ext_ID_orgs)%>%
-            rename(ext_ID=ext_IDs,ext_ID_db=ext_ID_dbs,ext_ID_org=ext_ID_orgs)
-    )
+    IDU%>%mutate(ext_ID_db="IDU",ext_ID_org="IDMC")%>%
+      dplyr::select(event_ID, ev_name, ext_ID, ext_ID_db, ext_ID_org)
   )
   # Spatial
   spatial<-Add_EvSpat_Monty(
-    IDU%>%dplyr::select(event_ID,imp_ISO3s,location)%>%
-      rename(ev_ISO3s=imp_ISO3s,gen_location=location)
+    IDU%>%dplyr::select(event_ID, ev_ISO3s, gen_location)
   )
   # temporal
   temporal<-Add_EvTemp_Monty(
-    IDU%>%dplyr::select(event_ID,imp_sdate,imp_fdate,ev_sdate,ev_fdate)
+    IDU%>%dplyr::select(event_ID,ev_sdate,ev_fdate)
   )
   # Hazards
   hazs<-IDU%>%dplyr::select(event_ID, haz_Ab, haz_spec)
@@ -311,48 +262,23 @@ convIDU_Monty<-function(IDU){
   gMonty$event_Level$spatial<-spatial
   gMonty$event_Level$allhaz_class<-allhaz_class
   gMonty$event_Level$ev<-NULL
-  
-  
   #@@@@@ Hazard-level data @@@@@#
+  # Nothing to put here as we haven't linked any hazard data yet
   gMonty$hazard_Data<-list()
+  
   #@@@@@ Response-level data @@@@@#
   # Nothing to put here as we haven't linked any response data yet
   gMonty$response_Data<-list()
-  
-  
   #@@@@@ Source Data In Taxonomy Field @@@@@#
-  gMonty$taxonomies$src_info<-data.frame(
-    src_org_code="IDMC",
-    src_org_lab="Internal Displacement Monitoring Centre (IDMC)",
-    src_org_typecode="orgtypengo",
-    src_org_typelab="Non Governmental Organisation",
-    src_org_email="info@idmc.ch",
-    src_db_code="IDU",
-    src_db_lab="Internal Displacement Updates (IDU)",
-    src_db_attr="curator",
-    src_db_lic="unknown",
-    src_db_URL="www.internal-displacement.org",
-    src_addinfo=""
-  )
-  # And the impact modelling spatial data
-  gMonty$taxonomies$src_info%<>%rbind(data.frame(
-    src_org_code="IFRC",
-    src_org_lab="International Federation of Red Cross and Red Crescent Societies (IFRC)",
-    src_org_typecode="orgtypengo",
-    src_org_typelab="Non Governmental Organisation",
-    src_org_email="im@ifrc.org",
-    src_db_code="GO-Maps",
-    src_db_lab="IFRC-GO ADM-0 Maps",
-    src_db_attr="custodian",
-    src_db_lic="Creative Commons Attribution 3.0 International License",
-    src_db_URL="https://go-user-library.ifrc.org/maps",
-    src_addinfo=""
-  ))
-  # Create the path for the output
-  dir.create("./CleanedData/MostlyHazardData/GIDD",showWarnings = F)
+  gMonty$taxonomies$src_info<-readxl::read_xlsx("./Taxonomies/Monty_DataSources.xlsx")%>%distinct()
+  
+  #@@@@@ Checks and validation @@@@@#
+  gMonty%<>%checkMonty()
+  
+  if(!dir.exists("./CleanedData/MostlyImpactData/IDMC/")) dir.create("./CleanedData/MostlyImpactData/IDMC/")
   # Write it out just for keep-sake
   write(jsonlite::toJSON(gMonty,pretty = T,auto_unbox=T),
-        paste0("./CleanedData/MostlyHazardData/GIDD/GIDD_",Sys.Date(),".json"))
+        paste0("./CleanedData/MostlyImpactData/IDMC/IDU_",Sys.Date(),".json"))
   
   return(gMonty)
 }
@@ -373,11 +299,28 @@ GetGIDD_API<-function(){
                  "GLIDE"="glide_numbers")
   # Hazard taxonomy - HIPS
   GIDD%<>%GIDDHazards()
+  # Patch over some of the GLIDE number issues
+  GIDD$GLIDE<-lapply(1:nrow(GIDD),function(i){
+    x<-GIDD$GLIDE[[i]]
+    if(length(x)==0) return(character(0))
+    x%<>%str_replace(" ","")%>%str_replace("\t","")
+    unique(unlist(sapply(x,function(xx){
+      # Some of the GLIDE numbers are shorter than required: some are missing the ISO codes, some the hazard code and some both
+      if(nchar(xx)==11 & str_count(xx,"-")==1) xx<-paste0(GIDD$imp_ISO3s[i],"-",xx,"-",GIDD$haz_Ab[i])
+      if(nchar(xx)==13 & str_count(xx,"-")==2) xx<-paste0(GIDD$imp_ISO3s[i],"-",xx)
+      if(nchar(xx)==14 & str_count(xx,"-")==2) xx<-paste0(xx,"-",GIDD$haz_Ab[i])
+      # Now check if the character is in the correct form
+      if(!grepl("^[A-Z]{2}-\\d{4}-\\d{6}-[A-Z]{3}$",xx)) return(character(0)) else return(xx)
+    },simplify = T)))
+  })
   # Add some of the extra details that are GIDD-specific
   GIDD%<>%mutate(ev_sdate=imp_sdate,
                  ev_fdate=imp_fdate,
                  ev_ISO3s=imp_ISO3s,
-                 imp_est_type="esttype_prim",
+                 gen_location=ev_name,
+                 imp_unitdate=NA_character_,
+                 imp_lon=NA_real_,
+                 imp_lat=NA_real_,
                  imp_src_URL=urly,
                  imp_src_org="IDMC",
                  imp_src_db="GIDD",
@@ -385,17 +328,30 @@ GetGIDD_API<-function(){
                  imp_spat_srcorg="IFRC",
                  imp_spat_srcdb="GO",
                  imp_spat_URL="https://go-user-library.ifrc.org/maps",
+                 imp_spat_fileloc="https://go-user-library.ifrc.org/maps",
                  imp_spat_res=0,
                  imp_spat_resunits="adminlevel",
                  imp_spat_crs="EPSG:4326",
                  imp_spat_covcode="spat_polygon",
                  imp_spat_ID=NA_character_)
+  # Sort the IDs variable:
+  GIDD$all_ext_IDs<-lapply(1:nrow(GIDD), function(i){
+    # If there are no GLIDE codes, there are no external IDs at all
+    if(length(unlist(GIDD$GLIDE[[i]]))==0) 
+      return(data.frame(ext_ID=NA_character_,
+                 ext_ID_org=NA_character_,
+                 ext_ID_db=NA_character_))
+    # Otherwise, add the others!
+    data.frame(ext_ID=unlist(GIDD$GLIDE[[i]]),
+               ext_ID_org="ADRC",
+               ext_ID_db="GLIDE")
+  })
   # Generate GCDB event ID
   GIDD$event_ID<-GetMonty_ID(GIDD)
   # Correct the labels of the impacts, melting by impact detail
-  GIDD%<>%ImpLabs(nomDB = "GIDD")
+  GIDD%<>%dplyr::select(-total_displacement)%>%ImpLabs(nomDB = "GIDD")
   # Create an impact-specific ID
-  GIDD%<>%GetGCDB_impID()
+  GIDD%<>%distinct()%>%GetGCDB_impID()
   # Add missing columns & reorder the dataframe to fit imp_GCDB object
   GIDD%>%dplyr::select(any_of(MontyJSONnames()))
 }
@@ -430,18 +386,21 @@ GetIDU_API<-function(){
   IDU%<>%GIDDHazards()
   # Add some of the extra details that are IDU-specific
   IDU%<>%mutate(ev_ISO3s=imp_ISO3s,
-                 imp_src_URL=urly,
-                 imp_src_org="IDMC",
-                 imp_src_db="IDU",
-                 imp_src_orgtype="orgtypengo",
-                 imp_spat_srcorg="IFRC",
-                 imp_spat_srcdb="GO",
-                 imp_spat_URL="https://go-user-library.ifrc.org/maps",
-                 imp_spat_res=0,
-                 imp_spat_resunits="adminlevel",
-                 imp_spat_crs="EPSG:4326",
-                 imp_spat_covcode="spat_polygon",
-                 imp_spat_ID=NA_character_)
+                gen_location=ev_name,
+                imp_unitdate=NA_character_,
+                imp_src_URL=urly,
+                imp_src_org="IDMC",
+                imp_src_db="IDU",
+                imp_src_orgtype="orgtypengo",
+                imp_spat_srcorg="IFRC",
+                imp_spat_srcdb="GO",
+                imp_spat_URL="https://go-user-library.ifrc.org/maps",
+                imp_spat_fileloc="https://go-user-library.ifrc.org/maps",
+                imp_spat_res=0,
+                imp_spat_resunits="adminlevel",
+                imp_spat_crs="EPSG:4326",
+                imp_spat_covcode="spat_polygon",
+                imp_spat_ID=NA_character_)
   # Generate GCDB event ID
   IDU$event_ID<-GetMonty_ID(IDU)
   # Correct the labels of the impacts, melting by impact detail
