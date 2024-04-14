@@ -1,7 +1,7 @@
 {
   "monty_Info": {
     "class_version": "Monty Schema V1.00",
-    "db_pubdate": "2024-04-03",
+    "db_pubdate": "2024-04-14",
     "helpful_resources": [
       {
         "title": "Global Crisis Data Bank - Concept Note",
@@ -3140,6 +3140,174 @@
         "exp_cat_lab": "Financial/Economic Assets"
       },
       {
+        "exp_spec_code": "expspec_aidinf",
+        "exp_spec_lab": "Aid Contributions Inflation-Adjusted",
+        "exp_subcat_code": "expsubcat_ecoaid",
+        "exp_subcat_lab": "Aid Contributions",
+        "exp_cat_code": "expcat_fineco",
+        "exp_cat_lab": "Financial/Economic Assets"
+      },
+      {
+        "exp_spec_code": "expspec_aidnoninf",
+        "exp_spec_lab": "Aid Contributions Non-Inflation-Adjusted",
+        "exp_subcat_code": "expsubcat_ecoaid",
+        "exp_subcat_lab": "Aid Contributions",
+        "exp_cat_code": "expcat_fineco",
+        "exp_cat_lab": "Financial/Economic Assets"
+      },
+      {
+        "exp_spec_code": "expspec_aidunkinf",
+        "exp_spec_lab": "Aid Contributions (Unspecified-Inflation-Adjustment)",
+        "exp_subcat_code": "expsubcat_ecoaid",
+        "exp_subcat_lab": "Aid Contributions",
+        "exp_cat_code": "expcat_fineco",
+        "exp_cat_lab": "Financial/Economic Assets"
+      },
+      {
+        "exp_spec_code": "expspec_ecorecinf",
+        "exp_spec_lab": "Reconstruction Costs Inflation-Adjusted",
+        "exp_subcat_code": "expsubcat_detreccost",
+        "exp_subcat_lab": "Reconstruction Costs",
+        "exp_cat_code": "expcat_fineco",
+        "exp_cat_lab": "Financial/Economic Assets"
+      },
+      {
+        "exp_spec_code": "expspec_ecorecnoninf",
+        "exp_spec_lab": "Reconstruction Costs Non-Inflation-Adjusted",
+        "exp_subcat_code": "expsubcat_detreccost",
+        "exp_subcat_lab": "Reconstruction Costs",
+        "exp_cat_code": "expcat_fineco",
+        "exp_cat_lab": "Financial/Economic Assets"
+      },
+      {
+        "exp_spec_code": "expspec_ecorecunkinf",
+        "exp_spec_lab": "Reconstruction Costs (Unspecified-Inflation-Adjustment)",
+        "exp_subcat_code": "expsubcat_detreccost",
+        "exp_subcat_lab": "Reconstruction Costs",
+        "exp_cat_code": "expcat_fineco",
+        "exp_cat_lab": "Financial/Economic Assets"
+      },
+      {
+        "exp_spec_code": "expspec_ecoinsinf",
+        "exp_spec_lab": "Insured Costs Inflation-Adjusted",
+        "exp_subcat_code": "expsubcat_ecoins",
+        "exp_subcat_lab": "Insured Cost",
+        "exp_cat_code": "expcat_fineco",
+        "exp_cat_lab": "Financial/Economic Assets"
+      },
+      {
+        "exp_spec_code": "expspec_ecoinsnoninf",
+        "exp_spec_lab": "Insured Costs Non-Inflation-Adjusted",
+        "exp_subcat_code": "expsubcat_ecoins",
+        "exp_subcat_lab": "Insured Cost",
+        "exp_cat_code": "expcat_fineco",
+        "exp_cat_lab": "Financial/Economic Assets"
+      },
+      {
+        "exp_spec_code": "expspec_ecoinsunkinf",
+        "exp_spec_lab": "Insured Costs (Unspecified-Inflation-Adjustment)",
+        "exp_subcat_code": "expsubcat_ecoins",
+        "exp_subcat_lab": "Insured Cost",
+        "exp_cat_code": "expcat_fineco",
+        "exp_cat_lab": "Financial/Economic Assets"
+      },
+      {
+        "exp_spec_code": "expspec_ecouninsinf",
+        "exp_spec_lab": "Uninsured Costs Inflation-Adjusted",
+        "exp_subcat_code": "expsubcat_ecounins",
+        "exp_subcat_lab": "Uninsured Cost",
+        "exp_cat_code": "expcat_fineco",
+        "exp_cat_lab": "Financial/Economic Assets"
+      },
+      {
+        "exp_spec_code": "expspec_ecouninsnoninf",
+        "exp_spec_lab": "Uninsured Costs Non-Inflation-Adjusted",
+        "exp_subcat_code": "expsubcat_ecounins",
+        "exp_subcat_lab": "Uninsured Cost",
+        "exp_cat_code": "expcat_fineco",
+        "exp_cat_lab": "Financial/Economic Assets"
+      },
+      {
+        "exp_spec_code": "expspec_ecouninsunkinf",
+        "exp_spec_lab": "Uninsured Costs (Unspecified-Inflation-Adjustment)",
+        "exp_subcat_code": "expsubcat_ecounins",
+        "exp_subcat_lab": "Uninsured Cost",
+        "exp_cat_code": "expcat_fineco",
+        "exp_cat_lab": "Financial/Economic Assets"
+      },
+      {
+        "exp_spec_code": "expspec_ecototinf",
+        "exp_spec_lab": "Total Cost Inflation-Adjusted",
+        "exp_subcat_code": "expsubcat_ecotot",
+        "exp_subcat_lab": "Total Cost",
+        "exp_cat_code": "expcat_fineco",
+        "exp_cat_lab": "Financial/Economic Assets"
+      },
+      {
+        "exp_spec_code": "expspec_ecototnoninf",
+        "exp_spec_lab": "Total Cost Non-Inflation-Adjusted",
+        "exp_subcat_code": "expsubcat_ecotot",
+        "exp_subcat_lab": "Total Cost",
+        "exp_cat_code": "expcat_fineco",
+        "exp_cat_lab": "Financial/Economic Assets"
+      },
+      {
+        "exp_spec_code": "expspec_ecototunkinf",
+        "exp_spec_lab": "Total Cost (Unspecified-Inflation-Adjustment)",
+        "exp_subcat_code": "expsubcat_ecotot",
+        "exp_subcat_lab": "Total Cost",
+        "exp_cat_code": "expcat_fineco",
+        "exp_cat_lab": "Financial/Economic Assets"
+      },
+      {
+        "exp_spec_code": "expspec_ecodirtotinf",
+        "exp_spec_lab": "Total Direct Costs Inflation-Adjusted",
+        "exp_subcat_code": "expsubcat_ecodirtot",
+        "exp_subcat_lab": "Total Direct Cost",
+        "exp_cat_code": "expcat_fineco",
+        "exp_cat_lab": "Financial/Economic Assets"
+      },
+      {
+        "exp_spec_code": "expspec_ecodirtotnoninf",
+        "exp_spec_lab": "Total Direct Costs Non-Inflation-Adjusted",
+        "exp_subcat_code": "expsubcat_ecodirtot",
+        "exp_subcat_lab": "Total Direct Cost",
+        "exp_cat_code": "expcat_fineco",
+        "exp_cat_lab": "Financial/Economic Assets"
+      },
+      {
+        "exp_spec_code": "expspec_ecodirtotunkinf",
+        "exp_spec_lab": "Total Direct Costs (Unspecified-Inflation-Adjustment)",
+        "exp_subcat_code": "expsubcat_ecodirtot",
+        "exp_subcat_lab": "Total Direct Cost",
+        "exp_cat_code": "expcat_fineco",
+        "exp_cat_lab": "Financial/Economic Assets"
+      },
+      {
+        "exp_spec_code": "expspec_ecoindirtotinf",
+        "exp_spec_lab": "Total Indirect Costs Inflation-Adjusted",
+        "exp_subcat_code": "expsubcat_ecoindtot",
+        "exp_subcat_lab": "Total Indirect Cost",
+        "exp_cat_code": "expcat_fineco",
+        "exp_cat_lab": "Financial/Economic Assets"
+      },
+      {
+        "exp_spec_code": "expspec_ecoindirtotnoninf",
+        "exp_spec_lab": "Total Indirect Costs Non-Inflation-Adjusted",
+        "exp_subcat_code": "expsubcat_ecoindtot",
+        "exp_subcat_lab": "Total Indirect Cost",
+        "exp_cat_code": "expcat_fineco",
+        "exp_cat_lab": "Financial/Economic Assets"
+      },
+      {
+        "exp_spec_code": "expspec_ecoindirtotunkinf",
+        "exp_spec_lab": "Total Indirect Costs (Unspecified-Inflation-Adjustment)",
+        "exp_subcat_code": "expsubcat_ecoindtot",
+        "exp_subcat_lab": "Total Indirect Cost",
+        "exp_cat_code": "expcat_fineco",
+        "exp_cat_lab": "Financial/Economic Assets"
+      },
+      {
         "exp_spec_code": "expspec_cattle",
         "exp_spec_lab": "Cattle",
         "exp_subcat_code": "expsubcat_envliv",
@@ -3148,36 +3316,20 @@
         "exp_cat_lab": "Environmental & Ecological Assets"
       },
       {
-        "exp_spec_code": "expspec_aidgen",
-        "exp_spec_lab": "General Aid Contributions",
-        "exp_subcat_code": "expsubcat_ecoaid",
-        "exp_subcat_lab": "Aid Contributions",
-        "exp_cat_code": "expcat_fineco",
-        "exp_cat_lab": "Financial/Economic Assets"
-      },
-      {
-        "exp_spec_code": "expspec_ecoifrcall",
-        "exp_spec_lab": "IFRC Appeal Contribution",
-        "exp_subcat_code": "expsubcat_ecoaid",
-        "exp_subcat_lab": "Aid Contributions",
-        "exp_cat_code": "expcat_fineco",
-        "exp_cat_lab": "Financial/Economic Assets"
-      },
-      {
-        "exp_spec_code": "expspec_ecoifrcreq",
-        "exp_spec_lab": "IFRC Appeal Requested",
-        "exp_subcat_code": "expsubcat_ecoaid",
-        "exp_subcat_lab": "Aid Contributions",
-        "exp_cat_code": "expcat_fineco",
-        "exp_cat_lab": "Financial/Economic Assets"
-      },
-      {
         "exp_spec_code": "expspec_alert",
         "exp_spec_lab": "Alertscore",
         "exp_subcat_code": "expsubcat_risk",
         "exp_subcat_lab": "Alertscore or risk indicator",
         "exp_cat_code": "expcat_other",
         "exp_cat_lab": "Other"
+      },
+      {
+        "exp_spec_code": "expspec_ecoifrcall",
+        "exp_spec_lab": "IFRC Aid Contributions (Unspecified-Inflation-Adjustment)",
+        "exp_subcat_code": "expsubcat_ecoaid",
+        "exp_subcat_lab": "Aid Contributions",
+        "exp_cat_code": "expcat_fineco",
+        "exp_cat_lab": "Financial/Economic Assets"
       },
       {
         "exp_subcat_code": "expsubcat_infprec",
@@ -3226,36 +3378,6 @@
         "exp_subcat_lab": "Sensitive Habitats or Species",
         "exp_cat_code": "expcat_env",
         "exp_cat_lab": "Environmental & Ecological Assets"
-      },
-      {
-        "exp_subcat_code": "expsubcat_detreccost",
-        "exp_subcat_lab": "Reconstruction Costs",
-        "exp_cat_code": "expcat_fineco",
-        "exp_cat_lab": "Financial/Economic Assets"
-      },
-      {
-        "exp_subcat_code": "expsubcat_ecoins",
-        "exp_subcat_lab": "Insured Cost",
-        "exp_cat_code": "expcat_fineco",
-        "exp_cat_lab": "Financial/Economic Assets"
-      },
-      {
-        "exp_subcat_code": "expsubcat_ecounins",
-        "exp_subcat_lab": "Uninsured Cost",
-        "exp_cat_code": "expcat_fineco",
-        "exp_cat_lab": "Financial/Economic Assets"
-      },
-      {
-        "exp_subcat_code": "expsubcat_ecodirtot",
-        "exp_subcat_lab": "Total Direct Cost",
-        "exp_cat_code": "expcat_fineco",
-        "exp_cat_lab": "Financial/Economic Assets"
-      },
-      {
-        "exp_subcat_code": "expsubcat_ecoindtot",
-        "exp_subcat_lab": "Total Indirect Cost",
-        "exp_cat_code": "expcat_fineco",
-        "exp_cat_lab": "Financial/Economic Assets"
       },
       {
         "exp_subcat_code": "expsubcat_physinfo",
@@ -5861,7 +5983,7 @@
         "src_org_email": "undrr-bonn@un.org",
         "src_db_url": "https://www.desinventar.net/download.html",
         "src_db_attr": "custodian",
-        "src_db_lic": "Apache-2-like"
+        "src_db_lic": "CC BY"
       },
       {
         "src_db_code": "UNO_damass",
@@ -5873,7 +5995,7 @@
         "src_org_email": "unosat@unitar.org",
         "src_db_url": "https://unosat.org/products/",
         "src_db_attr": "custodian",
-        "src_db_lic": "CCA"
+        "src_db_lic": "CC BY-SA"
       },
       {
         "src_db_code": "COP_damass",
@@ -5885,7 +6007,7 @@
         "src_org_email": "echo-ercc@ec.europe.eu",
         "src_db_url": "https://emergency.copernicus.eu/",
         "src_db_attr": "custodian",
-        "src_db_lic": "CCA"
+        "src_db_lic": "CC BY-SA"
       },
       {
         "src_db_code": "GO-EA",
@@ -5993,7 +6115,19 @@
         "src_org_email": "info@idmc.ch",
         "src_db_url": "www.internal-displacement.org",
         "src_db_attr": "curator",
-        "src_db_lic": "unknown"
+        "src_db_lic": "CC BY-IGO"
+      },
+      {
+        "src_db_code": "IDU",
+        "src_db_lab": "Internal Displacement Updates (IDU)",
+        "src_org_code": "IDMC",
+        "src_org_lab": "Internal Monitoring Displacement Centre (IDMC)",
+        "src_orgtype_code": "orgtypengo",
+        "src_orgtype_lab": "Non Governmental Organisation",
+        "src_org_email": "info@idmc.ch",
+        "src_db_url": "www.internal-displacement.org",
+        "src_db_attr": "curator",
+        "src_db_lic": "CC BY-IGO"
       },
       {
         "src_db_code": "GDACS",
@@ -6005,7 +6139,7 @@
         "src_org_email": "coordination@gdacs.org",
         "src_db_url": "www.gdacs.org",
         "src_db_attr": "mediator",
-        "src_db_lic": "unknown"
+        "src_db_lic": "MIT License"
       },
       {
         "src_db_code": "GLIDE",
@@ -6032,8 +6166,8 @@
         "src_db_lic": "CCA 3.0"
       },
       {
-        "src_db_code": "Shakemaps",
-        "src_db_lab": "Earthquake Catalog",
+        "src_db_code": "Atlas",
+        "src_db_lab": "Atlas Earthquake ShakeMap Catalog",
         "src_org_code": "USGS",
         "src_org_lab": "United States Geological Survey (USGS)",
         "src_orgtype_code": "orgtypegov",
@@ -6041,7 +6175,43 @@
         "src_org_email": "usgsstore@usgs.gov",
         "src_db_url": "https://www.usgs.gov/survey-manual/11006-use-copyrighted-material-usgs-information-products",
         "src_db_attr": "custodian",
-        "src_db_lic": "U.S Public Domain"
+        "src_db_lic": "CC BY"
+      },
+      {
+        "src_db_code": "GAUL",
+        "src_db_lab": "Global Administrative Unit Layers (GAUL)",
+        "src_org_code": "FAO",
+        "src_org_lab": "Food and Agriculture Organization",
+        "src_orgtype_code": "orgtypegov",
+        "src_orgtype_lab": "Governmental",
+        "src_org_email": "fao-data@fao.org",
+        "src_db_url": "https://data.apps.fao.org/map/catalog/static/search?keyword=HiH_boundaries",
+        "src_db_attr": "custodian",
+        "src_db_lic": "CC BY-SA"
+      },
+      {
+        "src_db_code": "GovDes",
+        "src_db_lab": "Official Government or UN ADM Boundaries",
+        "src_org_code": "UNDRR",
+        "src_org_lab": "United Nations Disaster Risk Reduction (UNDRR)",
+        "src_orgtype_code": "orgtypegov",
+        "src_orgtype_lab": "Governmental",
+        "src_org_email": "undrr-bonn@un.org",
+        "src_db_url": "https://www.desinventar.net/download.html",
+        "src_db_attr": "custodian",
+        "src_db_lic": "CC BY"
+      },
+      {
+        "src_db_code": "DFO",
+        "src_db_lab": "Dartmouth Flood Observatory (DFO)",
+        "src_org_code": "UniColumbia",
+        "src_org_lab": "University of Columbia",
+        "src_orgtype_code": "orgtypeacad",
+        "src_orgtype_lab": "Academic & Scientific",
+        "src_org_email": "kettner@colorado.edu",
+        "src_db_url": "https://floodobservatory.colorado.edu/",
+        "src_db_attr": "custodian",
+        "src_db_lic": "CCA 4.0 BY"
       }
     ],
     "units_info": [
@@ -6054,6 +6224,12 @@
       {
         "unit_codes": "unitsunknown",
         "units_lab": "Unknown",
+        "unit_groups_code": "unitsgrpunknown",
+        "unit_groups_lab": "Unknown Group"
+      },
+      {
+        "unit_codes": "unitscostunknown",
+        "units_lab": "Cost (Unknown Currency)",
         "unit_groups_code": "unitsgrpunknown",
         "unit_groups_lab": "Unknown Group"
       },

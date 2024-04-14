@@ -309,9 +309,7 @@ convGOApp_Monty<-function(){
     ID_linkage=data.frame(
       imp_sub_ID=appeal$imp_sub_ID,
       imp_spat_ID="GO-ADM0-World-shp",
-      imp_spat_fileloc="https://go-user-library.ifrc.org/maps",
-      imp_spat_colname="iso3",
-      imp_spat_rowname=appeal$imp_ISO3s
+      imp_spat_fileloc="https://go-user-library.ifrc.org/maps"
     ),
     spatial_info=appeal%>%dplyr::select(
       imp_ISO3s,

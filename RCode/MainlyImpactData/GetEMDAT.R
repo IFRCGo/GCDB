@@ -537,7 +537,7 @@ convEMDAT_Monty<-function(){
   # Get the Emergency Appeal data from GO
   EMDAT<-API_EMDAT()
   # Clean using the old GCDB structure
-  stop("Don't filter out the imp_value<=0 here but after the events_Level object has been created")
+  # stop("Don't filter out the imp_value<=0 here but after the events_Level object has been created")
   EMDAT%<>%filter(!is.na(haz_spec) & imp_value>0)
   # Get rid of repeated entries
   EMDAT%<>%distinct()%>%

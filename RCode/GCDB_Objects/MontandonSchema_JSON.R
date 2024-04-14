@@ -5,6 +5,8 @@ source("./RCode/Setup/GetPackages.R")
 RDLS<-jsonlite::fromJSON("https://docs.riskdatalibrary.org/en/0__2__0/rdls_schema.json")
 # Get the taxonomy data
 taxies<-openxlsx::read.xlsx("./ImpactInformationProfiles.xlsx")
+# Get the data source information
+src_info<-openxlsx::read.xlsx("./Taxonomies/Monty_DataSources.xlsx")
 # Country codes and associated regions
 counties<-openxlsx::read.xlsx("./Taxonomies/IsoContinentRegion.xlsx")%>%
     filter(!is.na(Country))%>%mutate(Continent=convIso3Continent_alt(ISO.Code))
@@ -16,7 +18,7 @@ othcounties<-counties%>%filter(ISO.Code=="damndaniel"); othcounties[1:nrow(tmp),
 counties%<>%rbind(othcounties%>%mutate(ISO.Code=tmp$ISO.Code,Country=tmp$Country,Continent=tmp$continent))%>%
   filter(!duplicated(ISO.Code)); rm(tmp,othcounties)
 counties%<>%dplyr::select(ISO.Code,Country,UN.Region,World.Bank.Regions,Continent,UN.Sub.Region,World.Bank.Income.Groups)%>%
-  setNames(c("ISO3","country","unregion","worldbankregion","continent","unsubregion","worldbankincomegroups"))
+  setNames(c("ISO3","country","unregion","worldbankregion","continent","unsubregion","worldbankincomegroup"))
 # Create the data frames of the taxonomies to be saved out later
 # exposure taxonomy
 exp_class<-taxies%>%filter(list_name=="exp_subcats")%>%dplyr::select(name,label,link_group)%>%
@@ -1377,7 +1379,7 @@ ex_Monty$taxonomies<-list(ISO_info=counties,
                           exp_class=exp_class,
                           imp_class=imp_class,
                           haz_class=haz_class,
-                          src_info=ex_Monty$taxonomies$src_info,
+                          src_info=src_info,
                           units_info=units_info%>%distinct(unit_codes,.keep_all = T),
                           est_type=est_type,
                           spatial_coverage=spatial_coverage)
