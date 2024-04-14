@@ -707,13 +707,13 @@ Monty_Imp2Tab<-function(Monty,red=F){
   # Spatial data source information 
   imp_lv%<>%cbind(left_join(
     do.call(rbind,lapply(Monty$impact_Data$spatial,function(x) x$source))%>%
-      setNames(c("imp_spat_srcdbcode","imp_spat_srcdbURL","imp_spat_srcorgcode")), 
+      setNames(c("imp_spat_srcdbcode","imp_spat_srcdburl","imp_spat_srcorgcode")), 
     Monty$taxonomies$src_info%>%
       setNames(str_replace_all(str_replace_all(colnames(Monty$taxonomies$src_info),"_",""),"src","imp_spat_src"))%>%
-      dplyr::select(-imp_spat_srcdbURL),
+      dplyr::select(-any_of(imp_spat_srcdburl)),
       by=c("imp_spat_srcorgcode","imp_spat_srcdbcode")))
   # Re-order this all
-  imp_lv%<>%dplyr::select(c("event_ID","imp_sub_ID","haz_sub_ID", #ID and linkages
+  imp_lv%<>%dplyr::select(any_of(c("event_ID","imp_sub_ID","haz_sub_ID", #ID and linkages
                             "imp_ext_IDs","imp_extID_db","imp_extID_org",
                             # source
                             "imp_srcdb_code","imp_srcdb_lab",
@@ -736,14 +736,14 @@ Monty_Imp2Tab<-function(Monty,red=F){
                             "imp_spat_colname","imp_spat_rowname","imp_spat_covcode",
                             "imp_spat_covlab","imp_spat_res","imp_spat_resunits",
                             "imp_spat_crs","imp_spat_srcdbcode",
-                            "imp_spat_srcdblab","imp_spat_srcdbURL",
+                            "imp_spat_srcdblab","imp_spat_srcdburl",
                             "imp_spat_srcorgcode","imp_spat_srcorglab",
                             "imp_spat_srcorgtypecode","imp_spat_srcorgtypelab",
                             "imp_spat_srcorgemail","imp_spat_srcdbattr",
-                            "imp_spat_srcdblic","imp_spat_srcaddinfo"))
+                            "imp_spat_srcdblic","imp_spat_srcaddinfo")))
   
   if(red) {
-    imp_lv%>%dplyr::select(c("event_ID","imp_sub_ID","haz_sub_ID", #ID and linkages
+    imp_lv%>%dplyr::select(any_of(c("event_ID","imp_sub_ID","haz_sub_ID", #ID and linkages
                              "imp_ext_IDs","imp_extID_db","imp_extID_org",
                              # source
                              "imp_srcdb_lab","imp_srcorg_lab",
@@ -762,11 +762,11 @@ Monty_Imp2Tab<-function(Monty,red=F){
                              "imp_WorldBankIncomeGroup","imp_spat_fileloc",
                              "imp_spat_colname","imp_spat_rowname",
                              "imp_spat_covlab","imp_spat_res","imp_spat_resunits",
-                             "imp_spat_crs","imp_spat_srcdblab","imp_spat_srcdbURL",
+                             "imp_spat_crs","imp_spat_srcdblab","imp_spat_srcdburl",
                              "imp_spat_srcorglab",
                              "imp_spat_srcorgtypelab",
                              "imp_spat_srcorgemail","imp_spat_srcdbattr",
-                             "imp_spat_srcdblic","imp_spat_srcaddinfo"))%>%return()
+                             "imp_spat_srcdblic","imp_spat_srcaddinfo")))%>%return()
   }
   return(imp_lv)
 }

@@ -533,7 +533,7 @@ API_EMDAT<-function(){
     CleanEMDAT_API()
 }
 
-convGOEMDAT_Monty<-function(){
+convEMDAT_Monty<-function(){
   # Get the Emergency Appeal data from GO
   EMDAT<-API_EMDAT()
   # Clean using the old GCDB structure

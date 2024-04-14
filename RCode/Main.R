@@ -1,6 +1,14 @@
 # Read in all the necessary libraries and GCDB scripts
 source("./RCode/Setup/GetPackages.R")
 
+GetMonty<-function(){
+  # IFRC DREF-EA data
+  Monty<-convGOApp_Monty()
+  # EM-DAT
+  Monty%<>%MergeMonty(convEMDAT_Monty())
+}
+
+
 # Extract the impact databases, focussing specifically on the provided hazard
 GetImpacts<-function(){
   # Desinventar
