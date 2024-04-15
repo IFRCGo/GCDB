@@ -76,7 +76,140 @@ GetGIDD<-function(){
   GIDD%>%AddEmptyColImp()
 }
 
-convGIDD_Monty<-function(GIDD){
+
+
+GetGIDD_API<-function(){
+  # URL of the IDMC GIDD data
+  urly<-"https://helix-tools-api.idmcdb.org/external-api/gidd/disasters/"
+  # Grab it alllll
+  GIDD<-jsonlite::fromJSON(paste0(urly,"?format=json&limit=1000000000&client_id=",idmc_token))$results
+  # Rename the required variables
+  GIDD%<>%rename("imp_ISO3s"="iso3",
+                 "imp_sdate"="start_date",
+                 "imp_fdate"="end_date",
+                 "ev_name"="event_name",
+                 "HazardCategory"="hazard_category_name",
+                 "HazardType"="hazard_type_name",
+                 "HazardSubType"="hazard_sub_type_name",
+                 "GLIDE"="glide_numbers")
+  # Hazard taxonomy - HIPS
+  GIDD%<>%GIDDHazards()
+  # Patch over some of the GLIDE number issues
+  GIDD$GLIDE<-lapply(1:nrow(GIDD),function(i){
+    x<-GIDD$GLIDE[[i]]
+    if(length(x)==0) return(character(0))
+    x%<>%str_replace(" ","")%>%str_replace("\t","")
+    unique(unlist(sapply(x,function(xx){
+      # Some of the GLIDE numbers are shorter than required: some are missing the ISO codes, some the hazard code and some both
+      if(nchar(xx)==11 & str_count(xx,"-")==1) xx<-paste0(GIDD$imp_ISO3s[i],"-",xx,"-",GIDD$haz_Ab[i])
+      if(nchar(xx)==13 & str_count(xx,"-")==2) xx<-paste0(GIDD$imp_ISO3s[i],"-",xx)
+      if(nchar(xx)==14 & str_count(xx,"-")==2) xx<-paste0(xx,"-",GIDD$haz_Ab[i])
+      # Now check if the character is in the correct form
+      if(!grepl("^[A-Z]{2}-\\d{4}-\\d{6}-[A-Z]{3}$",xx)) return(character(0)) else return(xx)
+    },simplify = T)))
+  })
+  # Add some of the extra details that are GIDD-specific
+  GIDD%<>%mutate(ev_sdate=imp_sdate,
+                 ev_fdate=imp_fdate,
+                 ev_ISO3s=imp_ISO3s,
+                 gen_location=ev_name,
+                 imp_unitdate=NA_character_,
+                 imp_lon=NA_real_,
+                 imp_lat=NA_real_,
+                 imp_src_URL=urly,
+                 imp_src_org="IDMC",
+                 imp_src_db="GIDD",
+                 imp_src_orgtype="orgtypengo",
+                 imp_spat_srcorg="IFRC",
+                 imp_spat_srcdb="GO",
+                 imp_spat_URL="https://go-user-library.ifrc.org/maps",
+                 imp_spat_fileloc="https://go-user-library.ifrc.org/maps",
+                 imp_spat_res=0,
+                 imp_spat_resunits="adminlevel",
+                 imp_spat_crs="EPSG:4326",
+                 imp_spat_covcode="spat_polygon",
+                 imp_spat_ID=NA_character_)
+  # Sort the IDs variable:
+  GIDD$all_ext_IDs<-lapply(1:nrow(GIDD), function(i){
+    # If there are no GLIDE codes, there are no external IDs at all
+    if(length(unlist(GIDD$GLIDE[[i]]))==0) 
+      return(data.frame(ext_ID=NA_character_,
+                        ext_ID_org=NA_character_,
+                        ext_ID_db=NA_character_))
+    # Otherwise, add the others!
+    data.frame(ext_ID=unlist(GIDD$GLIDE[[i]]),
+               ext_ID_org="ADRC",
+               ext_ID_db="GLIDE")
+  })
+  # Generate GCDB event ID
+  GIDD$event_ID<-GetMonty_ID(GIDD)
+  # Correct the labels of the impacts, melting by impact detail
+  GIDD%<>%dplyr::select(-total_displacement)%>%ImpLabs(nomDB = "GIDD")
+  # Create an impact-specific ID
+  GIDD%<>%distinct()%>%GetGCDB_impID()
+  # Add missing columns & reorder the dataframe to fit imp_GCDB object
+  GIDD%>%dplyr::select(any_of(MontyJSONnames()))
+}
+
+GetIDU_API<-function(){
+  # Link to the IDU data
+  urly<-"https://helix-tools-api.idmcdb.org/external-api/idus/all/"
+  # The name of the file to extract to
+  filey<-"./CleanedData/MostlyImpactData/IDMC/IDU-IDMC.json"
+  # Download the compressed file
+  download.file(paste0(urly,"?client_id=",idmc_token,"&format=json"),paste0(filey,".gz"))
+  # Decompress the file
+  R.utils::gunzip(paste0(filey,".gz"),filey,overwrite=T)
+  # Read it in!
+  IDU<-jsonlite::fromJSON(filey)%>%
+    filter(displacement_type=="Disaster" & role=="Recommended figure")
+  # Rename some of the columns
+  IDU%<>%rename(
+    "imp_ISO3s"="iso3",
+    "imp_sdate"="displacement_start_date",
+    "imp_fdate"="displacement_end_date",
+    "ev_sdate"="event_start_date",
+    "ev_fdate"="event_end_date",
+    "ev_name"="event_name",
+    "HazardCategory"="category",
+    "HazardType"="type",
+    "HazardSubType"="subtype",
+    "ext_ID"="id",
+    "imp_lat"="latitude",
+    "imp_lon"="longitude")
+  # Hazard taxonomy - HIPS
+  IDU%<>%GIDDHazards()
+  # Add some of the extra details that are IDU-specific
+  IDU%<>%mutate(ev_ISO3s=imp_ISO3s,
+                gen_location=ev_name,
+                imp_unitdate=NA_character_,
+                imp_src_URL=urly,
+                imp_src_org="IDMC",
+                imp_src_db="IDU",
+                imp_src_orgtype="orgtypengo",
+                imp_spat_srcorg="IFRC",
+                imp_spat_srcdb="GO",
+                imp_spat_URL="https://go-user-library.ifrc.org/maps",
+                imp_spat_fileloc="https://go-user-library.ifrc.org/maps",
+                imp_spat_res=0,
+                imp_spat_resunits="adminlevel",
+                imp_spat_crs="EPSG:4326",
+                imp_spat_covcode="spat_polygon",
+                imp_spat_ID=NA_character_)
+  # Generate GCDB event ID
+  IDU$event_ID<-GetMonty_ID(IDU)
+  # Correct the labels of the impacts, melting by impact detail
+  IDU%<>%ImpLabs(nomDB = "IDU")
+  # Create an impact-specific ID
+  IDU%<>%GetGCDB_impID()
+  # Add missing columns & reorder the dataframe to fit imp_GCDB object
+  IDU%>%dplyr::select(any_of(MontyJSONnames())) 
+}
+
+
+convGIDD_Monty<-function(){
+  # Get the GIDD data
+  GIDD<-GetGIDD_API()
   # Arrange in event date order
   GIDD%<>%arrange(ev_sdate)
   # Extract the Monty JSON schema template
@@ -182,7 +315,9 @@ convGIDD_Monty<-function(GIDD){
   return(gMonty)
 }
 
-convIDU_Monty<-function(IDU){
+convIDU_Monty<-function(){
+  # Get the IDU data
+  IDU<-GetIDU_API()
   # Arrange in event date order
   IDU%<>%arrange(ev_sdate)
   # Extract the Monty JSON schema template
@@ -281,134 +416,6 @@ convIDU_Monty<-function(IDU){
         paste0("./CleanedData/MostlyImpactData/IDMC/IDU_",Sys.Date(),".json"))
   
   return(gMonty)
-}
-
-GetGIDD_API<-function(){
-  # URL of the IDMC GIDD data
-  urly<-"https://helix-tools-api.idmcdb.org/external-api/gidd/disasters/"
-  # Grab it alllll
-  GIDD<-jsonlite::fromJSON(paste0(urly,"?format=json&limit=1000000000&client_id=",idmc_token))$results
-  # Rename the required variables
-  GIDD%<>%rename("imp_ISO3s"="iso3",
-                 "imp_sdate"="start_date",
-                 "imp_fdate"="end_date",
-                 "ev_name"="event_name",
-                 "HazardCategory"="hazard_category_name",
-                 "HazardType"="hazard_type_name",
-                 "HazardSubType"="hazard_sub_type_name",
-                 "GLIDE"="glide_numbers")
-  # Hazard taxonomy - HIPS
-  GIDD%<>%GIDDHazards()
-  # Patch over some of the GLIDE number issues
-  GIDD$GLIDE<-lapply(1:nrow(GIDD),function(i){
-    x<-GIDD$GLIDE[[i]]
-    if(length(x)==0) return(character(0))
-    x%<>%str_replace(" ","")%>%str_replace("\t","")
-    unique(unlist(sapply(x,function(xx){
-      # Some of the GLIDE numbers are shorter than required: some are missing the ISO codes, some the hazard code and some both
-      if(nchar(xx)==11 & str_count(xx,"-")==1) xx<-paste0(GIDD$imp_ISO3s[i],"-",xx,"-",GIDD$haz_Ab[i])
-      if(nchar(xx)==13 & str_count(xx,"-")==2) xx<-paste0(GIDD$imp_ISO3s[i],"-",xx)
-      if(nchar(xx)==14 & str_count(xx,"-")==2) xx<-paste0(xx,"-",GIDD$haz_Ab[i])
-      # Now check if the character is in the correct form
-      if(!grepl("^[A-Z]{2}-\\d{4}-\\d{6}-[A-Z]{3}$",xx)) return(character(0)) else return(xx)
-    },simplify = T)))
-  })
-  # Add some of the extra details that are GIDD-specific
-  GIDD%<>%mutate(ev_sdate=imp_sdate,
-                 ev_fdate=imp_fdate,
-                 ev_ISO3s=imp_ISO3s,
-                 gen_location=ev_name,
-                 imp_unitdate=NA_character_,
-                 imp_lon=NA_real_,
-                 imp_lat=NA_real_,
-                 imp_src_URL=urly,
-                 imp_src_org="IDMC",
-                 imp_src_db="GIDD",
-                 imp_src_orgtype="orgtypengo",
-                 imp_spat_srcorg="IFRC",
-                 imp_spat_srcdb="GO",
-                 imp_spat_URL="https://go-user-library.ifrc.org/maps",
-                 imp_spat_fileloc="https://go-user-library.ifrc.org/maps",
-                 imp_spat_res=0,
-                 imp_spat_resunits="adminlevel",
-                 imp_spat_crs="EPSG:4326",
-                 imp_spat_covcode="spat_polygon",
-                 imp_spat_ID=NA_character_)
-  # Sort the IDs variable:
-  GIDD$all_ext_IDs<-lapply(1:nrow(GIDD), function(i){
-    # If there are no GLIDE codes, there are no external IDs at all
-    if(length(unlist(GIDD$GLIDE[[i]]))==0) 
-      return(data.frame(ext_ID=NA_character_,
-                 ext_ID_org=NA_character_,
-                 ext_ID_db=NA_character_))
-    # Otherwise, add the others!
-    data.frame(ext_ID=unlist(GIDD$GLIDE[[i]]),
-               ext_ID_org="ADRC",
-               ext_ID_db="GLIDE")
-  })
-  # Generate GCDB event ID
-  GIDD$event_ID<-GetMonty_ID(GIDD)
-  # Correct the labels of the impacts, melting by impact detail
-  GIDD%<>%dplyr::select(-total_displacement)%>%ImpLabs(nomDB = "GIDD")
-  # Create an impact-specific ID
-  GIDD%<>%distinct()%>%GetGCDB_impID()
-  # Add missing columns & reorder the dataframe to fit imp_GCDB object
-  GIDD%>%dplyr::select(any_of(MontyJSONnames()))
-}
-
-GetIDU_API<-function(){
-  # Link to the IDU data
-  urly<-"https://helix-tools-api.idmcdb.org/external-api/idus/all/"
-  # The name of the file to extract to
-  filey<-"./CleanedData/MostlyImpactData/IDMC/IDU-IDMC.json"
-  # Download the compressed file
-  download.file(paste0(urly,"?client_id=",idmc_token,"&format=json"),paste0(filey,".gz"))
-  # Decompress the file
-  R.utils::gunzip(paste0(filey,".gz"),filey,overwrite=T)
-  # Read it in!
-  IDU<-jsonlite::fromJSON(filey)%>%
-    filter(displacement_type=="Disaster" & role=="Recommended figure")
-  # Rename some of the columns
-  IDU%<>%rename(
-    "imp_ISO3s"="iso3",
-    "imp_sdate"="displacement_start_date",
-    "imp_fdate"="displacement_end_date",
-    "ev_sdate"="event_start_date",
-    "ev_fdate"="event_end_date",
-    "ev_name"="event_name",
-    "HazardCategory"="category",
-    "HazardType"="type",
-    "HazardSubType"="subtype",
-    "ext_ID"="id",
-    "imp_lat"="latitude",
-    "imp_lon"="longitude")
-  # Hazard taxonomy - HIPS
-  IDU%<>%GIDDHazards()
-  # Add some of the extra details that are IDU-specific
-  IDU%<>%mutate(ev_ISO3s=imp_ISO3s,
-                gen_location=ev_name,
-                imp_unitdate=NA_character_,
-                imp_src_URL=urly,
-                imp_src_org="IDMC",
-                imp_src_db="IDU",
-                imp_src_orgtype="orgtypengo",
-                imp_spat_srcorg="IFRC",
-                imp_spat_srcdb="GO",
-                imp_spat_URL="https://go-user-library.ifrc.org/maps",
-                imp_spat_fileloc="https://go-user-library.ifrc.org/maps",
-                imp_spat_res=0,
-                imp_spat_resunits="adminlevel",
-                imp_spat_crs="EPSG:4326",
-                imp_spat_covcode="spat_polygon",
-                imp_spat_ID=NA_character_)
-  # Generate GCDB event ID
-  IDU$event_ID<-GetMonty_ID(IDU)
-  # Correct the labels of the impacts, melting by impact detail
-  IDU%<>%ImpLabs(nomDB = "IDU")
-  # Create an impact-specific ID
-  IDU%<>%GetGCDB_impID()
-  # Add missing columns & reorder the dataframe to fit imp_GCDB object
-  IDU%>%dplyr::select(any_of(MontyJSONnames())) 
 }
 
 

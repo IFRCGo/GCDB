@@ -94,7 +94,10 @@ Add_EvIDlink_Monty<-function(dframe){
     # Find the corresponding indices for this entry
     indy<-dframe$event_ID==ID
     # check for no external IDs
-    if(any(is.na(dframe$ext_ID[indy]))) return(list())
+    if(any(is.na(dframe$ext_ID[indy]))) 
+      return(list(data.frame(ext_ID=NA_character_,
+                             ext_ID_db=NA_character_, 
+                             ext_ID_org=NA_character_)%>%distinct()))
     # Highlight the external IDs that share the same Monty IDs 
     list(data.frame(ext_ID=dframe$ext_ID[indy],
                ext_ID_db=dframe$ext_ID_db[indy], 
@@ -198,7 +201,10 @@ Add_ImpIDlink_Monty<-function(dframe){
     # Find the corresponding indices for this entry
     indy<-dframe$imp_sub_ID==ID
     # Check for no IDs
-    if(all(is.na(dframe$ext_ID[indy]))) return(list())
+    if(all(is.na(dframe$ext_ID[indy]))) 
+      return(list(data.frame(ext_ID=rep(NA_character_,sum(indy)),
+                           ext_ID_db=rep(NA_character_,sum(indy)), 
+                           ext_ID_org=rep(NA_character_,sum(indy)))%>%distinct()))
     # Highlight the external IDs that share the same Monty IDs 
     list(data.frame(ext_ID=dframe$ext_ID[indy],
                     ext_ID_db=dframe$ext_ID_db[indy], 
@@ -723,7 +729,7 @@ Monty_Imp2Tab<-function(Monty,red=F){
                             "imp_spat_ID","imp_ISO3","imp_country","imp_unregion",
                             "imp_worldbankregion","imp_continent","imp_unsubregion",
                             "imp_worldbankincomegroup","imp_spat_fileloc",
-                            "imp_spat_colname","imp_spat_rowname","imp_spat_covcode",
+                            "imp_lon","imp_lat","imp_spat_covcode",
                             "imp_spat_covlab","imp_spat_res","imp_spat_resunits",
                             "imp_spat_crs","imp_spat_srcdbcode",
                             "imp_spat_srcdblab","imp_spat_srcdburl",
@@ -750,7 +756,7 @@ Monty_Imp2Tab<-function(Monty,red=F){
                              "imp_spat_ID","imp_ISO3","imp_country","imp_unregion",
                              "imp_worldbankregion","imp_continent","imp_unsubregion",
                              "imp_worldbankincomegroup","imp_spat_fileloc",
-                             "imp_spat_colname","imp_spat_rowname",
+                             "imp_lon","imp_lat",
                              "imp_spat_covlab","imp_spat_res","imp_spat_resunits",
                              "imp_spat_crs","imp_spat_srcdblab","imp_spat_srcdburl",
                              "imp_spat_srcorglab",
@@ -846,7 +852,7 @@ Monty_Haz2Tab<-function(Monty,red=F){
                             "haz_spat_ID","haz_ISO3","haz_Country","haz_unregion",
                             "haz_worldbankregion","haz_continent","haz_unsubregion",
                             "haz_worldbankincomegroup","haz_spat_fileloc",
-                            "haz_spat_colname","haz_spat_rowname","haz_spat_covcode",
+                            "haz_lon","haz_lat","haz_spat_covcode",
                             "haz_spat_covlab","haz_spat_res","haz_spat_resunits",
                             "haz_spat_crs"))
   
@@ -867,7 +873,7 @@ Monty_Haz2Tab<-function(Monty,red=F){
                              "haz_spat_ID","haz_ISO3","haz_Country","haz_unregion",
                              "haz_worldbankregion","haz_continent","haz_unsubregion",
                              "haz_worldbankincomegroup","haz_spat_fileloc",
-                             "haz_spat_colname","haz_spat_rowname",
+                             "haz_lon","haz_lat",
                              "haz_spat_covlab","haz_spat_res","haz_spat_resunits",
                              "haz_spat_crs"))%>%return()
   }
@@ -933,7 +939,7 @@ checkCharMonty<-function(Monty){
   
   # Check external IDs (only GLIDE numbers for now)
   Monty$event_Level$ID_linkage$all_ext_IDs<-lapply(Monty$event_Level$ID_linkage$all_ext_IDs,function(x){
-    if(any(x$ext_ID_db=="GLIDE")) {
+    if(any(!is.na(x$ext_ID_db) & x$ext_ID_db=="GLIDE")) {
       x%<>%filter(!(ext_ID_db=="GLIDE" & !grepl("^[A-Z]{2}-\\d{4}-\\d{6}-[A-Z]{3}$",ext_ID)))
     } 
     return(x)

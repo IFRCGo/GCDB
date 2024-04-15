@@ -6,6 +6,10 @@ GetMonty<-function(){
   Monty<-convGOApp_Monty()
   # EM-DAT
   Monty%<>%MergeMonty(convEMDAT_Monty())
+  # IDMC GIDD
+  Monty%<>%MergeMonty(convGIDD_Monty())
+  # IDMC IDU
+  Monty%<>%MergeMonty(convIDU_Monty())
 }
 
 
