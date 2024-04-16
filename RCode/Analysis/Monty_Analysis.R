@@ -197,7 +197,8 @@ exceed<-Monty%>%filter(imp_type_lab=="Internally Displaced Persons (IDPs)" & imp
   reframe(coverage=unique(hazcov$coverage[hazcov==unique(haz_Ab)]),
           N=length(imp_value),
           impact=sort(imp_value),
-          probability=(1-1/(n():1))/unique(coverage))
+          probability=(1-1/(n():1))/unique(coverage),
+          )
 View(exceed)
 
 p<-exceed%>%ggplot(aes(impact,probability,colour=haz_Ab))+
