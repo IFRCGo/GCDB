@@ -27,6 +27,12 @@ unravelIBTRaCS<-function(){
       #     and make sure the wind speed varies across segments wrt '..._WIND'
   # Then do the same but for _PRES
   
+  # Calculate which country boundary boxes the path trajectories lie within
+  # for all points with LANDFALL==0
+  # Then extract which countries by doing a in-poly of country admin boundaries
+  
+  
+  
   
   
   
