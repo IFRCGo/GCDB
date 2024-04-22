@@ -19,12 +19,24 @@ unravelIBTRaCS<-function(){
   ibtracs<-as(sf::st_read("./RawData/MostlyHazardData/IBTrACS/AllEvents_Lines/IBTrACS.ALL.list.v04r00.lines.shp"),"Spatial")
   # The variables with wind speed data
   ibwcols<-grep("_WIND",names(ibtracs),value = T)
+  # The variables with pressure data
+  ibpcols<-grep("_PRES",names(ibtracs),value = T)
+  
+  # Per SID, per _WIND that isn't NA, 
+      # do: make up the storm trajectory as one shapefile with many line segments
+      #     and make sure the wind speed varies across segments wrt '..._WIND'
+  # Then do the same but for _PRES
+  
+  
+  
+  
+  
+  
+  # THESE NEXT FEW LINES ARE USELESS
   # Find out which wind speed data is available, per row
   ibtracs@data$WIND<-sapply(1:nrow(ibtracs@data),function(i){
     paste0(ibwcols[!is.na(ibtracs@data[i,ibwcols])],collapse = " : ")
   })
-  # The variables with pressure data
-  ibpcols<-grep("_PRES",names(ibtracs),value = T)
   # Find out which pressure data is available, per row
   ibtracs@data$PRES<-sapply(1:nrow(ibtracs@data),function(i){
     paste0(ibpcols[!is.na(ibtracs@data[i,ibpcols])],collapse = " : ")
