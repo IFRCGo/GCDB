@@ -269,7 +269,7 @@ GDACSHazards<-function(GDACS){
                      relationship="many-to-one")
 }
 
-convGDACS_GCDB<-function(GDACS){
+restructGDACS<-function(GDACS){
   # Form the ID for the event
   GDACS$event_ID<-GetMonty_ID(GDACS)
   # Make the dates the correct type
@@ -277,9 +277,6 @@ convGDACS_GCDB<-function(GDACS){
   # Date shifts
   GDACS$imp_sdate<-GDACS$imp_unitdate<-GDACS$haz_sdate<-GDACS$ev_sdate
   GDACS$imp_fdate<-GDACS$haz_fdate<-GDACS$ev_fdate
-  # Add the continent, then remove the unnecesary layers
-  GDACS%<>%mutate(region=convIso3Continent_alt(imp_ISO3s))%>%
-    filter(!is.na(region))
   # Add alertscore as the impact value
   GDACS%<>%mutate(
     imp_value=GDACS$alertscore,
@@ -336,15 +333,14 @@ GetGDACS_GCDB<-function(){
   # Extract the data
   GDACS<-FilterGDACS()
   # Store it out as a imp_GCDB object
-  GDACS%>%convGDACS_GCDB()
+  GDACS%>%restructGDACS()
 }
 
 convGDACS_Monty<-function(){
   # Extract raw GDACS data
   GDACS<-GetGDACS_GCDB()
   # Get rid of repeated entries
-  GDACS%<>%distinct(imp_sub_ID,.keep_all = TRUE)%>%
-    arrange(ev_sdate)
+  GDACS%<>%arrange(ev_sdate)
   # Extract the Monty JSON schema template
   gdacsMonty<-jsonlite::fromJSON("./Taxonomies/Montandon_JSON-Example.json")
   #@@@@@ Impact-level data @@@@@#
@@ -444,7 +440,6 @@ convGDACS_Monty<-function(){
   
   
   #@@@@@ Hazard-level data @@@@@#
-  GDACS%<>%distinct(haz_sub_ID,.keep_all = T)
   # The ID linkage stuff is the same as for the event_Level element
   ID_linkage%<>%cbind(GDACS["haz_sub_ID"])%>%
     dplyr::select(event_ID,haz_sub_ID,all_ext_IDs)%>%rename(haz_ext_IDs=all_ext_IDs)
