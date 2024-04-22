@@ -50,9 +50,6 @@ SearchUSGSbbox<-function(bbox,sdate,fdate=NULL,minmag=5,exdays=c(5,14)){
   
 }
 
-USGSskelly<-as.data.frame(matrix(NA,1,14))
-colnames(USGSskelly)<-c("USGSid","date","PAGER","dataURL","visURL","minDepth","feltSc","magnitude","magunit","intensity","intunit","tsunami","centLon","centLat")
-
 # Make sure the USGS data wasn't empty or entirely outside of the specified boundary box
 check_hazsdf<-function(hazsdf=NULL,minmag,bbox=NULL){
   if(is.null(hazsdf)) return(F)
@@ -138,6 +135,9 @@ metaUSGS<-function(featie){
 }
 
 MatchUSGS<-function(impies,noextract=F){
+  # Template for the USGS data
+  USGSskelly<-as.data.frame(matrix(NA,1,14))
+  colnames(USGSskelly)<-c("USGSid","date","PAGER","dataURL","visURL","minDepth","feltSc","magnitude","magunit","intensity","intunit","tsunami","centLon","centLat")
   # Check for duplicated entries
   inds<-!duplicated(impies); inds[is.na(inds)]<-F
   # Don't unecessarily spam USGS

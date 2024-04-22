@@ -272,8 +272,6 @@ CleanEMDAT_API<-function(EMDAT){
   if(any(!(do.call(rbind,EMDAT$all_ext_IDs)%>%pull(ext_ID_db)%in%c("EMDAT","Atlas","GLIDE","DFO")))) warning("External IDs from unknown organisations found in EM-DAT database")
   # Melt the columns and apply the impact categorisation
   EMDAT%<>%ImpLabs(nomDB = "EM-DAT",dropName = T)
-  # Make sure to remove all NA impact estimates
-  EMDAT%<>%filter(!is.na(imp_value))
   # Create an impact-specific ID
   EMDAT%<>%GetGCDB_impID()
   # Add missing columns & reorder the dataframe to fit imp_GCDB object
@@ -536,15 +534,52 @@ API_EMDAT<-function(){
 convEMDAT_Monty<-function(){
   # Get the Emergency Appeal data from GO
   EMDAT<-API_EMDAT()
-  # Clean using the old GCDB structure
-  # stop("Don't filter out the imp_value<=0 here but after the events_Level object has been created")
-  EMDAT%<>%filter(!is.na(haz_spec) & imp_value>0)
   # Get rid of repeated entries
   EMDAT%<>%distinct()%>%
     arrange(ev_sdate)
   # Load the Monty JSON template
   emdMonty<-jsonlite::fromJSON("./Taxonomies/Montandon_JSON-Example.json")
+  
+  #@@@@@ Event-level data @@@@@#
+  # IDs
+  ID_linkage<-Add_EvIDlink_Monty(
+    do.call(rbind,lapply(1:nrow(EMDAT),function(i) {
+      EMDAT$all_ext_IDs[[i]]%>%mutate(event_ID=EMDAT$event_ID[i],
+                                      ev_name=EMDAT$event_ID[i])
+    }))
+  )
+  # Spatial
+  spatial<-Add_EvSpat_Monty(
+    EMDAT%>%dplyr::select(event_ID, ev_ISO3s, gen_location)
+  )
+  # temporal
+  temporal<-Add_EvTemp_Monty(
+    EMDAT%>%dplyr::select(event_ID,ev_sdate,ev_fdate)
+  )
+  # Hazards
+  hazs<-EMDAT%>%dplyr::select(event_ID, haz_Ab, haz_spec)
+  allhaz_class<-Add_EvHazTax_Monty(
+    do.call(rbind,lapply(1:nrow(hazs),function(i){
+      specs<-c(str_split(hazs$haz_spec[i],":",simplify = T))
+      outsy<-hazs[rep(i,length(specs)),]
+      outsy$haz_spec<-specs
+      return(outsy)
+    }))
+  )
+  # Gather it all and store it in the template!
+  emdMonty$event_Level<-data.frame(ev=ID_linkage$event_ID)
+  emdMonty$event_Level$ID_linkage<-ID_linkage
+  emdMonty$event_Level$temporal<-temporal
+  emdMonty$event_Level$spatial<-spatial
+  emdMonty$event_Level$allhaz_class<-allhaz_class
+  emdMonty$event_Level$ev<-NULL
+  #@@@@@ Hazard-level data @@@@@#
+  # Nothing to put here as we haven't linked any hazard data yet
+  emdMonty$hazard_Data<-list()
+  
   #@@@@@ Impact-level data @@@@@#
+  # First need to ensure that any impacts with zero impacts estimated are removed to prevent bias
+  EMDAT%<>%filter(!is.na(haz_spec) | is.na(imp_value) | imp_value>0)
   # IDs
   ID_linkage<-Add_ImpIDlink_Monty(
     do.call(rbind,lapply(1:nrow(EMDAT),function(i) {
@@ -593,43 +628,6 @@ convEMDAT_Monty<-function(){
   emdMonty$impact_Data$temporal=temporal
   emdMonty$impact_Data$spatial=spatial
   emdMonty$impact_Data$imp_sub_ID<-NULL
-  
-  #@@@@@ Event-level data @@@@@#
-  # IDs
-  ID_linkage<-Add_EvIDlink_Monty(
-    do.call(rbind,lapply(1:nrow(EMDAT),function(i) {
-      EMDAT$all_ext_IDs[[i]]%>%mutate(event_ID=EMDAT$event_ID[i],
-                                      ev_name=EMDAT$event_ID[i])
-    }))
-  )
-  # Spatial
-  spatial<-Add_EvSpat_Monty(
-    EMDAT%>%dplyr::select(event_ID, ev_ISO3s, gen_location)
-  )
-  # temporal
-  temporal<-Add_EvTemp_Monty(
-    EMDAT%>%dplyr::select(event_ID,ev_sdate,ev_fdate)
-  )
-  # Hazards
-  hazs<-EMDAT%>%dplyr::select(event_ID, haz_Ab, haz_spec)
-  allhaz_class<-Add_EvHazTax_Monty(
-    do.call(rbind,lapply(1:nrow(hazs),function(i){
-      specs<-c(str_split(hazs$haz_spec[i],":",simplify = T))
-      outsy<-hazs[rep(i,length(specs)),]
-      outsy$haz_spec<-specs
-      return(outsy)
-    }))
-  )
-  # Gather it all and store it in the template!
-  emdMonty$event_Level<-data.frame(ev=ID_linkage$event_ID)
-  emdMonty$event_Level$ID_linkage<-ID_linkage
-  emdMonty$event_Level$temporal<-temporal
-  emdMonty$event_Level$spatial<-spatial
-  emdMonty$event_Level$allhaz_class<-allhaz_class
-  emdMonty$event_Level$ev<-NULL
-  #@@@@@ Hazard-level data @@@@@#
-  # Nothing to put here as we haven't linked any hazard data yet
-  emdMonty$hazard_Data<-list()
   
   #@@@@@ Response-level data @@@@@#
   # Nothing to put here as we haven't linked any response data yet

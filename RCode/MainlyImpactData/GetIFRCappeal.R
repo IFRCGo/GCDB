@@ -142,7 +142,6 @@ CleanGO_app<-function(appeal){
   appeal$imp_src_db[appeal$imp_src_db=="Forecast Based Action"]<-"GO-FBA"
   
   return(appeal)
-  
 }
 
 CleanGO_field<-function(fieldr){
@@ -288,7 +287,46 @@ convGOApp_Monty<-function(){
     arrange(ev_sdate)
   # Load the Monty JSON template
   appMonty<-jsonlite::fromJSON("./Taxonomies/Montandon_JSON-Example.json")
+  
+  #@@@@@ Event-level data @@@@@#
+  # IDs
+  ID_linkage<-Add_EvIDlink_Monty(
+    appeal%>%dplyr::select(event_ID, ev_name, code, imp_src_db, imp_src_org)%>%
+      rename(ext_ID=code,ext_ID_db=imp_src_db,ext_ID_org=imp_src_org)
+  )
+  # Spatial
+  spatial<-Add_EvSpat_Monty(
+    appeal%>%dplyr::select(event_ID,imp_ISO3s,location)%>%
+    rename(ev_ISO3s=imp_ISO3s,gen_location=location)
+  )
+  # temporal
+  temporal<-Add_EvTemp_Monty(
+    appeal%>%dplyr::select(event_ID,ev_sdate,ev_fdate)
+  )
+  # Hazards
+  hazs<-appeal%>%dplyr::select(event_ID, haz_Ab, haz_spec)
+  allhaz_class<-Add_EvHazTax_Monty(
+    do.call(rbind,lapply(1:nrow(hazs),function(i){
+      specs<-c(str_split(hazs$haz_spec[i],":",simplify = T))
+      outsy<-hazs[rep(i,length(specs)),]
+      outsy$haz_spec<-specs
+      return(outsy)
+    }))
+  )
+  # Gather it all and store it in the template!
+  appMonty$event_Level<-data.frame(ev=ID_linkage$event_ID)
+  appMonty$event_Level$ID_linkage<-ID_linkage
+  appMonty$event_Level$temporal<-temporal
+  appMonty$event_Level$spatial<-spatial
+  appMonty$event_Level$allhaz_class<-allhaz_class
+  appMonty$event_Level$ev<-NULL
+  #@@@@@ Hazard-level data @@@@@#
+  # Nothing to put here as we haven't linked any hazard data yet
+  appMonty$hazard_Data<-list()
+  
   #@@@@@ Impact-level data @@@@@#
+  # First need to ensure that any impacts with zero impacts estimated are removed to prevent bias
+  appeal%<>%filter(!is.na(haz_spec) | is.na(imp_value) | imp_value>0)
   # IDs
   ID_linkage<-Add_ImpIDlink_Monty(
     appeal%>%mutate(ext_ID_db="GO-App",ext_ID_org="IFRC",haz_sub_ID=NA_character_)%>%
@@ -334,42 +372,6 @@ convGOApp_Monty<-function(){
   appMonty$impact_Data$temporal=temporal
   appMonty$impact_Data$spatial=spatial
   appMonty$impact_Data$imp_sub_ID<-NULL
-  
-  #@@@@@ Event-level data @@@@@#
-  # IDs
-  ID_linkage<-Add_EvIDlink_Monty(
-    appeal%>%dplyr::select(event_ID, ev_name, code, imp_src_db, imp_src_org)%>%
-      rename(ext_ID=code,ext_ID_db=imp_src_db,ext_ID_org=imp_src_org)
-  )
-  # Spatial
-  spatial<-Add_EvSpat_Monty(
-    appeal%>%dplyr::select(event_ID,imp_ISO3s,location)%>%
-    rename(ev_ISO3s=imp_ISO3s,gen_location=location)
-  )
-  # temporal
-  temporal<-Add_EvTemp_Monty(
-    appeal%>%dplyr::select(event_ID,ev_sdate,ev_fdate)
-  )
-  # Hazards
-  hazs<-appeal%>%dplyr::select(event_ID, haz_Ab, haz_spec)
-  allhaz_class<-Add_EvHazTax_Monty(
-    do.call(rbind,lapply(1:nrow(hazs),function(i){
-      specs<-c(str_split(hazs$haz_spec[i],":",simplify = T))
-      outsy<-hazs[rep(i,length(specs)),]
-      outsy$haz_spec<-specs
-      return(outsy)
-    }))
-  )
-  # Gather it all and store it in the template!
-  appMonty$event_Level<-data.frame(ev=ID_linkage$event_ID)
-  appMonty$event_Level$ID_linkage<-ID_linkage
-  appMonty$event_Level$temporal<-temporal
-  appMonty$event_Level$spatial<-spatial
-  appMonty$event_Level$allhaz_class<-allhaz_class
-  appMonty$event_Level$ev<-NULL
-  #@@@@@ Hazard-level data @@@@@#
-  # Nothing to put here as we haven't linked any hazard data yet
-  appMonty$hazard_Data<-list()
   
   #@@@@@ Response-level data @@@@@#
   # Nothing to put here as we haven't linked any response data yet

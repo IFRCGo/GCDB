@@ -214,51 +214,6 @@ convGIDD_Monty<-function(){
   GIDD%<>%arrange(ev_sdate)
   # Extract the Monty JSON schema template
   gMonty<-jsonlite::fromJSON("./Taxonomies/Montandon_JSON-Example.json")
-  #@@@@@ Impact-level data @@@@@#
-  # IDs
-  ID_linkage<-Add_ImpIDlink_Monty(
-    do.call(rbind,lapply(1:nrow(GIDD),function(i) {
-      GIDD$all_ext_IDs[[i]]%>%mutate(event_ID=GIDD$event_ID[i],
-                                      imp_sub_ID=GIDD$imp_sub_ID[i],
-                                      haz_sub_ID=NA_character_)
-    }))
-  )
-  # Sources for impact data
-  srcy<-GIDD%>%dplyr::select(imp_src_db,imp_src_URL,imp_src_org)
-  # impact estimates
-  impact_detail<-GIDD%>%
-    dplyr::select(exp_spec,imp_value,imp_type,imp_units,imp_est_type,imp_unitdate)
-  # Add temporal information
-  temporal<-GIDD%>%dplyr::select(imp_sdate,imp_fdate)
-  # Spatial data relevant to the impact estimates
-  # multiple-entry rows: imp_ISO3s,imp_spat_res
-  spatial<-Add_ImpSpatAll_Monty(
-    ID_linkage=GIDD%>%dplyr::select(imp_sub_ID,imp_spat_ID,imp_spat_fileloc),
-    spatial_info=GIDD%>%dplyr::select(
-      imp_ISO3s,
-      imp_lon,
-      imp_lat,
-      imp_spat_covcode,
-      imp_spat_res,
-      imp_spat_resunits,
-      imp_spat_crs
-    ),
-    source=GIDD%>%dplyr::select(
-      imp_spat_srcdb,
-      imp_spat_URL,
-      imp_spat_srcorg
-    )
-  )
-  
-  # Gather it all and store it in the template!
-  # (I know this is hideous, but I don't understand how JSON files can have lists that are also S3 data.frames)
-  gMonty$impact_Data<-data.frame(imp_sub_ID=unique(GIDD$imp_sub_ID))
-  gMonty$impact_Data$ID_linkage=ID_linkage
-  gMonty$impact_Data$source=srcy
-  gMonty$impact_Data$impact_detail=impact_detail
-  gMonty$impact_Data$temporal=temporal
-  gMonty$impact_Data$spatial=spatial
-  gMonty$impact_Data$imp_sub_ID<-NULL
   
   #@@@@@ Event-level data @@@@@#
   # IDs
@@ -298,6 +253,54 @@ convGIDD_Monty<-function(){
   # Nothing to put here as we haven't linked any hazard data yet
   gMonty$hazard_Data<-list()
   
+  #@@@@@ Impact-level data @@@@@#
+  # First need to ensure that any impacts with zero impacts estimated are removed to prevent bias
+  GIDD%<>%filter(!is.na(haz_spec) | is.na(imp_value) | imp_value>0)
+  # IDs
+  ID_linkage<-Add_ImpIDlink_Monty(
+    do.call(rbind,lapply(1:nrow(GIDD),function(i) {
+      GIDD$all_ext_IDs[[i]]%>%mutate(event_ID=GIDD$event_ID[i],
+                                     imp_sub_ID=GIDD$imp_sub_ID[i],
+                                     haz_sub_ID=NA_character_)
+    }))
+  )
+  # Sources for impact data
+  srcy<-GIDD%>%dplyr::select(imp_src_db,imp_src_URL,imp_src_org)
+  # impact estimates
+  impact_detail<-GIDD%>%
+    dplyr::select(exp_spec,imp_value,imp_type,imp_units,imp_est_type,imp_unitdate)
+  # Add temporal information
+  temporal<-GIDD%>%dplyr::select(imp_sdate,imp_fdate)
+  # Spatial data relevant to the impact estimates
+  # multiple-entry rows: imp_ISO3s,imp_spat_res
+  spatial<-Add_ImpSpatAll_Monty(
+    ID_linkage=GIDD%>%dplyr::select(imp_sub_ID,imp_spat_ID,imp_spat_fileloc),
+    spatial_info=GIDD%>%dplyr::select(
+      imp_ISO3s,
+      imp_lon,
+      imp_lat,
+      imp_spat_covcode,
+      imp_spat_res,
+      imp_spat_resunits,
+      imp_spat_crs
+    ),
+    source=GIDD%>%dplyr::select(
+      imp_spat_srcdb,
+      imp_spat_URL,
+      imp_spat_srcorg
+    )
+  )
+  
+  # Gather it all and store it in the template!
+  # (I know this is hideous, but I don't understand how JSON files can have lists that are also S3 data.frames)
+  gMonty$impact_Data<-data.frame(imp_sub_ID=unique(GIDD$imp_sub_ID))
+  gMonty$impact_Data$ID_linkage=ID_linkage
+  gMonty$impact_Data$source=srcy
+  gMonty$impact_Data$impact_detail=impact_detail
+  gMonty$impact_Data$temporal=temporal
+  gMonty$impact_Data$spatial=spatial
+  gMonty$impact_Data$imp_sub_ID<-NULL
+  
   #@@@@@ Response-level data @@@@@#
   # Nothing to put here as we haven't linked any response data yet
   gMonty$response_Data<-list()
@@ -322,12 +325,50 @@ convIDU_Monty<-function(){
   IDU%<>%arrange(ev_sdate)
   # Extract the Monty JSON schema template
   gMonty<-jsonlite::fromJSON("./Taxonomies/Montandon_JSON-Example.json")
+  
+  #@@@@@ Event-level data @@@@@#
+  # IDs
+  ID_linkage<-Add_EvIDlink_Monty(
+    IDU%>%mutate(ext_ID_db="IDU",ext_ID_org="IDMC")%>%
+      dplyr::select(event_ID, ev_name, ext_ID, ext_ID_db, ext_ID_org)
+  )
+  # Spatial
+  spatial<-Add_EvSpat_Monty(
+    IDU%>%dplyr::select(event_ID, ev_ISO3s, gen_location)
+  )
+  # temporal
+  temporal<-Add_EvTemp_Monty(
+    IDU%>%dplyr::select(event_ID,ev_sdate,ev_fdate)
+  )
+  # Hazards
+  hazs<-IDU%>%dplyr::select(event_ID, haz_Ab, haz_spec)
+  allhaz_class<-Add_EvHazTax_Monty(
+    do.call(rbind,lapply(1:nrow(hazs),function(i){
+      specs<-c(str_split(hazs$haz_spec[i],":",simplify = T))
+      outsy<-hazs[rep(i,length(specs)),]
+      outsy$haz_spec<-specs
+      return(outsy)
+    }))
+  )
+  # Gather it all and store it in the template!
+  gMonty$event_Level<-data.frame(ev=ID_linkage$event_ID)
+  gMonty$event_Level$ID_linkage<-ID_linkage
+  gMonty$event_Level$temporal<-temporal
+  gMonty$event_Level$spatial<-spatial
+  gMonty$event_Level$allhaz_class<-allhaz_class
+  gMonty$event_Level$ev<-NULL
+  #@@@@@ Hazard-level data @@@@@#
+  # Nothing to put here as we haven't linked any hazard data yet
+  gMonty$hazard_Data<-list()
+  
   #@@@@@ Impact-level data @@@@@#
+  # First need to ensure that any impacts with zero impacts estimated are removed to prevent bias
+  IDU%<>%filter(!is.na(haz_spec) | is.na(imp_value) | imp_value>0)
   # IDs
   ID_linkage<-Add_ImpIDlink_Monty(
     IDU%>%mutate(ext_ID_db="IDU",ext_ID_org="IDMC",haz_sub_ID=NA_character_)%>%
-            dplyr::select(event_ID, imp_sub_ID, haz_sub_ID, 
-                          ext_ID, ext_ID_db, ext_ID_org)
+      dplyr::select(event_ID, imp_sub_ID, haz_sub_ID, 
+                    ext_ID, ext_ID_db, ext_ID_org)
   )
   # Sources for impact data
   srcy<-IDU%>%dplyr::select(imp_src_db,imp_src_URL,imp_src_org)
@@ -365,41 +406,6 @@ convIDU_Monty<-function(){
   gMonty$impact_Data$temporal=temporal
   gMonty$impact_Data$spatial=spatial
   gMonty$impact_Data$imp_sub_ID<-NULL
-  
-  #@@@@@ Event-level data @@@@@#
-  # IDs
-  ID_linkage<-Add_EvIDlink_Monty(
-    IDU%>%mutate(ext_ID_db="IDU",ext_ID_org="IDMC")%>%
-      dplyr::select(event_ID, ev_name, ext_ID, ext_ID_db, ext_ID_org)
-  )
-  # Spatial
-  spatial<-Add_EvSpat_Monty(
-    IDU%>%dplyr::select(event_ID, ev_ISO3s, gen_location)
-  )
-  # temporal
-  temporal<-Add_EvTemp_Monty(
-    IDU%>%dplyr::select(event_ID,ev_sdate,ev_fdate)
-  )
-  # Hazards
-  hazs<-IDU%>%dplyr::select(event_ID, haz_Ab, haz_spec)
-  allhaz_class<-Add_EvHazTax_Monty(
-    do.call(rbind,lapply(1:nrow(hazs),function(i){
-      specs<-c(str_split(hazs$haz_spec[i],":",simplify = T))
-      outsy<-hazs[rep(i,length(specs)),]
-      outsy$haz_spec<-specs
-      return(outsy)
-    }))
-  )
-  # Gather it all and store it in the template!
-  gMonty$event_Level<-data.frame(ev=ID_linkage$event_ID)
-  gMonty$event_Level$ID_linkage<-ID_linkage
-  gMonty$event_Level$temporal<-temporal
-  gMonty$event_Level$spatial<-spatial
-  gMonty$event_Level$allhaz_class<-allhaz_class
-  gMonty$event_Level$ev<-NULL
-  #@@@@@ Hazard-level data @@@@@#
-  # Nothing to put here as we haven't linked any hazard data yet
-  gMonty$hazard_Data<-list()
   
   #@@@@@ Response-level data @@@@@#
   # Nothing to put here as we haven't linked any response data yet

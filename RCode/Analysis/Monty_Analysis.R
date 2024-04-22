@@ -32,7 +32,8 @@ procDBfore<-function(Monty){
     "imp_value","imp_type_code","imp_unit_code","imp_type_lab",
     "imp_unit_lab","imp_sdate","imp_fdate","imp_ISO3",
     "imp_unregion","imp_worldbankregion","imp_continent","imp_unsubregion",
-    "imp_worldbankincomegroup","imp_spat_covlab","imp_srcdb_code"
+    "imp_worldbankincomegroup","imp_spat_covlab","imp_srcdb_code",
+    "imp_spat_ID"
   )
   ev%<>%dplyr::select(all_of(ev_cols))
   imp%<>%dplyr::select(all_of(imp_cols))
@@ -139,18 +140,19 @@ exceed<-Monty%>%filter(imp_type_lab=="Deaths" & imp_srcdb_code=="EM-DAT" &
                          !is.na(imp_worldbankregion) & imp_worldbankregion!="Not Classified" &
                          haz_Ab%in%c("FL","EQ","TC") &
                          imp_ISO3%in%isos)%>%
-  group_by(haz_Ab,imp_ISO3)%>%
+  mutate(haz_Ab_lab=factor(haz_Ab,labels=c("Earthquake","Flood","Tropical Cyclone")))%>%
+  group_by(haz_Ab_lab,imp_ISO3)%>%
   reframe(coverage=unique(hazcov$coverage[hazcov==unique(haz_Ab)]),
           N=n(),
           impact=sort(imp_value),
           AAL=mean(impact),
           ranking=1:N,
-          probability=(1-1/(n():1))/unique(coverage))
+          probability=n():1/unique(coverage))
 
-p<-exceed%>%ggplot(aes(impact,probability,colour=haz_Ab))+
+p<-exceed%>%ggplot(aes(impact,probability,colour=haz_Ab_lab))+
   # geom_smooth(se=F,span=0.6)+
   geom_point(size=2)+geom_line(linewidth=0.3)+
-  xlab("Total Deaths")+ylab("Probability of Occurrence")+
+  xlab("Total Deaths")+ylab("No. Events Per Year")+
   ggtitle("EM-DAT Deaths Since 1990")+
   theme(plot.title = element_text(hjust = 0.5,face="bold",size=14))+
   labs(colour="Hazard")+
@@ -160,30 +162,44 @@ p<-exceed%>%ggplot(aes(impact,probability,colour=haz_Ab))+
 ggsave("./Plots/Example_ExceedanceCurve_EMDAT-Deaths.png",p,height=6,width=10)
 # 
 
-cricov<-Monty%>%filter(imp_ISO3=="CRI")%>%group_by(haz_Ab)%>%
-  reframe(coverage=as.numeric(max(year) - min(year)))
+GenExceedance_ISO<-function(iso3,imp_db="EM-DAT",imp_type="Deaths",exp_spec=NULL,yr=1990,hazs=NULL, loggie=F,rotty=0 ){
+  # Extract the data
+  out<-Monty%>%filter(imp_srcdb_code==imp_db & 
+                   year>yr &
+                   imp_ISO3==iso3)
+  
+  if(!is.null(imp_type)) out%<>%filter(imp_type_lab==imp_type)
+  if(!is.null(exp_spec)) out%<>%filter(exp_spec_lab==exp_spec)
+  if(!is.null(hazs)) out%<>%filter(haz_Ab%in%hazs)
+    
+  p<-out%>%
+    group_by(haz_Ab)%>%
+    reframe(coverage=unique(hazcov$coverage[hazcov==unique(haz_Ab)]),
+            N=n(),
+            impact=sort(imp_value),
+            probability=n():1/unique(coverage))%>%
+    filter(N>3)%>%
+    ggplot(aes(impact,probability,colour=haz_Ab))+
+    # geom_smooth(se=F,span=0.6)+
+    geom_point(size=2)+geom_line(linewidth=0.3)+
+    xlab(imp_type)+ylab("No. Events Per Year")+
+    ggtitle(paste0(iso3," - ",imp_db," ", imp_type, " Since ",yr))+
+    theme(plot.title = element_text(hjust = 0.5,face="bold",size=14),
+          axis.text.x = element_text(angle = rotty, vjust = 1, hjust=1))+
+    scale_x_continuous(labels = scales::label_number())+
+    labs(colour="Hazard")
+  if(loggie) p <- p + scale_x_log10(labels = scales::label_number()) 
+  
+  ggsave(paste0("./Plots/",iso3,"_ExceedanceCurve_",imp_db,"_",imp_type,"_",paste0(hazs,collapse = "-"),".png"),p,height=6,width=10)
+  
+  return(p)
+}
 
-CRI<-Monty%>%filter(imp_type_lab=="Deaths" & imp_srcdb_code=="EM-DAT" &
-                         year>1990 &
-                         haz_Ab%in%c("FL","EQ","TC") &
-                         imp_ISO3%in%c("CRI"))%>%
-  group_by(haz_Ab)%>%
-  reframe(coverage=unique(cricov$coverage[cricov==unique(haz_Ab)]),
-          N=length(imp_value),
-          impact=sort(imp_value),
-          probability=(1-1/(n():1))/unique(coverage))
-
-p<-CRI%>%ggplot(aes(impact,probability,colour=haz_Ab))+
-  # geom_smooth(se=F,span=0.6)+
-  geom_point(size=2)+geom_line(linewidth=0.3)+
-  xlab("Total Deaths")+ylab("Probability of Occurrence")+
-  ggtitle("EM-DAT Deaths Since 1990")+
-  theme(plot.title = element_text(hjust = 0.5,face="bold",size=14))+
-  coord_cartesian(xlim = c(1, NA))+labs(colour="Hazard"); p
-ggsave("./Plots/CRI_ExceedanceCurve_EMDAT-Deaths.png",p,height=6,width=10)
-
-View(CRI)
-
+GenExceedance_ISO("CRI")
+GenExceedance_ISO("PER",loggie=T)
+GenExceedance_ISO("PER","EM-DAT",imp_type="Loss (Cost)",exp_spec = "Total Direct Costs Inflation-Adjusted")
+GenExceedance_ISO("CRI","EM-DAT",imp_type="Loss (Cost)",exp_spec = "Total Direct Costs Inflation-Adjusted")
+GenExceedance_ISO("PER","EM-DAT",imp_type="Total Affected",hazs=c("CW"),rotty=20)
 
 
 #@@@@@@@@@@@@@@@@@ DISPLACEMENT @@@@@@@@@@@@@@@@@#
@@ -193,29 +209,54 @@ exceed<-Monty%>%filter(imp_type_lab=="Internally Displaced Persons (IDPs)" & imp
                          !is.na(imp_worldbankregion) & imp_worldbankregion!="Not Classified" &
                          haz_Ab%in%c("FL","EQ","TC") &
                          imp_ISO3%in%isos)%>%
-  group_by(haz_Ab,imp_ISO3)%>%
+  mutate(haz_Ab_lab=factor(haz_Ab,labels=c("Earthquake","Flood","Tropical Cyclone")))%>%
+  group_by(haz_Ab_lab,imp_ISO3)%>%
   reframe(coverage=unique(hazcov$coverage[hazcov==unique(haz_Ab)]),
           N=length(imp_value),
           impact=sort(imp_value),
-          probability=(1-1/(n():1))/unique(coverage),
-          )
-View(exceed)
+          probability=n():1/unique(coverage))
 
-p<-exceed%>%ggplot(aes(impact,probability,colour=haz_Ab))+
+p<-exceed%>%ggplot(aes(impact,probability,colour=haz_Ab_lab))+
   # geom_smooth(se=F,span=0.6)+
   geom_point(size=2)+geom_line(linewidth=0.3)+
-  xlab("Internally Displaced Persons (IDPs)")+ylab("Probability of Occurrence")+
+  xlab("Internally Displaced Persons (IDPs)")+ylab("No. Events Per Year")+
   ggtitle("GIDD IDPs Since 2016")+
   theme(plot.title = element_text(hjust = 0.5,face="bold",size=14))+
-  coord_cartesian(xlim = c(10, NA))+labs(colour="Hazard")+
+  # coord_cartesian(xlim = c(10, NA))+
+  labs(colour="Hazard")+
   scale_y_log10()+scale_x_log10(labels = scales::label_comma())+
   facet_wrap(~imp_ISO3); p
 ggsave("./Plots/Example_ExceedanceCurve_GIDD-IDPs.png",p,height=6,width=10)
 
+#@@@@@@@@@@@@@@@@@ ECONOMIC COST @@@@@@@@@@@@@@@@@#
 
+exceed<-Monty%>%filter(exp_spec_lab=="Total Direct Costs Inflation-Adjusted" & imp_srcdb_code=="EM-DAT" &
+                         year>1990 &
+                         !is.na(imp_worldbankregion) & imp_worldbankregion!="Not Classified" &
+                         haz_Ab%in%c("FL","EQ","TC") &
+                         imp_ISO3%in%isos)%>%
+  mutate(haz_Ab_lab=factor(haz_Ab,labels=c("Earthquake","Flood","Tropical Cyclone")))%>%
+  group_by(haz_Ab_lab,imp_ISO3)%>%
+  reframe(coverage=unique(hazcov$coverage[hazcov==unique(haz_Ab)]),
+          N=length(imp_value),
+          impact=sort(imp_value),
+          probability=n():1/unique(coverage))
 
-
-impies<-Monty%>%filter()
+p<-exceed%>%ggplot(aes(impact,probability,colour=haz_Ab_lab))+
+  # geom_smooth(se=F,span=0.6)+
+  geom_point(size=2)+geom_line(linewidth=0.3)+
+  xlab("Total Economic Cost [USD 2011 - Infl. Adj.]")+ylab("No. Events Per Year")+
+  ggtitle("EM-DAT Total Cost Since 1990")+
+  theme(plot.title = element_text(hjust = 0.5,face="bold",size=14),
+        axis.text.x = element_text(angle = 40, vjust = 1, hjust=1))+
+  # coord_cartesian(xlim = c(10, NA))+
+  labs(colour="Hazard")+
+  scale_y_log10()+
+  # scale_x_log10(labels = scales::label_comma())+
+  scale_x_log10(breaks=c(100000,10000000,1000000000,100000000000),
+                labels=c("0.1 million","10 million","1 billion","100 billion"))+
+  facet_wrap(~imp_ISO3); p
+ggsave("./Plots/Example_ExceedanceCurve_EMDAT_Cost.png",p,height=6,width=10)
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 #%%%%%%%%%%%%%%%%%%%%%%%%% DESINVENTAR SUB-NATIONAL DATA %%%%%%%%%%%%%%%%%%%%%%%%%#
@@ -317,12 +358,16 @@ sapply(seq_along(centrams),function(i){
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 
 ADM<-GAUL2Monty(iso3,forcer=T)
+EMDAT<-jsonlite::fromJSON("./CleanedData/MostlyImpactData/CRED/EMDAT_2024-04-15.json")%>%
+  procDBfore()
+
+centrams<-c("PER")
 
 sapply(seq_along(centrams),function(i){
   
   iso3<-centrams[i]
   
-  cntimps<-Monty%>%filter(imp_srcdb_code=="EM-DAT" & imp_ISO3==iso3)
+  indy<-EMDAT$impact_Data$ID_linkage$event_ID%in%EMDAT$event_Level$ID_linkage$event_ID[EMDAT$event_Level$spatial$ev_ISO3s==iso3]
   
   filer<-paste0("./CleanedData/SocioPoliticalData/EMDAT/",
                 iso3,"/ADM_",iso3,
@@ -336,22 +381,27 @@ sapply(seq_along(centrams),function(i){
   ADM2<-aggregate(ADM, by = "ADM2_CODE")
   
   ADM2$Allrecords<-sapply(ADM2$ADM2_CODE,function(codie){
-    sum(grepl(codie,cntimps$imp_spat_ID,ignore.case = T))
+    sum(unlist(lapply(EMDAT$impact_Data$spatial$ID_linkage[indy],function(x) {
+      any(grepl(paste0("FAO-GAUL-ADM2-",iso3,"-",codie),x$imp_spat_ID,ignore.case = T))
+    })))
   })
   
   q<-ADM2%>%st_as_sf()%>%ggplot()+
     geom_sf(aes(fill=Allrecords), color = "grey30", linewidth=0.1)+ #, inherit.aes = FALSE) +
+    xlab("Longitude") + ylab("Latitude") + 
     scale_fill_gradient("No. Records",low="magenta4", high="magenta", trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
-  ggsave(paste0("Allrecords_ADM2_",iso3,"_EMDAT.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
+  ggsave(paste0("Allrecords_ADM2_",iso3,"_EMDAT.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",scale=3)  
   
-  ADM1$Allrecords<-sapply(ADM1$ADM1_CODE,function(codie){
-    sum(grepl(codie,cntimps$imp_spat_ID,ignore.case = T))
+  ADM1$Allrecords<-sapply(ADM2$ADM1_CODE,function(codie){
+    sum(unlist(lapply(EMDAT$impact_Data$spatial$ID_linkage[indy],function(x) {
+      any(grepl(paste0("FAO-GAUL-ADM1-",iso3,"-",codie),x$imp_spat_ID,ignore.case = T))
+    })))
   })
   
   q<-ADM1%>%st_as_sf()%>%ggplot()+
     geom_sf(aes(fill=Allrecords), color = "grey30", linewidth=0.1)+ #, inherit.aes = FALSE) +
     scale_fill_gradient("No. Records",low="magenta4", high="magenta", trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
-  ggsave(paste0("Allrecords_ADM1_",iso3,"_EMDAT.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
+  ggsave(paste0("Allrecords_ADM1_",iso3,"_EMDAT.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",scale=3)  
   
   
   sapply(lhaz,function(hazzie){
@@ -363,7 +413,7 @@ sapply(seq_along(centrams),function(i){
     q<-ADM2%>%st_as_sf()%>%ggplot()+
       geom_sf(aes(fill=records), color = "grey30", linewidth=0.1)+ #, inherit.aes = FALSE) +
       scale_fill_gradient(paste0("No. Records - ",hazzie),high=pal[names(pal)==hazzie], trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
-    ggsave(paste0(hazzie,"_records_ADM2_",iso3,"_EMDAT.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
+    ggsave(paste0(hazzie,"_records_ADM2_",iso3,"_EMDAT.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",scale=3)  
     
     ADM1$records<-sapply(ADM1$ADM1_CODE,function(codie){
       sum(grepl(codie,cntimps$imp_spat_ID[cntimps$haz_Ab==hazzie],ignore.case = T))
@@ -372,7 +422,7 @@ sapply(seq_along(centrams),function(i){
     q<-ADM1%>%st_as_sf()%>%ggplot()+
       geom_sf(aes(fill=records), color = "grey30", linewidth=0.1)+ #, inherit.aes = FALSE) +
       scale_fill_gradient(paste0("No. Records - ",hazzie),high=pal[names(pal)==hazzie], trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
-    ggsave(paste0(hazzie,"_records_ADM1_",iso3,"_EMDAT.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
+    ggsave(paste0(hazzie,"_records_ADM1_",iso3,"_EMDAT.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",scale=3)  
     
     return(T)},simplify = T)
   
