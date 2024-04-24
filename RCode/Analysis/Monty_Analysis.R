@@ -58,8 +58,10 @@ GetTabImpMonty<-function(){
   GIDD<-convGIDD_Monty()
   # IDMC IDU
   IDU<-convIDU_Monty()
+  # GLIDE
+  GLIDE<-convGLIDE_Monty()
   
-  return(rbind(procDBfore(DREF),procDBfore(EMDAT),procDBfore(IDU),procDBfore(GIDD)))
+  return(rbind(procDBfore(DREF),procDBfore(EMDAT),procDBfore(IDU),procDBfore(GIDD),procDBfore(GLIDE)))
 }
 
 Monty<-GetTabImpMonty()
