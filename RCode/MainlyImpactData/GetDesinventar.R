@@ -47,7 +47,7 @@ GetDessie<-function(iso3,forcer=F){
   # Output location: one folder per country, to house everything
   outloc<-paste0("./RawData/MostlyImpactData/Desinventar/",iso3)
   # Check the end location exists
-  if(!dir.exists(outloc)) dir.create(outloc)
+  if(!dir.exists(outloc)) dir.create(outloc,showWarnings = F)
   # Unpack the files in the zip document
   unzip(paste0(temp),exdir = outloc)
   

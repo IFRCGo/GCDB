@@ -382,7 +382,7 @@ convGOApp_Monty<-function(){
   #@@@@@ Checks and validation @@@@@#
   appMonty%<>%checkMonty()
   
-  if(!dir.exists("./CleanedData/MostlyImpactData/IFRC/")) dir.create("./CleanedData/MostlyImpactData/IFRC/")
+  dir.create("./CleanedData/MostlyImpactData/IFRC/",showWarnings = F)
   # Write it out just for keep-sake
   write(jsonlite::toJSON(appMonty,pretty = T,auto_unbox=T),
         paste0("./CleanedData/MostlyImpactData/IFRC/Appeal_",Sys.Date(),".json"))

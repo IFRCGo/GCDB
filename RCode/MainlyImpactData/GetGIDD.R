@@ -310,7 +310,7 @@ convGIDD_Monty<-function(){
   #@@@@@ Checks and validation @@@@@#
   gMonty%<>%checkMonty()
   
-  if(!dir.exists("./CleanedData/MostlyImpactData/IDMC/")) dir.create("./CleanedData/MostlyImpactData/IDMC/")
+  dir.create("./CleanedData/MostlyImpactData/IDMC/",showWarnings = F)
   # Write it out just for keep-sake
   write(jsonlite::toJSON(gMonty,pretty = T,auto_unbox=T),
         paste0("./CleanedData/MostlyImpactData/IDMC/GIDD_",Sys.Date(),".json"))
@@ -416,7 +416,7 @@ convIDU_Monty<-function(){
   #@@@@@ Checks and validation @@@@@#
   gMonty%<>%checkMonty()
   
-  if(!dir.exists("./CleanedData/MostlyImpactData/IDMC/")) dir.create("./CleanedData/MostlyImpactData/IDMC/")
+  dir.create("./CleanedData/MostlyImpactData/IDMC/",showWarnings = F)
   # Write it out just for keep-sake
   write(jsonlite::toJSON(gMonty,pretty = T,auto_unbox=T),
         paste0("./CleanedData/MostlyImpactData/IDMC/IDU_",Sys.Date(),".json"))

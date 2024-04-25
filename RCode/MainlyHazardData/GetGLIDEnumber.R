@@ -294,7 +294,7 @@ convGLIDE_Monty<-function(){
   #@@@@@ Checks and validation @@@@@#
   glideMonty%<>%checkMonty()
   
-  dir.create("./CleanedData/MostlyImpactData/GLIDE/")
+  dir.create("./CleanedData/MostlyImpactData/GLIDE/",showWarnings = F)
   # Write it out just for keep-sake
   write(jsonlite::toJSON(glideMonty,pretty = T,auto_unbox=T),
         paste0("./CleanedData/MostlyImpactData/GLIDE/GLIDE_",Sys.Date(),".json"))

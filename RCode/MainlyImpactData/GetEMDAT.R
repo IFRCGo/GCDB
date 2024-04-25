@@ -638,7 +638,7 @@ convEMDAT_Monty<-function(){
   #@@@@@ Checks and validation @@@@@#
   emdMonty%<>%checkMonty()
   
-  if(!dir.exists("./CleanedData/MostlyImpactData/CRED/")) dir.create("./CleanedData/MostlyImpactData/CRED/")
+  dir.create("./CleanedData/MostlyImpactData/CRED/",showWarnings = F)
   # Write it out just for keep-sake
   write(jsonlite::toJSON(emdMonty,pretty = T,auto_unbox=T),
         paste0("./CleanedData/MostlyImpactData/CRED/EMDAT_",Sys.Date(),".json"))

@@ -423,7 +423,7 @@ MergeMonty<-function(lMonty,jsoner=F){
   
   # Source-related taxonomy information
   Monty$taxonomies$src_info<-do.call(rbind,lapply(seq_along(lMonty),function(i){
-    lMonty[[i]]$taxonomies$src_info}))
+    lMonty[[i]]$taxonomies$src_info}))%>%distinct()
   
   # Return it!
   if(jsoner) return(jsonlite::toJSON(Monty,pretty = T,auto_unbox = T)) else return(Monty)
@@ -462,7 +462,7 @@ SplitMonty<-function(Monty,evs,form=NULL,arranger=T){
   source<-Monty$impact_Data$source[indy,]
   impact_detail<-Monty$impact_Data$impact_detail[indy,]
   temporal<-Monty$impact_Data$temporal[indy,]
-  spatial<-Monty$impact_Data$spatial[indy,]
+  spatial<-Monty$impact_Data$spatial[indy]
   # Replace the impact_Data field of Monty instance
   Monty$impact_Data<-data.frame(indy=seq_along(indy))
   Monty$impact_Data$ID_linkage<-ID_linkage
@@ -484,7 +484,7 @@ SplitMonty<-function(Monty,evs,form=NULL,arranger=T){
     source<-Monty$hazard_Data$source[indy,]
     hazard_detail<-Monty$hazard_Data$hazard_detail[indy,]
     temporal<-Monty$hazard_Data$temporal[indy,]
-    spatial<-Monty$hazard_Data$spatial[indy,]
+    spatial<-Monty$hazard_Data$spatial[indy]
     # Replace the impact_Data field of Monty instance
     Monty$hazard_Data<-data.frame(indy=seq_along(indy))
     Monty$hazard_Data$ID_linkage<-ID_linkage
