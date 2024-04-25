@@ -640,7 +640,7 @@ convEMDAT_Monty<-function(){
   
   dir.create("./CleanedData/MostlyImpactData/CRED/",showWarnings = F)
   # Write it out just for keep-sake
-  write(jsonlite::toJSON(emdMonty,pretty = T,auto_unbox=T),
+  write(jsonlite::toJSON(emdMonty,pretty = T,auto_unbox=T,na = 'null'),
         paste0("./CleanedData/MostlyImpactData/CRED/EMDAT_",Sys.Date(),".json"))
   
   return(emdMonty)

@@ -531,7 +531,7 @@ convGDACS_Monty<-function(){
   # Create the path for the output
   dir.create("./CleanedData/MostlyHazardData/GDACS",showWarnings = F)
   # Write it out just for keep-sake
-  write(jsonlite::toJSON(gdacsMonty,pretty = T,auto_unbox=T),
+  write(jsonlite::toJSON(gdacsMonty,pretty = T,auto_unbox=T,na = 'null'),
         paste0("./CleanedData/MostlyHazardData/GDACS/GDACS_",Sys.Date(),".json"))
   
   return(gdacsMonty)

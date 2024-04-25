@@ -1362,7 +1362,7 @@ Monty$`$defs`$MeasUnits_obj=list(
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#
 #@@@@@@@@@@@@@@@@@@@@ SAVE OUT JSON @@@@@@@@@@@@@@@@@@@#
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#)
-write(jsonlite::toJSON(Monty,pretty = T,auto_unbox=T),
+write(jsonlite::toJSON(Monty,pretty = T,auto_unbox=T,na = 'null'),
       "./Taxonomies/Montandon_Schema_V1-00.json")
 
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#
@@ -1391,7 +1391,7 @@ ex_Monty$monty_Info$helpful_resources<-data.frame(
   URL=c("https://www.undrr.org/media/83713/","https://go.ifrc.org/resources")
 )
 # Write out the modified example
-write(jsonlite::toJSON(ex_Monty,pretty = T,auto_unbox=T),
+write(jsonlite::toJSON(ex_Monty,pretty = T,auto_unbox=T,na = 'null'),
       "./Taxonomies/Montandon_JSON-Example.json")
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 #%%%%%%%%%%%%%%%%%%%%%%%%% VALIDATION ROUTINES %%%%%%%%%%%%%%%%%%%%%%%%%%#

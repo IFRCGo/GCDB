@@ -296,7 +296,7 @@ convGLIDE_Monty<-function(){
   
   dir.create("./CleanedData/MostlyImpactData/GLIDE/",showWarnings = F)
   # Write it out just for keep-sake
-  write(jsonlite::toJSON(glideMonty,pretty = T,auto_unbox=T),
+  write(jsonlite::toJSON(glideMonty,pretty = T,auto_unbox=T,na = 'null'),
         paste0("./CleanedData/MostlyImpactData/GLIDE/GLIDE_",Sys.Date(),".json"))
   
   return(glideMonty)

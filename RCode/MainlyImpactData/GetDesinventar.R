@@ -815,7 +815,7 @@ convDessie_Monty<-function(){
   # Create the path for the output
   dir.create("./CleanedData/MostlyHazardData/Desinventar",showWarnings = F)
   # Write it out just for keep-sake
-  write(jsonlite::toJSON(dMonty,pretty = T,auto_unbox=T),
+  write(jsonlite::toJSON(dMonty,pretty = T,auto_unbox=T,na = 'null'),
         paste0("./CleanedData/MostlyHazardData/Desinventar/Desinventar_",Sys.Date(),".json"))
   
   return(dMonty)

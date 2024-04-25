@@ -384,7 +384,7 @@ convGOApp_Monty<-function(){
   
   dir.create("./CleanedData/MostlyImpactData/IFRC/",showWarnings = F)
   # Write it out just for keep-sake
-  write(jsonlite::toJSON(appMonty,pretty = T,auto_unbox=T),
+  write(jsonlite::toJSON(appMonty,pretty = T,auto_unbox=T,na = 'null'),
         paste0("./CleanedData/MostlyImpactData/IFRC/Appeal_",Sys.Date(),".json"))
     
   return(appMonty)

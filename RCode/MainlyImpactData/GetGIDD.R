@@ -312,7 +312,7 @@ convGIDD_Monty<-function(){
   
   dir.create("./CleanedData/MostlyImpactData/IDMC/",showWarnings = F)
   # Write it out just for keep-sake
-  write(jsonlite::toJSON(gMonty,pretty = T,auto_unbox=T),
+  write(jsonlite::toJSON(gMonty,pretty = T,auto_unbox=T,na = 'null'),
         paste0("./CleanedData/MostlyImpactData/IDMC/GIDD_",Sys.Date(),".json"))
   
   return(gMonty)
@@ -418,7 +418,7 @@ convIDU_Monty<-function(){
   
   dir.create("./CleanedData/MostlyImpactData/IDMC/",showWarnings = F)
   # Write it out just for keep-sake
-  write(jsonlite::toJSON(gMonty,pretty = T,auto_unbox=T),
+  write(jsonlite::toJSON(gMonty,pretty = T,auto_unbox=T,na = 'null'),
         paste0("./CleanedData/MostlyImpactData/IDMC/IDU_",Sys.Date(),".json"))
   
   return(gMonty)
