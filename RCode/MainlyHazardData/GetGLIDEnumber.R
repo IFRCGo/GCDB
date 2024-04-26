@@ -117,7 +117,6 @@ GetGLIDEimps<-function(){
                    "docid", # Nope!
                    "imp_lat", # Nope!
                    "imptyphomles",
-                   "imp_src_org",
                    "idsource", # Nope!
                    "imptypdeat",
                    "imptypaffe",
@@ -135,7 +134,7 @@ GetGLIDEimps<-function(){
                    "status", # Nope!
                    "imp_lon")
   # The source reference isn't well structured, use NLP to extract organisation name
-  GLIDE%<>%mutate(imp_src_db="GLIDE",
+  GLIDE%<>%mutate(imp_src_db="GLIDE",imp_src_org="ADRC",
                 imp_src_URL=paste0(str_split(baseurl,"\\?",simplify = T)[1],"?glide=",ext_ID))
   # Sort out the ISO3 values to remove the NaNs
   GLIDE$imp_ISO3s[GLIDE$imp_ISO3s=="---"]<-NA_character_; GLIDE$ev_ISO3s<-GLIDE$imp_ISO3s
@@ -171,13 +170,13 @@ GetGLIDEimps<-function(){
   GLIDE%<>%mutate(exp_cat="expcat_pop",
                 exp_subcat="expsubcat_popcnt",
                 exp_spec="expspec_allpeop",
-                imp_units="unitscount",
+                imp_units="unitscountnum",
                 imp_est_type="esttype_prim",
                 haz_sub_ID=NA_character_,
                 imp_unitdate=NA_character_,
                 imp_spat_ID="GO-ADM0-World-shp",
                 imp_spat_srcorg="IFRC",
-                imp_spat_srcdb="GO",
+                imp_spat_srcdb="GO-Maps",
                 imp_spat_URL="https://go-user-library.ifrc.org/maps",
                 imp_spat_fileloc="https://go-user-library.ifrc.org/maps",
                 imp_spat_res=0,

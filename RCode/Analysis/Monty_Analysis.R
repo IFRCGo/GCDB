@@ -79,7 +79,7 @@ Monty%>%group_by(haz_Ab,imp_srcdb_code,imp_ISO3,impact)%>%
 # 
 unique(Monty$impact)
 
-impies<-Monty%>%filter(imp_srcdb_code=="EM-DAT" & impact=="Deaths - People (All Demographics) [count]")%>%
+impies<-Monty%>%filter(imp_srcdb_code=="EMDAT" & impact=="Deaths - People (All Demographics) [count]")%>%
   mutate(Month=month.abb[month(imp_sdate)])%>%
   group_by(haz_Ab,worldbankregion,Month)%>%
   reframe(numEvs=length(imp_value),
@@ -137,7 +137,7 @@ hazcov<-Monty%>%group_by(haz_Ab)%>%
 
 isos=c("PHL","MEX","USA","BGD")
 
-exceed<-Monty%>%filter(imp_type_lab=="Deaths" & imp_srcdb_code=="EM-DAT" &
+exceed<-Monty%>%filter(imp_type_lab=="Deaths" & imp_srcdb_code=="EMDAT" &
                          year>1990 &
                          !is.na(imp_worldbankregion) & imp_worldbankregion!="Not Classified" &
                          haz_Ab%in%c("FL","EQ","TC") &
@@ -164,7 +164,7 @@ p<-exceed%>%ggplot(aes(impact,probability,colour=haz_Ab_lab))+
 ggsave("./Plots/Example_ExceedanceCurve_EMDAT-Deaths.png",p,height=6,width=10)
 # 
 
-GenExceedance_ISO<-function(iso3,imp_db="EM-DAT",imp_type="Deaths",exp_spec=NULL,yr=1990,hazs=NULL, loggie=F,rotty=0 ){
+GenExceedance_ISO<-function(iso3,imp_db="EMDAT",imp_type="Deaths",exp_spec=NULL,yr=1990,hazs=NULL, loggie=F,rotty=0 ){
   # Extract the data
   out<-Monty%>%filter(imp_srcdb_code==imp_db & 
                    year>yr &
@@ -199,9 +199,9 @@ GenExceedance_ISO<-function(iso3,imp_db="EM-DAT",imp_type="Deaths",exp_spec=NULL
 
 GenExceedance_ISO("CRI")
 GenExceedance_ISO("PER",loggie=T)
-GenExceedance_ISO("PER","EM-DAT",imp_type="Loss (Cost)",exp_spec = "Total Direct Costs Inflation-Adjusted")
-GenExceedance_ISO("CRI","EM-DAT",imp_type="Loss (Cost)",exp_spec = "Total Direct Costs Inflation-Adjusted")
-GenExceedance_ISO("PER","EM-DAT",imp_type="Total Affected",hazs=c("CW"),rotty=20)
+GenExceedance_ISO("PER","EMDAT",imp_type="Loss (Cost)",exp_spec = "Total Direct Costs Inflation-Adjusted")
+GenExceedance_ISO("CRI","EMDAT",imp_type="Loss (Cost)",exp_spec = "Total Direct Costs Inflation-Adjusted")
+GenExceedance_ISO("PER","EMDAT",imp_type="Total Affected",hazs=c("CW"),rotty=20)
 
 
 #@@@@@@@@@@@@@@@@@ DISPLACEMENT @@@@@@@@@@@@@@@@@#
@@ -232,7 +232,7 @@ ggsave("./Plots/Example_ExceedanceCurve_GIDD-IDPs.png",p,height=6,width=10)
 
 #@@@@@@@@@@@@@@@@@ ECONOMIC COST @@@@@@@@@@@@@@@@@#
 
-exceed<-Monty%>%filter(exp_spec_lab=="Total Direct Costs Inflation-Adjusted" & imp_srcdb_code=="EM-DAT" &
+exceed<-Monty%>%filter(exp_spec_lab=="Total Direct Costs Inflation-Adjusted" & imp_srcdb_code=="EMDAT" &
                          year>1990 &
                          !is.na(imp_worldbankregion) & imp_worldbankregion!="Not Classified" &
                          haz_Ab%in%c("FL","EQ","TC") &

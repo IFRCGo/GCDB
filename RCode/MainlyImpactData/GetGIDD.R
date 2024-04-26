@@ -61,7 +61,7 @@ GetGIDD<-function(){
   imp_src_db="GIDD",
   imp_src_orgtype="orgtypengo",
   imp_spat_srcorg="IFRC",
-  imp_spat_srcdb="GO",
+  imp_spat_srcdb="GO-Maps",
   imp_spat_URL="https://go-user-library.ifrc.org/maps",
   imp_spat_res=0,
   imp_spat_resunits="adminlevel",

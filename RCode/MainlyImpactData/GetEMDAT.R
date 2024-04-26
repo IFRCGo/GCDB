@@ -206,7 +206,7 @@ CleanEMDAT_API<-function(EMDAT){
                  imp_src_org="CRED",
                  imp_spat_srcorg="FAO",
                  imp_spat_srcdb="GAUL",
-                 imp_src_db="EM-DAT",
+                 imp_src_db="EMDAT",
                  imp_src_orgtype="orgtypeacad",
                  imp_spat_covcode="spat_polygon",
                  imp_spat_resunits="adminlevel",
@@ -271,7 +271,7 @@ CleanEMDAT_API<-function(EMDAT){
   # Check for any unknown/unprogrammed external IDs
   if(any(!(do.call(rbind,EMDAT$all_ext_IDs)%>%pull(ext_ID_db)%in%c("EMDAT","Atlas","GLIDE","DFO")))) warning("External IDs from unknown organisations found in EM-DAT database")
   # Melt the columns and apply the impact categorisation
-  EMDAT%<>%ImpLabs(nomDB = "EM-DAT",dropName = T)
+  EMDAT%<>%ImpLabs(nomDB = "EMDAT",dropName = T)
   # Create an impact-specific ID
   EMDAT%<>%GetGCDB_impID()
   # Add missing columns & reorder the dataframe to fit imp_GCDB object
@@ -320,7 +320,7 @@ CleanEMDAT<-function(EMDAT){
   EMDAT$imp_est_type<-"esttype_prim"
   EMDAT$src_URL<-"https://public.emdat.be/"
   EMDAT$imp_spat_srcorg<-EMDAT$imp_src_org<-"CRED - Uni. Louvain"
-  EMDAT$imp_src_db<-"EM-DAT"
+  EMDAT$imp_src_db<-"EMDAT"
   EMDAT$imp_src_orgtype<-"orgtypeacad"
   EMDAT$imp_spat_covcode<-"spat_polygon"
   stop("EMDAT imp_spat_ID needs sorting out")
@@ -356,7 +356,7 @@ CleanEMDAT<-function(EMDAT){
   # Generate the GCDB ID
   EMDAT$event_ID<-GetMonty_ID(EMDAT)
   # Melt the columns and apply the impact categorisation
-  EMDAT%<>%ImpLabs(nomDB = "EM-DAT")
+  EMDAT%<>%ImpLabs(nomDB = "EMDAT")
   # Now get rid of the extra columns of data
   EMDAT%<>%dplyr::select(-which(!colnames(EMDAT)%in%names(col_tabGCDB)))
   # Create an impact-specific ID
@@ -408,7 +408,7 @@ CleanEMDAT_old<-function(EMDAT){
   EMDAT%<>%mutate(imp_est_type="esttype_prim",
   imp_src_URL="https://public.emdat.be/",
   imp_src_org="CRED",
-  imp_src_db="EM-DAT",
+  imp_src_db="EMDAT",
   imp_src_orgtype="orgtypeacad",
   imp_spat_covcode="spat_polygon",
   imp_spat_ID=apply(EMDAT[,c("Admin1.Code","Admin2.Code")],1,function(x) {
@@ -439,7 +439,7 @@ CleanEMDAT_old<-function(EMDAT){
   # Generate the GCDB ID
   EMDAT$event_ID<-GetMonty_ID(EMDAT)
   # Melt the columns and apply the impact categorisation
-  EMDAT%<>%ImpLabs(nomDB = "EM-DAT")
+  EMDAT%<>%ImpLabs(nomDB = "EMDAT")
   # Now get rid of the extra columns of data
   EMDAT%<>%dplyr::select(-which(!colnames(EMDAT)%in%names(col_tabGCDB)))
   # Create an impact-specific ID
