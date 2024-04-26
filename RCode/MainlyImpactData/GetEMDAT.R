@@ -457,7 +457,7 @@ API_EMDAT<-function(){
       public_emdat(
         cursor: {limit: -1}
         filters: {
-          from: 1990,
+          from: 1900,
           to: 2019,
           classif: ["nat-*"],
           include_hist: true
@@ -579,7 +579,7 @@ convEMDAT_Monty<-function(){
   
   #@@@@@ Impact-level data @@@@@#
   # First need to ensure that any impacts with zero impacts estimated are removed to prevent bias
-  EMDAT%<>%filter(!is.na(haz_spec) | is.na(imp_value) | imp_value>0)
+  EMDAT%<>%filter(!is.na(haz_spec) | !is.na(imp_value) | imp_value>0)
   # IDs
   ID_linkage<-Add_ImpIDlink_Monty(
     do.call(rbind,lapply(1:nrow(EMDAT),function(i) {

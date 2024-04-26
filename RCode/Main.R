@@ -1,15 +1,62 @@
 # Read in all the necessary libraries and GCDB scripts
 source("./RCode/Setup/GetPackages.R")
 
-GetMonty<-function(){
+GetTabMonty<-function(){
   # IFRC DREF-EA data
-  Monty<-convGOApp_Monty()
+  Monty<-checkMonty(convGOApp_Monty())
   # EM-DAT
-  Monty%<>%MergeMonty(convEMDAT_Monty())
+  Monty<-tryCatch(MergeMonty(list(Monty,checkMonty(convEMDAT_Monty()))),
+                  warning=function(w) {print(w); return(Monty)},
+                  error=function(e) {print("Error extracting CRED - EM-DAT data"); return(Monty)})
   # IDMC GIDD
-  Monty%<>%MergeMonty(convGIDD_Monty())
+  Monty<-tryCatch(MergeMonty(list(Monty,checkMonty(convGIDD_Monty()))),
+                  warning=function(w) {print(w); return(Monty)},
+                  error=function(e) {print("Error extracting IDMC - GIDD data"); return(Monty)})
   # IDMC IDU
-  Monty%<>%MergeMonty(convIDU_Monty())
+  Monty<-tryCatch(MergeMonty(list(Monty,checkMonty(convIDU_Monty()))),
+                  warning=function(w) {print(w); return(Monty)},
+                  error=function(e) {print("Error extracting IDMC - IDU data"); return(Monty)})
+  # GLIDE
+  Monty<-tryCatch(MergeMonty(list(Monty,checkMonty(convGLIDE_Monty()))),
+                  warning=function(w) {print(w); return(Monty)},
+                  error=function(e) {print("Error extracting ADRC - GLIDE data"); return(Monty)})
+  # GDACS
+  Monty<-tryCatch(MergeMonty(list(Monty,checkMonty(convGDACS_Monty()))),
+                  warning=function(w) {print(w); return(Monty)},
+                  error=function(e) {print("Error extracting EC-JRC - GDACS data"); return(Monty)})
+  # Desinventar
+  Monty<-tryCatch(MergeMonty(list(Monty,checkMonty(convDessie_Monty()))),
+                  warning=function(w) {print(w); return(Monty)},
+                  error=function(e) {print("Error extracting UNDRR - Desinventar data"); return(Monty)})
+  # PDC Forecasts
+  
+  # ADAM Forecasts
+  
+  # OTHER GO Forecasts
+  
+  # IBTRaCS
+  
+  # STORM database
+  
+  # Atlas Shakemaps
+  
+  # GFD
+  
+  # IOM-DTM
+  
+  # NOAA Volcanoes
+  # NOAA Landslides
+  # NOAA Tsunamis
+  
+  # DFO
+  
+  # Google floods
+  
+  # Write it out just for keep-sake
+  write(jsonlite::toJSON(Monty,pretty = T,auto_unbox=T,na = 'null'),
+        paste0("./CleanedData/Monty_",Sys.Date(),".json"))
+  
+  return(Monty)
 }
 
 

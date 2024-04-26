@@ -255,7 +255,7 @@ convGIDD_Monty<-function(){
   
   #@@@@@ Impact-level data @@@@@#
   # First need to ensure that any impacts with zero impacts estimated are removed to prevent bias
-  GIDD%<>%filter(!is.na(haz_spec) | is.na(imp_value) | imp_value>0)
+  GIDD%<>%filter(!is.na(haz_spec) | !is.na(imp_value) | imp_value>0)
   # IDs
   ID_linkage<-Add_ImpIDlink_Monty(
     do.call(rbind,lapply(1:nrow(GIDD),function(i) {
@@ -363,7 +363,7 @@ convIDU_Monty<-function(){
   
   #@@@@@ Impact-level data @@@@@#
   # First need to ensure that any impacts with zero impacts estimated are removed to prevent bias
-  IDU%<>%filter(!is.na(haz_spec) | is.na(imp_value) | imp_value>0)
+  IDU%<>%filter(!is.na(haz_spec) | !is.na(imp_value) | imp_value>0)
   # IDs
   ID_linkage<-Add_ImpIDlink_Monty(
     IDU%>%mutate(ext_ID_db="IDU",ext_ID_org="IDMC",haz_sub_ID=NA_character_)%>%

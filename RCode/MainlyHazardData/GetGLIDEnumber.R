@@ -238,7 +238,7 @@ convGLIDE_Monty<-function(){
   
   #@@@@@ Impact-level data @@@@@#
   # First need to ensure that any impacts with zero impacts estimated are removed to prevent bias
-  GLIDE%<>%filter(!is.na(haz_spec) | is.na(imp_value) | imp_value>0)%>%distinct()
+  GLIDE%<>%filter(!is.na(haz_spec) | !is.na(imp_value) | imp_value>0)%>%distinct()
   # IDs
   ID_linkage<-Add_ImpIDlink_Monty(
     GLIDE%>%dplyr::select(event_ID,imp_sub_ID,haz_sub_ID,ext_ID)%>%

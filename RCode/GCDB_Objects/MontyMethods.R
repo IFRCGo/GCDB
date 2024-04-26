@@ -503,6 +503,114 @@ SplitMonty<-function(Monty,evs,form=NULL,arranger=T){
   if(form=="json") return(jsonlite::toJSON(Monty,pretty = T,auto_unbox = T))
 }
 
+
+
+MFilter_Events<-function(Monty,indy,allobjs=T){
+  # First of all, save out all of the event IDs to be kept later
+  evs<-unique(Monty$event_Level$ID_linkage$event_ID[indy])
+  # Store out the data we need
+  ID_linkage<-Monty$event_Level$ID_linkage[indy,]
+  temporal<-Monty$event_Level$temporal[indy,]
+  spatial<-Monty$event_Level$spatial[indy]
+  allhaz_class<-Monty$event_Level$allhaz_class[indy]
+  # Replace the event_Level field of Monty instance
+  Monty$event_Level<-data.frame(indy=which(indy))
+  Monty$event_Level$ID_linkage<-ID_linkage
+  Monty$event_Level$temporal<-temporal
+  Monty$event_Level$spatial<-spatial
+  Monty$event_Level$allhaz_class<-allhaz_class
+  Monty$event_Level$indy<-NULL
+  # If we also want to remove the associated eventIDs from all objects (events, hazards, ...)
+  if(allobjs){
+    if(length(Monty$impact_Data)!=0) Monty%<>%MFilter_Impacts(indy=Monty$impact_Data$ID_linkage$event_ID%in%evs)
+    if(length(Monty$hazard_Data)!=0) Monty%<>%MFilter_Hazards(indy=Monty$hazard_Data$ID_linkage$event_ID%in%evs)
+    if(length(Monty$response_Data)!=0) Monty%<>%MFilter_Responses(indy=Monty$response_Data$ID_linkage$event_ID%in%evs)
+  }
+  
+  return(Monty)
+}
+
+MFilter_Impacts<-function(Monty,indy,allobjs=F){
+  # First of all, save out all of the event IDs to be kept later
+  evs<-unique(Monty$impact_Data$ID_linkage$event_ID[indy])
+  # Store out the data we need
+  ID_linkage<-Monty$impact_Data$ID_linkage[indy,]
+  source<-Monty$impact_Data$source[indy,]
+  impact_detail<-Monty$impact_Data$impact_detail[indy,]
+  temporal<-Monty$impact_Data$temporal[indy,]
+  spatial<-Monty$impact_Data$spatial[indy]
+  # Replace the impact_Data field of Monty instance
+  Monty$impact_Data<-data.frame(indy=which(indy))
+  Monty$impact_Data$ID_linkage<-ID_linkage
+  Monty$impact_Data$source<-source
+  Monty$impact_Data$impact_detail<-impact_detail
+  Monty$impact_Data$temporal<-temporal
+  Monty$impact_Data$spatial<-spatial
+  Monty$impact_Data$indy<-NULL
+  # If we also want to remove the associated eventIDs from all objects (events, hazards, ...)
+  if(allobjs){
+    Monty%<>%MFilter_Events(indy=Monty$event_Level$ID_linkage$event_ID%in%evs)
+    if(length(Monty$hazard_Data)!=0) Monty%<>%MFilter_Hazards(indy=Monty$hazard_Data$ID_linkage$event_ID%in%evs)
+    if(length(Monty$response_Data)!=0) Monty%<>%MFilter_Responses(indy=Monty$response_Data$ID_linkage$event_ID%in%evs)
+  }
+  
+  return(Monty)
+}
+
+MFilter_Hazards<-function(Monty,indy,allobjs=F){
+  # First of all, save out all of the event IDs to be kept later
+  evs<-unique(Monty$hazard_Data$ID_linkage$event_ID[indy])
+  # Store out the data we need
+  ID_linkage<-Monty$hazard_Data$ID_linkage[indy,]
+  source<-Monty$hazard_Data$source[indy,]
+  hazard_detail<-Monty$hazard_Data$hazard_detail[indy,]
+  temporal<-Monty$hazard_Data$temporal[indy,]
+  spatial<-Monty$hazard_Data$spatial[indy]
+  # Replace the hazard_Data field of Monty instance
+  Monty$hazard_Data<-data.frame(indy=which(indy))
+  Monty$hazard_Data$ID_linkage<-ID_linkage
+  Monty$hazard_Data$source<-source
+  Monty$hazard_Data$hazard_detail<-hazard_detail
+  Monty$hazard_Data$temporal<-temporal
+  Monty$hazard_Data$spatial<-spatial
+  Monty$hazard_Data$indy<-NULL
+  # If we also want to remove the associated eventIDs from all objects (events, hazards, ...)
+  if(allobjs){
+    Monty%<>%MFilter_Events(indy=Monty$event_Level$ID_linkage$event_ID%in%evs)
+    if(length(Monty$impact_Data)!=0) Monty%<>%MFilter_Impacts(indy=Monty$impact_Data$ID_linkage$event_ID%in%evs)
+    if(length(Monty$response_Data)!=0) Monty%<>%MFilter_Responses(indy=Monty$response_Data$ID_linkage$event_ID%in%evs)
+  }
+  
+  return(Monty)
+}
+
+MFilter_Responses<-function(Monty,indy,allobjs=F){
+  # First of all, save out all of the event IDs to be kept later
+  evs<-unique(Monty$response_Data$ID_linkage$event_ID[indy])
+  # Store out the data we need
+  ID_linkage<-Monty$response_Data$ID_linkage[indy,]
+  source<-Monty$response_Data$source[indy,]
+  response_detail<-Monty$response_Data$response_detail[indy,]
+  temporal<-Monty$response_Data$temporal[indy,]
+  spatial<-Monty$response_Data$spatial[indy]
+  # Replace the response_Data field of Monty instance
+  Monty$response_Data<-data.frame(indy=which(indy))
+  Monty$response_Data$ID_linkage<-ID_linkage
+  Monty$response_Data$source<-source
+  Monty$response_Data$response_detail<-response_detail
+  Monty$response_Data$temporal<-temporal
+  Monty$response_Data$spatial<-spatial
+  Monty$response_Data$indy<-NULL
+  # If we also want to remove the associated eventIDs from all objects (events, hazards, ...)
+  if(allobjs){
+    Monty%<>%MFilter_Events(indy=Monty$event_Level$ID_linkage$event_ID%in%evs)
+    if(length(Monty$impact_Data)!=0) Monty%<>%MFilter_Impacts(indy=Monty$impact_Data$ID_linkage$event_ID%in%evs)
+    if(length(Monty$hazard_Data)!=0) Monty%<>%MFilter_Hazards(indy=Monty$hazard_Data$ID_linkage$event_ID%in%evs)
+  }
+  
+  return(Monty)
+} 
+
 # Filter the Monty instance to find the appropriate eventids
 FilterMontyEv<-function(Monty,sdate=NULL,fdate=NULL,ISO3=NULL,haz_Ab=NULL){
   # Setup the initial indices
@@ -524,7 +632,7 @@ FilterMontyEv<-function(Monty,sdate=NULL,fdate=NULL,ISO3=NULL,haz_Ab=NULL){
                                                        ignore.case = T))
                                            },simplify = T)
   # Return the event_IDs associated to the filter
-  return(Monty$event_Level$ID_linkage$event_ID[indy])
+  Monty%>%MFilter_Events(indy,allobjs = T)
 }
 
 # Perform checks on the filtering criteria provided to the Plumber API
@@ -550,16 +658,42 @@ CheckAPIinput<-function(sdate=NULL,fdate=NULL,ISO3=NULL,haz_Ab=NULL){
 squishLDF<-function(DF){
   if(!is.null(ncol(DF[[1]]))) {
     return(do.call(rbind,lapply(seq_along(DF),function(i){
-      apply(DF[[i]],2,function(x) paste0(unique(x),collapse=delim))
+      if(ncol(DF[[i]])==0) return(data.frame(ext_ID=NA_character_,ext_ID_db=NA_character_,ext_ID_org=NA_character_))
+      apply(DF[[i]],2,function(x) {
+        paste0(unique(x),collapse=dely)
+      })
+    })))
+  } else if (class(DF[[1]])=="list" & 
+             all(sapply(seq_along(DF),function(i) length(DF[[i]])%in%0:1))){
+    return(do.call(rbind,lapply(DF,function(x){
+      if(length(x)==0){
+        return(data.frame(ext_ID=NA_character_,ext_ID_db=NA_character_,ext_ID_org=NA_character_))
+      } else if (length(x)==1){
+        return(x[[1]])
+      } else stop("length of array not compatible for squishLDF")
     })))
   } else {
     # Create a template for when there are no elements in the list
     return(unlist(lapply(seq_along(DF),function(i){
       if(length(DF[[i]])==0) return(list(""))
-      sapply(DF[[i]],function(x) paste0(unique(x),collapse=delim))
+      sapply(DF[[i]],function(x) paste0(unique(x),collapse=dely))
     })))
   }
 }
+
+# squishLDF<-function(DF){
+#   if(!is.null(ncol(DF[[1]]))) {
+#     return(do.call(rbind,lapply(seq_along(DF),function(i){
+#       apply(DF[[i]],2,function(x) paste0(unique(x),collapse=delim))
+#     })))
+#   } else {
+#     # Create a template for when there are no elements in the list
+#     return(unlist(lapply(seq_along(DF),function(i){
+#       if(length(DF[[i]])==0) return(list(""))
+#       sapply(DF[[i]],function(x) paste0(unique(x),collapse=delim))
+#     })))
+#   }
+# }
 
 # Function: for JSON-based dataframes, with certain variables as nested lists
 #           we left join to the given taxonomies and then use squishDF to merge together
@@ -948,14 +1082,236 @@ checkCharMonty<-function(Monty){
   return(Monty)
 }
 
+# Provided a set of event_IDs, provide a warning that includes the data source info
+warnEvsMonty<-function(Monty,evs,texty){
+  dbs<-table(Monty$impact_Data$source$imp_src_db[Monty$impact_Data$ID_linkage$event_ID%in%evs])
+  if(length(dbs)==0 & length(Monty$hazard_Data)>0) dbs<-unique(Monty$hazard_Data$source$imp_src_db[Monty$hazard_Data$ID_linkage$event_ID%in%evs])
+  if(length(dbs)==0 & length(Monty$response_Data)>0) dbs<-unique(Monty$response_Data$source$imp_src_db[Monty$response_Data$ID_linkage$event_ID%in%evs])
+  if(length(dbs)==0) {
+    warning(paste0("issue with ",length(evs)," events in Monty: NULL ",texty," in unknown database")) 
+  } else {
+    warning(paste0("issue with ",paste0(unname(dbs),collapse = ", "),
+                   " events in Monty: NULL ",texty," in ",
+                   paste0(names(dbs),collapse = ", "),
+                   " database(s), respectively"))
+  }
+}
+
+# Check that no entries have NULL haz_spec_code, haz_Ab code, exp_spec_code, imp_type_code, imp_unit_code, event_ID
+checkNULLvars<-function(Monty){
+  # Specific hazard & abbreviated hazard codes
+  indy<-sapply(Monty$event_Level$allhaz_class, ncol)!=0
+  # Provide a warning about this, including source(s) info
+  if(sum(!indy)!=0) warnEvsMonty(Monty,
+                                 Monty$event_Level$ID_linkage$event_ID[!indy],
+                                 "specific hazards or abb. hazards")
+  # Filter them to keep what we want, filter also impacts, hazards + responses
+  Monty%<>%MFilter_Events(indy,allobjs = T)
+  
+  if(length(Monty$hazard_Data)!=0){
+    # Specific hazard
+    indy<-!is.na(Monty$hazard_Data$hazard_detail$all_hazs_Ab) |
+      !sapply(Monty$hazard_Data$hazard_detail$all_hazs_spec, function(x) {
+        class(x)!="character" & length(x)>0
+      })
+    # Provide a warning about this, including source(s) info
+    if(sum(!indy)!=0) warnEvsMonty(Monty,
+                                   unique(Monty$hazard_Data$ID_linkage$event_ID[!indy]),
+                                   "specific hazard or abbreviated hazard")
+    # Filter them to keep what we want, remove also from impacts, hazards + responses
+    Monty%<>%MFilter_Hazards(indy,allobjs = T)
+  }
+  
+  if(length(Monty$impact_Data)!=0){
+    # Specific exposure, impact type and impact units
+    indy<-apply(dplyr::select(Monty$impact_Data$impact_detail,-"imp_unitdate"),1,function(x) !any(is.na(x)))
+    # Provide a warning about this, including source(s) info
+    if(sum(!indy)!=0) warnEvsMonty(Monty,
+                                   unique(Monty$impact_Data$ID_linkage$event_ID[!indy]),
+                                   "specific exposure, impact type or impact unit")
+    # Filter them to keep what we want, don't remove events or other objects associated to this event_ID
+    Monty%<>%MFilter_Impacts(indy)
+  }
+  
+  return(Monty)
+}
+
+checkDateMonty<-function(Monty){
+  # Event start and end dates
+  indy<-apply(Monty$event_Level$temporal,1,function(x) !any(is.na(as.Date(x))))
+  # Filter them out
+  evs<-Monty$event_Level$ID_linkage$event_ID[indy]
+  # Provide a warning about this, including source(s) info
+  if(sum(!indy)!=0) warnEvsMonty(Monty,
+                                 Monty$event_Level$ID_linkage$event_ID[!indy],
+                                 "incorrect event start/end dates")
+  # Filter them out, including all the other objects (hazards,...)
+  Monty%<>%MFilter_Events(indy,allobjs = T)
+  
+  if(length(Monty$impact_Data)!=0){
+    # Event start and end dates
+    indy<-apply(Monty$impact_Data$temporal,1,function(x) !any(is.na(as.Date(x))))
+    # Filter them out
+    evs<-unique(Monty$impact_Data$ID_linkage$event_ID[indy])
+    # Provide a warning about this, including source(s) info
+    if(sum(!indy)!=0) warnEvsMonty(Monty,
+                                   unique(Monty$impact_Data$ID_linkage$event_ID[!indy]),
+                                   "incorrect impact start/end dates")
+    # Filter them out
+    Monty%<>%MFilter_Impacts(indy)
+  }
+  if(length(Monty$hazard_Data)!=0){
+    # Event start and end dates
+    indy<-apply(Monty$hazard_Data$temporal,1,function(x) !any(is.na(as.Date(x))))
+    # Filter them out
+    evs<-unique(Monty$hazard_Data$ID_linkage$event_ID[indy])
+    # Provide a warning about this, including source(s) info
+    if(sum(!indy)!=0) warnEvsMonty(Monty,
+                                   unique(Monty$hazard_Data$ID_linkage$event_ID[!indy]),
+                                   "incorrect hazard start/end dates")
+    # Filter them out
+    Monty%<>%MFilter_Hazards(indy)
+  }
+  if(length(Monty$response_Data)!=0){
+    # Event start and end dates
+    indy<-apply(Monty$response_Data$temporal,1,function(x) !any(is.na(as.Date(x))))
+    # Filter them out
+    evs<-unique(Monty$response_Data$ID_linkage$event_ID[indy])
+    # Provide a warning about this, including source(s) info
+    if(sum(!indy)!=0) warnEvsMonty(Monty,
+                                   unique(Monty$response_Data$ID_linkage$event_ID[!indy]),
+                                   "incorrect response start/end dates")
+    # Filter them out
+    Monty%<>%MFilter_Responses(indy)
+  }
+  
+  return(Monty)
+}
+
+checkAwkEvsMonty<-function(Monty){
+  # External IDs to each database (such as GLIDE)
+  if (class(Monty$event_Level$ID_linkage$all_ext_IDs)!="list") stop("Something went wrong with the external ID variable in the event object")
+  if(any(sapply(Monty$event_Level$ID_linkage$all_ext_IDs,function(x) class(x))!="data.frame")) {
+    if(any(sapply(Monty$event_Level$ID_linkage$all_ext_IDs,function(x) class(x[[1]]))=="data.frame")) {
+      Monty$event_Level$ID_linkage$all_ext_IDs<-lapply(Monty$event_Level$ID_linkage$all_ext_IDs, function(x) {
+        if(class(x)=="list" & length(x)==1 & class(x[[1]])=="data.frame") return(x[[1]])
+        stop("Something went wrong with the external ID variable in the event object")
+      })
+    } else stop("Something went wrong with the external ID variable in the event object")
+  }
+  # Hazard classifications of the events
+  if (class(Monty$event_Level$allhaz_class)!="list") stop("Something went wrong with the allhaz_class variable in the event object")
+  if(any(sapply(Monty$event_Level$allhaz_class,function(x) class(x))!="data.frame")) {
+    if(any(sapply(Monty$event_Level$allhaz_class,function(x) class(x[[1]]))!="data.frame")) {
+      Monty$event_Level$allhaz_class<-lapply(Monty$event_Level$allhaz_class, function(x) x[[1]])
+    } else stop("Something went wrong with the allhaz_class variable in the event object")
+  }
+  return(Monty)
+}
+
+checkAwkImpsMonty<-function(Monty){
+  # haz_sub_ID
+  if (class(Monty$impact_Data$ID_linkage$haz_sub_ID)!="list") stop("Something went wrong with the haz_sub_ID variable in the impact object")
+  if(any(sapply(Monty$impact_Data$ID_linkage$haz_sub_ID,function(x){
+    !((class(x)=="list" & length(x)==0) | class(x)=="character")
+  }))) stop("Something went wrong with the haz_sub_ID variable in the impact object")
+  # imp_ext_IDs
+  if (class(Monty$impact_Data$ID_linkage$imp_ext_IDs)!="list") stop("Something went wrong with the external ID variable in the impact object")
+  if(any(sapply(Monty$impact_Data$ID_linkage$imp_ext_IDs,function(x) class(x))!="data.frame")) {
+    if(any(sapply(Monty$impact_Data$ID_linkage$imp_ext_IDs,function(x) class(x[[1]]))=="data.frame")) {
+      Monty$impact_Data$ID_linkage$imp_ext_IDs<-lapply(Monty$impact_Data$ID_linkage$imp_ext_IDs, function(x) {
+        if(class(x)=="list" & length(x)==1 & class(x[[1]])=="data.frame") return(x[[1]])
+        stop("Something went wrong with the external ID variable in the impact object")
+      })
+    } else stop("Something went wrong with the external ID variable in the impact object")
+  }
+  
+  return(Monty)
+}
+
+checkAwkHazsMonty<-function(Monty){
+  # haz_ext_IDs
+  if (class(Monty$hazard_Data$ID_linkage$haz_ext_IDs)!="list") stop("Something went wrong with the external ID variable in the hazard object")
+  if(any(sapply(Monty$hazard_Data$ID_linkage$haz_ext_IDs,function(x) class(x))!="data.frame")) {
+    if(any(sapply(Monty$hazard_Data$ID_linkage$haz_ext_IDs,function(x) class(x[[1]]))=="data.frame")) {
+      Monty$hazard_Data$ID_linkage$haz_ext_IDs<-lapply(Monty$hazard_Data$ID_linkage$haz_ext_IDs, function(x) {
+        if(class(x)=="list" & length(x)==1 & class(x[[1]])=="data.frame") return(x[[1]])
+        stop("Something went wrong with the external ID variable in the hazard object")
+      })
+    } else stop("Something went wrong with the external ID variable in the hazard object")
+  }
+  # all_hazs_spec
+  if (class(Monty$hazard_Data$hazard_detail$all_hazs_spec)!="list") stop("Something went wrong with the all_hazs_spec variable in the hazard object")
+  if(any(sapply(Monty$hazard_Data$hazard_detail$all_hazs_spec,function(x) class(x))!="character"))
+    stop("Something went wrong with the all_hazs_spec variable in the hazard object")
+  
+  return(Monty)
+}
+
+checkAwkListMonty<-function(Monty){
+  # Ensure that the spatial data in the Monty object is in the correct format
+  Monty%<>%checkSpatialMonty()
+  # allhaz_class in the event object
+  Monty%<>%checkAwkEvsMonty()
+  # haz_sub_ID + imp_ext_IDs in the impact object
+  if(length(Monty$impact_Data)!=0) Monty%<>%checkAwkImpsMonty()
+  # haz_ext_IDs + all_hazs_spec + concur_haz in hazard object 
+  if(length(Monty$hazard_Data)!=0) Monty%<>%checkAwkHazsMonty()
+  
+  return(Monty)
+}
+
+# Time-order the Monty database (by default, this is in database-time order)
+ArrangeMonty<-function(Monty){
+  # Save this for later
+  indy<-1:nrow(Monty$event_Level)
+  # EVENTS
+  indy<-arrange(data.frame(id=indy,
+                           date=Monty$event_Level$temporal$ev_sdate),
+                date)%>%pull(id)
+  # 'Filter' the data such that the order is defined by the indy index (not boolean)
+  Monty%<>%MFilter_Events(indy)
+  # IMPACTS
+  if(length(Monty$impact_Data)!=0){
+    indy<-1:nrow(Monty$impact_Data)
+    indy<-arrange(data.frame(id=indy,
+                             date=Monty$impact_Data$temporal$imp_sdate),
+                  date)%>%pull(id)
+    # 'Filter' the data such that the order is defined by the indy index (not boolean)
+    Monty%<>%MFilter_Impacts(indy)
+  }
+  # HAZARDS
+  if(length(Monty$hazard_Data)!=0){
+    indy<-1:nrow(Monty$hazard_Data)
+    indy<-arrange(data.frame(id=indy,
+                             date=Monty$hazard_Data$temporal$haz_sdate),
+                  date)%>%pull(id)
+    # 'Filter' the data such that the order is defined by the indy index (not boolean)
+    Monty%<>%MFilter_Hazards(indy)
+  }
+  # RESPONSE
+  if(length(Monty$response_Data)!=0){
+    indy<-1:nrow(Monty$response_Data)
+    indy<-arrange(data.frame(id=indy,
+                             date=Monty$response_Data$temporal$res_sdate),
+                  date)%>%pull(id)
+    # 'Filter' the data such that the order is defined by the indy index (not boolean)
+    Monty%<>%MFilter_Response(indy)
+  }
+  
+  return(Monty)
+}
+
+
 checkMonty<-function(Monty){
+  # Check all the awkward lists: all_ext_IDs + allhaz_class in the event object, haz_sub_ID + imp_ext_IDs in the impact object, haz_ext_IDs + all_hazs_spec + concur_haz in hazard object and the spatial elements of both
+  Monty%<>%checkAwkListMonty()
+  # Check that no entries have NULL haz_spec_code, haz_Ab code, exp_spec_code, imp_type_code, imp_unit_code, event_ID
+  Monty%<>%checkNULLvars()
   # Check for special characters in certain character vectors (such as ev_name)
   Monty%<>%checkCharMonty()
-  
-  
-  # all dates need to be checked that they aren't in the future, and aren't before, say, 1500
-  #   ev_sdat, ev_fdate, imp_sdate, imp_fdate, imp_unitdate
-  
+  # Check ev_sdate, ev_fdate, imp_sdate, imp_fdate
+  Monty%<>%checkDateMonty()
   # Sources checked that they all exist in the src_info taxonomy
   
   # taxonomy checks for impacts, exposure and hazards
@@ -971,8 +1327,8 @@ checkMonty<-function(Monty){
   
   # what to do if it fails? warn some, fix some, stop others
   
-  
-  return(Monty)
+  # Return the data in time-order
+  return(ArrangeMonty(Monty))
 }
 
 # Function to extract all of the variable names directly from the Monty JSON schema

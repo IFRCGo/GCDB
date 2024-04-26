@@ -326,7 +326,7 @@ convGOApp_Monty<-function(){
   
   #@@@@@ Impact-level data @@@@@#
   # First need to ensure that any impacts with zero impacts estimated are removed to prevent bias
-  appeal%<>%filter(!is.na(haz_spec) | is.na(imp_value) | imp_value>0)
+  appeal%<>%filter(!is.na(haz_spec) | !is.na(imp_value) | imp_value>0)
   # IDs
   ID_linkage<-Add_ImpIDlink_Monty(
     appeal%>%mutate(ext_ID_db="GO-App",ext_ID_org="IFRC",haz_sub_ID=NA_character_)%>%
