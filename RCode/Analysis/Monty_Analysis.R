@@ -359,11 +359,10 @@ sapply(seq_along(centrams),function(i){
 #%%%%%%%%%%%%%%%%%%%%%%%%%%% EM-DAT SUB-NATIONAL DATA %%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 
-ADM<-GAUL2Monty(iso3,forcer=T)
 EMDAT<-jsonlite::fromJSON("./CleanedData/MostlyImpactData/CRED/EMDAT_2024-04-15.json")%>%
   procDBfore()
 
-centrams<-c("PER")
+centrams<-c("IDN","NPL","PAK","TLS","LKA","MNG","FJI")
 
 sapply(seq_along(centrams),function(i){
   
@@ -371,6 +370,7 @@ sapply(seq_along(centrams),function(i){
   
   indy<-EMDAT$impact_Data$ID_linkage$event_ID%in%EMDAT$event_Level$ID_linkage$event_ID[EMDAT$event_Level$spatial$ev_ISO3s==iso3]
   
+  ADM<-GAUL2Monty(iso3,forcer=T)
   filer<-paste0("./CleanedData/SocioPoliticalData/EMDAT/",
                 iso3,"/ADM_",iso3,
                 ".geojson")
@@ -429,3 +429,71 @@ sapply(seq_along(centrams),function(i){
     return(T)},simplify = T)
   
   return(T)},simplify = T)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#@@@@@@@@@@@@@@@@@@@@@ MONTY WORKSHOP MAY 2024 @@@@@@@@@@@@@@@@@@@@@#
+##### Data ##### 
+# - Wrangle Desinventar, GDACS + hazard forecast data
+# - Get the GAUL data somehow
+# - Get the Desinventar map data
+
+
+##### PowerBI ##### 
+# Tables: average country metrics per hazard, per metric type
+# For population metrics, use as % of population
+# For economic metrics, use as % of GDP-PPP per capita
+
+
+# Seasonality, per country, per hazard, per impact type (inc. #events)
+# 
+
+
+# Sub-national maps of impact data  
+
+
+# Loss-exceedance curves
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

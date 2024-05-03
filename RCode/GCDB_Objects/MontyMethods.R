@@ -503,17 +503,16 @@ SplitMonty<-function(Monty,evs,form=NULL,arranger=T){
   if(form=="json") return(jsonlite::toJSON(Monty,pretty = T,auto_unbox = T))
 }
 
-
-
 MFilter_Events<-function(Monty,indy,allobjs=T){
   # First of all, save out all of the event IDs to be kept later
   evs<-unique(Monty$event_Level$ID_linkage$event_ID[indy])
   # Store out the data we need
   ID_linkage<-Monty$event_Level$ID_linkage[indy,]
   temporal<-Monty$event_Level$temporal[indy,]
-  spatial<-Monty$event_Level$spatial[indy]
+  spatial<-Monty$event_Level$spatial[indy,]
   allhaz_class<-Monty$event_Level$allhaz_class[indy]
   # Replace the event_Level field of Monty instance
+  if(!is.logical(indy)) indy<-rep(T,length(indy))
   Monty$event_Level<-data.frame(indy=which(indy))
   Monty$event_Level$ID_linkage<-ID_linkage
   Monty$event_Level$temporal<-temporal
@@ -540,6 +539,7 @@ MFilter_Impacts<-function(Monty,indy,allobjs=F){
   temporal<-Monty$impact_Data$temporal[indy,]
   spatial<-Monty$impact_Data$spatial[indy]
   # Replace the impact_Data field of Monty instance
+  if(!is.logical(indy)) indy<-rep(T,length(indy))
   Monty$impact_Data<-data.frame(indy=which(indy))
   Monty$impact_Data$ID_linkage<-ID_linkage
   Monty$impact_Data$source<-source
@@ -567,6 +567,7 @@ MFilter_Hazards<-function(Monty,indy,allobjs=F){
   temporal<-Monty$hazard_Data$temporal[indy,]
   spatial<-Monty$hazard_Data$spatial[indy]
   # Replace the hazard_Data field of Monty instance
+  if(!is.logical(indy)) indy<-rep(T,length(indy))
   Monty$hazard_Data<-data.frame(indy=which(indy))
   Monty$hazard_Data$ID_linkage<-ID_linkage
   Monty$hazard_Data$source<-source
@@ -594,6 +595,7 @@ MFilter_Responses<-function(Monty,indy,allobjs=F){
   temporal<-Monty$response_Data$temporal[indy,]
   spatial<-Monty$response_Data$spatial[indy]
   # Replace the response_Data field of Monty instance
+  if(!is.logical(indy)) indy<-rep(T,length(indy))
   Monty$response_Data<-data.frame(indy=which(indy))
   Monty$response_Data$ID_linkage<-ID_linkage
   Monty$response_Data$source<-source
@@ -611,28 +613,19 @@ MFilter_Responses<-function(Monty,indy,allobjs=F){
   return(Monty)
 } 
 
-# Filter the Monty instance to find the appropriate eventids
-FilterMontyEv<-function(Monty,sdate=NULL,fdate=NULL,ISO3=NULL,haz_Ab=NULL){
-  # Setup the initial indices
-  indy<-rep(T,length(Monty$event_Level$ID_linkage$event_ID))
-  # Start date range NOTE WE TAKE THE LARGER SET OF POSSIBLE MATCHES VIA ev_fdate
-  if(!is.null(sdate)) indy <- indy & Monty$event_Level$temporal$ev_fdate >= sdate
-  # End date range NOTE WE TAKE THE LARGER SET OF POSSIBLE MATCHES VIA ev_sdate
-  if(!is.null(fdate)) indy <- indy & Monty$event_Level$temporal$ev_sdate <= fdate
-  # Abbreviated hazard code
-  if(!is.null(haz_Ab)) indy <- indy & sapply(1:length(Monty$event_Level$allhaz_class),
-                                             function(i){
-                                               any(grepl(haz_Ab, Monty$event_Level$allhaz_class[[i]]$all_hazs_Ab, 
-                                                         ignore.case = T))
-                                             },simplify = T)
-  # Country ISO3C code, out of any of the associated ISO3s
-  if(!is.null(ISO3)) indy <- indy & sapply(1:length(Monty$event_Level$spatial$ev_ISO3s),
-                                           function(i){
-                                             any(grepl(ISO3, Monty$event_Level$spatial$ev_ISO3s[[i]], 
-                                                       ignore.case = T))
-                                           },simplify = T)
-  # Return the event_IDs associated to the filter
-  Monty%>%MFilter_Events(indy,allobjs = T)
+# Check that, upon reading in the Monty JSON file, that the spatial data is in the correct format (list)
+checkSpatialMonty<-function(Monty){
+  if(!is.null(Monty$impact_Data$spatial) & class(Monty$impact_Data$spatial)=="data.frame"){
+    Monty$impact_Data$spatial<-modSpatMonty(Monty$impact_Data$spatial$ID_linkage,
+                                            Monty$impact_Data$spatial$spatial_info,
+                                            Monty$impact_Data$spatial$source)
+  } 
+  if(!is.null(Monty$hazard_Data$spatial) & class(Monty$hazard_Data$spatial)=="data.frame"){
+    Monty$hazard_Data$spatial<-modSpatMonty(Monty$hazard_Data$spatial$ID_linkage,
+                                            Monty$hazard_Data$spatial$spatial_info,
+                                            Monty$hazard_Data$spatial$source)
+  }
+  return(Monty)
 }
 
 # Perform checks on the filtering criteria provided to the Plumber API
@@ -655,6 +648,31 @@ CheckAPIinput<-function(sdate=NULL,fdate=NULL,ISO3=NULL,haz_Ab=NULL){
 
 # Function: for JSON-based dataframes, with certain variables as nested lists
 #           we convert these nested lists to characters and then paste them together
+# squishLDF<-function(DF){
+#   if(!is.null(ncol(DF[[1]]))) {
+#     return(do.call(rbind,lapply(seq_along(DF),function(i){
+#       if(ncol(DF[[i]])==0) return(data.frame(ext_ID=NA_character_,ext_ID_db=NA_character_,ext_ID_org=NA_character_))
+#       apply(DF[[i]],2,function(x) {
+#         paste0(unique(x),collapse=dely)
+#       })
+#     })))
+#   } else if (class(DF[[1]])=="list" & 
+#              all(sapply(seq_along(DF),function(i) length(DF[[i]])%in%0:1))){
+#     return(do.call(rbind,lapply(DF,function(x){
+#       if(length(x)==0){
+#         return(data.frame(ext_ID=NA_character_,ext_ID_db=NA_character_,ext_ID_org=NA_character_))
+#       } else if (length(x)==1){
+#         return(x[[1]])
+#       } else stop("length of array not compatible for squishLDF")
+#     })))
+#   } else {
+#     # Create a template for when there are no elements in the list
+#     return(unlist(lapply(seq_along(DF),function(i){
+#       if(length(DF[[i]])==0) return(list(""))
+#       sapply(DF[[i]],function(x) paste0(unique(x),collapse=dely))
+#     })))
+#   }
+# }
 squishLDF<-function(DF){
   if(!is.null(ncol(DF[[1]]))) {
     return(do.call(rbind,lapply(seq_along(DF),function(i){
@@ -664,9 +682,22 @@ squishLDF<-function(DF){
       })
     })))
   } else if (class(DF[[1]])=="list" & 
-             all(sapply(seq_along(DF),function(i) length(DF[[i]])%in%0:1))){
+             all(sapply(seq_along(DF),function(i) length(DF[[i]])==0))){
+    return(rep(NA_character_,length(DF)))
+  }  else if (class(DF[[1]])=="list" & 
+              all(sapply(seq_along(DF),function(i) length(DF[[i]])==1)) & 
+              all(sapply(seq_along(DF),function(i) class(DF[[i]][[1]])=="data.frame"))){
     return(do.call(rbind,lapply(DF,function(x){
-      if(length(x)==0){
+      if(length(x)==0 | any(is.na(x))){
+        return(data.frame(ext_ID=NA_character_,ext_ID_db=NA_character_,ext_ID_org=NA_character_))
+      } else if (length(x)==1){
+        return(x[[1]])
+      } else stop("length of array not compatible for squishLDF")
+    })))
+  } else if (class(unlist(DF[[1]]))=="list" &
+             all(sapply(seq_along(DF),function(i) length(unlist(DF[[i]]))%in%0:1))){
+    return(do.call(rbind,lapply(DF,function(x){
+      if(length(x)==0 | any(is.na(x))){
         return(data.frame(ext_ID=NA_character_,ext_ID_db=NA_character_,ext_ID_org=NA_character_))
       } else if (length(x)==1){
         return(x[[1]])
@@ -680,20 +711,6 @@ squishLDF<-function(DF){
     })))
   }
 }
-
-# squishLDF<-function(DF){
-#   if(!is.null(ncol(DF[[1]]))) {
-#     return(do.call(rbind,lapply(seq_along(DF),function(i){
-#       apply(DF[[i]],2,function(x) paste0(unique(x),collapse=delim))
-#     })))
-#   } else {
-#     # Create a template for when there are no elements in the list
-#     return(unlist(lapply(seq_along(DF),function(i){
-#       if(length(DF[[i]])==0) return(list(""))
-#       sapply(DF[[i]],function(x) paste0(unique(x),collapse=delim))
-#     })))
-#   }
-# }
 
 # Function: for JSON-based dataframes, with certain variables as nested lists
 #           we left join to the given taxonomies and then use squishDF to merge together
@@ -742,12 +759,19 @@ SortConcurHaz<-function(concur){
   lapply(seq_along(concur),function(i) return(data.frame(haz_concur="")))
 }
 
+# Convert the nested event_Level object to 2D tabular format
 Monty_Ev2Tab<-function(Monty,red=F){
   #%%%%%%%%%%%%%%%%%%%%%% EVENT LEVEL %%%%%%%%%%%%%%%%%%%%%%#
   # IDs and linkages first
   ev_lv<-Monty$event_Level$ID_linkage[,c("event_ID","ev_name")]
-  # Add the external IDs
-  ev_lv%<>%cbind(squishLDF(Monty$event_Level$ID_linkage$all_ext_IDs))
+  # Hazard classifications
+  ev_lv%<>%cbind(squishLDF(Monty$event_Level$allhaz_class)%>%setNames("haz_spec_code"))
+  # Hazard taxonomy from specific hazards
+  ev_lv%<>%cbind(JoinDFMonty(Monty$event_Level$allhaz_class, 
+                             Monty$taxonomies$haz_class,
+                             "all_hazs_spec","haz_spec_code"))%>%
+    dplyr::select(-c("all_hazs_Ab","all_hazs_spec"))%>%
+    rename(haz_Ab=all_hazs_Ab)
   # Add the temporal information and general location variable
   ev_lv%<>%cbind(Monty$event_Level$temporal,
                  Monty$event_Level$spatial%>%dplyr::select(gen_location))
@@ -757,14 +781,9 @@ Monty_Ev2Tab<-function(Monty,red=F){
   ev_lv%<>%cbind(JoinDFMonty(Monty$event_Level$spatial%>%dplyr::select(ev_ISO3s), 
                              Monty$taxonomies$ISO_info,
                              "ev_ISO3s","ISO3")%>%dplyr::select(-ISO3))
-  # Hazard classifications
-  ev_lv%<>%cbind(squishLDF(Monty$event_Level$allhaz_class))
-  # Hazard taxonomy from specific hazards
-  ev_lv%<>%cbind(JoinDFMonty(Monty$event_Level$allhaz_class, 
-                             Monty$taxonomies$haz_class,
-                             "all_hazs_spec","haz_spec_code"))%>%
-    dplyr::select(-c("all_hazs_Ab","all_hazs_spec"))%>%
-    rename(haz_Ab=all_hazs_Ab)
+  # Add the external IDs
+  ev_lv%<>%cbind(squishLDF(Monty$event_Level$ID_linkage$all_ext_IDs)%>%
+                   setNames(c("all_ext_ID","all_extID_db","all_extID_org")))
   # If we want to reduce it to the barebones version
   if(red) {
     ev_lv%>%dplyr::select(-c(grep("_code",colnames(ev_lv),value = T)))%>%return()
@@ -773,6 +792,7 @@ Monty_Ev2Tab<-function(Monty,red=F){
   return(ev_lv)
 }
 
+# Convert an impact_Data nested object into 2D tabular format
 Monty_Imp2Tab<-function(Monty,red=F){
   #%%%%%%%%%%%%%%%%%%%%%% IMPACT LEVEL %%%%%%%%%%%%%%%%%%%%%%#
   # IDs and linkages first
@@ -780,16 +800,15 @@ Monty_Imp2Tab<-function(Monty,red=F){
   # Hazard IDs
   imp_lv$haz_sub_ID<-squishLDF(Monty$impact_Data$ID_linkage$haz_sub_ID)
   # External IDs
-  imp_lv$imp_ext_IDs<-squishLDF(Monty$impact_Data$ID_linkage$imp_ext_IDs)
-  warning("Something weird at imp_lv$imp_ext_IDs in Monty_Imp2Tab function")
-  # colnames(imp_lv)[grepl("ext_",colnames(imp_lv))]<-c("imp_ext_IDs","imp_extID_db","imp_extID_org")
+  imp_lv%<>%cbind(squishLDF(Monty$impact_Data$ID_linkage$imp_ext_IDs))
+  colnames(imp_lv)[grepl("ext_",colnames(imp_lv))]<-c("imp_ext_IDs","imp_extID_db","imp_extID_org")
   # Source, impact detail and temporal
   imp_lv%<>%cbind(Monty$impact_Data$source%>%dplyr::select(-c(imp_src_db,imp_src_org)),
                   Monty$impact_Data$impact_detail)%>%dplyr::select(-imp_src_URL)
   # Exposure classification
   imp_lv%<>%rename(exp_spec_code=exp_spec)%>%
     left_join(Monty$taxonomies$exp_class,
-                      by="exp_spec_code")
+              by="exp_spec_code")
   # Impact type
   imp_lv%<>%rename(imp_type_code=imp_type)%>%
     left_join(Monty$taxonomies$imp_class,
@@ -818,89 +837,124 @@ Monty_Imp2Tab<-function(Monty,red=F){
   # Sort out the column names for the source organisation information 
   colnames(imp_lv)[grepl("src_org_",colnames(imp_lv))]<-
     str_replace_all(colnames(imp_lv)[grepl("src_org_",colnames(imp_lv))],"src_org_","imp_srcorg_")
-  # Spatial ID linkages
-  imp_lv%<>%cbind(do.call(rbind,lapply(Monty$impact_Data$spatial,function(x) x$ID_linkage[,c("imp_spat_ID","imp_spat_fileloc")])))
-  # Spatial object type
-  imp_lv%<>%cbind(left_join(
-    do.call(rbind,lapply(Monty$impact_Data$spatial,function(x) x$spatial_info)), 
-    Monty$taxonomies$spatial_coverage%>%setNames(c("imp_spat_covcode","imp_spat_covlab")),
-    by="imp_spat_covcode")%>%
-                    dplyr::select("imp_spat_covcode","imp_spat_covlab","imp_spat_res","imp_spat_resunits","imp_spat_crs"))
-  # Country info from ISOs (accounting for when ev_ISOs is a nested list of DFs)
-  imp_lv%<>%cbind(left_join(
-    do.call(rbind,lapply(Monty$impact_Data$spatial,function(x) x$spatial_info))%>%rename(ISO3=imp_ISO3s), 
-    Monty$taxonomies$ISO_info,by="ISO3")%>%
-                    dplyr::select("ISO3","country","unregion","worldbankregion",
-                                  "continent","unsubregion","worldbankincomegroup")%>%
-                    setNames(c("imp_ISO3","imp_country","imp_unregion","imp_worldbankregion",
-                             "imp_continent","imp_unsubregion","imp_worldbankincomegroup")))
-  # Spatial data source information 
-  imp_lv%<>%cbind(left_join(
-    do.call(rbind,lapply(Monty$impact_Data$spatial,function(x) x$source))%>%
-      setNames(c("imp_spat_srcdbcode","imp_spat_srcdburl","imp_spat_srcorgcode")), 
-    Monty$taxonomies$src_info%>%
-      setNames(str_replace_all(str_replace_all(colnames(Monty$taxonomies$src_info),"_",""),"src","imp_spat_src"))%>%
-      dplyr::select(-any_of("imp_spat_srcdburl")),
+  # If the impact spatial data field is a data frame, convert it to a list
+  if(class(Monty$impact_Data$spatial)=="data.frame") {
+    bad_request("Why is the spatial data in Monty object a data.frame and not a list?")
+    # # Spatial object type
+    # imp_lv%<>%cbind(left_join(
+    #   do.call(rbind,lapply(Monty$impact_Data$spatial$spatial_info,function(x) x)), 
+    #   Monty$taxonomies$spatial_coverage%>%setNames(c("imp_spat_covcode","imp_spat_covlab")),
+    #   by="imp_spat_covcode")%>%
+    #     dplyr::select("imp_spat_covcode","imp_spat_covlab","imp_spat_res","imp_spat_resunits","imp_spat_crs"))
+    # # Country info from ISOs (accounting for when ev_ISOs is a nested list of DFs)
+    # imp_lv%<>%cbind(left_join(
+    #   do.call(rbind,lapply(Monty$impact_Data$spatial$spatial_info,function(x) x))%>%rename(ISO3=imp_ISO3s), 
+    #   Monty$taxonomies$ISO_info,by="ISO3")%>%
+    #     dplyr::select("ISO3","country","unregion","worldbankregion",
+    #                   "continent","unsubregion","worldbankincomegroup")%>%
+    # setNames(c("imp_ISO3","imp_country","imp_unregion","imp_worldbankregion",
+    #            "imp_continent","imp_unsubregion","imp_worldbankincomegroup")))
+    # # Spatial data source information 
+    # imp_lv%<>%cbind(left_join(
+    #   do.call(rbind,lapply(Monty$impact_Data$spatial$source,function(x) x))%>%
+    #     setNames(c("imp_spat_srcdbcode","imp_spat_srcdbURL","imp_spat_srcorgcode")), 
+    #   Monty$taxonomies$src_info%>%
+    #     setNames(str_replace_all(str_replace_all(colnames(Monty$taxonomies$src_info),"_",""),"src","imp_spat_src"))%>%
+    #     dplyr::select(-imp_spat_srcdbURL),
+    #   by=c("imp_spat_srcorgcode","imp_spat_srcdbcode")))
+  } else {
+    # Spatial ID linkages
+    imp_lv%<>%cbind(do.call(rbind,lapply(Monty$impact_Data$spatial,function(x) {
+      outy<-x$ID_linkage
+      return(outy)
+    })))
+    # Spatial object type
+    imp_lv%<>%cbind(left_join(
+      do.call(rbind,lapply(Monty$impact_Data$spatial,function(x) x$spatial_info)), 
+      Monty$taxonomies$spatial_coverage%>%setNames(c("imp_spat_covcode","imp_spat_covlab")),
+      by="imp_spat_covcode")%>%
+        dplyr::select("imp_spat_covcode","imp_spat_covlab","imp_spat_res","imp_spat_resunits","imp_spat_crs"))
+    # Country info from ISOs (accounting for when ev_ISOs is a nested list of DFs)
+    imp_lv%<>%cbind(left_join(
+      do.call(rbind,lapply(Monty$impact_Data$spatial,function(x) x$spatial_info))%>%rename(ISO3=imp_ISO3s), 
+      Monty$taxonomies$ISO_info,by="ISO3")%>%
+        dplyr::select("ISO3","country","unregion","worldbankregion",
+                      "continent","unsubregion","worldbankincomegroup")%>%
+        setNames(c("imp_ISO3","imp_country","imp_unregion","imp_worldbankregion",
+                   "imp_continent","imp_unsubregion","imp_worldbankincomegroup")))
+    # Spatial data source information 
+    imp_lv%<>%cbind(left_join(
+      do.call(rbind,lapply(Monty$impact_Data$spatial,function(x) x$source))%>%
+        setNames(c("imp_spat_srcdbcode","imp_spat_srcdburl","imp_spat_srcorgcode")), 
+      Monty$taxonomies$src_info%>%
+        setNames(str_replace_all(str_replace_all(colnames(Monty$taxonomies$src_info),"_",""),"src","imp_spat_src"))%>%
+        dplyr::select(-imp_spat_srcdburl),
       by=c("imp_spat_srcorgcode","imp_spat_srcdbcode")))
-  # Re-order this all
-  imp_lv%<>%dplyr::select(any_of(c("event_ID","imp_sub_ID","haz_sub_ID", #ID and linkages
-                            "imp_ext_IDs","imp_extID_db","imp_extID_org",
-                            # source
-                            "imp_srcdb_code","imp_srcdb_lab",
-                            "imp_srcorg_code","imp_srcorg_lab","imp_srcorg_typecode",
-                            "imp_srcorg_typelab","imp_srcorg_email","imp_srcdb_attr",
-                            "imp_srcdb_lic","imp_srcdb_URL","src_addinfo",
-                            # impact detail
-                            "exp_spec_code","exp_spec_lab","exp_subcat_code",
-                            "exp_subcat_lab","exp_cat_code","exp_cat_lab",
-                            "imp_value","imp_type_code","imp_type_lab",
-                            "imp_unit_code","imp_unit_lab","imp_unitgroup_code",
-                            "imp_unitgroup_lab","imp_esttype_code","imp_esttype_lab",
-                            "imp_unitdate",
-                            # temporal
-                            "imp_sdate","imp_fdate",
-                            # spatial
-                            "imp_spat_ID","imp_ISO3","imp_country","imp_unregion",
-                            "imp_worldbankregion","imp_continent","imp_unsubregion",
-                            "imp_worldbankincomegroup","imp_spat_fileloc",
-                            "imp_lon","imp_lat","imp_spat_covcode",
-                            "imp_spat_covlab","imp_spat_res","imp_spat_resunits",
-                            "imp_spat_crs","imp_spat_srcdbcode",
-                            "imp_spat_srcdblab","imp_spat_srcdburl",
-                            "imp_spat_srcorgcode","imp_spat_srcorglab",
-                            "imp_spat_srcorgtypecode","imp_spat_srcorgtypelab",
-                            "imp_spat_srcorgemail","imp_spat_srcdbattr",
-                            "imp_spat_srcdblic","imp_spat_srcaddinfo")))
-  
-  if(red) {
-    imp_lv%>%dplyr::select(any_of(c("event_ID","imp_sub_ID","haz_sub_ID", #ID and linkages
-                             "imp_ext_IDs","imp_extID_db","imp_extID_org",
-                             # source
-                             "imp_srcdb_lab","imp_srcorg_lab",
-                             "imp_srcorg_typelab","imp_srcorg_email","imp_srcdb_attr",
-                             "imp_srcdb_lic","imp_srcdb_URL","src_addinfo",
-                             # impact detail
-                             "exp_spec_lab","exp_subcat_lab","exp_cat_lab",
-                             "imp_value","imp_type_lab","imp_unit_lab",
-                             "imp_unitgroup_lab","imp_esttype_lab",
-                             "imp_unitdate",
-                             # temporal
-                             "imp_sdate","imp_fdate",
-                             # spatial
-                             "imp_spat_ID","imp_ISO3","imp_country","imp_unregion",
-                             "imp_worldbankregion","imp_continent","imp_unsubregion",
-                             "imp_worldbankincomegroup","imp_spat_fileloc",
-                             "imp_lon","imp_lat",
-                             "imp_spat_covlab","imp_spat_res","imp_spat_resunits",
-                             "imp_spat_crs","imp_spat_srcdblab","imp_spat_srcdburl",
-                             "imp_spat_srcorglab",
-                             "imp_spat_srcorgtypelab",
-                             "imp_spat_srcorgemail","imp_spat_srcdbattr",
-                             "imp_spat_srcdblic","imp_spat_srcaddinfo")))%>%return()
   }
+  # Select certain columns 
+  if(red) {
+    impcols<-c("event_ID","imp_sub_ID","haz_sub_ID", #ID and linkages
+               "imp_ext_IDs","imp_extID_db","imp_extID_org",
+               # source
+               "imp_srcdb_lab","imp_srcorg_lab",
+               "imp_srcorg_typelab","imp_srcorg_email","imp_srcdb_attr",
+               "imp_srcdb_lic","imp_srcdb_url","imp_src_addinfo",
+               # impact detail
+               "exp_spec_lab","exp_subcat_lab","exp_cat_lab",
+               "imp_value","imp_type_lab","imp_unit_lab",
+               "imp_unitgroup_lab","imp_esttype_lab",
+               "imp_unitdate",
+               # temporal
+               "imp_sdate","imp_fdate",
+               # spatial
+               "imp_spat_ID","imp_ISO3","imp_country","imp_unregion",
+               "imp_worldbankregion","imp_continent","imp_unsubregion",
+               "imp_worldbankincomegroup","imp_spat_fileloc",
+               "imp_spat_covlab","imp_spat_res","imp_spat_resunits",
+               "imp_spat_crs","imp_spat_srcdblab","imp_spat_srcdburl",
+               "imp_spat_srcorglab",
+               "imp_spat_srcorgtypelab",
+               "imp_spat_srcorgemail","imp_spat_srcdbattr",
+               "imp_spat_srcdblic","imp_spat_srcaddinfo")
+  } else {
+    impcols<-c("event_ID","imp_sub_ID","haz_sub_ID", #ID and linkages
+               "imp_ext_IDs","imp_extID_db","imp_extID_org",
+               # source
+               "imp_srcdb_code","imp_srcdb_lab",
+               "imp_srcorg_code","imp_srcorg_lab","imp_srcorg_typecode",
+               "imp_srcorg_typelab","imp_srcorg_email","imp_srcdb_attr",
+               "imp_srcdb_lic","imp_srcdb_url","imp_src_addinfo",
+               # impact detail
+               "exp_spec_code","exp_spec_lab","exp_subcat_code",
+               "exp_subcat_lab","exp_cat_code","exp_cat_lab",
+               "imp_value","imp_type_code","imp_type_lab",
+               "imp_unit_code","imp_unit_lab","imp_unitgroup_code",
+               "imp_unitgroup_lab","imp_esttype_code","imp_esttype_lab",
+               "imp_unitdate",
+               # temporal
+               "imp_sdate","imp_fdate",
+               # spatial
+               "imp_spat_ID","imp_ISO3","imp_country","imp_unregion",
+               "imp_worldbankregion","imp_continent","imp_unsubregion",
+               "imp_worldbankincomegroup","imp_spat_fileloc",
+               "imp_spat_covcode",
+               "imp_spat_covlab","imp_spat_res","imp_spat_resunits",
+               "imp_spat_crs","imp_spat_srcdbcode",
+               "imp_spat_srcdblab","imp_spat_srcdburl",
+               "imp_spat_srcorgcode","imp_spat_srcorglab",
+               "imp_spat_srcorgtypecode","imp_spat_srcorgtypelab",
+               "imp_spat_srcorgemail","imp_spat_srcdbattr",
+               "imp_spat_srcdblic","imp_spat_srcaddinfo")
+  }
+  # Fill empty columns with NAs
+  imp_lv[,impcols[!impcols%in%colnames(imp_lv)]]<-NA
+  # Re-order this all
+  imp_lv%<>%dplyr::select(all_of(impcols))
+  
   return(imp_lv)
 }
 
+# Convert an hazard_Data nested object into 2D tabular format
 Monty_Haz2Tab<-function(Monty,red=F){
   #%%%%%%%%%%%%%%%%%%%%%% HAZARD LEVEL %%%%%%%%%%%%%%%%%%%%%%#
   # IDs and linkages first
@@ -945,72 +999,102 @@ Monty_Haz2Tab<-function(Monty,red=F){
   colnames(haz_lv)[grepl("src_org_",colnames(haz_lv))]<-
     str_replace_all(colnames(haz_lv)[grepl("src_org_",colnames(haz_lv))],"src_org_","haz_srcorg_")
   # Spatial ID linkages
-  haz_lv%<>%cbind(do.call(rbind,lapply(Monty$hazard_Data$spatial,function(x) {
-    outy<-x$ID_linkage
-    outy$haz_spat_colname%<>%replace(is.na(.),"")%>%squishLDF()
-    outy$haz_spat_rowname%<>%replace(is.na(.),"")%>%squishLDF()
-    return(outy)
-  })))
-  # Spatial object type
-  haz_lv%<>%cbind(left_join(
-    do.call(rbind,lapply(Monty$hazard_Data$spatial,function(x) x$spatial_info)),
-                              Monty$taxonomies$spatial_coverage%>%setNames(c("haz_spat_covcode","haz_spat_covlab")),
-    by="haz_spat_covcode")%>%
-      dplyr::select("haz_spat_covcode","haz_spat_covlab","haz_spat_res","haz_spat_resunits","haz_spat_crs"))
-  # Country info from ISOs (accounting for when ev_ISOs is a nested list of DFs)
-  haz_lv%<>%cbind(left_join(
-    do.call(rbind,lapply(Monty$hazard_Data$spatial,function(x) x$spatial_info))%>%rename(ISO3=haz_ISO3s), 
-    Monty$taxonomies$ISO_info,by="ISO3")%>%
-      dplyr::select("ISO3","country","unregion","worldbankregion",
-                    "continent","unsubregion","worldbankincomegroup")%>%
-      setNames(c("haz_ISO3","haz_country","haz_unregion","haz_worldbankregion",
-                 "haz_continent","haz_unsubregion","haz_worldbankincomegroup")))
-  # Re-order this all
-  haz_lv%<>%dplyr::select(c("event_ID","haz_sub_ID", #ID and linkages
-                            "haz_ext_IDs","haz_extID_db","haz_extID_org",
-                            # source
-                            "haz_srcdb_code","haz_srcdb_lab",
-                            "haz_srcorg_code","haz_srcorg_lab","haz_srcorg_typecode",
-                            "haz_srcorg_typelab","haz_srcorg_email","haz_srcdb_attr",
-                            "haz_srcdb_lic","haz_srcdb_URL","src_addinfo",
-                            # hazard detail
-                            "haz_Ab","haz_spec_code",
-                            "haz_spec_lab","haz_cluster_code","haz_cluster_lab",
-                            "haz_type_code","haz_type_lab",
-                            "haz_maxvalue","haz_maxunit_code","haz_maxunit_lab",
-                            "haz_maxunitgroup_code","haz_maxunitgroup_lab",
-                            "haz_esttype_code","haz_esttype_lab",
-                            # temporal
-                            "haz_sdate","haz_fdate",
-                            # spatial
-                            "haz_spat_ID","haz_ISO3","haz_Country","haz_unregion",
-                            "haz_worldbankregion","haz_continent","haz_unsubregion",
-                            "haz_worldbankincomegroup","haz_spat_fileloc",
-                            "haz_lon","haz_lat","haz_spat_covcode",
-                            "haz_spat_covlab","haz_spat_res","haz_spat_resunits",
-                            "haz_spat_crs"))
-  
-  if(red) {
-    haz_lv%>%dplyr::select(c("event_ID","haz_sub_ID", #ID and linkages
-                             "haz_ext_IDs","haz_extID_db","haz_extID_org",
-                             # source
-                             "haz_srcdb_lab","haz_srcorg_lab",
-                             "haz_srcorg_typelab","haz_srcorg_email","haz_srcdb_attr",
-                             "haz_srcdb_lic","haz_srcdb_URL","src_addinfo",
-                             # hazard detail
-                             "haz_Ab","haz_spec_code","haz_spec_lab","haz_cluster_lab",
-                             "haz_type_lab","haz_maxvalue","haz_maxunit_lab",
-                             "haz_maxunitgroup_lab","haz_esttype_lab",
-                             # temporal
-                             "haz_sdate","haz_fdate",
-                             # spatial
-                             "haz_spat_ID","haz_ISO3","haz_Country","haz_unregion",
-                             "haz_worldbankregion","haz_continent","haz_unsubregion",
-                             "haz_worldbankincomegroup","haz_spat_fileloc",
-                             "haz_lon","haz_lat",
-                             "haz_spat_covlab","haz_spat_res","haz_spat_resunits",
-                             "haz_spat_crs"))%>%return()
+  if(class(Monty$hazard_Data$spatial)=="data.frame"){
+    bad_request("Why is the spatial data in Monty object a data.frame and not a list?")
+    # if(!(is.null(Monty$hazard_Data$spatial$ID_linkage[[1]]$haz_spat_colname) &
+    #      is.null(Monty$hazard_Data$spatial$ID_linkage[[1]]$haz_spat_rowname))) {
+    #   haz_lv%<>%cbind(do.call(rbind,lapply(Monty$hazard_Data$spatial$ID_linkage,function(x) {
+    #     x$haz_spat_colname%<>%replace(is.na(.),"")%>%squishLDF()
+    #     x$haz_spat_rowname%<>%replace(is.na(.),"")%>%squishLDF()
+    #     return(x)
+    #   })))
+    # } else {
+    #   haz_lv%<>%cbind(do.call(rbind,lapply(Monty$hazard_Data$spatial$ID_linkage,function(x) x)))
+    # }
+    # # Spatial object type
+    # haz_lv%<>%cbind(left_join(
+    #   do.call(rbind,lapply(Monty$hazard_Data$spatial$spatial_info,function(x) x)),
+    #   Monty$taxonomies$spatial_coverage%>%setNames(c("haz_spat_covcode","haz_spat_covlab")),
+    #   by="haz_spat_covcode")%>%
+    #     select_if(names(.) %in% c("haz_spat_covcode","haz_spat_covlab",
+    #                               "haz_spat_res","haz_spat_resunits","haz_spat_crs")))
+    # # Country info from ISOs (accounting for when ev_ISOs is a nested list of DFs)
+    # haz_lv%<>%cbind(left_join(
+    #   do.call(rbind,lapply(Monty$hazard_Data$spatial$spatial_info,function(x) x))%>%rename(ISO3=haz_ISO3s), 
+    #   Monty$taxonomies$ISO_info,by="ISO3")%>%
+    #     dplyr::select("ISO3","country","unregion","worldbankregion",
+    #                   "continent","unsubregion","worldbankincomegroup")%>%
+    # setNames(c("haz_ISO3","haz_country","haz_unregion","haz_worldbankregion",
+    #            "haz_continent","haz_unsubregion","haz_worldbankincomegroup")))
+  } else {
+    haz_lv%<>%cbind(do.call(rbind,lapply(Monty$hazard_Data$spatial,function(x) {
+      x$ID_linkage})))
+    # Spatial object type
+    haz_lv%<>%cbind(left_join(
+      do.call(rbind,lapply(Monty$hazard_Data$spatial,function(x) x$spatial_info)),
+      Monty$taxonomies$spatial_coverage%>%setNames(c("haz_spat_covcode","haz_spat_covlab")),
+      by="haz_spat_covcode")%>%
+        select_if(names(.) %in% c("haz_spat_covcode","haz_spat_covlab",
+                                  "haz_spat_res","haz_spat_resunits","haz_spat_crs")))
+    # Country info from ISOs (accounting for when ev_ISOs is a nested list of DFs)
+    haz_lv%<>%cbind(left_join(
+      do.call(rbind,lapply(Monty$hazard_Data$spatial,function(x) x$spatial_info))%>%rename(ISO3=haz_ISO3s), 
+      Monty$taxonomies$ISO_info,by="ISO3")%>%
+        dplyr::select("ISO3","country","unregion","worldbankregion",
+                      "continent","unsubregion","worldbankincomegroup")%>%
+        setNames(c("haz_ISO3","haz_country","haz_unregion","haz_worldbankregion",
+                   "haz_continent","haz_unsubregion","haz_worldbankincomegroup")))
   }
+  # Select certain columns 
+  if(red) {
+    hazcols<-c("event_ID","haz_sub_ID", #ID and linkages
+               "haz_ext_IDs","haz_extID_db","haz_extID_org",
+               # source
+               "haz_srcdb_lab","haz_srcorg_lab",
+               "haz_srcorg_typelab","haz_srcorg_email","haz_srcdb_attr",
+               "haz_srcdb_lic","haz_srcdb_url","haz_src_addinfo",
+               # hazard detail
+               "haz_Ab","haz_spec_code","haz_spec_lab","haz_cluster_lab",
+               "haz_type_lab","haz_maxvalue","haz_maxunit_lab",
+               "haz_maxunitgroup_lab","haz_esttype_lab",
+               # temporal
+               "haz_sdate","haz_fdate",
+               # spatial
+               "haz_spat_ID","haz_ISO3","haz_Country","haz_unregion",
+               "haz_worldbankregion","haz_continent","haz_unsubregion",
+               "haz_worldbankincomegroup","haz_spat_fileloc",
+               "haz_spat_covlab","haz_spat_res","haz_spat_resunits",
+               "haz_spat_crs")
+  } else {
+    hazcols<-c("event_ID","haz_sub_ID", #ID and linkages
+               "haz_ext_IDs","haz_extID_db","haz_extID_org",
+               # source
+               "haz_srcdb_code","haz_srcdb_lab",
+               "haz_srcorg_code","haz_srcorg_lab","haz_srcorg_typecode",
+               "haz_srcorg_typelab","haz_srcorg_email","haz_srcdb_attr",
+               "haz_srcdb_lic","haz_srcdb_url","haz_src_addinfo",
+               # hazard detail
+               "haz_Ab","haz_spec_code",
+               "haz_spec_lab","haz_cluster_code","haz_cluster_lab",
+               "haz_type_code","haz_type_lab",
+               "haz_maxvalue","haz_maxunit_code","haz_maxunit_lab",
+               "haz_maxunitgroup_code","haz_maxunitgroup_lab",
+               "haz_esttype_code","haz_esttype_lab",
+               # temporal
+               "haz_sdate","haz_fdate",
+               # spatial
+               "haz_spat_ID","haz_ISO3","haz_Country","haz_unregion",
+               "haz_worldbankregion","haz_continent","haz_unsubregion",
+               "haz_worldbankincomegroup","haz_spat_fileloc",
+               "haz_spat_covcode",
+               "haz_spat_covlab","haz_spat_res","haz_spat_resunits",
+               "haz_spat_crs")
+  }
+  # Fill empty columns with NAs
+  haz_lv[,hazcols[!hazcols%in%colnames(haz_lv)]]<-NA
+  # Re-order this all
+  haz_lv%<>%dplyr::select(all_of(hazcols))
+  
   return(haz_lv)
 }
 
@@ -1036,7 +1120,6 @@ remSpecChar<-function(vecy){
   # Convert all letters to remove accents
   vecy%>%iconv(from = 'UTF-8', to = 'ASCII//TRANSLIT')
 }
-
 checkCharMonty<-function(Monty){
   # Check the following;
   #   - no special characters
@@ -1100,13 +1183,16 @@ warnEvsMonty<-function(Monty,evs,texty){
 # Check that no entries have NULL haz_spec_code, haz_Ab code, exp_spec_code, imp_type_code, imp_unit_code, event_ID
 checkNULLvars<-function(Monty){
   # Specific hazard & abbreviated hazard codes
-  indy<-sapply(Monty$event_Level$allhaz_class, ncol)!=0
+  indy<-sapply(Monty$event_Level$allhaz_class, ncol)!=0 &
+    sapply(Monty$event_Level$allhaz_class,function(x) !all(is.na(x)))
   # Provide a warning about this, including source(s) info
-  if(sum(!indy)!=0) warnEvsMonty(Monty,
-                                 Monty$event_Level$ID_linkage$event_ID[!indy],
-                                 "specific hazards or abb. hazards")
-  # Filter them to keep what we want, filter also impacts, hazards + responses
-  Monty%<>%MFilter_Events(indy,allobjs = T)
+  if(sum(!indy)!=0) {
+    warnEvsMonty(Monty,
+                 Monty$event_Level$ID_linkage$event_ID[!indy],
+                 "specific hazards or abb. hazards")
+    # Filter them to keep what we want, filter also impacts, hazards + responses
+    Monty%<>%MFilter_Events(indy,allobjs = T)
+  }
   
   if(length(Monty$hazard_Data)!=0){
     # Specific hazard
@@ -1115,38 +1201,44 @@ checkNULLvars<-function(Monty){
         class(x)!="character" & length(x)>0
       })
     # Provide a warning about this, including source(s) info
-    if(sum(!indy)!=0) warnEvsMonty(Monty,
-                                   unique(Monty$hazard_Data$ID_linkage$event_ID[!indy]),
-                                   "specific hazard or abbreviated hazard")
-    # Filter them to keep what we want, remove also from impacts, hazards + responses
-    Monty%<>%MFilter_Hazards(indy,allobjs = T)
+    if(sum(!indy)!=0) {
+      warnEvsMonty(Monty,
+                   unique(Monty$hazard_Data$ID_linkage$event_ID[!indy]),
+                   "specific hazard or abbreviated hazard")
+      # Filter them to keep what we want, remove also from impacts, hazards + responses
+      Monty%<>%MFilter_Hazards(indy,allobjs = T)
+    }
   }
   
   if(length(Monty$impact_Data)!=0){
     # Specific exposure, impact type and impact units
     indy<-apply(dplyr::select(Monty$impact_Data$impact_detail,-"imp_unitdate"),1,function(x) !any(is.na(x)))
     # Provide a warning about this, including source(s) info
-    if(sum(!indy)!=0) warnEvsMonty(Monty,
-                                   unique(Monty$impact_Data$ID_linkage$event_ID[!indy]),
-                                   "specific exposure, impact type or impact unit")
-    # Filter them to keep what we want, don't remove events or other objects associated to this event_ID
-    Monty%<>%MFilter_Impacts(indy)
+    if(sum(!indy)!=0){ 
+      warnEvsMonty(Monty,
+                   unique(Monty$impact_Data$ID_linkage$event_ID[!indy]),
+                   "specific exposure, impact type or impact unit")
+      # Filter them to keep what we want, don't remove events or other objects associated to this event_ID
+      Monty%<>%MFilter_Impacts(indy)
+    }
   }
   
   return(Monty)
 }
 
-checkDateMonty<-function(Monty){
+checkDateMonty<-function(Monty,filties=F){
   # Event start and end dates
   indy<-apply(Monty$event_Level$temporal,1,function(x) !any(is.na(as.Date(x))))
   # Filter them out
   evs<-Monty$event_Level$ID_linkage$event_ID[indy]
   # Provide a warning about this, including source(s) info
-  if(sum(!indy)!=0) warnEvsMonty(Monty,
-                                 Monty$event_Level$ID_linkage$event_ID[!indy],
-                                 "incorrect event start/end dates")
-  # Filter them out, including all the other objects (hazards,...)
-  Monty%<>%MFilter_Events(indy,allobjs = T)
+  if(sum(!indy)!=0) {
+    warnEvsMonty(Monty,
+                 Monty$event_Level$ID_linkage$event_ID[!indy],
+                 "incorrect event start/end dates")
+    # Filter them out, including all the other objects (hazards,...)
+    if(filties) Monty%<>%MFilter_Events(indy,allobjs = T)
+  }
   
   if(length(Monty$impact_Data)!=0){
     # Event start and end dates
@@ -1154,11 +1246,13 @@ checkDateMonty<-function(Monty){
     # Filter them out
     evs<-unique(Monty$impact_Data$ID_linkage$event_ID[indy])
     # Provide a warning about this, including source(s) info
-    if(sum(!indy)!=0) warnEvsMonty(Monty,
-                                   unique(Monty$impact_Data$ID_linkage$event_ID[!indy]),
-                                   "incorrect impact start/end dates")
-    # Filter them out
-    Monty%<>%MFilter_Impacts(indy)
+    if(sum(!indy)!=0) {
+      warnEvsMonty(Monty,
+                   unique(Monty$impact_Data$ID_linkage$event_ID[!indy]),
+                   "incorrect impact start/end dates")
+      # Filter them out
+      if(filties) Monty%<>%MFilter_Impacts(indy)
+    }
   }
   if(length(Monty$hazard_Data)!=0){
     # Event start and end dates
@@ -1166,11 +1260,13 @@ checkDateMonty<-function(Monty){
     # Filter them out
     evs<-unique(Monty$hazard_Data$ID_linkage$event_ID[indy])
     # Provide a warning about this, including source(s) info
-    if(sum(!indy)!=0) warnEvsMonty(Monty,
-                                   unique(Monty$hazard_Data$ID_linkage$event_ID[!indy]),
-                                   "incorrect hazard start/end dates")
-    # Filter them out
-    Monty%<>%MFilter_Hazards(indy)
+    if(sum(!indy)!=0) {
+      warnEvsMonty(Monty,
+                   unique(Monty$hazard_Data$ID_linkage$event_ID[!indy]),
+                   "incorrect hazard start/end dates")
+      # Filter them out
+      if(filties) Monty%<>%MFilter_Hazards(indy)
+    }
   }
   if(length(Monty$response_Data)!=0){
     # Event start and end dates
@@ -1178,11 +1274,13 @@ checkDateMonty<-function(Monty){
     # Filter them out
     evs<-unique(Monty$response_Data$ID_linkage$event_ID[indy])
     # Provide a warning about this, including source(s) info
-    if(sum(!indy)!=0) warnEvsMonty(Monty,
-                                   unique(Monty$response_Data$ID_linkage$event_ID[!indy]),
-                                   "incorrect response start/end dates")
-    # Filter them out
-    Monty%<>%MFilter_Responses(indy)
+    if(sum(!indy)!=0) {
+      warnEvsMonty(Monty,
+                   unique(Monty$response_Data$ID_linkage$event_ID[!indy]),
+                   "incorrect response start/end dates")
+      # Filter them out
+      if(filties) Monty%<>%MFilter_Responses(indy)
+    }
   }
   
   return(Monty)

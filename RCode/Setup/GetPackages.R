@@ -8,7 +8,6 @@ GetSourceFiles<-function(packred){
   # Basic functions:
   source(paste0(dir,'RCode/Setup/Functions.R'))
   source(paste0(dir,'RCode/Setup/GetEnv.R'))
-  source(paste0(dir,'RCode/Other/GetGoogleEarthEngineData.R'))
   # Objects
   source(paste0(dir,'RCode/GCDB_Objects/GCDB_table.R'))
   source(paste0(dir,'RCode/GCDB_Objects/MontyMethods.R'))
@@ -23,10 +22,11 @@ GetSourceFiles<-function(packred){
   # source(paste0(dir,'RCode/MainlyHazardData/GetDisaster.R'))
   source(paste0(dir,'RCode/MainlyHazardData/GetGLIDEnumber.R'))
   source(paste0(dir,'RCode/MainlyHazardData/GetGFD.R'))
+  # Other:
+  source(paste0(dir,'RCode/Other/GetGoogleEarthEngineData.R'))
   # Admin boundaries & Infrastructure related:
   source(paste0(dir,'RCode/Spatio-Infra-Political/GetOSM.R'))
   source(paste0(dir,'RCode/Spatio-Infra-Political/GetAdminBoundaries.R'))
-  # Other:
   
 }
 

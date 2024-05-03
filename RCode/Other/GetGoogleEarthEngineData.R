@@ -19,7 +19,9 @@ SetupGEE<-function(){
     library(rgee) 
   }
   
-  ee_Initialize(user = gee_user, drive = TRUE)
+  ee$Authenticate(auth_mode='notebook')
+  ee$Initialize(project='ee-hamishpatten')
+  # ee_Initialize(user = gee_user, project='ee-hamishpatten', drive = TRUE)
   
   return(T)
   
