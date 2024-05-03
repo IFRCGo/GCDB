@@ -22,12 +22,11 @@ GetSourceFiles<-function(packred){
   # source(paste0(dir,'RCode/MainlyHazardData/GetDisaster.R'))
   source(paste0(dir,'RCode/MainlyHazardData/GetGLIDEnumber.R'))
   source(paste0(dir,'RCode/MainlyHazardData/GetGFD.R'))
-  # Other:
-  source(paste0(dir,'RCode/Other/GetGoogleEarthEngineData.R'))
   # Admin boundaries & Infrastructure related:
   source(paste0(dir,'RCode/Spatio-Infra-Political/GetOSM.R'))
   source(paste0(dir,'RCode/Spatio-Infra-Political/GetAdminBoundaries.R'))
-  
+  # Other:
+  # source(paste0(dir,'RCode/Other/GetGoogleEarthEngineData.R'))
 }
 
 LoadLibraries<-function(packred){
@@ -80,7 +79,7 @@ GetPackages<-function(packred){
   
   if(!packred) list.of.packages<-c(list.of.packages,
                                    "codetools","latex2exp","fixest",
-                                   "OpenStreetMap","osmdata",#"rJava",
+                                   "OpenStreetMap","osmdata","rJava",
                                    "tidyRSS","geojsonR", "tiff", "gstat",
                                    "FactoMineR","factoextra","xtable",
                                    "gsubfn","mapsapi","leaflet", "ssh","RPostgres",

@@ -203,9 +203,6 @@ GAUL2Monty<-function(ISO3C,forcer=F){
   return(gaul)
 }
 
-# Setup Google Earth Engine library and objects
-SetupGEE()
-
 GetGAUL<-function(ISO3C,lADM=2,retobj=F,spout=F){
   # Extract the GAUL admin boundary data extraction function from GEE
   ADM<-ee$FeatureCollection(paste0('FAO/GAUL/2015/level',lADM))

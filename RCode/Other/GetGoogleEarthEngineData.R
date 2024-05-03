@@ -26,6 +26,8 @@ SetupGEE<-function(){
   return(T)
   
 }
+# Setup Google Earth Engine library and objects
+SetupGEE()
 
 
 # library(reticulate)

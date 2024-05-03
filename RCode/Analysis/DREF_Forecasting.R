@@ -39,27 +39,107 @@ procDBfore<-function(Monty){
 }
 # Get the DREF data and convert into tabular format
 tDREF<-convGOApp_Monty()%>%procDBfore()
-# Same for EM-DAT
-tEMDAT<-convEMDAT_Monty()%>%procDBfore()
-
 # Filter out all years previous to 2008
 tDREF%<>%filter(ev_sdate>=as.Date("2008-01-01") & imp_srcdb_code=="GO-DREF")
 
-tDREF%>%mutate(year=AsYear(ev_sdate))%>%
-  filter(exp_spec_lab=="IFRC Aid Contributions (Unspecified-Inflation-Adjustment)")%>%
-  group_by(year)%>%reframe(Cost=sum(imp_value))%>%
-  ggplot()+geom_line(aes(year,Cost))
+# Same for EM-DAT
+tEMDAT<-convEMDAT_Monty()%>%procDBfore()
 
-# All non-CC related hazards, take median, Q05 and Q95 values per month
-nonCCcost<-tDREF%>%filter(haz_Ab_grp=="non-CC" & exp_spec_lab=="IFRC Aid Contributions (Unspecified-Inflation-Adjustment)")%>%
-  mutate(month=month(ev_sdate),year=AsYear(ev_sdate))%>%group_by(worldbankregion,year,month)%>%
+# Check the average number of events + total yearly funding allocated
+#@@@ reflects that, other than 2010, number of events funded and total yearly funding has grown since 2018
+tDREF%>%mutate(ev_sdate=as.Date(ev_sdate))%>%arrange(ev_sdate)%>%
+  filter(exp_spec_lab=="IFRC Aid Contributions (Unspecified-Inflation-Adjustment)")%>%
+  group_by(year)%>%reframe(Count=length(year),Cost=sum(imp_value))%>%
+  ggplot()+geom_point(aes(year,Count,size=Cost,colour=Cost))+geom_line(aes(year,Count))
+
+# Check only the median yearly funding allocated per event
+#@@@ reflects that median funding allocation per event has also been growing
+#@@@ and also, as previous, the number of events is growing since 2018
+tDREF%>%mutate(ev_sdate=as.Date(ev_sdate))%>%arrange(ev_sdate)%>%
+  filter(exp_spec_lab=="IFRC Aid Contributions (Unspecified-Inflation-Adjustment)")%>%
+  group_by(year)%>%reframe(Count=length(year),
+                                     Sum=sum(imp_value),
+                                     Cost=median(imp_value))%>%
+  ggplot()+geom_point(aes(year,Cost,size=Count,colour=Sum))+
+  geom_text(aes(year,Cost+2e4,label=Count))+
+  geom_line(aes(year,Cost))+
+  xlab("Year")+ylab("Yearly Median Funding Allocated Per Event")
+
+# Split by region
+#@@@ shows that Asia and Africa dominate the statistics
+tDREF%>%mutate(ev_sdate=as.Date(ev_sdate))%>%arrange(ev_sdate)%>%
+  filter(exp_spec_lab=="IFRC Aid Contributions (Unspecified-Inflation-Adjustment)")%>%
+  group_by(year,continent)%>%reframe(Count=length(year),
+                           Sum=sum(imp_value),
+                           Cost=median(imp_value))%>%
+  ggplot()+geom_point(aes(year,Cost,size=Count,colour=Sum))+
+  geom_text(aes(year,Cost+2e4,label=Count))+
+  geom_line(aes(year,Cost))+
+  xlab("Year")+ylab("Yearly Median Funding Allocated Per Event")+
+  facet_wrap(~continent)
+
+# Calculate the average amount allocated to each disaster per year
+#@@@ We see that Floods dominate roughly 60% of all allocated funds
+tmp<-tDREF%>%mutate(ev_sdate=as.Date(ev_sdate))%>%arrange(ev_sdate)%>%
+  filter(exp_spec_lab=="IFRC Aid Contributions (Unspecified-Inflation-Adjustment)")%>%
+  group_by(year,haz_Ab)%>%
+  reframe(Count=length(year),
+          Sum=sum(imp_value),
+          Cost=median(imp_value))
+tmp%>%group_by(year,haz_Ab)%>%
+  reframe(Proportion=100*Sum/sum(tmp$Sum[tmp$year==year]))%>%
+  ggplot()+geom_point(aes(year,Proportion,colour=haz_Ab))
+  
+
+
+#@@@ If we can accurately predict floods in Africa and Asia, the rest will follow suit
+
+
+dateyyy<-Sys.Date()
+yearyyy<-AsYear(dateyyy)
+monthyyy<-AsMonth(dateyyy)
+
+
+
+# There is a clear phase difference between certain years. Let's fit the model piecemeal
+# Thus, for both phase 1 and 2, do the following:
+# Non-CC hazards - calculate average number of yearly events, and cost allocated per event
+nonCCcost<-tDREF%>%filter(haz_Ab_grp=="Non-CC" & exp_spec=="expspec_ecoifrcall")%>%
+  mutate(month=month(ev_sdate))%>%group_by(worldbankregion,year,month)%>%
   reframe(Cost=sum(imp_value))%>%
-  filter(!(year==AsYear(Sys.Date()) & month==AsMonth((Sys.Date()))))%>%
+  filter(!(year==yearyyy & month==monthyyy))%>%
   group_by(worldbankregion)%>%
-  reframe(Month=month.abb[month(rep(Sys.Date()+c(30,60,90)))],
+  reframe(Month=month.abb[month(rep(dateyyy+c(30,60,90)))],
           DREF=median(Cost),
           lowDREF=quantile(Cost,probs=0.05),
           uppDREF=quantile(Cost,0.95))%>%mutate(Hazard="Non-CC")    
+# CC hazards - calculate average number of yearly events, and cost allocated per event
+# Calculate the seasonality of the event occurrence, then split the cost per month
+Seasonality<-
+
+# Then for phase 2, add the extra step of:
+# Re-calculate average number of yearly events, and funding allocated per event
+# See whether there is a difference in the number of yearly events, 
+# or just the funding allocated per event
+# Do this for both non-CC and CC
+
+
+# FOR LATER:
+# How to handle EM-DAT + DREF data?
+# For EM-DAT, per country, calculate the probability of 
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # CC-related hazards, auto-regression at a seasonal level
 getSeason <- function(DATES) {
@@ -79,22 +159,28 @@ getSeason <- function(DATES) {
 tDREF$Season<-getSeason(tDREF$ev_sdate)%>%
   factor(levels=c("Spring","Summer","Fall","Winter"))
 
-Seasonality<-tDREF%>%filter(exp_spec_lab=="IFRC Aid Contributions (Unspecified-Inflation-Adjustment)" &
-                 !is.na(imp_worldbankregion) & imp_worldbankregion!="Not Classified" & 
-                 !(worldbankregion=="Middle East & North Africa" & haz_Ab_grp=="TC"))%>%
-  group_by(worldbankregion,haz_Ab_grp,Season,year)%>%
+Seasonality<-tDREF%>%filter(haz_Ab_grp=="CC" & exp_spec=="expspec_ecoifrcall" & 
+                 !is.na(worldbankregion) & worldbankregion!="Not Classified" & 
+                 !(worldbankregion=="Middle East & North Africa"))%>%
+  group_by(worldbankregion,haz_Ab,Season,year)%>%
   reframe(Cost=sum(imp_value))%>%
-  group_by(worldbankregion,haz_Ab_grp,Season)%>%
+  group_by(worldbankregion,haz_Ab,Season)%>%
   reframe(DREF=median(Cost),lowDREF=quantile(Cost,probs=0.05),uppDREF=quantile(Cost,0.95))%>%
-  group_by(worldbankregion,Season)%>%
-  reframe(DREF=sum(DREF)/4,lowDREF=sum(lowDREF)/4,uppDREF=sum(uppDREF)/4)
+  rename("Hazard"="haz_Ab")
+  # group_by(worldbankregion,Season)%>%
+  # reframe(DREF=sum(DREF)/4,lowDREF=sum(lowDREF)/4,uppDREF=sum(uppDREF)/4)
   
-numy<-as.character(as.numeric(factor(month.abb,levels=month.abb))); numy[nchar(numy)==1]<-paste0("0",numy[nchar(numy)==1])
-monthy<-data.frame(Month=month.abb,Season=getSeason(paste0("2000-",numy,"-15")))
+Seasonality%>%group_by(worldbankregion,Season)%>%reframe(DREF=sum(DREF))%>%
+  ggplot()+geom_point(aes(Season,DREF))+facet_wrap(~worldbankregion,scales = "fixed")
 
-CCcost<-left_join(Seasonality,monthy%>%filter(Month%in%month.abb[month(Sys.Date()+1:3*30)]),
+numy<-as.character(as.numeric(factor(month.abb,levels=month.abb))); numy[nchar(numy)==1]<-paste0("0",numy[nchar(numy)==1])
+monthy<-data.frame(numMonth=1:12,Month=month.abb,Season=getSeason(paste0("2000-",numy,"-15")))
+
+CCcost<-left_join(Seasonality,monthy,
           relationship="many-to-many",by="Season")%>%
-  filter(!is.na(Month))%>%mutate(Hazard="CC")%>%dplyr::select(-Season)
+  dplyr::select(-Season)
+
+intrpC<-CCcost%>%filter(Month%in%c())
 
 # Bind CC and non-CC together
 foreDREF<-rbind(CCcost,nonCCcost)%>%

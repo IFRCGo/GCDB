@@ -1,0 +1,465 @@
+---
+title: "DREF Forecasting"
+author: "Hamish Patten"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(dplyr)
+library(magrittr)
+library(tidyverse)
+library(ggplot2)
+
+GetMonty_ID<-function(DF,haz=NULL) {
+  # In case a specific hazard is fed in
+  if(!is.null(haz)) DF%<>%mutate(haz_Ab=haz)
+  # Generate the names from the dataframe
+  namerz<-DF%>%
+    dplyr::select(haz_Ab,ev_sdate,ev_ISO3s)%>%
+    apply(1,function(x) paste0(x,collapse = "-"))
+  
+  paste0(namerz,"-GCDB_V1")
+}
+
+GetGCDB_impID<-function(impies){
+  # For empty spatial IDs
+  if(any(colnames(impies)=="imp_spat_ID")) impies$tmp<-unlist(lapply(impies$imp_spat_ID, function(x) paste0(x,collapse=":")))
+  # Compile the ID
+  impies$imp_sub_ID<-impies%>%dplyr::select(dplyr::any_of(c("event_ID","imp_src_db","exp_spec","imp_type","imp_sdate","imp_fdate","imp_units","tmp","imp_lon","imp_lat")))%>%
+    mutate(imp_src_db=stringr::str_remove(stringi::stri_trans_totitle(imp_src_db),pattern = " "))%>%
+    apply(1,function(x) paste0(x,collapse = "-"))
+  # Make sure that no duplicates exist...
+  impies%>%group_by(imp_sub_ID)%>%
+    mutate(imp_sub_ID=paste0(imp_sub_ID,"_",1:length(imp_sub_ID)))%>%
+    dplyr::select(-any_of(c("tmp")))%>%as.data.frame()
+}
+
+convIso3Continent_alt<-function(iso3){
+  # continents<-countrycode::countrycode(sourcevar = iso3,
+  #                                      origin = "iso3c",
+  #                                      destination = "continent",warn = F)
+  left_join(data.frame(ISO3=iso3),raster::ccodes()[,c("ISO3","continent")],by="ISO3")$continent
+}
+
+AsYear<-function(date,red=F,limit=T){
+  str_split(as.character(date),pattern = "-",simplify = T)[,1]%>%as.integer()%>%return()
+}
+
+AsMonth<-function(date){
+  str_split(as.character(date),pattern = "-",simplify = T)[,2]%>%as.integer()%>%return()
+  # return(as.numeric(format(as.Date(date),"%m")))
+}
+
+getGOurl<-function(db="GO-App",token=NULL, results=T){
+  
+  if(db=="GO-App") {db_code<-"appeal"
+  } else if(db=="GO-FR") {db_code<-"field_report"
+  } else if(db=="GO-DREF") {db_code<-"dref-final-report"
+  } else stop("this IFRC-GO database does not exist")
+  
+  # Base URL
+  url<-paste0("https://goadmin.ifrc.org/api/v2/",db_code,"/?format=json&limit=100000000000") 
+  # It's easier if we only want to access the public-facing data...
+  if(!is.null(token)){
+    # Make a request using a token
+    req <- httr::GET(url, httr::add_headers(Authorization = token),httr::timeout(10000))
+    # Extract the content
+    json <- httr::content(req, as = "text", encoding = "UTF-8")
+    # Convert from JSON to R list or tibble output
+    json%<>%jsonlite::fromJSON()
+  } else json<-jsonlite::fromJSON(url)
+  
+  if(results) return(json$results) else return(json)
+}
+
+ImpLabs<-function(ImpDB,nomDB="Desinventar",dropName=T){
+  # Open up the database impact taxonomy conversion file
+  imptax<-openxlsx::read.xlsx("../../Taxonomies/MostlyImpactData/ConvertImpact_Taxonomy.xlsx")%>%
+    filter(imp_src_db==nomDB)
+  # Find where the Desinventar data impact estimates stop 
+  vlim<-which(colnames(ImpDB)%in%imptax$VarName)
+  # For all columns that correspond to impact estimates, return the data
+  ImpDB%<>%reshape2::melt(measure.vars=colnames(ImpDB)[vlim])%>%
+    mutate(VarName=as.character(variable),imp_value=as.numeric(value))%>%
+    dplyr::select(-c(variable,value))%>%
+    left_join(dplyr::select(imptax,-c("imp_src_orgtype","imp_src_org","imp_src_db")),by="VarName")
+  # Spit it out!
+  if(dropName) return(ImpDB) else return(dplyr::select(ImpDB,-VarName))
+}
+
+ExtractGOdata<-function(db="GO-App", token = NULL, results=T){
+  options(timeout = max(10000, getOption("timeout")))
+  getGOurl(db=db,token,results)
+}
+
+DREF<-ExtractGOdata(db = "GO-App")
+
+CleanGO_app<-function(appeal){
+  
+  appeal$haz_Ab<-appeal$haz_spec<-appeal$dtype$name
+  appeal$dtype<-NULL
+  
+  appeal$imp_ISO3s<-appeal$country$iso3
+  appeal$region<-convIso3Continent_alt(appeal$imp_ISO3s)
+
+  appeal$country<-NULL
+  
+  appeal$start_date<-str_split(appeal$start_date,"T",simplify = T)[,1]
+  appeal$end_date<-str_split(appeal$end_date,"T",simplify = T)[,1]
+  
+  appeal%<>%mutate(imp_ISO3s=imp_ISO3s,ev_ISO3s=imp_ISO3s,region=region,
+                   ev_name=str_replace_all(name,'"',""),location=str_replace_all(name,'"',""),
+                   ev_name_lang="lang_eng",
+                   imp_sdate=as.character(as.Date(start_date)),imp_fdate=as.character(as.Date(end_date)),
+                   ev_sdate=as.character(as.Date(start_date)),ev_fdate=as.character(as.Date(end_date)),
+                   # ev_sdate=as.character(as.Date(created_at)),ev_fdate=as.character(as.Date(created_at)),
+                   imp_unitdate=as.character(as.Date(modified_at)),
+                   imp_src_URL="https://goadmin.ifrc.org/api/v2/appeal",
+                   imp_src_orglab="International Federation of Red Cross and Red Crescent Societies (IFRC)",
+                   imp_src_org="IFRC",
+                   imp_src_db=atype_display,
+                   imp_src_orgtype="orgtypengo",
+                   imp_spat_covcode="spat_polygon",
+                   imp_spat_res=0,
+                   imp_spat_resunits="adminlevel",
+                   imp_spat_crs="EPSG:4326",
+                   imp_spat_srcorg="IFRC",
+                   imp_spat_srcdb="GO-Maps",
+                   imp_spat_URL="https://go-user-library.ifrc.org/maps",
+                   imp_spat_ID=NA_character_)
+  
+  appeal$event_ID<-GetMonty_ID(appeal,haz=appeal$haz_Ab)
+  
+  appeal%<>%ImpLabs(nomDB = "GO-App", dropName = T)
+  
+  # Create an impact-specific ID
+  appeal%<>%GetGCDB_impID()
+  # Add missing columns & reorder the dataframe to fit imp_GCDB object
+  # appeal%<>%AddEmptyColImp()
+  
+  # appeal$GLIDE<-GetGLIDEnum(appeal)
+  
+  # Make sure to remove repeated entries for when they update them
+  appeal%<>%mutate(aid=as.integer(aid))%>%arrange(desc(aid))%>%
+    filter(!duplicated(imp_sub_ID))%>%arrange(aid)
+  
+  counties<-openxlsx::read.xlsx("../../Taxonomies/IsoContinentRegion.xlsx")%>%
+    filter(!is.na(Country))%>%mutate(Continent=convIso3Continent_alt(ISO.Code))%>%
+    dplyr::select(ISO.Code,Country,UN.Region,World.Bank.Regions,Continent,UN.Sub.Region,World.Bank.Income.Groups)%>%
+  setNames(c("ISO3","country","unregion","worldbankregion","continent","unsubregion","worldbankincomegroup"))
+  
+  appeal%<>%left_join(counties,by=c("ev_ISO3s"="ISO3"))
+  
+  appeal%<>%filter(imp_src_db=="DREF")
+  
+  # Also group hazards to make up the numbers
+  appeal$haz_Ab_grp<-"Non-CC"
+  appeal$haz_Ab_grp[appeal$haz_Ab%in%c("Cold Wave","Cyclone","Drought","Fire","Flood","Heat Wave","Pluvial/Flash Flood","Storm Surge")]<-"CC"
+  # Extract the year information
+  appeal$year<-AsYear(appeal$ev_sdate)
+
+  appeal%<>%filter(ev_sdate>=as.Date("2008-01-01") & imp_src_db=="DREF")
+  
+  return(appeal)
+}
+
+# # Get the DREF data and convert into tabular format
+tDREF<-CleanGO_app(DREF); rm(DREF)
+
+tDREF$haz_Ab[tDREF$haz_Ab%in%c("Fire","Drought","Heat Wave")]<-"Heat-Related"
+tDREF$haz_Ab[tDREF$haz_Ab%in%c("Pluvial/Flash Flood")]<-"Flood"
+# tEMDAT<-convEMDAT_Monty()%>%procDBfore
+
+```
+
+## Exploratory Data Analysis
+
+Let's first have a look at some basic analysis of the data. In order to accurately predict the DREF funding, we need to understand the number of events that had any funding allocated and the amount of funding allocated per event, per year. We want to look at spatio-temporal trends on two levels: seasonal per continent/region and yearly. Furthermore, the allocation per hazard is really important.
+
+```{r cars}
+# Check the average number of events + total yearly funding allocated
+tDREF%>%mutate(ev_sdate=as.Date(ev_sdate))%>%arrange(ev_sdate)%>%
+  filter(exp_spec=="expspec_ecoifrcall")%>%
+  group_by(year)%>%reframe(Count=length(year),DREF=median(imp_value))%>%
+  ggplot()+geom_point(aes(year,Count,size=DREF,colour=DREF))+geom_line(aes(year,Count))
+
+# Check only the median yearly funding allocated per event
+tDREF%>%mutate(ev_sdate=as.Date(ev_sdate))%>%arrange(ev_sdate)%>%
+  filter(exp_spec=="expspec_ecoifrcall")%>%
+  group_by(year)%>%reframe(Count=length(year),
+                                     Sum=sum(imp_value),
+                                     Cost=median(imp_value))%>%
+  ggplot()+geom_point(aes(year,Cost,size=Count,colour=Sum))+
+  geom_text(aes(year,Cost+2e4,label=Count))+
+  geom_line(aes(year,Cost))+
+  xlab("Year")+ylab("Yearly Median Funding Allocated Per Event")
+# Split by region
+tDREF%>%mutate(ev_sdate=as.Date(ev_sdate))%>%arrange(ev_sdate)%>%
+  filter(exp_spec=="expspec_ecoifrcall")%>%
+  group_by(year,worldbankregion)%>%reframe(Count=length(year),
+                           Sum=sum(imp_value),
+                           Cost=median(imp_value))%>%
+  ggplot()+geom_point(aes(year,Cost,size=Count,colour=Sum))+
+  geom_text(aes(year,Cost+10e4,label=Count))+
+  geom_line(aes(year,Cost))+
+  xlab("Year")+ylab("Yearly Median Funding Allocated Per Event")+
+  facet_wrap(~worldbankregion,ncol = 2)
+# Split by hazard
+tDREF$Hazard<-tDREF$haz_Ab_grp
+tDREF$Hazard[tDREF$haz_Ab%in%c("Pluvial/Flash Flood","Flood")]<-"Flood"
+
+tDREF%>%mutate(ev_sdate=as.Date(ev_sdate))%>%arrange(ev_sdate)%>%
+  filter(exp_spec=="expspec_ecoifrcall")%>%
+  group_by(year,Hazard)%>%reframe(Count=length(year),
+                           Sum=sum(imp_value),
+                           Cost=median(imp_value))%>%
+  ggplot()+geom_point(aes(year,Cost,size=Count,colour=Sum))+
+  geom_text(aes(year,Cost+10e4,label=Count))+
+  geom_line(aes(year,Cost))+
+  xlab("Year")+ylab("Yearly Median Funding Allocated Per Event")+
+  facet_wrap(~Hazard,ncol = 2)
+# Median funding allocated by month
+tDREF%>%mutate(ev_sdate=as.Date(ev_sdate),
+               month=as.integer(month(ev_sdate)))%>%arrange(ev_sdate)%>%
+  filter(exp_spec=="expspec_ecoifrcall" & haz_Ab_grp=="CC")%>%
+  group_by(month,worldbankregion)%>%reframe(Count=length(year),
+                           Sum=sum(imp_value),
+                           Cost=median(imp_value))%>%
+  ggplot()+geom_point(aes(month,Cost,size=Count,colour=Sum))+
+  # geom_text(aes(month,Cost+10e4,label=Count))+
+  geom_line(aes(month,Cost))+
+   scale_x_continuous(breaks=1:12,labels=month.abb)+
+  xlab("Month")+ylab("Monthly Median Funding Allocated Per Event")+
+  facet_wrap(~worldbankregion,ncol = 2)
+# Number of events per month
+tDREF%>%mutate(ev_sdate=as.Date(ev_sdate),
+               month=as.integer(month(ev_sdate)))%>%arrange(ev_sdate)%>%
+  filter(exp_spec=="expspec_ecoifrcall" & haz_Ab_grp=="CC")%>%
+  group_by(month,worldbankregion)%>%reframe(Count=length(year),
+                           Sum=sum(imp_value),
+                           Cost=median(imp_value))%>%
+  ggplot()+geom_point(aes(month,Count,size=Cost,colour=Cost))+
+  # geom_text(aes(month,Cost+10e4,label=Count))+
+  geom_line(aes(month,Count))+
+   scale_x_continuous(breaks=1:12,labels=month.abb)+
+  ylim(c(0,NA))+
+  xlab("Month")+ylab("Number of Events")+
+  facet_wrap(~worldbankregion,ncol = 2,scales = "free")
+# Look at monthly seasonality of different hazards in sub-saharan africa
+tDREF%>%mutate(ev_sdate=as.Date(ev_sdate),
+               month=as.integer(month(ev_sdate)))%>%arrange(ev_sdate)%>%
+  filter(exp_spec=="expspec_ecoifrcall" & 
+           worldbankregion=="Sub-Saharan Africa")%>%
+  group_by(month,Hazard)%>%reframe(Count=length(year),
+                           Sum=sum(imp_value),
+                           Cost=median(imp_value))%>%
+  ggplot()+geom_point(aes(month,Count,size=Cost,colour=Cost))+
+  # geom_text(aes(month,Cost+10e4,label=Count))+
+  geom_line(aes(month,Count))+
+   scale_x_continuous(breaks=1:12,labels=month.abb)+
+  ylim(c(0,NA))+
+  xlab("Month")+ylab("Number of Events")+
+  facet_wrap(~Hazard,ncol = 2,scales = "free")
+
+```
+
+```{r floods,fig.width=10,fig.height=20}
+# Now let's look specifically at floods (large amount of statistics) for each unsubregion
+tDREF%>%mutate(ev_sdate=as.Date(ev_sdate),
+               month=as.integer(month(ev_sdate)))%>%arrange(ev_sdate)%>%
+  filter(exp_spec=="expspec_ecoifrcall" & 
+           Hazard=="Flood")%>%
+  group_by(month,unsubregion)%>%reframe(Count=length(year),
+                           Sum=sum(imp_value),
+                           Cost=median(imp_value))%>%
+  ggplot()+geom_point(aes(month,Count,size=Cost,colour=Cost))+
+  # geom_text(aes(month,Cost+10e4,label=Count))+
+  geom_line(aes(month,Count))+
+   scale_x_continuous(breaks=1:12,labels=month.abb)+
+  ylim(c(0,NA))+
+  xlab("Month")+ylab("Number of Events")+
+  facet_wrap(~unsubregion,ncol = 2,scales = "free")
+
+```
+
+Let's start modelling!
+
+```{r Modelling}
+
+# Set which months to focus on:
+dateyyy<-Sys.Date()
+monthyyy<-AsMonth(dateyyy)
+yearyyy<-AsYear(dateyyy)
+
+# tDREF%>%mutate(ev_sdate=as.Date(ev_sdate),events=1)%>%arrange(ev_sdate)%>%
+#   filter(exp_spec=="expspec_ecoifrcall")%>%
+#   mutate(rollav=zoo::rollapply(events,150,function(x) sum(x,na.rm = T),align='right',fill=NA))%>%
+#   ggplot()+geom_line(aes(ev_sdate,rollav))+
+#   scale_y_log10()
+
+predVal<-function(year,imp_value,se=F){
+  if(!se) return(predict(lm(imp_value~year,data.frame(imp_value=imp_value,year=year)),data.frame(year=yearyyy)))
+  return(predict(lm(imp_value~year,
+                    data.frame(imp_value=imp_value,year=year)),
+                 data.frame(year=yearyyy),
+                 se.fit=T)$se.fit)
+}
+
+# Calculate the number of monthly events in 2024 as a regression since 2018
+nevs<-tDREF%>%
+  filter(exp_spec=="expspec_ecoifrcall" & 
+           year>2018 & year<2024)%>%
+  group_by(haz_Ab_grp,haz_Ab,year,worldbankregion)%>%
+  reframe(Events=length(imp_value))%>%
+  group_by(haz_Ab_grp,haz_Ab,worldbankregion)%>%
+  reframe(Month=month.abb,
+          numMonth=1:12,
+          Evs=unname(pmax(predVal(year,Events),median(Events[year>(yearyyy-5)],na.rm = T),na.rm = T)/24),
+          lowEvs=pmin(unname(pmax(Evs-predVal(year,Events,se=T)/24,min(Events,na.rm = T),na.rm = T)),Evs),
+          uppEvs=pmax(unname(pmin(Evs+predVal(year,Events,se=T)/24,max(Events,na.rm = T),na.rm = T)),Evs))
+
+# Now calculate the 2024 allocated funding as a regression since 2018
+expcost<-tDREF%>%
+  filter(exp_spec=="expspec_ecoifrcall" & 
+           year>2018 & year<2024)%>%
+  group_by(haz_Ab_grp,haz_Ab,worldbankregion)%>%
+  # reframe(Alloc=median(imp_value))%>%
+  # group_by(haz_Ab,worldbankregion)%>%
+  reframe(Month=month.abb,
+          numMonth=1:12,
+          Cst=unname(pmax(predVal(year,imp_value),median(imp_value[year>(yearyyy-5)],na.rm=T),na.rm = T)),
+          lowCst=pmin(unname(pmax(Cst-predVal(year,imp_value,se=T),min(imp_value,na.rm = T),na.rm = T)),Cst),
+          uppCst=pmax(unname(pmin(Cst+predVal(year,imp_value,se=T),max(imp_value,na.rm = T),na.rm = T)),Cst))
+# Ensure any issues with the standard error are resolved by setting confidence intervals to the expected value
+# expcost$Cst[is.infinite(expcost$Cst) & is.infinite(expcost$lowCst) & is.infinite(expcost$uppCst) |
+#               expcost$Cst<1e-5 & expcost$lowCst<1e-5 & expcost$uppCst<1e-5]<-NA
+# # If issues with the 
+# expcost$lowCst[is.infinite(expcost$lowCst) & is.infinite(expcost$uppCst)]<-expcost$Cst
+# expcost$uppCst[is.infinite(expcost$lowCst) & is.infinite(expcost$uppCst)]<-expcost$Cst
+# 
+# expcost$lowCst[expcost$lowCst<1e-5 & expcost$Cst==expcost$uppCst]<-
+#   expcost$Cst[expcost$lowCst<1e-5 & expcost$Cst==expcost$uppCst]
+# Any value where the expected allocated funding is zero are removed
+# expcost[expcost$Cst<1e-5,6:8]<-NA
+expcost%<>%filter(!is.na(Cst))
+
+nonCCcost<-left_join(nevs,expcost,
+                     by = join_by(haz_Ab_grp, haz_Ab, worldbankregion, Month, numMonth))%>%
+  mutate(DREF=Evs*Cst,lowDREF=lowEvs*lowCst,uppDREF=uppEvs*uppCst)
+
+# For the climate change related hazards, add in the seasonality
+Seasonality<-tDREF%>%filter(haz_Ab_grp=="CC" & exp_spec=="expspec_ecoifrcall" & 
+                 !is.na(worldbankregion) & worldbankregion!="Not Classified")%>%
+  mutate(Month=as.integer(month(ev_sdate)))%>%
+  group_by(haz_Ab_grp,haz_Ab,worldbankregion,Month)%>%
+  reframe(Evs=length(year))
+  
+# Smooth this using a 1-month-either-side rolling average
+Seasonality%<>%rbind(Seasonality%>%mutate(Month=Month-12),
+                     Seasonality%>%mutate(Month=Month+12))%>%
+  arrange(Month)%>%
+  group_by(haz_Ab_grp,haz_Ab,worldbankregion)%>%
+  mutate(Evs=zoo::rollapply(Evs,3,function(x) mean(x,na.rm = T),align='center',fill=NA))%>%
+  filter(Month>=1 & Month<=12)
+
+Seasonality%>%ggplot()+geom_point(aes(Month,Evs,colour=haz_Ab))+
+  # geom_text(aes(Month,Cost+10e4,label=Evs))+
+  geom_line(aes(Month,Evs,colour=haz_Ab))+
+   scale_x_continuous(breaks=1:12,labels=month.abb)+
+  ylim(c(0,NA))+
+  xlab("Month")+ylab("Number of Events")+
+  facet_wrap(~worldbankregion,ncol = 2,scales = "free")
+
+# Scale it
+Seasonality%<>%group_by(haz_Ab_grp,haz_Ab,worldbankregion)%>%
+  mutate(Month=Month,PDF=Evs/sum(Evs))
+
+# Now combine it with the rest of the non-CC data
+CCcost<-nonCCcost%>%filter(numMonth==1 & haz_Ab_grp=="CC")%>%
+  dplyr::select(-c(Month,numMonth))%>%
+  left_join(Seasonality%>%dplyr::select(-Evs),
+            by = join_by(haz_Ab_grp, haz_Ab, worldbankregion))%>%
+  mutate(DREF=12*Evs*Cst*PDF,lowDREF=12*lowEvs*lowCst*PDF,uppDREF=12*uppEvs*uppCst*PDF,
+         numMonth=Month,Month=month.abb[Month])
+
+foreDREF<-rbind(CCcost%>%dplyr::select(-PDF),
+                nonCCcost%>%filter(haz_Ab_grp=="Non-CC"))
+
+# General plot of DREF funding allocation per month in 2024, per region, CC vs non-CC
+foreDREF%>%group_by(haz_Ab_grp,worldbankregion,numMonth)%>%
+    reframe(DREF=sum(DREF),lowDREF=sum(lowDREF),uppDREF=sum(uppDREF))%>%
+    ggplot()+geom_smooth(aes(numMonth,DREF,colour=haz_Ab_grp))+
+    scale_x_continuous(breaks=1:12,labels=1:12)+
+    facet_wrap(~worldbankregion)
+
+# General plot of DREF funding allocation per month in 2024, per region, CC vs non-CC
+foreDREF%>%group_by(haz_Ab,numMonth)%>%
+    reframe(DREF=sum(DREF),lowDREF=sum(lowDREF),uppDREF=sum(uppDREF))%>%
+    ggplot()+geom_line(aes(numMonth,DREF,colour=haz_Ab))+
+  geom_point(aes(numMonth,DREF,colour=haz_Ab))+
+    scale_x_continuous(breaks=1:12,labels=1:12)+
+    facet_wrap(~haz_Ab)
+
+# Filter for only the months we care about
+foreDREF%<>%filter(Month%in%month.abb[month(rep(dateyyy+c(0,30,60)))])%>%
+  arrange(numMonth)%>%rename(c("Hazard"="haz_Ab","Region"="worldbankregion"))
+
+filename <- paste0("../../Analysis_Results/DREF_forecast_",Sys.Date(),".xlsx")
+# Create the xlsx workbook
+wb<-openxlsx::createWorkbook()
+# Create all the worksheets
+wb%>%openxlsx::addWorksheet("Total");wb%>%openxlsx::addWorksheet("Per Region");wb%>%openxlsx::addWorksheet("Per Hazard");wb%>%openxlsx::addWorksheet("Full Dataset")
+# Events
+openxlsx::writeData(wb, 
+                    sheet="Total",
+                    foreDREF%>%group_by(numMonth,Month)%>%
+                      reframe(DREF=sum(DREF),lowDREF=sum(lowDREF),uppDREF=sum(uppDREF))%>%
+                      dplyr::select(-numMonth), 
+                    headerStyle=openxlsx::createStyle(textDecoration = "Bold"),
+                    keepNA = F)
+openxlsx::writeData(wb, 
+                    sheet="Per Region",
+                    foreDREF%>%group_by(numMonth,Month,Region)%>%
+                      reframe(DREF=sum(DREF),lowDREF=sum(lowDREF),uppDREF=sum(uppDREF))%>%
+                      group_by(numMonth,Month)%>%
+                      mutate(Percentage=100*DREF/sum(DREF))%>%ungroup()%>%
+                      dplyr::select(-numMonth),
+                    headerStyle=openxlsx::createStyle(textDecoration = "Bold"),
+                    keepNA = F)
+openxlsx::writeData(wb, 
+                    sheet="Per Hazard",
+                    foreDREF%>%group_by(numMonth,Month,Hazard)%>%
+                      reframe(Month=unique(Month),DREF=sum(DREF),lowDREF=sum(lowDREF),uppDREF=sum(uppDREF))%>%
+                      group_by(numMonth,Month)%>%
+                      mutate(Percentage=100*DREF/sum(DREF))%>%ungroup()%>%
+                      dplyr::select(-numMonth), 
+                    headerStyle=openxlsx::createStyle(textDecoration = "Bold"),
+                    keepNA = F)
+openxlsx::writeData(wb, 
+                    sheet="Full Dataset",
+                    foreDREF%>%group_by(numMonth,Month,Region,Hazard)%>%
+                      reframe(Month=unique(Month),DREF=sum(DREF),lowDREF=sum(lowDREF),uppDREF=sum(uppDREF))%>%
+                      group_by(numMonth,Month)%>%
+                      mutate(Percentage=100*DREF/sum(DREF))%>%ungroup()%>%
+                      dplyr::select(-numMonth), 
+                    headerStyle=openxlsx::createStyle(textDecoration = "Bold"),
+                    keepNA = F)
+
+# Save it out!
+openxlsx::saveWorkbook(wb,filename,overwrite = T)
+
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
