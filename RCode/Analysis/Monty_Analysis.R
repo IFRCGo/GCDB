@@ -11,42 +11,133 @@
 # Exceedance curves - best, middle + worst based on EAPs
 
 # For Costa Rica, pair DREFs with EM-DAT + IDMC and 
+counties<-openxlsx::read.xlsx("./Taxonomies/IsoContinentRegion.xlsx")%>%
+  filter(!is.na(Country))%>%mutate(Continent=convIso3Continent_alt(ISO.Code))%>%
+  dplyr::select(ISO.Code,Country,UN.Region,World.Bank.Regions,Continent,UN.Sub.Region,World.Bank.Income.Groups)%>%
+  setNames(c("ISO3","country","unregion","worldbankregion","continent","unsubregion","worldbankincomegroup"))
 
+# Get the taxonomy data
+taxies<-openxlsx::read.xlsx("./ImpactInformationProfiles.xlsx")
+# Exposure type class
+exp_class<-taxies%>%filter(list_name=="exp_specs")%>%dplyr::select(name,label)%>%
+  setNames(c("exp_spec","Exposure_Type"))
+# Impact type class
+imp_class<-taxies%>%filter(list_name=="imp_type")%>%dplyr::select(name,label)%>%
+  setNames(c("imp_type","Impact_Type"))
+# Impact units
+units_info<-taxies%>%filter(list_name=="measunits")%>%
+  dplyr::select(name,label)%>%
+  setNames(c("unit_code","Impact_Unit"))%>%na.omit()%>%distinct()
 
+haz_Ab_lab<-c("AV"="Avalanche",
+              "CW"="Cold Wave",
+              "DR"="Drought",
+              "EQ"="Earthquake",
+              "EP"="Epidemic",
+              "ER"="Erosion",
+              "EC"="Extra-Tropical Cyclone",
+              "ET"="Extreme Temperature",
+              "FR"="Fire",
+              "FF"="Flash Flood",
+              "FL"="Flood",
+              "HW"="Heat Wave",
+              "HT"="High Temperature",
+              "IN"="Insect Infestation",
+              "LS"="Landslide",
+              "MM"="Mass Movement",
+              "MS"="Mudslide",
+              "SL"="Slide",
+              "SN"="Snowfall",
+              "ST"="Storm",
+              "SS"="Storm Surge",
+              "TO"="Tornado",
+              "TC"="Tropical Cyclone",
+              "TS"="Tsunami",
+              "WF"="Wildfire",
+              "VW"="Violent Wind",
+              "VO"="Volcanic Activity",
+              "WV"="Wave",
+              "WA"="Wave Action")
 
 
 procDBfore<-function(Monty){
-  # Events database
-  ev<-Monty_Ev2Tab(Monty)
-  # Impacts database
-  imp<-Monty_Imp2Tab(Monty)
-  # Housecleaning
-  rm(Monty)
-  # Select only the required columns for the analysis
-  ev_cols<-c(
-    "event_ID","ev_sdate","ev_fdate","ev_ISO3s","unregion","worldbankregion",
-    "continent","unsubregion","worldbankincomegroup","haz_Ab"
-  )
-  imp_cols<-c(
-    "event_ID","imp_sub_ID","exp_spec_lab","exp_subcat_lab","exp_cat_lab",
-    "imp_value","imp_type_code","imp_unit_code","imp_type_lab",
-    "imp_unit_lab","imp_sdate","imp_fdate","imp_ISO3",
-    "imp_unregion","imp_worldbankregion","imp_continent","imp_unsubregion",
-    "imp_worldbankincomegroup","imp_spat_covlab","imp_srcdb_code",
-    "imp_spat_ID"
-  )
-  ev%<>%dplyr::select(all_of(ev_cols))
-  imp%<>%dplyr::select(all_of(imp_cols))
-  # Left-join event + impact data
-  taby<-left_join(ev,imp,by="event_ID"); rm(ev,imp)
-  # Also group hazards to make up the numbers
-  taby$haz_Ab_grp<-taby$haz_Ab; 
-  taby$haz_Ab_grp[taby$haz_Ab_grp%in%c("DR","HW","WF","ET")]<-"HT"
-  taby$haz_Ab_grp[taby$haz_Ab_grp%in%c("EQ","LS","VO","TS")]<-"non-CC"
-  # Extract the year information
-  taby$year<-AsYear(taby$ev_sdate)
+  # Event data
+  ev<-cbind(Monty$event_Level$ID_linkage%>%dplyr::select(event_ID),
+            Monty$event_Level$temporal%>%dplyr::select(ev_sdate,ev_fdate),
+            Monty$event_Level$spatial%>%dplyr::select(ev_ISO3s))
+  ev$haz_Ab<-unlist(lapply(Monty$event_Level$allhaz_class,function(x) paste0(unique(x$all_hazs_Ab),collapse = ",")))
+  # Add region data
+  ev%<>%left_join(counties,by=join_by("ev_ISO3s"=="ISO3"))
+  # Multiple sources refer to the same event
+  ev%<>%distinct(event_ID,ev_ISO3s,ev_sdate, haz_Ab,.keep_all = T)
+  # Impact data
+  imp<-cbind(Monty$impact_Data$ID_linkage%>%dplyr::select(event_ID,imp_sub_ID),
+             Monty$impact_Data$source%>%dplyr::select(imp_src_db,imp_src_org),
+             Monty$impact_Data$impact_detail%>%dplyr::select(-c(imp_est_type,imp_unitdate)))
+  imp%<>%cbind(do.call(rbind,parallel::mclapply(Monty$impact_Data$spatial,function(x){
+    cbind(x$ID_linkage%>%dplyr::select(imp_spat_ID)%>%distinct(),
+          x$spatial_info%>%dplyr::select(imp_spat_res,imp_spat_resunits)%>%distinct())%>%distinct()
+  },mc.cores=ncores)))
   
-  return(taby)
+  # # Events database
+  # ev<-Monty_Ev2Tab(Monty)
+  # # Impacts database
+  # imp<-Monty_Imp2Tab(Monty)
+  # # Housecleaning
+  # rm(Monty)
+  # # Select only the required columns for the analysis
+  # ev_cols<-c(
+  #   "event_ID","ev_sdate","ev_fdate","ev_ISO3s","unregion","worldbankregion",
+  #   "continent","unsubregion","worldbankincomegroup","haz_Ab"
+  # )
+  # imp_cols<-c(
+  #   "event_ID","imp_sub_ID","exp_spec_lab","exp_subcat_lab","exp_cat_lab",
+  #   "imp_value","imp_type_code","imp_unit_code","imp_type_lab",
+  #   "imp_unit_lab","imp_sdate","imp_fdate","imp_ISO3",
+  #   "imp_unregion","imp_worldbankregion","imp_continent","imp_unsubregion",
+  #   "imp_worldbankincomegroup","imp_spat_covlab","imp_srcdb_code",
+  #   "imp_spat_ID"
+  # )
+  # ev%<>%dplyr::select(all_of(ev_cols))
+  # imp%<>%dplyr::select(all_of(imp_cols))
+  # Left-join event + impact data
+  Monty<-left_join(ev,imp,by="event_ID"); rm(ev,imp)
+  
+  # Monty%>%filter(ev_ISO3s%in%centrams)%>%group_by(imp_src_db,ev_ISO3s,haz_Ab,exp_spec,imp_type)%>%reframe(Count=n())%>%View()
+  
+  # Also group hazards to make up the numbers
+  Monty$haz_Ab_grp<-Monty$haz_Ab; 
+  Monty$haz_Ab_grp[Monty$haz_Ab_grp%in%c("HW","CW","HT")]<-"ET"
+  Monty$haz_Ab_grp[Monty$haz_Ab_grp%in%c("FR")]<-"WF"
+  Monty$haz_Ab_grp[Monty$haz_Ab_grp%in%c("WV","WA")]<-"SS"
+  Monty$haz_Ab_grp[Monty$haz_Ab_grp%in%c("MM","MS","SL","AV","ER")]<-"LS"
+  Monty$haz_Ab_grp[Monty$haz_Ab_grp%in%c("TC,FL","EC","TO")]<-"TC"
+  Monty$haz_Ab_grp[Monty$haz_Ab_grp%in%c("FF")]<-"FL"
+  Monty%<>%filter(!haz_Ab%in%c("EP","IN","SN"))
+  
+  warning("Don't normally aggregate storm surge into storm, just for now")
+  Monty$haz_Ab_grp[Monty$haz_Ab_grp%in%c("SS")]<-"ST"
+  
+  # Abbreviated hazard labels
+  Monty$haz_Ab_grplab<-unname(haz_Ab_lab[Monty$haz_Ab_grp])
+  Monty$haz_Ab_lab<-unname(haz_Ab_lab[Monty$haz_Ab])
+  # Extract the year information
+  Monty$year<-AsYear(Monty$ev_sdate)
+  # Add exposure type label
+  Monty%<>%left_join(exp_class,by="exp_spec")
+  # Add impact type label
+  Monty%<>%left_join(imp_class,by="imp_type")
+  # Add impact units label
+  Monty%<>%left_join(units_info,by=join_by("imp_units"=="unit_code"))
+  # Create a single label out of the three variables above
+  Monty%<>%mutate(Impact=paste0(Exposure_Type," ",Impact_Type," [",Impact_Unit,"]"))
+  # Database
+  Monty%<>%mutate(Database=paste0(imp_src_db," - ",imp_src_org))
+  # Neaten up some names
+  Monty$Impact<-str_replace_all(str_replace_all(str_replace_all(str_replace_all(Monty$Impact," \\(All Demographics\\)",""),
+                                                 " \\(Cost\\)",""),"Inflation-Adjusted","Inf-Adj"),"\\(Unspecified-Inflation-Adjustment\\)","(Unspec. Inf-Adj)")
+  
+  return(Monty)
 }
 
 GetTabImpMonty<-function(){
@@ -125,7 +216,7 @@ ggsave("./Plots/HazardSeasonality_Events_EastAsiaPacific.png",p,height=5,width=1
 
 #@@@@@@@@@@@@@@@@@ DEATHS @@@@@@@@@@@@@@@@@#
 
-hazcov<-Monty%>%group_by(haz_Ab)%>%
+hazcov<-Monty%>%group_by(imp_srcdb_code,haz_Ab)%>%
   reframe(coverage=as.numeric(max(year) - min(year)))
 
 # haz_Ab=="FL"
@@ -144,7 +235,8 @@ exceed<-Monty%>%filter(imp_type_lab=="Deaths" & imp_srcdb_code=="EMDAT" &
                          imp_ISO3%in%isos)%>%
   mutate(haz_Ab_lab=factor(haz_Ab,labels=c("Earthquake","Flood","Tropical Cyclone")))%>%
   group_by(haz_Ab_lab,imp_ISO3)%>%
-  reframe(coverage=unique(hazcov$coverage[hazcov==unique(haz_Ab)]),
+  reframe(coverage=unique(hazcov$coverage[hazcov$haz_Ab==unique(haz_Ab) & 
+                                            hazcov$imp_srcdb_code==hazcov$imp_srcdb_code]),
           N=n(),
           impact=sort(imp_value),
           AAL=mean(impact),
@@ -164,7 +256,25 @@ p<-exceed%>%ggplot(aes(impact,probability,colour=haz_Ab_lab))+
 ggsave("./Plots/Example_ExceedanceCurve_EMDAT-Deaths.png",p,height=6,width=10)
 # 
 
-GenExceedance_ISO<-function(iso3,imp_db="EMDAT",imp_type="Deaths",exp_spec=NULL,yr=1990,hazs=NULL, loggie=F,rotty=0 ){
+hazcov<-Dessie%>%group_by(imp_src_db,haz_Ab)%>%
+  reframe(coverage=as.numeric(max(AsYear(ev_sdate)) - min(AsYear(ev_sdate))))
+
+impRP_calc<-function(indf,retper=NULL){
+  
+  indf%<>%
+    group_by(haz_Ab)%>%
+    reframe(coverage=unique(hazcov$coverage[hazcov$haz_Ab==unique(haz_Ab) & 
+                                              hazcov$imp_srcdb_code==hazcov$imp_srcdb_code]),
+            N=n(),
+            impact=sort(imp_value),
+            probability=n():1/unique(coverage))
+  
+  if(is.null(retper)) return(indf)
+  
+  data.frame(N=indf$N,impRP=(splinefun(x=indf$impact, y=indf$probability, method="hyman"))(1/retper))
+}
+
+GenExceedance_ISO<-function(Monty,iso3,imp_db="EMDAT",imp_type="Deaths",exp_spec=NULL,yr=1990,hazs=NULL, plotty=T, loggie=F,rotty=0 ){
   # Extract the data
   out<-Monty%>%filter(imp_srcdb_code==imp_db & 
                    year>yr &
@@ -173,15 +283,17 @@ GenExceedance_ISO<-function(iso3,imp_db="EMDAT",imp_type="Deaths",exp_spec=NULL,
   if(!is.null(imp_type)) out%<>%filter(imp_type_lab==imp_type)
   if(!is.null(exp_spec)) out%<>%filter(exp_spec_lab==exp_spec)
   if(!is.null(hazs)) out%<>%filter(haz_Ab%in%hazs)
-    
-  p<-out%>%
+  
+  out%<>%
     group_by(haz_Ab)%>%
-    reframe(coverage=unique(hazcov$coverage[hazcov==unique(haz_Ab)]),
+    reframe(coverage=unique(hazcov$coverage[hazcov$haz_Ab==unique(haz_Ab) & 
+                                              hazcov$imp_srcdb_code==hazcov$imp_srcdb_code]),
             N=n(),
             impact=sort(imp_value),
-            probability=n():1/unique(coverage))%>%
-    filter(N>3)%>%
-    ggplot(aes(impact,probability,colour=haz_Ab))+
+            probability=n():1/unique(coverage))
+  
+  if(plotty) {
+    p<-out%>%ggplot(aes(impact,probability,colour=haz_Ab))+
     # geom_smooth(se=F,span=0.6)+
     geom_point(size=2)+geom_line(linewidth=0.3)+
     xlab(imp_type)+ylab("No. Events Per Year")+
@@ -195,14 +307,22 @@ GenExceedance_ISO<-function(iso3,imp_db="EMDAT",imp_type="Deaths",exp_spec=NULL,
   ggsave(paste0("./Plots/",iso3,"_ExceedanceCurve_",imp_db,"_",imp_type,"_",paste0(hazs,collapse = "-"),".png"),p,height=6,width=10)
   
   return(p)
+  } else return(out)
 }
 
-GenExceedance_ISO("CRI")
-GenExceedance_ISO("PER",loggie=T)
-GenExceedance_ISO("PER","EMDAT",imp_type="Loss (Cost)",exp_spec = "Total Direct Costs Inflation-Adjusted")
-GenExceedance_ISO("CRI","EMDAT",imp_type="Loss (Cost)",exp_spec = "Total Direct Costs Inflation-Adjusted")
-GenExceedance_ISO("PER","EMDAT",imp_type="Total Affected",hazs=c("CW"),rotty=20)
+GenExceedance_ISO(Monty,"CRI")
+GenExceedance_ISO(Monty,"PER",loggie=T)
+GenExceedance_ISO(Monty,"PER","EMDAT",imp_type="Loss (Cost)",exp_spec = "Total Direct Costs Inflation-Adjusted")
+GenExceedance_ISO(Monty,"CRI","EMDAT",imp_type="Loss (Cost)",exp_spec = "Total Direct Costs Inflation-Adjusted")
+GenExceedance_ISO(Monty,"PER","EMDAT",imp_type="Total Affected",hazs=c("CW"),rotty=20)
 
+lapply(centrams,function(iso3){
+  do.call(rbind,lapply(unique(Monty$imp_srcdb_code),function(db){
+    do.call(rbind,lapply(unique(Monty$Impact[Monty$imp_srcdb_code==db]),function(db){
+      GenExceedance_ISO(Monty,"PER","EMDAT",imp_type="Loss (Cost)",exp_spec = "Total Direct Costs Inflation-Adjusted",plotty = F)
+    }))
+  }))
+})
 
 #@@@@@@@@@@@@@@@@@ DISPLACEMENT @@@@@@@@@@@@@@@@@#
 
@@ -213,7 +333,8 @@ exceed<-Monty%>%filter(imp_type_lab=="Internally Displaced Persons (IDPs)" & imp
                          imp_ISO3%in%isos)%>%
   mutate(haz_Ab_lab=factor(haz_Ab,labels=c("Earthquake","Flood","Tropical Cyclone")))%>%
   group_by(haz_Ab_lab,imp_ISO3)%>%
-  reframe(coverage=unique(hazcov$coverage[hazcov==unique(haz_Ab)]),
+  reframe(coverage=unique(hazcov$coverage[hazcov$haz_Ab==unique(haz_Ab) & 
+                                            hazcov$imp_srcdb_code==hazcov$imp_srcdb_code]),
           N=length(imp_value),
           impact=sort(imp_value),
           probability=n():1/unique(coverage))
@@ -239,7 +360,8 @@ exceed<-Monty%>%filter(exp_spec_lab=="Total Direct Costs Inflation-Adjusted" & i
                          imp_ISO3%in%isos)%>%
   mutate(haz_Ab_lab=factor(haz_Ab,labels=c("Earthquake","Flood","Tropical Cyclone")))%>%
   group_by(haz_Ab_lab,imp_ISO3)%>%
-  reframe(coverage=unique(hazcov$coverage[hazcov==unique(haz_Ab)]),
+  reframe(coverage=unique(hazcov$coverage[hazcov$haz_Ab==unique(haz_Ab) & 
+                                            hazcov$imp_srcdb_code==hazcov$imp_srcdb_code]),
           N=length(imp_value),
           impact=sort(imp_value),
           probability=n():1/unique(coverage))
@@ -292,11 +414,11 @@ sapply(seq_along(centrams),function(i){
   })
   
   ADM$deathsRP<-sapply(ADM$ADMcode,function(codie){
-    output<-tryCatch(cntimps%>%filter(imp_det=="impdetallpeop" & imp_type=="imptypdeat" &
+    output<-tryCatch(cntimps%>%filter(exp_spec=="expspec_allpeop" & imp_type=="imptypdeat" &
                                         ev_sdate>1975 & !is.na(imp_value) &
                                         grepl(codie,imp_spat_ID,ignore.case = T))%>%
                        impRP_calc(),error=function(e) data.frame(impRP=NA,N=NA))
-    ifelse(output$N>30,output$impRP,NA)
+    ifelse(output$N>5,output$impRP,NA)
   })
   
   ADM$costRP<-sapply(ADM$ADMcode,function(codie){
@@ -359,7 +481,7 @@ sapply(seq_along(centrams),function(i){
 #%%%%%%%%%%%%%%%%%%%%%%%%%%% EM-DAT SUB-NATIONAL DATA %%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 
-EMDAT<-jsonlite::fromJSON("./CleanedData/MostlyImpactData/CRED/EMDAT_2024-04-15.json")%>%
+EMDAT<-jsonlite::fromJSON("./CleanedData/MostlyImpactData/CRED/EMDAT_2024-04-25.json")%>%
   procDBfore()
 
 centrams<-c("IDN","NPL","PAK","TLS","LKA","MNG","FJI")
@@ -370,7 +492,7 @@ sapply(seq_along(centrams),function(i){
   
   indy<-EMDAT$impact_Data$ID_linkage$event_ID%in%EMDAT$event_Level$ID_linkage$event_ID[EMDAT$event_Level$spatial$ev_ISO3s==iso3]
   
-  ADM<-GAUL2Monty(iso3,forcer=T)
+  ADM<-GAUL2Monty(iso3)
   filer<-paste0("./CleanedData/SocioPoliticalData/EMDAT/",
                 iso3,"/ADM_",iso3,
                 ".geojson")
@@ -457,39 +579,371 @@ sapply(seq_along(centrams),function(i){
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+desADM<-do.call(rbind,lapply(seq_along(centrams)[1:6],function(i){
+  
+  print(centrams[i])
+  
+  iso3<-centrams[i]
+  
+  cntimps<-Dessie%>%filter(imp_src_db=="Desinventar" & imp_ISO3s==iso3)
+  
+  if(any(unlist(sapply(cntimps$imp_spat_ID[1:100],function(x) grepl("UNDRR-GovDes",x))))) cntimps$imp_spat_ID<-str_split(unlist(cntimps$imp_spat_ID),paste0("-",iso3,"-"),simplify = T)[,2]
+  
+  filer<-paste0("./CleanedData/SocioPoliticalData/Desinventar/",
+                stringr::str_to_lower(iso3),
+                "/ADM_",stringr::str_to_lower(iso3),
+                ".geojson")
+  
+  if(!file.exists(filer)) return(F)
+  
+  ADM<-geojsonio::geojson_read(filer, what = "sp")
+  
+  # ADM$ADMcode<-paste0("UNDRR-GovDes-ADM",ADM$ADMlevel,"-",str_to_upper(iso3),"-",ADM$ADMcode)
+  
+  # if(iso3%in%c("NPL","LKA")){
+  #   ADM<-ADM[nchar(ADM$ADMcode)==9,]
+  # } else if(iso3=="PAK"){
+  #   ADM<-ADM[nchar(ADM$ADMcode)==3,]
+  # } 
+  
+  ADM$Allrecords<-unlist(parallel::mclapply(ADM$ADMcode,function(codie){
+    sum(grepl(codie,unlist(cntimps$imp_spat_ID),ignore.case = T))
+  },mc.cores = ncores))
+  
+  ADM$FLrecords<-unlist(parallel::mclapply(ADM$ADMcode,function(codie){
+    sum(grepl(codie,unlist(cntimps$imp_spat_ID[cntimps$haz_Ab=="FL"]),ignore.case = T))
+  },mc.cores = ncores))
+  
+  ADM$ISO3<-iso3
+  
+  return(ADM)
+  
+  
+  freqy<-cntimps%>%group_by(exp_spec,imp_type)%>%reframe(N=sum(imp_spat_ID>0))
+  espec<-"expspec_allpeop" #freqy$exp_spec[which.max(freqy$N)]
+  itype<- "imptypdeat" #freqy$imp_type[which.max(freqy$N)]
+  
+  for(hAb in unique(cntimps$haz_Ab)){
+    ADM$tmp<-unname(unlist(parallel::mclapply(ADM$ADMcode,function(codie){
+      tryCatch(cntimps%>%filter(exp_spec==espec & imp_type==itype & haz_Ab==hAb &
+                                  ev_sdate>1975 & 
+                                  grepl(codie,imp_spat_ID,ignore.case = T))%>%
+                 reframe(Rate=length(haz_Ab)/unique(hazcov$coverage[hazcov$haz_Ab==hAb & 
+                                                                                         hazcov$imp_src_db=="Desinventar"]))%>%
+                 pull(Rate),
+               error=function(e) NA)
+    },mc.cores=round(ncores/2))))
+    nomnom<-paste0(hAb,"_Rate")
+    ADM$tmp[ADM$tmp==0]<-NA
+    colnames(ADM@data)[ncol(ADM@data)]<-nomnom
+  }
+  
+  
+  for(espec in unique(cntimps$exp_spec)){
+    for(itype in unique(cntimps$imp_type)){
+      for(hAb in unique(cntimps$haz_Ab)){
+        ADM$tmp<-unname(unlist(parallel::mclapply(ADM$ADMcode,function(codie){
+          tryCatch(cntimps%>%filter(exp_spec==espec & imp_type==itype & haz_Ab==hAb &
+                                      ev_sdate>1975 & 
+                                      grepl(codie,imp_spat_ID,ignore.case = T))%>%
+                     reframe(Rate=length(haz_Ab)/unique(hazcov$coverage[hazcov$haz_Ab==hAb & 
+                                                                          hazcov$imp_src_db=="Desinventar"]))%>%
+                     pull(Rate),
+                   error=function(e) NA)
+        },mc.cores=round(ncores))))
+        nomnom<-paste0(hAb,"_",espec,"_",itype,"_AAImpact")
+        ADM$tmp[ADM$tmp==0]<-NA
+        colnames(ADM@data)[ncol(ADM@data)]<-nomnom
+      }
+    }
+  }
+  
+  lvl<-ADM@data%>%group_by(ADMlevel)%>%reframe(lvl=sum(EP_Rate>0,na.rm = T)); lvl<-lvl$ADMlevel[which.max(lvl$lvl)]
+  
+  ADM%>%sf::st_as_sf()%>%
+    filter(ADMlevel==2)%>%
+    ggplot() + 
+    geom_sf(aes(fill=EP_Rate))+scale_fill_gradient(name = "Count", trans = "log10")
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  ADM$deathsRP<-sapply(ADM$ADMcode,function(codie){
+    output<-tryCatch(cntimps%>%filter(exp_spec=="expspec_allpeop" & imp_type=="imptypdeat" &
+                                        ev_sdate>1975 & !is.na(imp_value) &
+                                        grepl(codie,imp_spat_ID,ignore.case = T))%>%
+                       impRP_calc(),error=function(e) data.frame(impRP=NA,N=NA))
+    ifelse(output$N>30,output$impRP,NA)
+  })
+  
+  ADM$costRP<-sapply(ADM$ADMcode,function(codie){
+    output<-tryCatch(cntimps%>%filter(imp_subcats%in%c("impecotot","impecodirtot") & imp_type=="imptypcost" & 
+                                        ev_sdate>1975 & !is.na(imp_value) &
+                                        grepl(codie,imp_spat_ID,ignore.case = T))%>%
+                       impRP_calc(),error=function(e) data.frame(impRP=NA,N=NA))
+    ifelse(output$N>30,output$impRP/1e6,NA)
+  })  
+  
+  # Extract the bounding box of the admin boundaries
+  # bbox<-expandBbox(unlist(unname(ExtractBBOXpoly(ADM)[1,2:5])),3)
+  
+  ggplot(ADM) + 
+    geom_sf(aes(fill=Allrecords))+scale_fill_gradient(name = "Count", trans = "log10")
+  
+  
+  
+  
+  
+  
+  
+  mad_map <- ggmap::get_stadiamap(expandBbox(ADM@bbox,3),maptype = "terrain",zoom=5)
+  
+  p<-ggmap(mad_map) + xlab("Longitude") + ylab("Latitude")
+  
+  q<-ADM[ADM$ADMlevel==min(max(ADM$ADMlevel),2),]%>%st_as_sf()%>%ggplot()+
+    geom_sf(aes(fill=Allrecords), color = "grey30", linewidth=0.1)+ #, inherit.aes = FALSE) +
+    scale_fill_gradient("No. Records",low="magenta4", high="magenta", trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
+  ggsave(paste0("Allrecords_ADM2_",iso3,"_Dessie.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
+  
+  q<-ADM[ADM$ADMlevel==min(ADM$ADMlevel),]%>%st_as_sf()%>%ggplot()+
+    geom_sf(aes(fill=Allrecords), color = "grey30", linewidth=0.1)+ #, inherit.aes = FALSE) +
+    scale_fill_gradient("No. Records",low="magenta4", high="magenta", trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
+  ggsave(paste0("Allrecords_ADM1_",iso3,"_Dessie.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
+  
+  q<-ADM[ADM$ADMlevel==min(ADM$ADMlevel),]%>%st_as_sf()%>%ggplot()+
+    geom_sf(aes(fill=deathsRP), color = "grey30", linewidth=0.1, inherit.aes = FALSE) +
+    scale_fill_gradient("Exp. No. Deaths 5Yr RP",low="magenta4", high="magenta", trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
+  ggsave(paste0("DeathsRP_Allrecords_ADM1_",iso3,"_Dessie.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
+  
+  q<-ADM[ADM$ADMlevel==min(ADM$ADMlevel),]%>%st_as_sf()%>%ggplot()+
+    geom_sf(aes(fill=costRP), color = "grey30", linewidth=0.1, inherit.aes = FALSE) +
+    scale_fill_gradient("Exp. Cost 5Yr RP [Millions Local Curr]",high="chartreuse",low="chartreuse4",trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
+  ggsave(paste0("CostRP_Allrecords_ADM1_",iso3,"_Dessie.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
+  
+  sapply(lhaz,function(hazzie){
+    
+    ADM$records<-sapply(ADM$ADMcode,function(codie){
+      sum(grepl(codie,cntimps$imp_spat_ID[cntimps$haz_Ab==hazzie],ignore.case = T))
+    })
+    
+    q<-ADM[ADM$ADMlevel==min(max(ADM$ADMlevel),2),]%>%st_as_sf()%>%ggplot()+
+      geom_sf(aes(fill=records), color = "grey30", linewidth=0.1)+
+      scale_fill_gradient(paste0("No. Records - ",hazzie), high=pal[names(pal)==hazzie], trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
+    ggsave(paste0(hazzie,"_records_ADM2_",iso3,"_Dessie.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
+    
+    q<-ADM[ADM$ADMlevel==min(ADM$ADMlevel),]%>%st_as_sf()%>%ggplot()+
+      geom_sf(aes(fill=records), color = "grey30", linewidth=0.1)+
+      scale_fill_gradient(paste0("No. Records - ",hazzie),high=pal[names(pal)==hazzie], trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
+    ggsave(paste0(hazzie,"_records_ADM1_",iso3,"_Dessie.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
+    
+    return(T)},simplify = T)
+  
+  return(T)}))
+
+
+
+
+Monty<-jsonlite::fromJSON("./CleanedData/Monty_cleaned_2024-04-25.json")
+
+hazcov<-Monty%>%group_by(imp_src_db,haz_Ab)%>%
+  reframe(coverage=as.numeric(max(year) - min(year)))
+
+
+GenExceedance_ISO<-function(Monty,iso3,imp_db="EMDAT",imp_type="Deaths",exp_spec=NULL,yr=1990,hazs=NULL, plotty=T, loggie=F,rotty=0 ){
+  # Extract the data
+  out<-Dessie%>%filter(imp_src_db==imp_db & 
+                        year>yr &
+                        imp_ISO3s==iso3)
+  
+  if(!is.null(imp_type)) out%<>%filter(imp_type==imp_type)
+  if(!is.null(exp_spec)) out%<>%filter(exp_spec==exp_spec)
+  if(!is.null(hazs)) out%<>%filter(haz_Ab%in%hazs)
+  
+  out%<>%
+    group_by(haz_Ab)%>%
+    reframe(coverage=unique(hazcov$coverage[hazcov$haz_Ab==unique(haz_Ab) & 
+                                              hazcov$imp_src_db==hazcov$imp_src_db]),
+            N=n(),
+            impact=sort(imp_value),
+            probability=n():1/unique(coverage))
+  
+  if(plotty) {
+    p<-out%>%ggplot(aes(impact,probability,colour=haz_Ab))+
+      # geom_smooth(se=F,span=0.6)+
+      geom_point(size=2)+geom_line(linewidth=0.3)+
+      xlab(imp_type)+ylab("No. Events Per Year")+
+      ggtitle(paste0(iso3," - ",imp_db," ", imp_type, " Since ",yr))+
+      theme(plot.title = element_text(hjust = 0.5,face="bold",size=14),
+            axis.text.x = element_text(angle = rotty, vjust = 1, hjust=1))+
+      scale_x_continuous(labels = scales::label_number())+
+      labs(colour="Hazard")
+    if(loggie) p <- p + scale_x_log10(labels = scales::label_number()) 
+    
+    ggsave(paste0("./Plots/",iso3,"_ExceedanceCurve_",imp_db,"_",imp_type,"_",paste0(hazs,collapse = "-"),".png"),p,height=6,width=10)
+    
+    return(p)
+  } else return(out)
+}
+
+GenExceedance_ISO(Monty,"CRI")
+GenExceedance_ISO(Monty,"PER",loggie=T)
+GenExceedance_ISO(Monty,"PER","EMDAT",imp_type="Loss (Cost)",exp_spec = "Total Direct Costs Inflation-Adjusted")
+GenExceedance_ISO(Monty,"CRI","EMDAT",imp_type="Loss (Cost)",exp_spec = "Total Direct Costs Inflation-Adjusted")
+GenExceedance_ISO(Monty,"PER","EMDAT",imp_type="Total Affected",hazs=c("CW"),rotty=20)
+
+lapply(centrams,function(iso3){
+  do.call(rbind,lapply(unique(Dessie$imp_src_db),function(db){
+    do.call(rbind,lapply(unique(Dessie$Impact[Dessie$imp_src_db==db]),function(db){
+      GenExceedance_ISO(Monty,"PER","EMDAT",imp_type="Loss (Cost)",exp_spec = "Total Direct Costs Inflation-Adjusted",plotty = F)
+    }))
+  }))
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #@@@@@@@@@@@@@@@@@@@@@ MONTY WORKSHOP MAY 2024 @@@@@@@@@@@@@@@@@@@@@#
 ##### Data ##### 
 # - Wrangle Desinventar, GDACS + hazard forecast data
 # - Get the GAUL data somehow
 # - Get the Desinventar map data
-
-
 ##### PowerBI ##### 
 # Tables: average country metrics per hazard, per metric type
-# For population metrics, use as % of population
-# For economic metrics, use as % of GDP-PPP per capita
-
-
-# Seasonality, per country, per hazard, per impact type (inc. #events)
-# 
-
-
-# Sub-national maps of impact data  
-
-
 # Loss-exceedance curves
+# Sub-national maps of impact data  
+# Seasonality, per country, per hazard, per impact type (inc. #events)
+
+##### DONE #####
+# Loss-exceedance curves (full dataset)
+# Tables: average country metrics per hazard, per metric type
+# Seasonality, per country, per hazard, per impact type (inc. #events)
+# Sub-national maps of impact data 
 
 
+# APRO workshop data
+Monty<-readRDS("./CleanedData/Monty_APROcleaned_2024-05-05.RData")
+# Data coverage
+hazcov<-Monty%>%group_by(imp_src_db,Hazard)%>%
+  reframe(coverage=as.numeric(max(year) - min(year)))
+# Loss exceedance curves
+lossy<-Monty%>%filter(ev_ISO3s%in%centrams)%>%
+  arrange(ev_sdate)%>%
+  group_by(Database,ev_ISO3s,Hazard,haz_Ab_grp,Impact)%>%
+  reframe(coverage=max(unique(hazcov$coverage[hazcov$Hazard==unique(Hazard) & 
+                                            hazcov$imp_src_db==hazcov$imp_src_db])),
+          impact_value=sort(imp_value),
+          N=n():1,
+          probability=n():1/unique(coverage))%>%
+  dplyr::select(-coverage)%>%
+  setNames(c("Database","ISO3","Hazard_Type","Hazard_Code","Impact_Type","Impact_Value","No_Impacts","Frequency_Occurrence"))
+# Write it out!
+write_csv(lossy,"./CleanedData/MostlyImpactData/APRO_Loss.csv")
 
+# Frequency table, Average Annual Impact and Return Periods
+freqy<-lossy%>%
+  group_by(Database,ISO3,Hazard_Type,Hazard_Code,Impact_Type)%>%
+  reframe(Count=max(No_Impacts), 
+          AAI=mean(Impact_Value),
+          RP1=ifelse(min(Frequency_Occurrence)>1 | max(Frequency_Occurrence)<1,NA_real_,
+                         (splinefun(x=Frequency_Occurrence, 
+                                     y=Impact_Value))(1)),
+          RP2=ifelse(min(Frequency_Occurrence)>(1/2) | max(Frequency_Occurrence)<(1/2),NA_real_,
+                     (splinefun(x=Frequency_Occurrence, 
+                                 y=Impact_Value))(1/2)),
+          RP5=ifelse(min(Frequency_Occurrence)>(1/5) | max(Frequency_Occurrence)<(1/5),NA_real_,
+                     (splinefun(x=Frequency_Occurrence, 
+                                 y=Impact_Value))(1/5)),
+          RP10=ifelse(min(Frequency_Occurrence)>(1/10) | max(Frequency_Occurrence)<(1/10),NA_real_,
+                     (splinefun(x=Frequency_Occurrence, 
+                                 y=Impact_Value))(1/10)),
+          RP20=ifelse(min(Frequency_Occurrence)>(1/20) | max(Frequency_Occurrence)<(1/20),NA_real_,
+                     (splinefun(x=Frequency_Occurrence, 
+                                 y=Impact_Value))(1/20)))%>%
+  setNames(c("Database","ISO3","Hazard_Type","Hazard_Code","Impact_Type","No_Impacts",
+             "Average_Annual_Impact","Once_in_1_Year",
+             "Once_in_2_Year","Once_in_5_Year",
+             "Once_in_10_Year","Once_in_20_Year"))%>%
+  filter(!is.na(Once_in_1_Year))
+# Write it out!
+write_csv(freqy,"./CleanedData/MostlyImpactData/APRO_FreqTabs.csv")
 
+# For the climate change related hazards, add in the seasonality
+Seasonality<-Monty%>%
+  mutate(Month=as.integer(month(ev_sdate)))%>%
+  group_by(Database,ev_ISO3s,Hazard,haz_Ab_grp,Impact,Month)%>%
+  reframe(Evs=length(year),AMI=mean(imp_value))
 
+# Smooth this using a 1-month-either-side rolling average
+Seasonality%<>%rbind(Seasonality%>%mutate(Month=Month-12),
+                     Seasonality%>%mutate(Month=Month+12))%>%
+  arrange(Month)%>%
+  group_by(Database,ev_ISO3s,Hazard,haz_Ab_grp,Impact)%>%
+  mutate(Month=Month,
+         Evs=zoo::rollapply(Evs,3,function(x) mean(x,na.rm = T),align='center',fill=NA),
+         AMI=zoo::rollapply(AMI,3,function(x) mean(x,na.rm = T),align='center',fill=NA))%>%
+  filter(Month>=1 & Month<=12)%>%
+  setNames(c("Database","ISO3","Hazard_Type","Hazard_Code","Impact_Type","Month","No_Impacts","Average_Monthly_Impact"))
+# Write it out!
+write_csv(Seasonality,"./CleanedData/MostlyImpactData/APRO_Seasonality.csv")
 
+Seasonality%>%filter(Hazard=="Flood" & ev_ISO3s=="NPL")%>%
+  ggplot()+geom_smooth(aes(Month,AMI,colour=Database))+
+  scale_x_continuous(breaks=1:12,labels=month.abb)+
+  scale_y_log10()+
+  # geom_line(aes(Month,AMI,colour=ev_ISO3s))+
+  facet_wrap(~Impact,scales = "free_y")
 
-
-
-
-
-
+Seasonality%>%filter(Impact=="People (All Demographics) Deaths [count]")%>%
+  ggplot()+geom_smooth(aes(Month,Evs,colour=Database))+
+  scale_x_continuous(breaks=1:12,labels=month.abb)+
+  scale_y_log10()+
+  # geom_line(aes(Month,AMI,colour=ev_ISO3s))+
+  facet_wrap(~Hazard,scales = "free_y")
 
 
 

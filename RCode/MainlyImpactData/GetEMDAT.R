@@ -545,7 +545,7 @@ convEMDAT_Monty<-function(){
   ID_linkage<-Add_EvIDlink_Monty(
     do.call(rbind,lapply(1:nrow(EMDAT),function(i) {
       EMDAT$all_ext_IDs[[i]]%>%mutate(event_ID=EMDAT$event_ID[i],
-                                      ev_name=EMDAT$event_ID[i])
+                                      ev_name=EMDAT$ev_name[i])
     }))
   )
   # Spatial

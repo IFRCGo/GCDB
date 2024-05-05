@@ -54,15 +54,25 @@ GetDessie<-function(iso3,forcer=F){
   return(T)
 }
 
-DesCols<-c('muertos'= 'deaths',
+DesCols<-c('serial'='ext_ID',
+           'muertos'= 'deaths',
+           'hay_muertos'='flag_deaths',
            'heridos'= 'injured',
+           'hay_heridos'='flag_injured',
            'desaparece'= 'missing',
+           'hay_deasparece'='flag_missing',
            'vivdest'= 'houses_destroyed',
+           'hay_vivdest'='flag_houses_destroyed',
            'vivafec'= 'houses_damaged',
+           'hay_vivafec'='flag_houses_damaged',
            'damnificados'= 'directly_affected',
+           'hay_damnificados'='flag_directly_affected',
            'afectados'= 'indirectly_affected',
+           'hay_afectados'='flag_indirectly_affected',
            'reubicados'= 'relocated',
+           'hay_reubicados'='flag_relocated',
            'evacuados'= 'evacuated',
+           'hay_evacuados'='flag_evacuated',
            'valorus'= 'losses_in_dollar',
            'valorloc'= 'losses_local_currency',
            'nescuelas'= 'education_centers',
@@ -76,11 +86,16 @@ DesCols<-c('muertos'= 'deaths',
            'name0'= 'name0',
            'name1'= 'name1',
            'name2'= 'name2',
-           "evento"= "event",
-           "lugar"= "location",
-           "fechano"= "year",
-           "fechames"= "month",
-           "fechadia"= "day")
+           'latitude' = 'latitude',
+           'longitude' = 'longitude',
+           'evento'= 'event',
+           'glide'='GLIDE',
+           'lugar'= 'location',
+           'magnitud2'='haz_maxvalue',
+           'duracion'='duration',
+           'fechano'= 'year',
+           'fechames'= 'month',
+           'fechadia'= 'day')
 
 RegCols<-c("codregion"="ADMcode",
            "nivel"="ADMlevel",
@@ -93,23 +108,14 @@ RegCols<-c("codregion"="ADMcode",
            "xmax_"="mxlo",
            "ymax"="mxla")
 
-# convert to integer:
-inties<-c("deaths", "injured", "missing", "houses_destroyed", 
-          "houses_damaged", "directly_affected", 
-          "indirectly_affected", "relocated", "evacuated", 
-          "education_centers", "hospitals", "lost_cattle")
-
-nummies<-c("losses_in_dollar", "losses_local_currency", 
-           "damages_in_crops_ha", "damages_in_roads_mts")
-
 ExtImpDev<-function(xmlly){
   # Extract all the impact estimate tabular information
   impacts<-do.call(dplyr::bind_rows,lapply(seq_along(xmlly$DESINVENTAR$fichas),function(i){
     return(as.data.frame(t(as.data.frame(unlist(xmlly$DESINVENTAR$fichas[[i]])))))
   })) %>% distinct(); rownames(impacts)<-NULL
-  
-  stop("ExtImpDev - need to rename the columns from the country xml file")
-  
+  # Select and rename the columns
+  impacts%<>%dplyr::select(any_of(names(DesCols)))
+  impacts%<>%setNames(unname(DesCols[colnames(impacts)]))
   # Create one single data column, as a character
   impacts$date<-sapply(1:nrow(impacts),function(i) 
     as.character(as.Date(ISOdate(year = impacts$year[i],
@@ -117,9 +123,30 @@ ExtImpDev<-function(xmlly){
                     day = impacts$day[i]))))
   # Remove unnecessary columns to save space
   impacts%<>%dplyr::select(-c(year,month,day))
+  # convert to integer:
+  inties<-c("deaths", "injured", "missing", "houses_destroyed", 
+            "houses_damaged", "directly_affected", 
+            "indirectly_affected", "relocated", "evacuated", 
+            "education_centers", "hospitals", "lost_cattle")
+  # convert to numeric:
+  nummies<-c("losses_in_dollar", "losses_local_currency", 
+             "damages_in_crops_ha", "damages_in_roads_mts",
+             "latitude","longitude","duration")
   # Convert all integer and numeric columns
   impacts %<>% mutate_at(inties, as.integer)
   impacts %<>% mutate_at(nummies, as.numeric)
+  # by default, set minimal duration to be 1 day
+  impacts$duration[is.na(impacts$duration)]<-1 
+  # Ensure that un-entered impacts (where the flag = -1) are set to NA
+  flaggies<-str_split(grep("flag_",colnames(impacts),value = T),"flag_",simplify = T)[,2]
+  # I know it's bad practice to use for loops, but I can't be fucked, quite frankly
+  for(fl in flaggies) impacts[is.na(impacts[,paste0("flag_",fl)]) | 
+                                impacts[,paste0("flag_",fl)]!=-1,fl]<-NA
+  # For the impacts that do not have a flag, set them to NA if they are equal to zero, just in case
+  for(im in c('losses_in_dollar','losses_local_currency','education_centers',
+    'hospitals','damages_in_crops_ha','lost_cattle','damages_in_roads_mts')) {
+    if(im%in%colnames(impacts)) impacts[is.na(impacts[,im]) | impacts[,im]<=1e-5,im]<-NA
+  }
   
   return(impacts)
 }
@@ -135,7 +162,7 @@ FindCol<-function(coln="ADMcode",reggie,ADM){
               .groups="drop_last"); bodger<-F
   # Check that something was found
   if(sum(checker$innie)==0) {
-    print("No perfect matches")
+    # print("No perfect matches")
     # First find the correct admin level
     checker<-reggie%>%group_by(ADMlevel)%>%
       summarise(innie=min(abs(sum(!(is.na(xx) | duplicated(xx)))-lennies)),
@@ -156,7 +183,7 @@ FindCol<-function(coln="ADMcode",reggie,ADM){
   }
   # Check that some codes were found
   if(all(!codin)) {
-    print("Patching over the ADM codes: not great!")
+    # print("Patching over the ADM codes: not great!")
     # Recalculate codin from the minimum
     codin<-apply(ADM@data,2, 
                  function(x) {
@@ -171,6 +198,9 @@ FindCol<-function(coln="ADMcode",reggie,ADM){
   return(list(codin=codin,bodger=bodger,reggie=dplyr::select(minireg,-xx)))
 }
 
+# This function tries to map the columns between the spatial data to the formatted regions dataframe
+# It is ugly... such is life!
+# Returns the combined ADMout spatial file (combined in the sense all ADM levels are in one)
 LoveExceptions_Mod<-function(ADMout,regions){
   
   prematched<-c()
@@ -185,44 +215,32 @@ LoveExceptions_Mod<-function(ADMout,regions){
     tmp%<>%filter(ADMlevel==unique(codecol$reggie$ADMlevel))
     nomnom<-ifelse(sum(!is.na(tmp$regnamloc))>sum(!is.na(tmp$regnamen)),"regnamloc","regnamen")
     namecol<-FindCol(nomnom,tmp,ADMout[[j]])
+    # Change to character to make sure it complies with overall spatial dataframe
+    ADMout[[j]]@data%<>%mutate_all(as.character)
+    # Which columns are we choosing to keep?
+    collies<-c(colnames(ADMout[[j]]@data)[codecol$codin | namecol$codin])
     # Warn for bodgings
     if(codecol$bodger){
       print("Dataframe comparison:")
-      print(head(codecol$reggie[,1:4]))
-      print(head(ADMout[[j]]@data))
-      print("---")
-      print("---")
-      print("---")
-      print("ADMcode:")
-      print(head(sort(ADMout[[j]]@data[,codecol$codin])))
-      print(head(sort(codecol$reggie$ADMcode)))
-      print("---")
-      print("---")
-      print("---")
-      print("ADMname:")
-      print(head(sort(ADMout[[j]]@data[,namecol$codin])))
-      print(head(sort(codecol$reggie$regnamen)))
-      print(" ")
+      print(head(left_join(ADMout[[j]]@data%>%dplyr::select(all_of(collies)),
+                codecol$reggie[,1:4],
+                by=join_by(!!sym(names(codecol$codin[codecol$codin]))=="ADMcode"))))
     }
-    # Which columns are we choosing to keep?
-    collies<-c(colnames(ADMout[[j]]@data)[codecol$codin | namecol$codin])
     # select only what has been matched
     ADMout[[j]]@data<-ADMout[[j]]@data%>%dplyr::select(all_of(collies))
-    # Make sure the names correspond
-    colnames(ADMout[[j]]@data)[colnames(ADMout[[j]]@data)==names(codecol$codin[codecol$codin])]<-"ADMcode"
-    colnames(ADMout[[j]]@data)[colnames(ADMout[[j]]@data)==names(namecol$codin[namecol$codin])]<-"regnamen"
-    # Change to character to make sure it complies with overall spatial dataframe
-    ADMout[[j]]@data%<>%mutate_all(as.character)
+    # left_join to match variables to the ADM data
+    ADMout[[j]]@data<-left_join(ADMout[[j]]@data%>%dplyr::select(all_of(collies)),
+              codecol$reggie,
+              by=join_by(!!sym(names(codecol$codin[codecol$codin]))=="ADMcode"))%>%
+      rename("ADMcode"=!!sym(names(codecol$codin[codecol$codin])))
     # Remove any duplicated or NA values
     ADMout[[j]]<-ADMout[[j]][!(is.na(ADMout[[j]]@data$ADMcode) | duplicated(ADMout[[j]]@data$ADMcode)),]
-    # Replace the modified names to the standardised ones
-    ADMout[[j]]@data%<>%left_join(codecol$reggie,
-                                  by=c("ADMcode","regnamen"))
     # Transfer any names over from english to original
     ADMout[[j]]@data$regnamloc[is.na(ADMout[[j]]@data$regnamloc)]<-
       ADMout[[j]]@data$regnamen[is.na(ADMout[[j]]@data$regnamloc)]
     # Any errors in admin levels is returned as minus 999
     ADMout[[j]]@data$ADMlevel[is.na(ADMout[[j]]@data$ADMlevel)]<- -999
+    # Extract bounding box
     for(rr in which(is.na(ADMout[[j]]@data$centLon))){
       # Extract the bounding box of each admin boundary
       bbox<-do.call(rbind,lapply(1:length(ADMout[[j]]@polygons[[rr]]@Polygons), function(pp){
@@ -243,8 +261,9 @@ LoveExceptions_Mod<-function(ADMout,regions){
     for(i in 2:length(ADMout)) outy%<>%bind(ADMout[[i]])
   } else outy<-ADMout[[1]]
   
-  return(outy)
+  outy@data%>%dplyr::select(all_of(colnames(regions)))
   
+  return(outy)
 }
 
 LoveExceptions<-function(ADMout,regions){
@@ -342,7 +361,7 @@ CleanADM<-function(ADM){
   return(ADM[sort(tmp@data$numid[indies]),])
 }
 
-ChangeVarType<-function(ADMout){
+DesADMmodVartyp<-function(ADMout){
   # Integer variables
   inties<-c("ADMlevel")
   # Numeric variables
@@ -368,8 +387,6 @@ ExtADMDev<-function(xmlly,iso3){
   regions<-do.call(dplyr::bind_rows,lapply(seq_along(xmlly$DESINVENTAR$regiones),function(i){
     return(as.data.frame(t(as.data.frame(unlist(xmlly$DESINVENTAR$regiones[[i]])))))
   })) %>% distinct(); rownames(regions)<-NULL
-  
-  stop("ExtADMDev not ready to extract all of the variables from the spatial data")
   
   regions<-do.call(rbind,lapply(seq_along(xmlly$DESINVENTAR$regiones),
                                 function(i) {
@@ -417,7 +434,7 @@ ExtADMDev<-function(xmlly,iso3){
   # Handle exceptions with the data
   ADMout%<>%LoveExceptions_Mod(regions)
   # Change the variable types
-  ADMout%<>%ChangeVarType()
+  ADMout%<>%DesADMmodVartyp()
     
   return(ADMout)
 }
@@ -456,7 +473,6 @@ ReadDessie<-function(iso3, forcer=F){
   }
   # Output the safeword... TRUE!
   return(T)
-  
 }
 
 WrangleDessie<-function(iso3,forcer=T){
@@ -482,7 +498,8 @@ DesHazards<-function(Dessie){
   # Now remove all non-relevant hazards
   Dessie%<>%mutate(event=str_to_lower(event))%>%filter(event%in%haznams)
   # Reduce the translated vector and merge
-  Dessie%<>%left_join(colConv%>%dplyr::select(-c(event_en)),by = "event")
+  Dessie%<>%left_join(colConv%>%dplyr::select(-c(event_en))%>%distinct(),
+                      by = "event",relationship="many-to-one")
   # Remove all irrelevant hazards
   Dessie%<>%filter(!is.na(haz_type))
   
@@ -600,56 +617,73 @@ PostModTransies<-function(colConv){
 
 Des2tabGCDB<-function(Dessie){
   # Modify date names
-  Dessie$imp_sdate<-Dessie$imp_fdate<-Dessie$ev_sdate<-Dessie$ev_fdate<-Dessie$imp_unitdate<-Dessie$date
+  Dessie$imp_sdate<-Dessie$ev_sdate<-Dessie$imp_unitdate<-Dessie$date
+  # Ensure that the event duration is used to specify the date range
+  Dessie$imp_fdate<-Dessie$ev_fdate<-as.Date(Dessie$date)+Dessie$duration
   # Any event without a date are automatically removed
-  Dessie%<>%filter(!is.na(imp_sdate))
+  Dessie%<>%filter(!is.na(imp_sdate) | !is.na(imp_fdate))
   # Make sure we can properly match them both
   Dessie$event%<>%str_to_lower()
   # Extract only the relevant hazards
   Dessie%<>%DesHazards()
-  # Rename the event name
-  colnames(Dessie)[colnames(Dessie)=="event"]<-"ev_name"
-  Dessie$ev_name_lang<-"lang_xxx"
-  # Add the continent, then remove the unnecesary layers
-  Dessie%<>%mutate(region=convIso3Continent(imp_ISO3s))%>%
-    dplyr::select(-c(date,level0,name0))%>%filter(!is.na(region))
+  # Rename some of the variables
+  Dessie%<>%rename("ev_name"="event",
+                   "imp_lon"="longitude",
+                   "imp_lat"="latitude",
+                   "gen_location"="location")
+  # Add some of the extra details that are Desinventar-specific
+  Dessie%<>%mutate(imp_est_type="esttype_prim",
+                   imp_src_URL=paste0(desbaseurl,imp_ISO3s,".zip"),
+                   imp_spat_fileloc=imp_src_URL,
+                   imp_spat_URL=imp_src_URL,
+                   imp_src_db="Desinventar",
+                   imp_src_org="UNDRR",
+                   imp_spat_srcorg="UNDRR",
+                   imp_spat_srcdb="GovDes",
+                   imp_spat_URL="https://www.desinventar.net/download.html",
+                   imp_src_orgtype="orgtypeacad",
+                   imp_spat_covcode="spat_polygon",
+                   imp_spat_resunits="adminlevel",
+                   imp_spat_crs="EPSG:4326")
+  # Admin level resolution
+  Dessie$imp_spat_res<-0
+  Dessie$imp_spat_res[!is.na(Dessie$level1)]<-1
+  Dessie$imp_spat_res[!is.na(Dessie$level2)]<-2
+  # Form the spatial ID
+  Dessie$imp_spat_ID<-lapply(1:nrow(Dessie),function(i){
+    if(Dessie$imp_spat_res[i]==0) return(paste0("UNDRR-GovDes-ADM0-",Dessie$imp_ISO3s[i]))
+    if(Dessie$imp_spat_res[i]==1) return(paste0("UNDRR-GovDes-ADM1-",Dessie$imp_ISO3s[i],
+                                             "-",Dessie$level1[i]))
+    if(Dessie$imp_spat_res[i]==2) return(paste0("UNDRR-GovDes-ADM2-",Dessie$imp_ISO3s[i],
+                                             "-",Dessie$level2[i]))
+    return(NA_character_)
+  })  
+  # Just in case the ID numbers were not included in the data
+  if(is.null(Dessie$ext_ID)) Dessie$ext_ID<-Dessie$imp_ISO3s else 
+    Dessie$ext_ID<-paste0(Dessie$imp_ISO3s,"-",Dessie$ext_ID)
+  # Sort out the IDs and external IDs (GLIDE numbers)
+  Dessie$all_ext_IDs<-lapply(1:nrow(Dessie), function(i){
+    # First extract EM-DAT event ID
+    out<-data.frame(ext_ID=Dessie$ext_ID[i],
+                    ext_ID_db="Desinventar",
+                    ext_ID_org="UNDRR")
+    # If no other external IDs are provided, return only the Em-DAT ID
+    if(is.na(Dessie$GLIDE[i])) return(out) else 
+      return(rbind(out,data.frame(ext_ID=Dessie$GLIDE[i],
+                                  ext_ID_db="GLIDE",
+                                  ext_ID_org="ADRC")))
+  })
   # Generate GCDB event ID
   Dessie$event_ID<-GetMonty_ID(Dessie)
-  # Add some of the extra details that are Desinventar-specific
-  Dessie%<>%mutate(
-    imp_est_type="esttype_prim",
-    imp_src_URL=paste0(desbaseurl,imp_ISO3s,".zip"),
-    imp_src_org="Local Government Estimate",
-    imp_src_db="Desinventar",
-    imp_src_orgtype="orgtypegov",
-    imp_spat_covcode="spat_polygon",
-    imp_spat_ID=apply(Dessie[,c("level1","level2")],1,function(x) {
-      if(all(is.na(x))) return(NA_character_)
-      if(any(is.na(x))) return(x[!is.na(x)])
-      paste0(c(ifelse(is.na(x[1]),"",x[1]),
-               ifelse(is.na(x[2]),"",x[2])),
-             collapse = ",")
-    },simplify = T),
-    imp_spat_srcorg="Local Government Estimate",
-    imp_spat_srcdb="Desinventar",
-    imp_spat_URL=paste0(desbaseurl,imp_ISO3s,".zip"),
-    imp_spat_covcode="spat_polygon",
-    imp_spat_res=0,
-    imp_spat_resunits="adminlevel",
-    imp_spat_crs="EPSG:4326")
-  # Admin level resolution
-  Dessie$imp_spat_res[!is.na(Dessie$level1)]<-1; Dessie$imp_spat_res[!is.na(Dessie$level2)]<-2
-  # Clean up!
-  Dessie%<>%dplyr::select(-c(level1,level2,name1,name2))
   # Correct the labels of the impacts, melting by impact detail
-  Dessie%<>%ImpLabs(nomDB = "Desinventar")
+  Dessie%<>%ImpLabs(nomDB = "Desinventar",dropName = T)
   # Create an impact-specific ID
   Dessie%<>%GetGCDB_impID()
   # Add missing columns & reorder the dataframe to fit imp_GCDB object
-  Dessie%>%AddEmptyColImp()
+  Dessie%>%dplyr::select(any_of(MontyJSONnames()))
 }
 
-GetDesinventar<-function(){
+GetDesinventar<-function(ISO3s=NULL){
   # Find the impact files
   filez<-list.files("./CleanedData/MostlyImpactData/Desinventar/",
                     pattern = ".xlsx",
@@ -660,14 +694,18 @@ GetDesinventar<-function(){
                     include.dirs = T,all.files = T,recursive = T,ignore.case = T)
   # Extract data for all countries which have spatial data 
   isos<-stringr::str_split(filez,"/",simplify = T)[,1]
-  # Which have data?
-  tISOS<-isos%in%stringr::str_split(spatf,"/",simplify = T)[,1]
+  # Which have admin boundary data?
+  # tISOS<-isos%in%stringr::str_split(spatf,"/",simplify = T)[,1]
+  # Further filter it down
+  tISOS<-!is.na(convIso3Country(isos))
+  # User-defined country selection
+  if(!is.null(ISO3s)) tISOS <- tISOS & str_to_upper(isos)%in%str_to_upper(ISO3s)
   # Get all countries data
-  Dessie<-do.call(rbind,lapply(which(tISOS),function(i){
+  Dessie<-do.call(dplyr::bind_rows,lapply(which(tISOS),function(i){
     # Extract impact data
     out<-openxlsx::read.xlsx(paste0("./CleanedData/MostlyImpactData/Desinventar/",filez[i]))
     # Add the country
-    out$imp_ISO3s<-stringr::str_to_upper(isos[i])
+    out$imp_ISO3s<-out$ev_ISO3s<-stringr::str_to_upper(isos[i])
     
     return(out)
   }))
@@ -679,108 +717,41 @@ GetDesinventar<-function(){
   inds<-impies%>%dplyr::select(imp_sub_ID)%>%duplicated()
   
   return(impies[!inds,])
-  # Form a GCDB impacts object from EMDAT data (if there is a problem, return an empty tabGCDB object)
-  # tryCatch(new("tabGCDB",impies),error=function(e) new("tabGCDB"))
 }
 
 
-convDessie_Monty<-function(){
-  
-  stop("Ensure Dessie has record-level ID numbers that include the country code")
-  
+convDessie_Monty<-function(ISO3s=NULL){
   # Extract raw Dessie data
-  Dessie<-GetDesinventar()
+  Dessie<-GetDesinventar(ISO3s)
   # Get rid of repeated entries
-  Dessie%<>%distinct(imp_sub_ID,.keep_all = TRUE)%>%
-    arrange(ev_sdate)
+  Dessie%<>%distinct()%>%arrange(ev_sdate)
   # Extract the Monty JSON schema template
   dMonty<-jsonlite::fromJSON("./Taxonomies/Montandon_JSON-Example.json")
-  #@@@@@ Impact-level data @@@@@#
-  # IDs
-  ID_linkage<-Add_ImpIDlink_Monty(
-    rbind(Dessie%>%mutate(ext_ID_db="Desinventar",ext_ID_org="UNDRR")%>%
-            dplyr::select(event_ID, imp_sub_ID, haz_sub_ID, Dessie_ID,
-                          ext_ID_db,ext_ID_org)%>%
-            rename(ext_ID=Dessie_ID)%>%
-            dplyr::select(event_ID, imp_sub_ID, haz_sub_ID, 
-                          ext_ID, ext_ID_db, ext_ID_org),
-          Dessie%>%filter(!is.na(ext_IDs))%>%mutate(ext_ID_db="Desinventar",ext_ID_org="UNDRR")%>%
-            dplyr::select(event_ID, imp_sub_ID, haz_sub_ID, ext_IDs, ext_ID_dbs, ext_ID_orgs)%>%
-            rename(ext_ID=ext_IDs,ext_ID_db=ext_ID_dbs,ext_ID_org=ext_ID_orgs)%>%
-            dplyr::select(event_ID, imp_sub_ID, haz_sub_ID, 
-                          ext_ID, ext_ID_db, ext_ID_org)
-    )
-  )
-  # Sources for impact data
-  source<-Dessie%>%dplyr::select(imp_src_db,imp_src_URL,imp_src_org)
-  # impact estimates
-  impact_detail<-Dessie%>%
-    dplyr::select(exp_spec,imp_value,imp_type,imp_units,imp_est_type,imp_unitdate)
-  # Add temporal information
-  temporal<-Dessie%>%dplyr::select(imp_sdate,imp_fdate)
-  # Spatial data relevant to the impact estimates
-  # multiple-entry rows: imp_spat_rowname,imp_spat_colname,imp_ISO3s,imp_spat_res
-  spatial<-Add_ImpSpatAll_Monty(
-    ID_linkage=data.frame(
-      imp_sub_ID=Dessie$imp_sub_ID,
-      imp_spat_ID="GO-ADM0-World-shp",
-      imp_spat_fileloc="https://go-user-library.ifrc.org/maps",
-      imp_spat_colname="iso3",
-      imp_spat_rowname=Dessie$imp_ISO3s
-    ),
-    spatial_info=Dessie%>%dplyr::select(
-      imp_ISO3s,
-      imp_spat_covcode,
-      imp_spat_res,
-      imp_spat_resunits,
-      imp_spat_crs
-    ),
-    source=Dessie%>%dplyr::select(
-      imp_spat_srcdb,
-      imp_spat_URL,
-      imp_spat_srcorg
-    )
-  )
-  # Gather it all and store it in the template!
-  # (I know this is hideous, but I don't understand how JSON files can have lists that are also S3 data.frames)
-  dMonty$impact_Data<-data.frame(imp_sub_ID=unique(Dessie$imp_sub_ID))
-  dMonty$impact_Data$ID_linkage=ID_linkage
-  dMonty$impact_Data$source=source
-  dMonty$impact_Data$impact_detail=impact_detail
-  dMonty$impact_Data$temporal=temporal
-  dMonty$impact_Data$spatial=spatial
-  dMonty$impact_Data$imp_sub_ID<-NULL
-  
   #@@@@@ Event-level data @@@@@#
   # IDs
   ID_linkage<-Add_EvIDlink_Monty(
-    # By default, only Desinventar eventIDs are used
-    rbind(Dessie%>%mutate(ext_ID_db="Dessie",ext_ID_org="UNDRR")%>%
-            dplyr::select(event_ID, ev_name, Dessie_ID,ext_ID_db,ext_ID_org)%>%
-            rename(ext_ID=Dessie_ID),
-          Dessie%>%filter(!is.na(ext_IDs))%>%
-            dplyr::select(event_ID, ev_name, ext_IDs,ext_ID_dbs,ext_ID_orgs)%>%
-            rename(ext_ID=ext_IDs,ext_ID_db=ext_ID_dbs,ext_ID_org=ext_ID_orgs)
-    )
+    do.call(rbind,parallel::mclapply(1:nrow(Dessie),function(i) {
+      Dessie$all_ext_IDs[[i]]%>%mutate(event_ID=Dessie$event_ID[i],
+                                      ev_name=Dessie$ev_name[i])
+    },mc.cores=ncores))
   )
   # Spatial
   spatial<-Add_EvSpat_Monty(
-    Dessie%>%dplyr::select(event_ID,imp_ISO3s,location)%>%
-      rename(ev_ISO3s=imp_ISO3s,gen_location=location)
+    Dessie%>%dplyr::select(event_ID, ev_ISO3s, gen_location)
   )
   # temporal
   temporal<-Add_EvTemp_Monty(
-    Dessie%>%dplyr::select(event_ID,imp_sdate,imp_fdate,ev_sdate,ev_fdate)
+    Dessie%>%dplyr::select(event_ID,ev_sdate,ev_fdate)
   )
   # Hazards
   hazs<-Dessie%>%dplyr::select(event_ID, haz_Ab, haz_spec)
   allhaz_class<-Add_EvHazTax_Monty(
-    do.call(rbind,lapply(1:nrow(hazs),function(i){
+    do.call(rbind,parallel::mclapply(1:nrow(hazs),function(i){
       specs<-c(str_split(hazs$haz_spec[i],":",simplify = T))
       outsy<-hazs[rep(i,length(specs)),]
       outsy$haz_spec<-specs
       return(outsy)
-    }))
+    },mc.cores=ncores))
   )
   # Gather it all and store it in the template!
   dMonty$event_Level<-data.frame(ev=ID_linkage$event_ID)
@@ -792,31 +763,74 @@ convDessie_Monty<-function(){
   
   #@@@@@ Hazard-level data @@@@@#
   # Nothing to put here as we haven't linked any hazard data yet
-  dMonty$hazard_Data<-list()  
+  dMonty$hazard_Data<-list()
+  
+  #@@@@@ Impact-level data @@@@@#
+  # First need to ensure that any impacts with zero impacts estimated are removed to prevent bias
+  Dessie%<>%filter(!is.na(haz_spec) | !is.na(imp_value) | imp_value>0)
+  # IDs
+  ID_linkage<-Add_ImpIDlink_Monty(
+    do.call(rbind,parallel::mclapply(1:nrow(Dessie),function(i) {
+      Dessie$all_ext_IDs[[i]]%>%mutate(event_ID=Dessie$event_ID[i],
+                                      imp_sub_ID=Dessie$imp_sub_ID[i],
+                                      haz_sub_ID=NA_character_)
+    },mc.cores=ncores))
+  )
+  # Sources for impact data
+  srcy<-do.call(rbind,parallel::mclapply(unique(Dessie$imp_sub_ID),function(ID){
+    return(Dessie[Dessie$imp_sub_ID==ID,]%>%
+             dplyr::select(imp_src_db,imp_src_URL,imp_src_org)%>%
+             slice(1))
+  },mc.cores=ncores))
+  # impact estimates
+  impact_detail<-Dessie%>%distinct(imp_sub_ID,.keep_all = T)%>%
+    dplyr::select(exp_spec,imp_value,imp_type,imp_units,imp_est_type,imp_unitdate)
+  # Add temporal information
+  temporal<-Dessie%>%distinct(imp_sub_ID,.keep_all = T)%>%dplyr::select(imp_sdate,imp_fdate)
+  # Spatial data relevant to the impact estimates
+  # multiple-entry rows: imp_ISO3s,imp_spat_res
+  spatial<-Add_ImpSpatAll_Monty(
+    ID_linkage=Dessie%>%dplyr::select(imp_sub_ID,imp_spat_ID,imp_spat_fileloc),
+    spatial_info=Dessie%>%dplyr::select(
+      imp_ISO3s,
+      imp_lon,
+      imp_lat,
+      imp_spat_covcode,
+      imp_spat_res,
+      imp_spat_resunits,
+      imp_spat_crs
+    ),
+    source=Dessie%>%dplyr::select(
+      imp_spat_srcdb,
+      imp_spat_URL,
+      imp_spat_srcorg
+    )
+  )
+  
+  # Gather it all and store it in the template!
+  # (I know this is hideous, but I don't understand how JSON files can have lists that are also S3 data.frames)
+  dMonty$impact_Data<-data.frame(imp_sub_ID=unique(Dessie$imp_sub_ID))
+  dMonty$impact_Data$ID_linkage=ID_linkage
+  dMonty$impact_Data$source=srcy
+  dMonty$impact_Data$impact_detail=impact_detail
+  dMonty$impact_Data$temporal=temporal
+  dMonty$impact_Data$spatial=spatial
+  dMonty$impact_Data$imp_sub_ID<-NULL
   
   #@@@@@ Response-level data @@@@@#
   # Nothing to put here as we haven't linked any response data yet
   dMonty$response_Data<-list()
-  
   #@@@@@ Source Data In Taxonomy Field @@@@@#
-  dMonty$taxonomies$src_info<-data.frame(
-    src_org_code="UNDRR",
-    src_org_lab="United Nations Disaster Risk Reduction (UNDRR)",
-    src_org_typecode="orgtypeun",
-    src_org_typelab="UN & International Organisations",
-    src_org_email="undrr-bonn@un.org",
-    src_db_code="Desinventar",
-    src_db_lab="Disaster Inventory System (Desinventar)",
-    src_db_attr="mediator",
-    src_db_lic="unknown",
-    src_db_URL="www.gdacs.org",
-    src_addinfo=""
-  )
+  dMonty$taxonomies$src_info<-readxl::read_xlsx("./Taxonomies/Monty_DataSources.xlsx")%>%distinct()
+  
+  #@@@@@ Checks and validation @@@@@#
+  dMonty%<>%checkMonty()
+  
   # Create the path for the output
-  dir.create("./CleanedData/MostlyHazardData/Desinventar",showWarnings = F)
+  dir.create("./CleanedData/MostlyHazardData/UNDRR",showWarnings = F)
   # Write it out just for keep-sake
   write(jsonlite::toJSON(dMonty,pretty = T,auto_unbox=T,na = 'null'),
-        paste0("./CleanedData/MostlyHazardData/Desinventar/Desinventar_",Sys.Date(),".json"))
+        paste0("./CleanedData/MostlyHazardData/UNDRR/Desinventar_",Sys.Date(),".json"))
   
   return(dMonty)
 }

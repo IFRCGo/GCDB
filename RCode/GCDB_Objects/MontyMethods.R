@@ -84,25 +84,25 @@ GetGCDB_haz_spatID<-function(impies){
 # A function to go from a series of data into the JSON-accepted DF-list style object
 Add_EvIDlink_Monty<-function(dframe){
   # Setup the other entries
-  output<-do.call(rbind,lapply(unique(dframe$event_ID),function(ID){
+  output<-do.call(rbind,parallel::mclapply(unique(dframe$event_ID),function(ID){
     dframe%>%filter(event_ID==ID)%>%
-    reframe(event_ID=ID,ev_name=paste0('\"',unique(ev_name),collapse = '\",\"','\"'))%>%
+    reframe(event_ID=ID,ev_name=unique(ev_name))%>%
       distinct()
-  }))
+  },mc.cores=ncores))
   # Generate all the elements of the dataset
-  output$all_ext_IDs<-sapply(output$event_ID,function(ID){
+  output$all_ext_IDs<-parallel::mclapply(output$event_ID,function(ID){
     # Find the corresponding indices for this entry
     indy<-dframe$event_ID==ID
     # check for no external IDs
     if(any(is.na(dframe$ext_ID[indy]))) 
-      return(list(data.frame(ext_ID=NA_character_,
+      return(data.frame(ext_ID=NA_character_,
                              ext_ID_db=NA_character_, 
-                             ext_ID_org=NA_character_)%>%distinct()))
+                             ext_ID_org=NA_character_)%>%distinct())
     # Highlight the external IDs that share the same Monty IDs 
-    list(data.frame(ext_ID=dframe$ext_ID[indy],
+    data.frame(ext_ID=dframe$ext_ID[indy],
                ext_ID_db=dframe$ext_ID_db[indy], 
-               ext_ID_org=dframe$ext_ID_org[indy])%>%distinct())
-  },simplify = T)
+               ext_ID_org=dframe$ext_ID_org[indy])%>%distinct()
+  },mc.cores=ncores)
   # Let's keep this neat
   names(output$all_ext_IDs)<-NULL
   # Output that bea-u-t
@@ -111,22 +111,22 @@ Add_EvIDlink_Monty<-function(dframe){
 
 Add_EvSpat_Monty<-function(dframe){
   # Setup the other entries
-  output<-do.call(rbind,lapply(unique(dframe$event_ID),function(ID){
+  output<-do.call(rbind,parallel::mclapply(unique(dframe$event_ID),function(ID){
     dframe%>%filter(event_ID==ID)%>%
       reframe(event_ID=ID,gen_location=paste0('\"',unique(gen_location),collapse = '\",\"','\"'))
-  }))
+  },mc.cores=ncores))
   # and the ISO3C codes
-  output$ev_ISO3s<-lapply(output$event_ID,function(ID){
+  output$ev_ISO3s<-parallel::mclapply(output$event_ID,function(ID){
     # return the ISO3C codes in a list
     unique(dframe$ev_ISO3s[dframe$event_ID==ID])
-  })
+  },mc.cores=ncores)
   # Gimme gimme gimme
   return(output%>%dplyr::select(-event_ID))
 }
 
 Add_EvTemp_Monty<-function(dframe){
   # Take the event start date as the minimum and maximum dates
-  do.call(rbind,lapply(unique(dframe$event_ID),function(ID){
+  do.call(rbind,parallel::mclapply(unique(dframe$event_ID),function(ID){
     tryCatch(dframe%>%filter(event_ID==ID)%>%
       reframe(ev_sdate=as.character(min(as.Date(ev_sdate),na.rm = T)),
             ev_fdate=as.character(max(as.Date(ev_fdate),na.rm = T))),
@@ -136,12 +136,12 @@ Add_EvTemp_Monty<-function(dframe){
                        ".    ev_fdate=",paste0(tmp$ev_fdate,collapse = " : ")))
         dframe%>%dplyr::select(ev_sdate,ev_fdate)%>%slice(1)
       })
-  }))
+  },mc.cores=ncores))
 }
 
 Add_EvHazTax_Monty<-function(dframe){
   # Extract all of the haz_spec codes and output a list
-  lapply(unique(dframe$event_ID),function(ev){
+  parallel::mclapply(unique(dframe$event_ID),function(ev){
     # indices
     indy<-which(dframe$event_ID==ev)
     do.call(rbind,lapply(indy,function(i){
@@ -151,7 +151,7 @@ Add_EvHazTax_Monty<-function(dframe){
         all_hazs_spec=c(str_split(dframe$haz_spec[i],delim,simplify = T))
       )%>%distinct()
     }))%>%distinct()
-  })
+  },mc.cores=ncores)
 }
 
 # Add_HazTax_Monty<-function(dframe){
@@ -176,9 +176,9 @@ Add_HazTax_Monty<-function(dframe){
   output<-dframe%>%dplyr::select(event_ID,haz_maxvalue,haz_maxunits,haz_est_type,haz_Ab)%>%
     rename(all_hazs_Ab=haz_Ab)
   # Extract all of the haz_spec codes and output a list
-  output$all_hazs_spec<-lapply(output$event_ID,function(ev){
+  output$all_hazs_spec<-parallel::mclapply(output$event_ID,function(ev){
     all_hazs_spec=c(gsub(" ", "",str_split(dframe$haz_spec[dframe$event_ID==ev],":",simplify = T)))
-  })
+  },mc.cores=ncores)
   
   return(output%>%dplyr::select(-event_ID))
 }
@@ -188,16 +188,16 @@ Add_ImpIDlink_Monty<-function(dframe){
   # Setup the other entries
   output<-dframe%>%dplyr::select(event_ID,imp_sub_ID)%>%distinct()
   # Generate all the elements of the dataset
-  output$haz_sub_ID<-lapply(output$imp_sub_ID,function(ID){
+  output$haz_sub_ID<-parallel::mclapply(output$imp_sub_ID,function(ID){
     # Find the corresponding indices for this entry
     indy<-dframe$imp_sub_ID==ID
     # check for no haz_sub_imp values
     if(any(is.na(dframe$haz_sub_ID[indy]))) return(list())
     # Highlight the external IDs that share the same Monty IDs 
     list(unique(dframe$haz_sub_ID[indy]))
-  })
+  },mc.cores=ncores)
   # Now let's add the external IDs
-  output$imp_ext_IDs<-lapply(output$imp_sub_ID,function(ID){
+  output$imp_ext_IDs<-parallel::mclapply(output$imp_sub_ID,function(ID){
     # Find the corresponding indices for this entry
     indy<-dframe$imp_sub_ID==ID
     # Check for no IDs
@@ -209,7 +209,7 @@ Add_ImpIDlink_Monty<-function(dframe){
     list(data.frame(ext_ID=dframe$ext_ID[indy],
                     ext_ID_db=dframe$ext_ID_db[indy], 
                     ext_ID_org=dframe$ext_ID_org[indy])%>%distinct())
-  })
+  },mc.cores=ncores)
   # Output that bea-u-t
   return(output)
 }
@@ -230,7 +230,7 @@ Add_ImpSpatID_Monty<-function(dframe){
 
 Add_ImpSpatAll_Monty<-function(ID_linkage,spatial_info,source){
   # multiple-entry rows: imp_spat_rowname,imp_spat_colname,imp_ISO3s,imp_spat_res
-  lapply(unique(ID_linkage$imp_sub_ID),function(ID){
+  parallel::mclapply(unique(ID_linkage$imp_sub_ID),function(ID){
     # Set out only the entries that we need
     indy<-ID_linkage$imp_sub_ID==ID
     # Extract the easier elements
@@ -244,23 +244,23 @@ Add_ImpSpatAll_Monty<-function(ID_linkage,spatial_info,source){
                        imp_spat_crs)
     output$source<-source%>%filter(indy)
     return(output)
-  })
+  },mc.cores=ncores)
 }
 
 Add_hazIDlink_Monty<-function(dframe){
   # Setup the other entries
   output<-dframe%>%dplyr::select(event_ID,haz_sub_ID)%>%distinct()
   # Extract the external ID codes
-  output$haz_ext_IDs<-sapply(output$haz_sub_ID,function(ID){
+  output$haz_ext_IDs<-parallel::mclapply(output$haz_sub_ID,function(ID){
     # Find the corresponding indices for this entry
     indy<-dframe$haz_sub_ID==ID
     # Check for no IDs
-    if(all(is.na(dframe$ext_ID[indy]))) return(list())
+    if(all(is.na(dframe$ext_ID[indy]))) return(NULL)
     # Highlight the external IDs that share the same Monty IDs 
-    list(data.frame(ext_ID=dframe$ext_ID[indy],
+    data.frame(ext_ID=dframe$ext_ID[indy],
                     ext_ID_db=dframe$ext_ID_db[indy], 
-                    ext_ID_org=dframe$ext_ID_org[indy])%>%distinct())
-  },simplify = T)
+                    ext_ID_org=dframe$ext_ID_org[indy])%>%distinct()
+  },mc.cores=ncores)
   # Let's keep this neat
   names(output$haz_ext_IDs)<-NULL
   # Output that bea-u-t
@@ -270,7 +270,7 @@ Add_hazIDlink_Monty<-function(dframe){
 
 Add_hazSpatAll_Monty<-function(ID_linkage,spatial_info,source){
   # multiple-entry rows: haz_spat_rowname,haz_spat_colname,haz_ISO3s,haz_spat_res
-  lapply(ID_linkage$haz_sub_ID,function(ID){
+  parallel::mclapply(ID_linkage$haz_sub_ID,function(ID){
     # Set out only the entries that we need
     indy<-ID_linkage$haz_sub_ID==ID
     # Extract the easier elements
@@ -284,7 +284,7 @@ Add_hazSpatAll_Monty<-function(ID_linkage,spatial_info,source){
       haz_spat_crs)
     output$source<-source%>%filter(indy)
     return(output)
-  })
+  },mc.cores=ncores)
 }
 
 
@@ -302,7 +302,7 @@ OverlapMonty<-function(MontyA,MontyB){
     as.Date(MontyA$event_Level$temporal$ev_fdate)>
     max(as.Date(MontyB$event_Level$temporal$ev_fdate))+10
   # First reduce the crossover by hazard type (through the abbreviated hazard)
-  allMatch<-mclapply(which(iiis),function(i){
+  allMatch<-parallel::mclapply(which(iiis),function(i){
     # First check for any overlapping hazards
     haz_Ab<-unique(MontyA$event_Level$allhaz_class[[i]]$all_hazs_Ab)
     # Find all indices worth pursuing
@@ -613,6 +613,19 @@ MFilter_Responses<-function(Monty,indy,allobjs=F){
   return(Monty)
 } 
 
+modSpatMonty<-function(ID_linkage,spatial_info,source){
+  # First perform a simple check
+  if(length(ID_linkage)!=length(spatial_info) | length(ID_linkage)!=length(source)) stop("Error in spatial data dimensionality")
+  # multiple-entry rows: imp_spat_rowname,imp_spat_colname,imp_ISO3s,imp_spat_res
+  lapply(1:length(ID_linkage),function(i){
+    output<-list()
+    output$ID_linkage<-ID_linkage[[i]]
+    output$spatial_info<-spatial_info[[i]]
+    output$source<-source[[i]]
+    return(output)
+  })
+}
+
 # Check that, upon reading in the Monty JSON file, that the spatial data is in the correct format (list)
 checkSpatialMonty<-function(Monty){
   if(!is.null(Monty$impact_Data$spatial) & class(Monty$impact_Data$spatial)=="data.frame"){
@@ -839,7 +852,7 @@ Monty_Imp2Tab<-function(Monty,red=F){
     str_replace_all(colnames(imp_lv)[grepl("src_org_",colnames(imp_lv))],"src_org_","imp_srcorg_")
   # If the impact spatial data field is a data frame, convert it to a list
   if(class(Monty$impact_Data$spatial)=="data.frame") {
-    bad_request("Why is the spatial data in Monty object a data.frame and not a list?")
+    stop("Why is the spatial data in Monty object a data.frame and not a list?")
     # # Spatial object type
     # imp_lv%<>%cbind(left_join(
     #   do.call(rbind,lapply(Monty$impact_Data$spatial$spatial_info,function(x) x)), 
@@ -1000,7 +1013,7 @@ Monty_Haz2Tab<-function(Monty,red=F){
     str_replace_all(colnames(haz_lv)[grepl("src_org_",colnames(haz_lv))],"src_org_","haz_srcorg_")
   # Spatial ID linkages
   if(class(Monty$hazard_Data$spatial)=="data.frame"){
-    bad_request("Why is the spatial data in Monty object a data.frame and not a list?")
+    stop("Why is the spatial data in Monty object a data.frame and not a list?")
     # if(!(is.null(Monty$hazard_Data$spatial$ID_linkage[[1]]$haz_spat_colname) &
     #      is.null(Monty$hazard_Data$spatial$ID_linkage[[1]]$haz_spat_rowname))) {
     #   haz_lv%<>%cbind(do.call(rbind,lapply(Monty$hazard_Data$spatial$ID_linkage,function(x) {
