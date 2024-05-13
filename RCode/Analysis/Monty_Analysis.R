@@ -887,28 +887,50 @@ write_csv(lossy,"./CleanedData/MostlyImpactData/APRO_Loss.csv")
 # Frequency table, Average Annual Impact and Return Periods
 freqy<-lossy%>%
   group_by(Database,ISO3,Hazard_Type,Hazard_Code,Impact_Type)%>%
-  reframe(Count=max(No_Impacts), 
+  reframe(Count=max(No_Impacts),
           AAI=mean(Impact_Value),
-          RP1=ifelse(min(Frequency_Occurrence)>1 | max(Frequency_Occurrence)<1,NA_real_,
-                         (splinefun(x=Frequency_Occurrence, 
+          RP1=ifelse(min(Frequency_Occurrence)>1 | max(Frequency_Occurrence)<1,min(Impact_Value,na.rm=T),
+                         (splinefun(x=Frequency_Occurrence,
                                      y=Impact_Value))(1)),
-          RP2=ifelse(min(Frequency_Occurrence)>(1/2) | max(Frequency_Occurrence)<(1/2),NA_real_,
-                     (splinefun(x=Frequency_Occurrence, 
+          RP2=ifelse(min(Frequency_Occurrence)>(1/2) | max(Frequency_Occurrence)<(1/2),min(Impact_Value,na.rm=T),
+                     (splinefun(x=Frequency_Occurrence,
                                  y=Impact_Value))(1/2)),
-          RP5=ifelse(min(Frequency_Occurrence)>(1/5) | max(Frequency_Occurrence)<(1/5),NA_real_,
-                     (splinefun(x=Frequency_Occurrence, 
+          RP5=ifelse(min(Frequency_Occurrence)>(1/5) | max(Frequency_Occurrence)<(1/5),min(Impact_Value,na.rm=T),
+                     (splinefun(x=Frequency_Occurrence,
                                  y=Impact_Value))(1/5)),
-          RP10=ifelse(min(Frequency_Occurrence)>(1/10) | max(Frequency_Occurrence)<(1/10),NA_real_,
-                     (splinefun(x=Frequency_Occurrence, 
+          RP10=ifelse(min(Frequency_Occurrence)>(1/10) | max(Frequency_Occurrence)<(1/10),min(Impact_Value,na.rm=T),
+                     (splinefun(x=Frequency_Occurrence,
                                  y=Impact_Value))(1/10)),
-          RP20=ifelse(min(Frequency_Occurrence)>(1/20) | max(Frequency_Occurrence)<(1/20),NA_real_,
-                     (splinefun(x=Frequency_Occurrence, 
+          RP20=ifelse(min(Frequency_Occurrence)>(1/20) | max(Frequency_Occurrence)<(1/20),min(Impact_Value,na.rm=T),
+                     (splinefun(x=Frequency_Occurrence,
                                  y=Impact_Value))(1/20)))%>%
   setNames(c("Database","ISO3","Hazard_Type","Hazard_Code","Impact_Type","No_Impacts",
              "Average_Annual_Impact","Once_in_1_Year",
              "Once_in_2_Year","Once_in_5_Year",
-             "Once_in_10_Year","Once_in_20_Year"))%>%
-  filter(!is.na(Once_in_1_Year))
+             "Once_in_10_Year","Once_in_20_Year"))
+freqy%<>%mutate_at(grep(colnames(freqy),pattern = "Once_in"),function(x) pmax(x,0))
+
+# freqy<-lossy%>%
+#   group_by(Database,ISO3,Hazard_Type,Hazard_Code,Impact_Type)%>%
+#   reframe(Count=max(No_Impacts), 
+#           AAI=mean(Impact_Value),
+#           RP1=splinefun(x=Frequency_Occurrence, 
+#                                 y=Impact_Value)(1),
+#           RP2=splinefun(x=Frequency_Occurrence, 
+#                                 y=Impact_Value)(1/2),
+#           RP5=splinefun(x=Frequency_Occurrence, 
+#                                 y=Impact_Value)(1/5),
+#           RP10=splinefun(x=Frequency_Occurrence, 
+#                                  y=Impact_Value)(1/10),
+#           RP20=splinefun(x=Frequency_Occurrence, 
+#                                  y=Impact_Value)(1/20))%>%
+#   setNames(c("Database","ISO3","Hazard_Type","Hazard_Code","Impact_Type","No_Impacts",
+#              "Average_Annual_Impact","Once_in_1_Year",
+#              "Once_in_2_Year","Once_in_5_Year",
+#              "Once_in_10_Year","Once_in_20_Year"))
+# freqy%<>%mutate_at(grep(colnames(freqy),pattern = "Once_in"),function(x) pmax(x,0))
+
+  # filter(!is.na(Once_in_1_Year))
 # Write it out!
 write_csv(freqy,"./CleanedData/MostlyImpactData/APRO_FreqTabs.csv")
 
