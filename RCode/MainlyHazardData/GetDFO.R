@@ -24,111 +24,97 @@ DFOhazards<-function(DFO){
   # Heavy rain is flash flood and/or riverine
   i<-grepl("rain",DFO$MAINCAUSE) | grepl("monsoon",DFO$MAINCAUSE) |
     grepl("torrential",DFO$MAINCAUSE) | grepl("heavy",DFO$MAINCAUSE)
-  haz_Ab[i]<-paste0(haz_Ab[i]," : ")
-  haz_spec[i]<-paste0(haz_spec[i]," : ")
+  haz_Ab[i]<-paste0(haz_Ab[i]," : FF")
+  haz_spec[i]<-paste0(haz_spec[i]," : MH0006")
     
   # Tropical cyclone
   i<-(grepl("cyclone",DFO$MAINCAUSE) |
-      grepl("cylone",DFO$MAINCAUSE) |
-      grepl("cycl",DFO$MAINCAUSE) |
-      grepl("hurricane",DFO$MAINCAUSE)) &
+        grepl("cylone",DFO$MAINCAUSE) |
+        grepl("cycl",DFO$MAINCAUSE) |
+        grepl("typhoon",DFO$MAINCAUSE) |
+        grepl("hurricane",DFO$MAINCAUSE)) &
     !(grepl("extra-tropical",DFO$MAINCAUSE))
-  haz_Ab[i]<-paste0(haz_Ab[i]," : ")
-  haz_spec[i]<-paste0(haz_spec[i]," : ")
-  
-  # Typhoon
-  i<-grepl("typhoon",DFO$MAINCAUSE)
-  haz_Ab[i]<-paste0(haz_Ab[i]," : ")
-  haz_spec[i]<-paste0(haz_spec[i]," : ")
+  haz_Ab[i]<-paste0(haz_Ab[i]," : TC")
+  haz_spec[i]<-paste0(haz_spec[i]," : MH0057")
   
   # Extra-tropical cyclone
   i<-grepl("extra-tropical",DFO$MAINCAUSE)
-  haz_Ab[i]<-paste0(haz_Ab[i]," : ")
-  haz_spec[i]<-paste0(haz_spec[i]," : ")
+  haz_Ab[i]<-paste0(haz_Ab[i]," : TC")
+  haz_spec[i]<-paste0(haz_spec[i]," : MH0031")
   
   # Tropical storm
   i<-grepl("tropical storm",DFO$MAINCAUSE) | 
     grepl("tropial storm",DFO$MAINCAUSE) |
     grepl("tropical stom",DFO$MAINCAUSE)
-  haz_Ab[i]<-paste0(haz_Ab[i]," : ")
-  haz_spec[i]<-paste0(haz_spec[i]," : ")
+  haz_Ab[i]<-paste0(haz_Ab[i]," : ST")
+  haz_spec[i]<-paste0(haz_spec[i]," : MH0058")
   
   # Tropical depression
-  i<-grepl("tropical storm",DFO$MAINCAUSE) & grepl("depression",DFO$MAINCAUSE)
-  haz_Ab[i]<-paste0(haz_Ab[i]," : ")
-  haz_spec[i]<-paste0(haz_spec[i]," : ")
-  
-  # Dam-related (flash)
-  i<-grepl("dam ",DFO$MAINCAUSE) | grepl("dam\\/",DFO$MAINCAUSE)
-  haz_Ab[i]<-paste0(haz_Ab[i]," : ")
-  haz_spec[i]<-paste0(haz_spec[i]," : ")
-  
-  # Levee-related (flash & riverine)
-  i<-grepl("levee",DFO$MAINCAUSE) | grepl("levy",DFO$MAINCAUSE)
-  haz_Ab[i]<-paste0(haz_Ab[i]," : ")
-  haz_spec[i]<-paste0(haz_spec[i]," : ")
+  i<-grepl("tropical",DFO$MAINCAUSE) & grepl("depression",DFO$MAINCAUSE)
+  haz_Ab[i]<-paste0(haz_Ab[i]," : ST")
+  haz_spec[i]<-paste0(haz_spec[i]," : MH0030")
   
   # It's a flash flood if it's dam-release related
-  i<-(grepl("dam ",DFO$MAINCAUSE) | grepl("dam\\/",DFO$MAINCAUSE)) & grepl("release",DFO$MAINCAUSE)
-  haz_Ab[i]<-paste0(haz_Ab[i]," : ")
-  haz_spec[i]<-paste0(haz_spec[i]," : ")
+  i<-(grepl("dam ",DFO$MAINCAUSE) | grepl("dam\\/",DFO$MAINCAUSE))
+  haz_Ab[i]<-paste0(haz_Ab[i]," : FF")
+  haz_spec[i]<-paste0(haz_spec[i]," : TL0009")
   
   # Glacial lake-related
   i<-grepl("glacial",DFO$MAINCAUSE) | grepl("glacier",DFO$MAINCAUSE)
-  haz_Ab[i]<-paste0(haz_Ab[i]," : ")
-  haz_spec[i]<-paste0(haz_spec[i]," : ")
+  # haz_Ab[i]<-paste0(haz_Ab[i]," : ")
+  haz_spec[i]<-paste0(haz_spec[i]," : MH0013")
   
   # Coastal flooding
-  i<-grepl("surge",DFO$MAINCAUSE) | 
-    grepl("tide",DFO$MAINCAUSE) | 
+  i<-grepl("surge",DFO$MAINCAUSE)
+  haz_Ab[i]<-paste0(haz_Ab[i]," : SS")
+  haz_spec[i]<-paste0(haz_spec[i]," : MH0027")
+  
+  # Storm tides
+  i<-grepl("tide",DFO$MAINCAUSE) | 
     grepl("tidal",DFO$MAINCAUSE)
-  haz_Ab[i]<-paste0(haz_Ab[i]," : ")
-  haz_spec[i]<-paste0(haz_spec[i]," : ")
+  haz_Ab[i]<-paste0(haz_Ab[i]," : SS")
+  haz_spec[i]<-paste0(haz_spec[i]," : MH0028")
   
-  # Ice-jams
-  i<-grepl("ice",DFO$MAINCAUSE) & grepl("jam",DFO$MAINCAUSE)
-  haz_Ab[i]<-paste0(haz_Ab[i]," : ")
-  haz_spec[i]<-paste0(haz_spec[i]," : ")
-  
-  # Ice-melts
-  i<-grepl("ice",DFO$MAINCAUSE) & grepl("melt",DFO$MAINCAUSE)
-  haz_Ab[i]<-paste0(haz_Ab[i]," : ")
-  haz_spec[i]<-paste0(haz_spec[i]," : ")
+  # Ice-melts & jams
+  i<-grepl("ice",DFO$MAINCAUSE) & 
+    (grepl("melt",DFO$MAINCAUSE) | grepl("jam",DFO$MAINCAUSE))
+  # haz_Ab[i]<-paste0(haz_Ab[i]," : ")
+  haz_spec[i]<-paste0(haz_spec[i]," : MH0009")
   
   # Avalanche
   i<-grepl("avalanche",DFO$MAINCAUSE) | grepl("avalance",DFO$MAINCAUSE)
-  haz_Ab[i]<-paste0(haz_Ab[i]," : ")
-  haz_spec[i]<-paste0(haz_spec[i]," : ")
+  haz_Ab[i]<-paste0(haz_Ab[i]," : AV")
+  haz_spec[i]<-paste0(haz_spec[i]," : MH0050")
   
   # Winter storms == blizzard, snowstorm
   i<-grepl("winter storm",DFO$MAINCAUSE)
-  haz_Ab[i]<-paste0(haz_Ab[i]," : ")
-  haz_spec[i]<-paste0(haz_spec[i]," : ")
+  haz_Ab[i]<-paste0(haz_Ab[i]," : ST")
+  haz_spec[i]<-paste0(haz_spec[i]," : MH0034")
   
   # Snowmelts
   i<-grepl("snow",DFO$MAINCAUSE) & grepl("melt",DFO$MAINCAUSE)
-  haz_Ab[i]<-paste0(haz_Ab[i]," : ")
-  haz_spec[i]<-paste0(haz_spec[i]," : ")
+  # haz_Ab[i]<-paste0(haz_Ab[i]," : ")
+  haz_spec[i]<-paste0(haz_spec[i]," : MH0011")
   
   # Snow-related but not snowmelt
   i<-grepl("snow",DFO$MAINCAUSE) & !(grepl("melt",DFO$MAINCAUSE))
-  haz_Ab[i]<-paste0(haz_Ab[i]," : ")
-  haz_spec[i]<-paste0(haz_spec[i]," : ")
+  # haz_Ab[i]<-paste0(haz_Ab[i]," : ")
+  haz_spec[i]<-paste0(haz_spec[i]," : MH0038")
   
   # Tsunami
   i<-grepl("tsunami",DFO$MAINCAUSE)
-  haz_Ab[i]<-paste0(haz_Ab[i]," : ")
-  haz_spec[i]<-paste0(haz_spec[i]," : ")
+  haz_Ab[i]<-paste0(haz_Ab[i]," : TS")
+  haz_spec[i]<-paste0(haz_spec[i]," : MH0029")
   
   # Mudslides
   i<-grepl("mudslide",DFO$MAINCAUSE)
-  haz_Ab[i]<-paste0(haz_Ab[i]," : ")
-  haz_spec[i]<-paste0(haz_spec[i]," : ")
+  haz_Ab[i]<-paste0(haz_Ab[i]," : LS_HM")
+  haz_spec[i]<-paste0(haz_spec[i]," : MH0051")
   
   # Landslides
   i<-grepl("landslide",DFO$MAINCAUSE)
-  haz_Ab[i]<-paste0(haz_Ab[i]," : ")
-  haz_spec[i]<-paste0(haz_spec[i]," : ")
+  haz_Ab[i]<-paste0(haz_Ab[i]," : LS_HM")
+  haz_spec[i]<-paste0(haz_spec[i]," : MH0052")
   
   # General flood- & wind-related (include thunder or any of the others? NAH)
   i<-grepl("storm",DFO$MAINCAUSE) & 
@@ -136,15 +122,42 @@ DFOhazards<-function(DFO){
         grepl("tropical",DFO$MAINCAUSE) |
         grepl("tropial",DFO$MAINCAUSE) |
         grepl("winter",DFO$MAINCAUSE))
-  haz_Ab[i]<-paste0(haz_Ab[i]," : ")
-  haz_spec[i]<-paste0(haz_spec[i]," : ")
+  haz_Ab[i]<-paste0(haz_Ab[i]," : ST")
+  haz_spec[i]<-paste0(haz_spec[i]," : MH0060 : MH0054")
+  
+  # If we didn't manage to label the event, assume it was either riverine or pluvial
+  i<- !(grepl("MH0006",haz_spec) | grepl("MH0007",haz_spec) |
+    grepl("MH0009",haz_spec) | grepl("MH0011",haz_spec) |
+        grepl("MH0013",haz_spec))
+  haz_Ab[i]<-paste0(haz_Ab[i]," : FF")
+  haz_spec[i]<-paste0(haz_spec[i]," : MH0006 : MH0007")
+  
+  # Get rid of all " : " at the start
+  haz_spec<-gsub("^ : ","",haz_spec)
+  haz_Ab<-gsub("^ : ","",haz_Ab)
+  
+  
+  
+  
+  
+  
+  
+  stop("TC shouldn't have riverine")
+  
+  data.frame(haz_Ab=haz_Ab,haz_spec=haz_spec,MAINCAUSE=DFO$MAINCAUSE)%>%
+    distinct()%>%View()
+  
+  
+  
+  
+  
   
   haz_Ab%<>%str_split(" : ")
   haz_spec%<>%str_split(" : ")
   
   DFO$allhaz_class<-lapply(1:nrow(DFO), function(i){
-    data.frame(haz_Ab=haz_Ab[[i]],
-               haz_spec=haz_spec[[i]])
+    list(haz_Ab=unique(haz_Ab[[i]]),
+               haz_spec=unique(haz_spec[[i]]))
   })
   
   return(DFO)
