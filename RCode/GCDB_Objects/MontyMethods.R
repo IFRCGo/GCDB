@@ -143,16 +143,12 @@ Add_EvTemp_Monty<-function(dframe){
 
 Add_EvHazTax_Monty<-function(dframe){
   # Extract all of the haz_spec codes and output a list
-  parallel::mclapply(unique(dframe$event_ID),function(ev){
+  out<-parallel::mclapply(unique(dframe$event_ID),function(ev){
     # indices
     indy<-which(dframe$event_ID==ev)
-    do.call(rbind,lapply(indy,function(i){
-      # Output
-      data.frame(
-        all_hazs_Ab=dframe$haz_Ab[i],
-        all_hazs_spec=c(str_split(dframe$haz_spec[i],delim,simplify = T))
-      )%>%distinct()
-    }))%>%distinct()
+    
+    return(list(all_hazs_Ab=unique(c(str_split(dframe$haz_Ab[indy],delim,simplify = T))),
+                all_hazs_spec=unique(c(str_split(dframe$haz_spec[indy],delim,simplify = T)))))
   },mc.cores=ncores)
 }
 
@@ -175,8 +171,11 @@ Add_EvHazTax_Monty<-function(dframe){
 # }
 Add_HazTax_Monty<-function(dframe){
   
-  output<-dframe%>%dplyr::select(event_ID,haz_maxvalue,haz_maxunits,haz_est_type,haz_Ab)%>%
-    rename(all_hazs_Ab=haz_Ab)
+  output<-dframe%>%dplyr::select(event_ID,haz_maxvalue,haz_maxunits,haz_est_type)%>%distinct()
+  # Extract all of the haz_Ab codes and output a list
+  output$all_hazs_Ab<-parallel::mclapply(output$event_ID,function(ev){
+    all_hazs_Ab=c(gsub(" ", "",str_split(dframe$haz_Ab[dframe$event_ID==ev],":",simplify = T)))
+  },mc.cores=ncores)
   # Extract all of the haz_spec codes and output a list
   output$all_hazs_spec<-parallel::mclapply(output$event_ID,function(ev){
     all_hazs_spec=c(gsub(" ", "",str_split(dframe$haz_spec[dframe$event_ID==ev],":",simplify = T)))

@@ -245,16 +245,17 @@ GetDFO<-function(){
     paste0(DFO$gen_location[!(is.na(DFO$OTHERCOUNT) | DFO$OTHERCOUNT==0)],", ",
            DFO$OTHERCOUNT[!(is.na(DFO$OTHERCOUNT) | DFO$OTHERCOUNT==0)])
   # Adding the ISO3C codes
-  ev_ISO3s<-imp_ISO3s<-haz_ISO3s<-convCountryIso3(DFO$COUNTRY)%>%DFOcountryExc(DFO$COUNTRY)
-  tmp<-convCountryIso3(DFO$OTHERCOUNT)%>%DFOcountryExc(DFO$COUNTRY)
+  tmp1<-convCountryIso3(DFO$COUNTRY)%>%DFOcountryExc(DFO$COUNTRY)
+  tmp2<-convCountryIso3(DFO$OTHERCOUNT)%>%DFOcountryExc(DFO$COUNTRY)
   # Which countries didn't work?
   print(paste0("Getting rid of the following countries: ",
-               paste0(unique(DFO$COUNTRY[is.na(ev_ISO3s) & is.na(tmp)]),collapse = ", ")))
+               paste0(unique(DFO$COUNTRY[is.na(tmp1) & is.na(tmp2)]),collapse = ", ")))
   # If no country is present, get rid of the event
-  DFO%<>%filter(!(is.na(ev_ISO3s) & is.na(tmp)))
+  DFO%<>%filter(!(is.na(tmp1) & is.na(tmp2)))
+  tmp1<-tmp1[!is.na(tmp1)]; tmp2<-tmp2[!is.na(tmp2)]
   # Combine them
   DFO$imp_ISO3s<-DFO$ev_ISO3s<-DFO$haz_ISO3s<-unlist(lapply(1:nrow(DFO),function(i){
-    isos<-c(imp_ISO3s[i],tmp[i])
+    isos<-c(tmp1[i],tmp2[i])
     isos<-isos[!is.na(isos)]
     if(length(isos)==0) return(NA_character_) else return(paste0(isos,collapse = ":"))
   }))
@@ -264,7 +265,7 @@ GetDFO<-function(){
   DFO%<>%DFOhazards()
   # Event ID
   DFO%<>%mutate(event_ID=GetMonty_ID(DFO%>%st_drop_geometry()),
-                ev_name=paste0(MAINCAUSE," in ",gen_location," beginning  on ",ev_sdate))
+                ev_name=paste0(MAINCAUSE," in ",gen_location," beginning on ",ev_sdate))
   # Clear up issues with GLIDE numbers
   DFO$GLIDE[DFO$GLIDE=="0"]<-NA_character_
   # External IDs
@@ -298,40 +299,41 @@ GetDFO<-function(){
   hgeom<-hDFO%>%st_drop_geometry%>%GetGCDB_hazID(); hDFO$haz_sub_ID<-hgeom$haz_sub_ID; rm(hgeom)
   hDFO$haz_spat_ID<-GetGCDB_haz_spatID(hDFO%>%st_drop_geometry())
   
+  # Damn sf geometries
+  hDFO%<>%dplyr::select(any_of(MontyJSONnames()))
+  hDFO<-hDFO[!duplicated(hDFO),]
   # Add missing columns & reorder the dataframe to fit imp_GCDB & haz_GCDB object
-  return(list(hazards=hDFO%>%dplyr::select(any_of(MontyJSONnames()))%>%distinct(),
+  return(list(hazards=hDFO,
               impacts=iDFO%>%dplyr::select(any_of(MontyJSONnames()))%>%distinct()))
 }
 
-
-stop("SPLIT haz_Ab + haz:spec + ev_ISO3s + ...")
-
-
+# Wrangle into Monty JSON schema
 convDFO_Monty<-function(){
-  # Extract raw Dessie data
+  # Extract raw DFO data
   DFO<-GetDFO()
   # Get rid of repeated entries
-  Dessie%<>%distinct()%>%arrange(ev_sdate)
+  DFO$impacts%<>%arrange(ev_sdate)
+  DFO$hazards%<>%arrange(ev_sdate)
   # Extract the Monty JSON schema template
   dMonty<-jsonlite::fromJSON("./Taxonomies/Montandon_JSON-Example.json")
   #@@@@@ Event-level data @@@@@#
   # IDs
   ID_linkage<-Add_EvIDlink_Monty(
-    do.call(rbind,parallel::mclapply(1:nrow(Dessie),function(i) {
-      Dessie$all_ext_IDs[[i]]%>%mutate(event_ID=Dessie$event_ID[i],
-                                       ev_name=Dessie$ev_name[i])
-    },mc.cores=ncores))
+    do.call(rbind,parallel::mclapply(1:nrow(DFO$impacts),function(i) {
+      DFO$impacts$all_ext_IDs[[i]]%>%mutate(event_ID=DFO$impacts$event_ID[i],
+                                       ev_name=DFO$impacts$ev_name[i])
+    },mc.cores=ncores))%>%distinct(event_ID,.keep_all = T)
   )
   # Spatial
   spatial<-Add_EvSpat_Monty(
-    Dessie%>%dplyr::select(event_ID, ev_ISO3s, gen_location)
+    DFO$impacts%>%dplyr::select(event_ID, ev_ISO3s, gen_location)
   )
   # temporal
   temporal<-Add_EvTemp_Monty(
-    Dessie%>%dplyr::select(event_ID,ev_sdate,ev_fdate)
+    DFO$impacts%>%dplyr::select(event_ID,ev_sdate,ev_fdate)
   )
   # Hazards
-  hazs<-Dessie%>%dplyr::select(event_ID, haz_Ab, haz_spec)
+  hazs<-DFO$impacts%>%dplyr::select(event_ID, haz_Ab, haz_spec)
   allhaz_class<-Add_EvHazTax_Monty(
     do.call(rbind,parallel::mclapply(1:nrow(hazs),function(i){
       specs<-c(str_split(hazs$haz_spec[i],":",simplify = T))
@@ -348,37 +350,65 @@ convDFO_Monty<-function(){
   dMonty$event_Level$allhaz_class<-allhaz_class
   dMonty$event_Level$ev<-NULL
   
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   #@@@@@ Hazard-level data @@@@@#
   # Nothing to put here as we haven't linked any hazard data yet
   dMonty$hazard_Data<-list()
   
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   #@@@@@ Impact-level data @@@@@#
   # First need to ensure that any impacts with zero impacts estimated are removed to prevent bias
-  Dessie%<>%filter(!is.na(haz_spec) | !is.na(imp_value) | imp_value>0)
+  DFO$impacts%<>%filter(!is.na(haz_spec) | !is.na(imp_value) | imp_value>0)
   # IDs
   ID_linkage<-Add_ImpIDlink_Monty(
-    do.call(rbind,parallel::mclapply(1:nrow(Dessie),function(i) {
-      Dessie$all_ext_IDs[[i]]%>%mutate(event_ID=Dessie$event_ID[i],
-                                       imp_sub_ID=Dessie$imp_sub_ID[i],
+    do.call(rbind,parallel::mclapply(1:nrow(DFO$impacts),function(i) {
+      DFO$impacts$all_ext_IDs[[i]]%>%mutate(event_ID=DFO$impacts$event_ID[i],
+                                       imp_sub_ID=DFO$impacts$imp_sub_ID[i],
                                        haz_sub_ID=NA_character_)
-    },mc.cores=ncores))
+    },mc.cores=ncores))%>%distinct(imp_sub_ID,.keep_all = T)
   )
   # Sources for impact data
-  srcy<-do.call(rbind,parallel::mclapply(unique(Dessie$imp_sub_ID),function(ID){
-    return(Dessie[Dessie$imp_sub_ID==ID,]%>%
+  srcy<-do.call(rbind,parallel::mclapply(unique(DFO$impacts$imp_sub_ID),function(ID){
+    return(DFO$impacts[DFO$impacts$imp_sub_ID==ID,]%>%
              dplyr::select(imp_src_db,imp_src_URL,imp_src_org)%>%
              slice(1))
   },mc.cores=ncores))
   # impact estimates
-  impact_detail<-Dessie%>%distinct(imp_sub_ID,.keep_all = T)%>%
+  impact_detail<-DFO$impacts%>%distinct(imp_sub_ID,.keep_all = T)%>%
     dplyr::select(exp_spec,imp_value,imp_type,imp_units,imp_est_type,imp_unitdate)
   # Add temporal information
-  temporal<-Dessie%>%distinct(imp_sub_ID,.keep_all = T)%>%dplyr::select(imp_sdate,imp_fdate)
+  temporal<-DFO$impacts%>%distinct(imp_sub_ID,.keep_all = T)%>%dplyr::select(imp_sdate,imp_fdate)
   # Spatial data relevant to the impact estimates
   # multiple-entry rows: imp_ISO3s,imp_spat_res
   spatial<-Add_ImpSpatAll_Monty(
-    ID_linkage=Dessie%>%dplyr::select(imp_sub_ID,imp_spat_ID,imp_spat_fileloc),
-    spatial_info=Dessie%>%dplyr::select(
+    ID_linkage=DFO$impacts%>%dplyr::select(imp_sub_ID,imp_spat_ID,imp_spat_fileloc),
+    spatial_info=DFO$impacts%>%dplyr::select(
       imp_ISO3s,
       imp_lon,
       imp_lat,
@@ -387,7 +417,7 @@ convDFO_Monty<-function(){
       imp_spat_resunits,
       imp_spat_crs
     ),
-    source=Dessie%>%dplyr::select(
+    source=DFO$impacts%>%dplyr::select(
       imp_spat_srcdb,
       imp_spat_URL,
       imp_spat_srcorg
@@ -396,7 +426,7 @@ convDFO_Monty<-function(){
   
   # Gather it all and store it in the template!
   # (I know this is hideous, but I don't understand how JSON files can have lists that are also S3 data.frames)
-  dMonty$impact_Data<-data.frame(imp_sub_ID=unique(Dessie$imp_sub_ID))
+  dMonty$impact_Data<-data.frame(imp_sub_ID=unique(DFO$impacts$imp_sub_ID))
   dMonty$impact_Data$ID_linkage=ID_linkage
   dMonty$impact_Data$source=srcy
   dMonty$impact_Data$impact_detail=impact_detail
@@ -412,6 +442,8 @@ convDFO_Monty<-function(){
   
   #@@@@@ Checks and validation @@@@@#
   dMonty%<>%checkMonty()
+  
+  stop("SPLIT haz_Ab + haz_spec + ev_ISO3s + ...")
   
   # Create the path for the output
   dir.create("./CleanedData/MostlyHazardData/UNDRR",showWarnings = F)

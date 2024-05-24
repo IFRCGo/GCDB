@@ -28,6 +28,10 @@ GetTabMonty<-function(){
   Monty<-tryCatch(MergeMonty(list(Monty,checkMonty(convDessie_Monty()))),
                   warning=function(w) {print(w); return(Monty)},
                   error=function(e) {print("Error extracting UNDRR - Desinventar data"); return(Monty)})
+  # DFO
+  Monty<-tryCatch(MergeMonty(list(Monty,checkMonty(convDFO_Monty()))),
+                  warning=function(w) {print(w); return(Monty)},
+                  error=function(e) {print("Error extracting University Columbia - DFO data"); return(Monty)})
   # PDC Forecasts
   
   # ADAM Forecasts
@@ -48,7 +52,7 @@ GetTabMonty<-function(){
   # NOAA Landslides
   # NOAA Tsunamis
   
-  # DFO
+  
   
   # Google floods
   

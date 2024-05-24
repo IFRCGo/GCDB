@@ -1,37 +1,32 @@
-
-DesIsos<-c("com", "dji", "eth", "brb", "gmb", "gin", "ken", "mdg", "mli", "mus",
-           "moz", "mar", "nam", "ner", "sen", "sle",
-           "syc", "tgo", "tun", "uga", "znz", "arg", "blz", "bol", "chl",
-           "col", "cri", "ecu", "slv", "gtm", "guy",
-           "hnd", "mex", "nic", "pan", "pry", "per", "ury", "ven", "019",
-           "033", "005", "irn", "jor", "lao", "lbn",
-           "mal", "npl", "pak", "pse", "lka", "sy11", "etm", "vnm", "yem",
-           "alb", "esp", "srb", "tur", "atg",
-           "dma", "dom", "jam", "grd", "lca", "kna", "vct", "tto", "pac")
-
-DesCountries = c("Comoros", "Djibouti", "Ethiopia", "Barbados", "Gambia", "Guinea", "Kenya",
-                "Madagascar", "Mali", "Mauritius",
-                "Mozambique", "Morocco", "Namibia", "Niger", "Senegal",
-                "Sierra Leone", "Seychelles", "Togo", "Tunisia",
-                "Uganda", "Zanzibar (United Rep. of Tanzania)", "Argentina",
-                "Belize", "Bolivia", "Chile", "Colombia",
-                "Costa Rica", "Ecuador", "El Salvador", "Guatemala", "Guyana",
-                "Honduras", "Mexico", "Nicaragua",
-                "Panama", "Paraguay", "Peru", "Uruguay", "Venezuela",
-                "India Orissa", "India Tamil Nadu",
-                "India Uttarakhand", "I. R. Iran", "Jordan", "Laos", "Lebanon",
-                "Maldives", "Nepal", "Pakistan",
-                "Palestine", "Sri Lanka", "Syrian Arab Republic", "Timor Leste",
-                "Viet Nam", "Yemen", "Albania",
-                "Spain", "Serbia", "Turkey", "Antigua and Barbuda", "Dominica",
-                "Dominican Republic", "Jamaica",
-                "Grenada", "Saint Lucia", "Saint Kitts and Nevis",
-                "Saint Vincent and the Grenadines",
-                "Trinidad and Tobago",
-                "Secretary of Pacific Community (23 countries)")
-
-# Link from Desinventar to extract the data
-desbaseurl<-"https://www.desinventar.net/DesInventar/download/DI_export_"
+GetDessieISOs<-function(){
+  DesIsos<-data.frame(isos=
+                        c("ago", "alb", "arg", "arm", "atg", "bdi", "bfa", "blr", "blz", "bol",
+                          "brb", "btn", "chl", "col", "com", "cpv", "cri", "dji", "dma", "dom",
+                          "ecu", "egy", "esp", "eth", "etm", "gha", "gin", "gmb", "gnb", "gnq", 
+                          "grd", "gtm", "guy", "hnd", "idn", "irn", "irq", "jam", "jor", "ken", 
+                          "khm", "kna", "lao", "lbn", "lbr", "lca", "lka", "mal", "mar", "mdg", 
+                          "mdv", "mex", "mli", "mmr", "mne", "mng", "moz", "mus", "mwi", "nam",
+                          "ner", "nga", "nic", "npl", "pac", "pak", "pan", "per", "prt", "pry", 
+                          "pse", "rwa", "sdn", "sen", "sle", "slv", "som", "srb", "swz", "sy11",
+                          "syc", "syr", "tgo", "tls", "tto", "tun", "tur", "tza", "uga", "ury", 
+                          "vct", "ven", "vnm", "xkx", "yem", "zmb", "znz", "019", "033", "005"))
+  # try to automatically extract as many names as possible
+  DesIsos%<>%mutate(country=convIso3Country(isos),
+                    actualiso=str_to_upper(isos))
+  # We know the annoying ISOs:
+  issiso<-c("ETM", "MAL", "PAC", "SY11", "XKX", "ZNZ", "019", "033", "005")
+  # Check which ones are NAs and replace them manually
+  if(all(DesIsos$actualiso[is.na(DesIsos$country)]%in%issiso) & 
+     length(DesIsos$actualiso[is.na(DesIsos$country)])==length(issiso)){
+    DesIsos$actualiso[is.na(DesIsos$country)]<-c("TLS","MDV","PAC","SYR","XKX","TZA","IND","IND","IND")
+    DesIsos$country[is.na(DesIsos$country)]<-c("Timor-Leste","Maldives",
+                                               "Secretary of Pacific Community (23 countries)",
+                                               "Syrian Arab Republic","Kosovo","Tanzania",
+                                               "India","India","India")
+  } else stop("GetDessieISOs: an extra unknown country name was found in the list")
+    
+  return(DesIsos)
+}
 
 GetDessie<-function(iso3,forcer=F){
   iso3%<>%str_to_lower()
@@ -43,7 +38,7 @@ GetDessie<-function(iso3,forcer=F){
   # Set the maximum timeout limit
   options(timeout = 60)#  options(timeout = max(10, getOption("timeout")))
   # Download the raster file to the location 'temp'
-  download.file(paste0(desbaseurl,iso3,".zip"),temp)
+  download.file(paste0("https://www.desinventar.net/DesInventar/download/DI_export_",iso3,".zip"),temp)
   # Output location: one folder per country, to house everything
   outloc<-paste0("./RawData/MostlyImpactData/Desinventar/",iso3)
   # Check the end location exists
@@ -633,7 +628,7 @@ Des2tabGCDB<-function(Dessie){
                    "gen_location"="location")
   # Add some of the extra details that are Desinventar-specific
   Dessie%<>%mutate(imp_est_type="esttype_prim",
-                   imp_src_URL=paste0(desbaseurl,imp_ISO3s,".zip"),
+                   imp_src_URL=paste0("https://www.desinventar.net/DesInventar/download/DI_export_",imp_ISO3s,".zip"),
                    imp_spat_fileloc=imp_src_URL,
                    imp_spat_URL=imp_src_URL,
                    imp_src_db="Desinventar",
@@ -700,12 +695,14 @@ GetDesinventar<-function(ISO3s=NULL){
   tISOS<-!is.na(convIso3Country(isos))
   # User-defined country selection
   if(!is.null(ISO3s)) tISOS <- tISOS & str_to_upper(isos)%in%str_to_upper(ISO3s)
+  # Get the translated names of the Desinventar countries
+  DesIsos<-GetDessieISOs()
   # Get all countries data
   Dessie<-do.call(dplyr::bind_rows,lapply(which(tISOS),function(i){
     # Extract impact data
     out<-openxlsx::read.xlsx(paste0("./CleanedData/MostlyImpactData/Desinventar/",filez[i]))
     # Add the country
-    out$imp_ISO3s<-out$ev_ISO3s<-stringr::str_to_upper(isos[i])
+    out$imp_ISO3s<-out$ev_ISO3s<-DesIsos$actualiso[DesIsos$isos==isos[i]]
     
     return(out)
   }))
@@ -720,7 +717,10 @@ GetDesinventar<-function(ISO3s=NULL){
 }
 
 
-convDessie_Monty<-function(ISO3s=NULL){
+convDessie_Monty<-function(ISO3s=NULL, forcer=F){
+  if(is.null(ISO3s)) ISO3s<-GetDessieISOs()$isos
+  # Download the most recent data from Desinventar
+  if(forcer) WrangleDessie(ISO3s)
   # Extract raw Dessie data
   Dessie<-GetDesinventar(ISO3s)
   # Get rid of repeated entries
