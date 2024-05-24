@@ -33,3 +33,26 @@ tables$colnames<-unname(sapply(tables$table,function(x){
 View(tables)
 
 pdc<-st_read(conn,"imminent_pdc")
+
+tables$rowcount<-unname(sapply(tables$table,function(x){
+  dbGetQuery(conn,paste0("SELECT COUNT(*) FROM ",x,";"))$count
+},simplify = T))
+write_csv(tables%>%dplyr::select(-colnames),"./CleanedData/Monty_Forecast_Data_Info.csv")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
