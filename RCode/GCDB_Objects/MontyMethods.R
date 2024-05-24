@@ -57,16 +57,17 @@ GetGCDB_impID<-function(impies){
     dplyr::select(-any_of(c("tmp")))%>%as.data.frame()
 }
 
-GetGCDB_hazID<-function(impies){
-  if(!any(colnames(impies)=="haz_spat_ID")) impies$haz_spat_ID<-NA_character_
-  tmp<-impies; tmp[is.na(tmp)]<-""
-  impies$haz_sub_ID<-tmp%>%dplyr::select(c(event_ID,haz_src_db,haz_cluster,haz_spec,haz_spat_ID))%>%
-    mutate(haz_src_db=stringr::str_remove(stringi::stri_trans_totitle(haz_src_db),pattern = " "),
-           haz_src_db=stringr::str_remove(stringi::stri_trans_totitle(haz_src_db),pattern = " "),
-    )%>%
+GetGCDB_hazID<-function(hazzies){
+  # For empty spatial IDs
+  if(any(colnames(hazzies)=="haz_spat_ID")) hazzies$tmp<-unlist(lapply(hazzies$haz_spat_ID, function(x) paste0(x,collapse=":")))
+  # Compile the ID
+  hazzies$haz_sub_ID<-hazzies%>%dplyr::select(dplyr::any_of(c("event_ID","haz_src_db","haz_cluster","haz_spec","haz_sdate","haz_fdate","haz_units","tmp","haz_lon","haz_lat")))%>%
+    mutate(haz_src_db=stringr::str_remove(stringi::stri_trans_totitle(haz_src_db),pattern = " "))%>%
     apply(1,function(x) paste0(x,collapse = "-"))
-  
-  return(impies)
+  # Make sure that no duplicates exist...
+  hazzies%>%group_by(haz_sub_ID)%>%
+    mutate(haz_sub_ID=paste0(haz_sub_ID,"_",1:length(haz_sub_ID)))%>%
+    dplyr::select(-any_of(c("tmp")))%>%as.data.frame()
 }
 
 GetGCDB_imp_spatID<-function(impies){
@@ -76,6 +77,7 @@ GetGCDB_imp_spatID<-function(impies){
 }
 
 GetGCDB_haz_spatID<-function(impies){
+  if(all(is.na(impies$haz_spat_res))) impies$haz_spat_res<-0
   impies[is.na(impies)]<-""
   impies%>%dplyr::select(haz_spat_srcorg,haz_spat_srcdb,haz_spat_covcode,haz_spat_res,haz_spat_resunits)%>%
     apply(1,function(x) paste0(x,collapse = "-"))

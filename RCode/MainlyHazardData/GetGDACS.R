@@ -306,8 +306,6 @@ restructGDACS<-function(GDACS){
     haz_spat_crs="EPSG:4326",
     haz_spat_srcorg="EC-JRC",
     haz_spat_fileloc=src_URL,
-    haz_spat_colname=NA_character_,
-    haz_spat_rowname=NA_character_,
     haz_spat_srcdb="GDACS",
     haz_spat_URL=src_URL)
   
@@ -321,12 +319,8 @@ restructGDACS<-function(GDACS){
   # Now for hazards
   GDACS%<>%GetGCDB_hazID()
   GDACS$haz_spat_ID<-GetGCDB_haz_spatID(GDACS)
-  # Make sure not to lose the GDACS ID
-  GDACS_ID<-GDACS$GDACS_ID
-  # Add the extra columns to make it officially a GCDB object
-  # GDACS%<>%AddEmptyColImp()
-  # Add GDACS ID back and return
-  GDACS%>%mutate(GDACS_ID=GDACS_ID)%>%distinct()
+
+  GDACS%>%distinct()
 }
 
 GetGDACS_GCDB<-function(){
