@@ -329,9 +329,13 @@ convDFO_Monty<-function(){
     },mc.cores=ncores))%>%distinct(event_ID,.keep_all = T)
   )
   # Spatial
-  spatial<-Add_EvSpat_Monty(
-    DFO$impacts%>%dplyr::select(event_ID, ev_ISO3s, gen_location)
-  )
+  spatial_info<-DFO$impacts%>%dplyr::select(event_ID, gen_location)
+  spatial_info$ev_ISO3s<-parallel::mclapply(1:nrow(DFO$hazards),function(i) {
+    # First get the length of the required DF
+    unique(c(str_split(DFO$hazards$ev_ISO3s[i],"  :  ",simplify = T)))
+  },mc.cores=ncores)
+  # Add it into the events object
+  spatial<-Add_EvSpat_Monty(spatial_info)
   # temporal
   temporal<-Add_EvTemp_Monty(
     DFO$impacts%>%dplyr::select(event_ID,ev_sdate,ev_fdate)
@@ -370,6 +374,14 @@ convDFO_Monty<-function(){
   # Add temporal information
   temporal<-DFO$hazards%>%dplyr::select(haz_sdate,haz_fdate)%>%st_drop_geometry()
   # Spatial instance
+  spatial_info<-DFO$hazards%>%
+    dplyr::select(all_of(c("haz_lon","haz_lat","haz_spat_covcode",
+                           "haz_spat_res","haz_spat_resunits","haz_spat_crs")))
+  spatial_info$haz_ISO3s<-parallel::mclapply(1:nrow(DFO$hazards),function(i) {
+    # First get the length of the required DF
+    unique(c(str_split(DFO$hazards$haz_ISO3s[i],"  :  ",simplify = T)))
+  },mc.cores=ncores)
+  # Form the object
   spatial<-Add_hazSpatAll_Monty(
     ID_linkage=DFO$hazards%>%st_drop_geometry()%>%
       dplyr::select(
@@ -464,14 +476,11 @@ convDFO_Monty<-function(){
   
   #@@@@@ Checks and validation @@@@@#
   dMonty%<>%checkMonty()
-  
-  stop("SPLIT haz_Ab + haz_spec + ev_ISO3s + ...")
-  
   # Create the path for the output
-  dir.create("./CleanedData/MostlyHazardData/UNDRR",showWarnings = F)
+  dir.create("./CleanedData/MostlyHazardData/UniColumbia",showWarnings = F)
   # Write it out just for keep-sake
   write(jsonlite::toJSON(dMonty,pretty = T,auto_unbox=T,na = 'null'),
-        paste0("./CleanedData/MostlyHazardData/UNDRR/Desinventar_",Sys.Date(),".json"))
+        paste0("./CleanedData/MostlyHazardData/UniColumbia/DFO_",Sys.Date(),".json"))
   
   return(dMonty)
 }

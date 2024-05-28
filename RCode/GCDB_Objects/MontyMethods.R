@@ -1147,11 +1147,11 @@ checkCharMonty<-function(Monty){
   Monty$impact_Data$ID_linkage$event_ID%<>%remSpecChar()
   Monty$impact_Data$ID_linkage$imp_sub_ID%<>%remSpecChar()
   Monty$impact_Data$ID_linkage$haz_sub_ID<-
-    lapply(Monty$impact_Data$ID_linkage$haz_sub_ID,
+    parallel::mclapply(Monty$impact_Data$ID_linkage$haz_sub_ID,
            function(x) {
              if(length(x)==0) return(x)
              remSpecChar(x)
-           })
+           },mc.cores=ncores)
   Monty$impact_Data$spatial<-
     lapply(Monty$impact_Data$spatial, function(x){
       x$ID_linkage$imp_spat_ID%<>%remSpecChar()
@@ -1161,7 +1161,7 @@ checkCharMonty<-function(Monty){
     Monty$hazard_Data$spatial<-
       lapply(Monty$hazard_Data$spatial, function(x){
         if(length(x)==0) return(x)
-        x$ID_linkage$imp_spat_ID%<>%remSpecChar()
+        x$ID_linkage$haz_spat_ID%<>%remSpecChar()
         return(x)
       })
   }
@@ -1174,7 +1174,10 @@ checkCharMonty<-function(Monty){
   # Check external IDs (only GLIDE numbers for now)
   Monty$event_Level$ID_linkage$all_ext_IDs<-lapply(Monty$event_Level$ID_linkage$all_ext_IDs,function(x){
     if(any(!is.na(x$ext_ID_db) & x$ext_ID_db=="GLIDE")) {
-      x%<>%filter(!(ext_ID_db=="GLIDE" & !grepl("^[A-Z]{2}-\\d{4}-\\d{6}-[A-Z]{3}$",ext_ID)))
+      x%<>%filter(!(ext_ID_db=="GLIDE" & 
+                      !(grepl("^[A-Z]{2}-\\d{4}-\\d{6}-[A-Z]{3}$",ext_ID) |
+                          grepl("^\\d{4}-\\d{6}-[A-Z]{3}$",ext_ID) |
+                          grepl("^\\d{6}-[A-Z]{3}$",ext_ID))))
     } 
     return(x)
   })
@@ -1200,8 +1203,8 @@ warnEvsMonty<-function(Monty,evs,texty){
 # Check that no entries have NULL haz_spec_code, haz_Ab code, exp_spec_code, imp_type_code, imp_unit_code, event_ID
 checkNULLvars<-function(Monty){
   # Specific hazard & abbreviated hazard codes
-  indy<-sapply(Monty$event_Level$allhaz_class, ncol)!=0 &
-    sapply(Monty$event_Level$allhaz_class,function(x) !all(is.na(x)))
+  indy<-sapply(Monty$event_Level$allhaz_class, function(x) length(x)!=0) &
+    sapply(Monty$event_Level$allhaz_class,function(x) (all(is.na(x$haz_Ab)) | all(is.na(x$haz_spec))))
   # Provide a warning about this, including source(s) info
   if(sum(!indy)!=0) {
     warnEvsMonty(Monty,
@@ -1316,8 +1319,8 @@ checkAwkEvsMonty<-function(Monty){
   }
   # Hazard classifications of the events
   if (class(Monty$event_Level$allhaz_class)!="list") stop("Something went wrong with the allhaz_class variable in the event object")
-  if(any(sapply(Monty$event_Level$allhaz_class,function(x) class(x))!="data.frame")) {
-    if(any(sapply(Monty$event_Level$allhaz_class,function(x) class(x[[1]]))!="data.frame")) {
+  if(any(sapply(Monty$event_Level$allhaz_class,function(x) is.null(x$all_hazs_Ab)))) {
+    if(any(sapply(Monty$event_Level$allhaz_class,function(x) class(x[[1]]))!="character")) {
       Monty$event_Level$allhaz_class<-lapply(Monty$event_Level$allhaz_class, function(x) x[[1]])
     } else stop("Something went wrong with the allhaz_class variable in the event object")
   }
