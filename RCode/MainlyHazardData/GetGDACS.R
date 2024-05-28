@@ -460,12 +460,12 @@ convGDACS_Monty<-function(){
     ID_linkage=GDACS%>%dplyr::select(
       haz_sub_ID,
       haz_spat_ID,
-      haz_spat_fileloc,
-      haz_spat_colname,
-      haz_spat_rowname
+      haz_spat_fileloc
     ),
     spatial_info=GDACS%>%dplyr::select(
       haz_ISO3s,
+      haz_lon,
+      haz_lat,
       haz_spat_covcode,
       haz_spat_res,
       haz_spat_resunits,

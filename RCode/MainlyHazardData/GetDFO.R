@@ -215,7 +215,9 @@ GetDFO<-function(){
                 ev_fdate=imp_fdate,haz_fdate=imp_fdate,
                 exp_spec="expspec_allpeop",imp_units="unitscountnum",
                 imp_est_type="esttype_prim", haz_est_type="esttype_prim",
+                imp_unitdate=imp_sdate,
                 imp_src_db="DFO",
+                imp_src_URL="https://floodobservatory.colorado.edu",
                 imp_src_org="UniColumbia",
                 imp_src_orgtype="orgtypeacad",
                 imp_spat_covcode="spat_polygon",
@@ -225,6 +227,7 @@ GetDFO<-function(){
                 imp_spat_srcorg="IFRC",
                 imp_spat_srcdb="GO-Maps",
                 imp_spat_URL="https://go-user-library.ifrc.org/maps",
+                imp_spat_fileloc="https://go-user-library.ifrc.org/maps",
                 imp_spat_ID=NA_character_,
                 haz_src_db="DFO",
                 haz_src_org="UniColumbia",
@@ -363,12 +366,75 @@ convDFO_Monty<-function(){
   
   
   #@@@@@ Hazard-level data @@@@@#
-  # Nothing to put here as we haven't linked any hazard data yet
-  dMonty$hazard_Data<-list()
+  # The ID linkage stuff is the same as for the event_Level element
+  ID_linkage<-Add_hazIDlink_Monty(
+    rbind(DFO$hazards%>%mutate(ext_ID_db="GDACS",ext_ID_org="EC-JRC")%>%
+            dplyr::select(event_ID, imp_sub_ID, haz_sub_ID, GDACS_ID,
+                          ext_ID_db,ext_ID_org)%>%
+            rename(ext_ID=GDACS_ID)%>%
+            dplyr::select(event_ID, imp_sub_ID, haz_sub_ID, 
+                          ext_ID, ext_ID_db, ext_ID_org),
+          DFO$hazards%>%filter(!is.na(ext_IDs))%>%mutate(ext_ID_db="GDACS",ext_ID_org="EC-JRC")%>%
+            dplyr::select(event_ID, imp_sub_ID, haz_sub_ID, ext_IDs, ext_ID_dbs, ext_ID_orgs)%>%
+            rename(ext_ID=ext_IDs,ext_ID_db=ext_ID_dbs,ext_ID_org=ext_ID_orgs)%>%
+            dplyr::select(event_ID, imp_sub_ID, haz_sub_ID, 
+                          ext_ID, ext_ID_db, ext_ID_org)
+    )
+  )
   
+  ID_linkage%<>%cbind(DFO$hazards["haz_sub_ID"])%>%
+    dplyr::select(event_ID,haz_sub_ID,all_ext_IDs)%>%rename(haz_ext_IDs=all_ext_IDs)
+  # <-Add_hazIDlink_Monty(
+  #   DFO$hazards%>%
+  #     dplyr::select(event_ID,haz_sub_ID,ext_IDs,ext_ID_dbs,ext_ID_orgs)%>%
+  #     rename(ext_ID=ext_IDs,ext_ID_db=ext_ID_dbs,ext_ID_org=ext_ID_orgs)
+  # )
   
+  # Sources for impact data
+  source<-DFO$hazards%>%dplyr::select(haz_src_db,haz_src_URL,haz_src_org)%>%mutate(haz_src_db="GDACS")
+  stop()
+  # hazard taxonomy
+  hazard_detail<-Add_HazTax_Monty(
+    DFO$hazards%>%dplyr::select(haz_sub_ID, haz_Ab, haz_spec, 
+                          haz_maxvalue,haz_maxunits,haz_est_type)%>%
+      rename(event_ID=haz_sub_ID)
+  )
+  # Concurrent hazard info:
+  hazard_detail$concur_haz<-lapply(1:nrow(hazard_detail),function(i) list())
+  # Add temporal information
+  temporal<-DFO$hazards%>%dplyr::select(haz_sdate,haz_fdate)
+  # Spatial instance
+  spatial<-Add_hazSpatAll_Monty(
+    ID_linkage=DFO$hazards%>%dplyr::select(
+      haz_sub_ID,
+      haz_spat_ID,
+      haz_spat_fileloc
+    ),
+    spatial_info=DFO$hazards%>%dplyr::select(
+      haz_ISO3s,
+      haz_lon,
+      haz_lat,
+      haz_spat_covcode,
+      haz_spat_res,
+      haz_spat_resunits,
+      haz_spat_crs
+    ),
+    source=DFO$hazards%>%dplyr::select(
+      haz_spat_srcdb,
+      haz_spat_URL,
+      haz_spat_srcorg
+    )
+  )
   
-  
+  # Gather it all and store it in the template!
+  # (I know this is hideous, but I don't understand how JSON files can have lists that are also S3 data.frames)
+  dMonty$hazard_Data<-data.frame(imp_sub_ID=DFO$hazards$imp_sub_ID)
+  dMonty$hazard_Data$ID_linkage=ID_linkage
+  dMonty$hazard_Data$source=source
+  dMonty$hazard_Data$hazard_detail=hazard_detail
+  dMonty$hazard_Data$temporal=temporal
+  dMonty$hazard_Data$spatial=spatial
+  dMonty$hazard_Data$imp_sub_ID<-NULL
   
   
   
@@ -389,9 +455,10 @@ convDFO_Monty<-function(){
   ID_linkage<-Add_ImpIDlink_Monty(
     do.call(rbind,parallel::mclapply(1:nrow(DFO$impacts),function(i) {
       DFO$impacts$all_ext_IDs[[i]]%>%mutate(event_ID=DFO$impacts$event_ID[i],
-                                       imp_sub_ID=DFO$impacts$imp_sub_ID[i],
-                                       haz_sub_ID=NA_character_)
-    },mc.cores=ncores))%>%distinct(imp_sub_ID,.keep_all = T)
+                                       imp_sub_ID=DFO$impacts$imp_sub_ID[i])%>%
+        left_join(DFO$hazards[,c("haz_sub_ID","event_ID")],
+                  by="event_ID",relationship="many-to-many")
+    },mc.cores=ncores))
   )
   # Sources for impact data
   srcy<-do.call(rbind,parallel::mclapply(unique(DFO$impacts$imp_sub_ID),function(ID){
@@ -405,18 +472,17 @@ convDFO_Monty<-function(){
   # Add temporal information
   temporal<-DFO$impacts%>%distinct(imp_sub_ID,.keep_all = T)%>%dplyr::select(imp_sdate,imp_fdate)
   # Spatial data relevant to the impact estimates
-  # multiple-entry rows: imp_ISO3s,imp_spat_res
+  # multiple-entry rows: imp_ISO3s
   spatial<-Add_ImpSpatAll_Monty(
     ID_linkage=DFO$impacts%>%dplyr::select(imp_sub_ID,imp_spat_ID,imp_spat_fileloc),
-    spatial_info=DFO$impacts%>%dplyr::select(
-      imp_ISO3s,
-      imp_lon,
-      imp_lat,
-      imp_spat_covcode,
-      imp_spat_res,
-      imp_spat_resunits,
-      imp_spat_crs
-    ),
+    spatial_info=do.call(rbind,parallel::mclapply(1:nrow(DFO$impacts),function(i) {
+      # First get the length of the required DF
+      imp_ISO3s<-unique(c(str_split(DFO$impacts$imp_ISO3s[i],":",simplify = T)))
+      out<-DFO$impacts[rep(i,length(imp_ISO3s)),c("imp_ISO3s","imp_lon","imp_lat","imp_spat_covcode",
+                                                  "imp_spat_res","imp_spat_resunits","imp_spat_crs")]
+      out$imp_ISO3s<-imp_ISO3s
+      return(out)
+    },mc.cores=ncores)),
     source=DFO$impacts%>%dplyr::select(
       imp_spat_srcdb,
       imp_spat_URL,
@@ -433,6 +499,16 @@ convDFO_Monty<-function(){
   dMonty$impact_Data$temporal=temporal
   dMonty$impact_Data$spatial=spatial
   dMonty$impact_Data$imp_sub_ID<-NULL
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
   #@@@@@ Response-level data @@@@@#
   # Nothing to put here as we haven't linked any response data yet
