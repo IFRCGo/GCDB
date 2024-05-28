@@ -233,14 +233,8 @@ convGIDD_Monty<-function(){
     GIDD%>%dplyr::select(event_ID,ev_sdate,ev_fdate)
   )
   # Hazards
-  hazs<-GIDD%>%dplyr::select(event_ID, haz_Ab, haz_spec)
   allhaz_class<-Add_EvHazTax_Monty(
-    do.call(rbind,lapply(1:nrow(hazs),function(i){
-      specs<-c(str_split(hazs$haz_spec[i],":",simplify = T))
-      outsy<-hazs[rep(i,length(specs)),]
-      outsy$haz_spec<-specs
-      return(outsy)
-    }))
+    GIDD%>%dplyr::select(event_ID, haz_Ab, haz_spec)
   )
   # Gather it all and store it in the template!
   gMonty$event_Level<-data.frame(ev=ID_linkage$event_ID)

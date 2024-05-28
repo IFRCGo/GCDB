@@ -323,7 +323,7 @@ CleanEMDAT<-function(EMDAT){
   EMDAT$imp_src_db<-"EMDAT"
   EMDAT$imp_src_orgtype<-"orgtypeacad"
   EMDAT$imp_spat_covcode<-"spat_polygon"
-  stop("EMDAT imp_spat_ID needs sorting out")
+  # stop("EMDAT imp_spat_ID needs sorting out")
   # EMDAT$imp_spat_ID<-apply(EMDAT[,c("Admin1.Code","Admin2.Code")],1,function(x) {
   #   if(all(is.na(x))) return(NA_character_)
   #   if(any(is.na(x))) return(x[!is.na(x)])
@@ -341,7 +341,7 @@ CleanEMDAT<-function(EMDAT){
   if(nrow(EMDAT)==0) return(EMDAT)
   # Some GLIDE numbers don't have an associated hazard...
   ind<-!is.na(EMDAT$Glide) & nchar(EMDAT$Glide)==11
-  stop("sort out EMDAT GLIDE numbers - 'External.IDs'")
+  # stop("sort out EMDAT GLIDE numbers - 'External.IDs'")
   
   
   EMDAT$GLIDE<-EMDAT$External.IDs
@@ -405,7 +405,8 @@ CleanEMDAT_old<-function(EMDAT){
   # Column renaming
   colnames(EMDAT)[colnames(EMDAT)=="Event.Name"]<-"ev_name_en"; colnames(EMDAT)[colnames(EMDAT)=="Location"]<-"location"; colnames(EMDAT)[colnames(EMDAT)=="ISO"]<-"imp_ISO3s"
   # Add some of the extra details that are Desinventar-specific
-  EMDAT%<>%mutate(imp_est_type="esttype_prim",
+  EMDAT%<>%mutate(ev_ISO3s=imp_ISO3s,
+    imp_est_type="esttype_prim",
   imp_src_URL="https://public.emdat.be/",
   imp_src_org="CRED",
   imp_src_db="EMDAT",
@@ -557,14 +558,8 @@ convEMDAT_Monty<-function(){
     EMDAT%>%dplyr::select(event_ID,ev_sdate,ev_fdate)
   )
   # Hazards
-  hazs<-EMDAT%>%dplyr::select(event_ID, haz_Ab, haz_spec)
   allhaz_class<-Add_EvHazTax_Monty(
-    do.call(rbind,lapply(1:nrow(hazs),function(i){
-      specs<-c(str_split(hazs$haz_spec[i],":",simplify = T))
-      outsy<-hazs[rep(i,length(specs)),]
-      outsy$haz_spec<-specs
-      return(outsy)
-    }))
+    EMDAT%>%dplyr::select(event_ID, haz_Ab, haz_spec)
   )
   # Gather it all and store it in the template!
   emdMonty$event_Level<-data.frame(ev=ID_linkage$event_ID)

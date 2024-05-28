@@ -1,5 +1,9 @@
-
-token <- paste("Token", go_token)
+GetGOtoken<-function(psswd,ussr="hamish.patten@ifrc.org"){
+  httr::POST("https://goadmin.ifrc.org/get_auth_token",
+             httr::add_headers(username = "hamish.patten@ifrc.org", 
+                               password = psswd),httr::content_type_json(),
+             httr::timeout(10000))
+}
 
 getGOurl<-function(db="GO-App",token=NULL, results=T){
   
@@ -304,14 +308,8 @@ convGOApp_Monty<-function(){
     appeal%>%dplyr::select(event_ID,ev_sdate,ev_fdate)
   )
   # Hazards
-  hazs<-appeal%>%dplyr::select(event_ID, haz_Ab, haz_spec)
   allhaz_class<-Add_EvHazTax_Monty(
-    do.call(rbind,lapply(1:nrow(hazs),function(i){
-      specs<-c(str_split(hazs$haz_spec[i],":",simplify = T))
-      outsy<-hazs[rep(i,length(specs)),]
-      outsy$haz_spec<-specs
-      return(outsy)
-    }))
+    appeal%>%dplyr::select(event_ID, haz_Ab, haz_spec)
   )
   # Gather it all and store it in the template!
   appMonty$event_Level<-data.frame(ev=ID_linkage$event_ID)

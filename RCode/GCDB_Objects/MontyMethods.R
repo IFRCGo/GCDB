@@ -1,5 +1,6 @@
 taxies<-openxlsx::read.xlsx("./ImpactInformationProfiles.xlsx")
-imp_class<-taxies%>%filter(list_name=="imp_type")%>%dplyr::select(2:3)
+imp_class<-taxies%>%filter(list_name=="imp_type")%>%dplyr::select(2:3)%>%
+  rename("imp_type_code"="name","imp_type_lab"="label")
 exp_class<-data.frame(
   exp_det_code=taxies%>%filter(list_name=="exp_specs")%>%pull(name),
   exp_det_lab=taxies%>%filter(list_name=="exp_specs")%>%pull(label),
@@ -28,6 +29,8 @@ haz_class<-data.frame(
                          taxies[taxies$list_name=="hazardtypes",2:3],
                          by=c("link_group.y"="name"))%>%pull(label)  
 )
+units_class<-taxies%>%filter(list_name=="measunits")%>%dplyr::select(2:3)%>%
+  rename("units_code"="name","units_lab"="label")
 
 GetMonty_ID<-function(DF,haz=NULL) {
   # In case a specific hazard is fed in
@@ -1325,7 +1328,7 @@ checkAwkImpsMonty<-function(Monty){
   # haz_sub_ID
   if (class(Monty$impact_Data$ID_linkage$haz_sub_ID)!="list") stop("Something went wrong with the haz_sub_ID variable in the impact object")
   if(any(sapply(Monty$impact_Data$ID_linkage$haz_sub_ID,function(x){
-    !((class(x)=="list" & length(x)==0) | class(x)=="character")
+    !((class(x)=="list" & length(x)==0) | class(x[[1]])=="character")
   }))) stop("Something went wrong with the haz_sub_ID variable in the impact object")
   # imp_ext_IDs
   if (class(Monty$impact_Data$ID_linkage$imp_ext_IDs)!="list") stop("Something went wrong with the external ID variable in the impact object")
@@ -1481,7 +1484,7 @@ MontyJSONnames<-function(adder=T){
   
   return(sort(unique(c(taxy,defs,"ext_ID","imp_src_orgtype","haz_type","haz_cluster",
            "haz_spec","haz_potlink","hazlink","exp_cat","exp_subcat",
-           "imp_type","imp_est_type"))))
+           "imp_type","imp_est_type","haz_est_type"))))
 }
 
 # Sort EM-DAT & GIDD data first?
