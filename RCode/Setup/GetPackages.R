@@ -15,6 +15,7 @@ GetSourceFiles<-function(packred){
   source(paste0(dir,'RCode/MainlyImpactData/GetDesinventar.R'))
   source(paste0(dir,'RCode/MainlyImpactData/GetEMDAT.R'))
   source(paste0(dir,'RCode/MainlyImpactData/GetGIDD.R'))
+  source(paste0(dir,'RCode/MainlyImpactData/GetReliefWeb.R'))
   source(paste0(dir,'RCode/MainlyImpactData/GetIFRCappeal.R'))
   # Hazard related:
   source(paste0(dir,'RCode/MainlyHazardData/GetGDACS.R'))
