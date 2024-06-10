@@ -678,7 +678,7 @@ Des2tabGCDB<-function(Dessie){
   Dessie%>%dplyr::select(any_of(MontyJSONnames()))
 }
 
-GetDesinventar<-function(ISO3s=NULL){
+GetDesinventar<-function(ISO3s=NULL,forcer=F){
   # Find the impact files
   filez<-list.files("./CleanedData/MostlyImpactData/Desinventar/",
                     pattern = ".xlsx",
@@ -717,7 +717,8 @@ GetDesinventar<-function(ISO3s=NULL){
 }
 
 
-convDessie_Monty<-function(ISO3s=NULL, forcer=F){
+convDessie_Monty<-function(forcer=T, ISO3s=NULL){
+  # Only certain countries have Desinventar databases
   if(is.null(ISO3s)) ISO3s<-GetDessieISOs()$isos
   # Download the most recent data from Desinventar
   if(forcer) WrangleDessie(ISO3s)

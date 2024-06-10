@@ -1,8 +1,21 @@
+# Function to generate the IFRC GO API token
 GetGOtoken<-function(psswd,ussr="hamish.patten@ifrc.org"){
-  httr::POST("https://goadmin.ifrc.org/get_auth_token",
-             httr::add_headers(username = "hamish.patten@ifrc.org", 
-                               password = psswd),httr::content_type_json(),
-             httr::timeout(10000))
+  # Create the JSON body as a list
+  bod <- jsonlite::toJSON(list(
+    username = "hamish.patten@ifrc.org",
+    password = psswd
+  ), auto_unbox = T)
+  # Make the POST request
+  response <- httr::POST(
+    "https://goadmin.ifrc.org/get_auth_token",
+    httr::add_headers(`Content-Type` = "application/json"),
+    body = bod,
+    httr::timeout(10000)
+  )
+  # Check the API call for issues
+  if(response$status_code!=200) stop("issues generating the IFRC GO API Token, check user ID and password provided")
+  # If no issues, return the token
+  httr::content(response)$token
 }
 
 getGOurl<-function(db="GO-App",token=NULL, results=T){
@@ -283,7 +296,7 @@ CleanGO_dref<-function(dref){
 
 convGOApp_Monty<-function(){
   # Get the Emergency Appeal data from GO
-  appeal<-ExtractGOdata(db = "GO-App", token = token)
+  appeal<-ExtractGOdata(db = "GO-App", token = go_token)
   # Clean using the old GCDB structure
   appeal%<>%CleanGO_app()%>%filter(!is.na(haz_spec) & imp_value>0)
   # Get rid of repeated entries
