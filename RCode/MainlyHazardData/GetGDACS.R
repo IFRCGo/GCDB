@@ -504,35 +504,11 @@ convGDACS_Monty<-function(){
   # Nothing to put here as we haven't linked any response data yet
   gMonty$response_Data<-list()
   
-  
   #@@@@@ Source Data In Taxonomy Field @@@@@#
-  gMonty$taxonomies$src_info<-data.frame(
-    src_org_code="EC-JRC",
-    src_org_lab="European Commission - Joint Research Center",
-    src_org_typecode="orgtyperio",
-    src_org_typelab="Regional Intergovernmental Organisation",
-    src_org_email="coordination@gdacs.org",
-    src_db_code="GDACS",
-    src_db_lab="Global Disaster Alert and Coordination System (GDACS)",
-    src_db_attr="mediator",
-    src_db_lic="unknown",
-    src_db_URL="www.gdacs.org",
-    src_addinfo=""
-  )
-  # And the impact modelling spatial data
-  gMonty$taxonomies$src_info%<>%rbind(data.frame(
-    src_org_code="IFRC",
-    src_org_lab="International Federation of Red Cross and Red Crescent Societies (IFRC)",
-    src_org_typecode="orgtypengo",
-    src_org_typelab="Non Governmental Organisation",
-    src_org_email="im@ifrc.org",
-    src_db_code="GO-Maps",
-    src_db_lab="IFRC-GO ADM-0 Maps",
-    src_db_attr="custodian",
-    src_db_lic="Creative Commons Attribution 3.0 International License",
-    src_db_URL="https://go-user-library.ifrc.org/maps",
-    src_addinfo=""
-  ))
+  gMonty$taxonomies$src_info<-readxl::read_xlsx("./Taxonomies/Monty_DataSources.xlsx")%>%distinct()
+  
+  #@@@@@ Checks and validation @@@@@#
+  gMonty%<>%checkMonty()
   # Create the path for the output
   dir.create("./CleanedData/MostlyHazardData/GDACS",showWarnings = F)
   # Write it out just for keep-sake

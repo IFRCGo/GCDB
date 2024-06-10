@@ -36,25 +36,21 @@ GetTabMonty<-function(){
   
   # ADAM Forecasts
   
+  # USGS Atlas Shakemaps
+  
+  # GFD
+  
   # OTHER GO Forecasts
   
   # IBTRaCS
   
-  # STORM database
-  
-  # Atlas Shakemaps
-  
-  # GFD
+  # ReliefWeb
   
   # IOM-DTM
   
   # NOAA Volcanoes
   # NOAA Landslides
   # NOAA Tsunamis
-  
-  
-  
-  # Google floods
   
   # Write it out just for keep-sake
   write(jsonlite::toJSON(Monty,pretty = T,auto_unbox=T,na = 'null'),
