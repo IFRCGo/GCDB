@@ -712,8 +712,17 @@
               "title": "Impact End Date",
               "description": "Final date of the impact estimate. For example, the total cost of a disaster and the number of people displaced is usually estimated between two dates. The end date would be the latest date that the impact estimate covers. Some estimates like the death toll might have been made within the first few days or weeks of the event, and thus reflects the impact estimate based on preliminary data. Note: if the impact estimate is a stock estimate, such that it makes a statement only about a given day (e.g. 'there were 1000 people still displaced on March 12th' instead of 'there were 1000 people displaced between March 5th to April 5th'), then the end date is the same as the start date (imp_sdate = imp_fdate).",
               "$ref": "#/$defs/Date_obj"
-            }
-          },
+            },
+            "imp_credate": {
+              "title": "Impact Report Creation Date",
+              "description": "Date that the impact record was created",
+              "$ref": "#/$defs/Date_obj"
+            },
+            "imp_moddate": {
+              "title": "Impact Report Update Date",
+              "description": "Date that the impact record was last updated",
+              "$ref": "#/$defs/Date_obj"
+            }},
           "required": [
             "imp_sdate",
             "imp_fdate"

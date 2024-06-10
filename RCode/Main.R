@@ -6,31 +6,24 @@ GetTabMonty<-function(){
   Monty<-checkMonty(convGOApp_Monty())
   # EM-DAT
   Monty<-tryCatch(MergeMonty(list(Monty,checkMonty(convEMDAT_Monty()))),
-                  warning=function(w) {print(w); return(Monty)},
                   error=function(e) {print("Error extracting CRED - EM-DAT data"); return(Monty)})
   # IDMC GIDD
   Monty<-tryCatch(MergeMonty(list(Monty,checkMonty(convGIDD_Monty()))),
-                  warning=function(w) {print(w); return(Monty)},
                   error=function(e) {print("Error extracting IDMC - GIDD data"); return(Monty)})
   # IDMC IDU
   Monty<-tryCatch(MergeMonty(list(Monty,checkMonty(convIDU_Monty()))),
-                  warning=function(w) {print(w); return(Monty)},
                   error=function(e) {print("Error extracting IDMC - IDU data"); return(Monty)})
   # GLIDE
   Monty<-tryCatch(MergeMonty(list(Monty,checkMonty(convGLIDE_Monty()))),
-                  warning=function(w) {print(w); return(Monty)},
                   error=function(e) {print("Error extracting ADRC - GLIDE data"); return(Monty)})
   # GDACS
   Monty<-tryCatch(MergeMonty(list(Monty,checkMonty(convGDACS_Monty()))),
-                  warning=function(w) {print(w); return(Monty)},
                   error=function(e) {print("Error extracting EC-JRC - GDACS data"); return(Monty)})
   # Desinventar
-  Monty<-tryCatch(MergeMonty(list(Monty,checkMonty(convDessie_Monty()))),
-                  warning=function(w) {print(w); return(Monty)},
+  Monty<-tryCatch(MergeMonty(list(Monty,checkMonty(convDessie_Monty(forcer = T)))),
                   error=function(e) {print("Error extracting UNDRR - Desinventar data"); return(Monty)})
   # DFO
   Monty<-tryCatch(MergeMonty(list(Monty,checkMonty(convDFO_Monty()))),
-                  warning=function(w) {print(w); return(Monty)},
                   error=function(e) {print("Error extracting University Columbia - DFO data"); return(Monty)})
   # PDC Forecasts
   

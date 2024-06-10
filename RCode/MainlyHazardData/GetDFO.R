@@ -438,7 +438,8 @@ convDFO_Monty<-function(){
   impact_detail<-DFO$impacts%>%distinct(imp_sub_ID,.keep_all = T)%>%
     dplyr::select(exp_spec,imp_value,imp_type,imp_units,imp_est_type,imp_unitdate)
   # Add temporal information
-  temporal<-DFO$impacts%>%distinct(imp_sub_ID,.keep_all = T)%>%dplyr::select(imp_sdate,imp_fdate)
+  temporal<-DFO$impacts%>%distinct(imp_sub_ID,.keep_all = T)%>%
+    dplyr::select(imp_sdate,imp_fdate,imp_credate,imp_moddate)
   # Spatial data relevant to the impact estimates
   # Create the spatial_info first
   spatial_info<-DFO$impacts%>%

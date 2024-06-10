@@ -112,6 +112,8 @@ GetGIDD_API<-function(){
   GIDD%<>%mutate(ev_sdate=imp_sdate,
                  ev_fdate=imp_fdate,
                  ev_ISO3s=imp_ISO3s,
+                 imp_credate=paste0((AsYear(imp_sdate)+1),"-04-30"),
+                 imp_moddate=imp_credate,
                  gen_location=ev_name,
                  imp_unitdate=NA_character_,
                  imp_lon=NA_real_,
@@ -176,11 +178,13 @@ GetIDU_API<-function(){
     "HazardSubType"="subtype",
     "ext_ID"="id",
     "imp_lat"="latitude",
-    "imp_lon"="longitude")
+    "imp_lon"="longitude",
+    "imp_credate"="created_at")
   # Hazard taxonomy - HIPS
   IDU%<>%GIDDHazards()
   # Add some of the extra details that are IDU-specific
   IDU%<>%mutate(ev_ISO3s=imp_ISO3s,
+                imp_moddate=imp_credate,
                 gen_location=ev_name,
                 imp_unitdate=NA_character_,
                 imp_src_URL=urly,
@@ -218,11 +222,13 @@ convGIDD_Monty<-function(){
   #@@@@@ Event-level data @@@@@#
   # IDs
   ID_linkage<-Add_EvIDlink_Monty(
-    do.call(rbind,lapply(1:nrow(GIDD),function(i){
+    do.call(rbind,parallel::mclapply(1:nrow(GIDD),function(i){
       GIDD$all_ext_IDs[[i]]%>%
         mutate(event_ID=GIDD$event_ID[i],
-               ev_name=GIDD$ev_name[i])
-    }))
+               ev_name=GIDD$ev_name[i])%>%
+        distinct(ext_ID_db, ext_ID_org,event_ID,.keep_all=T)
+    },mc.cores=ncores))%>%
+      distinct(ext_ID_db, ext_ID_org,event_ID,.keep_all=T)
   )
   # Spatial
   spatial<-Add_EvSpat_Monty(
@@ -264,7 +270,7 @@ convGIDD_Monty<-function(){
   impact_detail<-GIDD%>%
     dplyr::select(exp_spec,imp_value,imp_type,imp_units,imp_est_type,imp_unitdate)
   # Add temporal information
-  temporal<-GIDD%>%dplyr::select(imp_sdate,imp_fdate)
+  temporal<-GIDD%>%dplyr::select(imp_sdate,imp_fdate,imp_credate,imp_moddate)
   # Spatial data relevant to the impact estimates
   # multiple-entry rows: imp_ISO3s,imp_spat_res
   spatial<-Add_ImpSpatAll_Monty(
@@ -337,12 +343,12 @@ convIDU_Monty<-function(){
   # Hazards
   hazs<-IDU%>%dplyr::select(event_ID, haz_Ab, haz_spec)
   allhaz_class<-Add_EvHazTax_Monty(
-    do.call(rbind,lapply(1:nrow(hazs),function(i){
+    do.call(rbind,parallel::mclapply(1:nrow(hazs),function(i){
       specs<-c(str_split(hazs$haz_spec[i],":",simplify = T))
       outsy<-hazs[rep(i,length(specs)),]
       outsy$haz_spec<-specs
       return(outsy)
-    }))
+    },mc.cores = ncores))
   )
   # Gather it all and store it in the template!
   gMonty$event_Level<-data.frame(ev=ID_linkage$event_ID)

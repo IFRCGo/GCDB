@@ -91,7 +91,7 @@ Add_EvIDlink_Monty<-function(dframe){
   # Setup the other entries
   output<-do.call(rbind,parallel::mclapply(unique(dframe$event_ID),function(ID){
     dframe%>%filter(event_ID==ID)%>%
-    reframe(event_ID=ID,ev_name=unique(ev_name))%>%
+    reframe(event_ID=ID,ev_name=ev_name[1])%>%
       distinct()
   },mc.cores=ncores))
   # Generate all the elements of the dataset
@@ -102,7 +102,7 @@ Add_EvIDlink_Monty<-function(dframe){
     if(any(is.na(dframe$ext_ID[indy]))) 
       return(data.frame(ext_ID=NA_character_,
                              ext_ID_db=NA_character_, 
-                             ext_ID_org=NA_character_)%>%distinct())
+                             ext_ID_org=NA_character_))
     # Highlight the external IDs that share the same Monty IDs 
     data.frame(ext_ID=dframe$ext_ID[indy],
                ext_ID_db=dframe$ext_ID_db[indy], 
@@ -1132,6 +1132,7 @@ ConvMonty2Tabs<-function(Monty,red=F){
 }
 
 remSpecChar<-function(vecy){
+  if(class(vecy)!="character"){print(vecy); stop("non-character provided to")}
   # Check for special characters, then replace with empty string
   vecy%<>%str_replace_all("['´`]", "")%>%str_replace_all('["]', "")
   # Convert all letters to remove accents
@@ -1153,17 +1154,18 @@ checkCharMonty<-function(Monty){
              remSpecChar(x)
            },mc.cores=ncores)
   Monty$impact_Data$spatial<-
-    lapply(Monty$impact_Data$spatial, function(x){
-      x$ID_linkage$imp_spat_ID%<>%remSpecChar()
+    parallel::mclapply(Monty$impact_Data$spatial, function(x){
+      if(length(x$ID_linkage$imp_spat_ID)==0) return(x)
+      x$ID_linkage$imp_spat_ID%<>%unlist()%>%remSpecChar()%>%list()
       return(x)
-    })
+    },mc.cores=ncores)
   if(!is.null(Monty$hazard_Data$spatial)){
     Monty$hazard_Data$spatial<-
-      lapply(Monty$hazard_Data$spatial, function(x){
-        if(length(x)==0) return(x)
-        x$ID_linkage$haz_spat_ID%<>%remSpecChar()
+      parallel::mclapply(Monty$hazard_Data$spatial, function(x){
+        if(length(x$ID_linkage$haz_spat_ID)==0) return(x)
+        x$ID_linkage$haz_spat_ID%<>%unlist()%>%remSpecChar()%>%list()
         return(x)
-      })
+      },mc.cores=ncores)
   }
   
   # Uniqueness of important IDs
@@ -1331,7 +1333,9 @@ checkAwkImpsMonty<-function(Monty){
   # haz_sub_ID
   if (class(Monty$impact_Data$ID_linkage$haz_sub_ID)!="list") stop("Something went wrong with the haz_sub_ID variable in the impact object")
   if(any(sapply(Monty$impact_Data$ID_linkage$haz_sub_ID,function(x){
-    !((class(x)=="list" & length(x)==0) | class(x[[1]])=="character")
+    if(class(x)=="list" & length(x)==0) return(F) 
+    else if (class(x[[1]])=="character") return(F)
+    else return(T)
   }))) stop("Something went wrong with the haz_sub_ID variable in the impact object")
   # imp_ext_IDs
   if (class(Monty$impact_Data$ID_linkage$imp_ext_IDs)!="list") stop("Something went wrong with the external ID variable in the impact object")

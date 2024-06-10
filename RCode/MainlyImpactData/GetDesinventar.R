@@ -701,6 +701,11 @@ GetDesinventar<-function(ISO3s=NULL,forcer=F){
   Dessie<-do.call(dplyr::bind_rows,lapply(which(tISOS),function(i){
     # Extract impact data
     out<-openxlsx::read.xlsx(paste0("./CleanedData/MostlyImpactData/Desinventar/",filez[i]))
+    # if data isn't there, extract it
+    if(nrow(out)==0) {
+      if(!WrangleDessie(isos[i],forcer = T)) return(list())
+      out<-openxlsx::read.xlsx(paste0("./CleanedData/MostlyImpactData/Desinventar/",filez[i]))
+    }
     # Add the country
     out$imp_ISO3s<-out$ev_ISO3s<-DesIsos$actualiso[DesIsos$isos==isos[i]]
     
@@ -721,7 +726,11 @@ convDessie_Monty<-function(forcer=T, ISO3s=NULL){
   # Only certain countries have Desinventar databases
   if(is.null(ISO3s)) ISO3s<-GetDessieISOs()$isos
   # Download the most recent data from Desinventar
-  if(forcer) WrangleDessie(ISO3s)
+  if(forcer) {
+    wran<-parallel::mclapply(ISO3s,function(is) WrangleDessie(is,forcer = forcer),mc.cores=min(10,ncores))
+    if(any(!wran)) print("countries that didn't work = ",ISO3s[!wran],collapse(" ,"))
+    ISO3s<-ISO3s[wran]
+  }
   # Extract raw Dessie data
   Dessie<-GetDesinventar(ISO3s)
   # Get rid of repeated entries
@@ -781,7 +790,8 @@ convDessie_Monty<-function(forcer=T, ISO3s=NULL){
   impact_detail<-Dessie%>%distinct(imp_sub_ID,.keep_all = T)%>%
     dplyr::select(exp_spec,imp_value,imp_type,imp_units,imp_est_type,imp_unitdate)
   # Add temporal information
-  temporal<-Dessie%>%distinct(imp_sub_ID,.keep_all = T)%>%dplyr::select(imp_sdate,imp_fdate)
+  temporal<-Dessie%>%distinct(imp_sub_ID,.keep_all = T)%>%
+    dplyr::select(imp_sdate,imp_fdate,imp_credate,imp_moddate)
   # Spatial data relevant to the impact estimates
   # multiple-entry rows: imp_ISO3s,imp_spat_res
   spatial<-Add_ImpSpatAll_Monty(
@@ -818,14 +828,14 @@ convDessie_Monty<-function(forcer=T, ISO3s=NULL){
   #@@@@@ Source Data In Taxonomy Field @@@@@#
   dMonty$taxonomies$src_info<-readxl::read_xlsx("./Taxonomies/Monty_DataSources.xlsx")%>%distinct()
   
-  #@@@@@ Checks and validation @@@@@#
-  dMonty%<>%checkMonty()
-  
   # Create the path for the output
   dir.create("./CleanedData/MostlyHazardData/UNDRR",showWarnings = F)
   # Write it out just for keep-sake
   write(jsonlite::toJSON(dMonty,pretty = T,auto_unbox=T,na = 'null'),
         paste0("./CleanedData/MostlyHazardData/UNDRR/Desinventar_",Sys.Date(),".json"))
+  
+  #@@@@@ Checks and validation @@@@@#
+  dMonty%<>%checkMonty()
   
   return(dMonty)
 }

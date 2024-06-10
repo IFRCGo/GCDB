@@ -118,12 +118,14 @@ CleanGO_app<-function(appeal){
   appeal$end_date<-str_split(appeal$end_date,"T",simplify = T)[,1]
   
   appeal%<>%mutate(imp_ISO3s=imp_ISO3s,ev_ISO3s=imp_ISO3s,region=region,
-                   ev_name=str_replace_all(name,'"',""),location=str_replace_all(name,'"',""),
-                   ev_name_lang="lang_eng",
+                   ev_name=str_replace_all(name,'"',""),gen_location=str_replace_all(name,'"',""),
+                   ev_name_lang="lang_eng",ext_ID=code,
                    imp_sdate=as.character(as.Date(start_date)),imp_fdate=as.character(as.Date(end_date)),
                    ev_sdate=as.character(as.Date(start_date)),ev_fdate=as.character(as.Date(end_date)),
                    # ev_sdate=as.character(as.Date(created_at)),ev_fdate=as.character(as.Date(created_at)),
-                   imp_unitdate=as.character(as.Date(modified_at)),
+                   imp_unitdate=as.character(as.Date(start_date)),
+                   imp_credate=as.character(as.Date(created_at)),
+                   imp_moddate=as.character(as.Date(modified_at)),
                    imp_src_URL="https://goadmin.ifrc.org/api/v2/appeal",
                    imp_src_orglab="International Federation of Red Cross and Red Crescent Societies (IFRC)",
                    imp_src_org="IFRC",
@@ -145,10 +147,6 @@ CleanGO_app<-function(appeal){
   # Create an impact-specific ID
   appeal%<>%GetGCDB_impID()
   appeal$imp_spat_ID<-GetGCDB_imp_spatID(appeal)
-  # Add missing columns & reorder the dataframe to fit imp_GCDB object
-  # appeal%<>%AddEmptyColImp()
-  
-  # appeal$GLIDE<-GetGLIDEnum(appeal)
   
   # Make sure to remove repeated entries for when they update them
   appeal%<>%mutate(aid=as.integer(aid))%>%arrange(desc(aid))%>%
@@ -158,7 +156,7 @@ CleanGO_app<-function(appeal){
   appeal$imp_src_db[appeal$imp_src_db=="DREF"]<-"GO-DREF"
   appeal$imp_src_db[appeal$imp_src_db=="Forecast Based Action"]<-"GO-FBA"
   
-  return(appeal)
+  appeal%>%dplyr::select(any_of(MontyJSONnames()))
 }
 
 CleanGO_field<-function(fieldr){
@@ -189,7 +187,7 @@ CleanGO_field<-function(fieldr){
   fieldr%<>%filter(imp_ISO3s!="")
   fieldr$region<-sapply(1:length(fieldr$countries), function(i) median(convIso3Continent(fieldr$countries[[i]]$iso3)), simplify = T)
   
-  fieldr$ev_name<-fieldr$location<-
+  fieldr$ev_name<-fieldr$gen_location<-
     sapply(1:length(fieldr$countries), function(i) paste0(fieldr$countries[[i]]$name,collapse = ","), simplify = T)
   fieldr$ev_name=str_replace_all(fieldr$ev_name,'"',"")
   
@@ -200,7 +198,8 @@ CleanGO_field<-function(fieldr){
   fieldr%<>%mutate(imp_ISO3s=imp_ISO3s,region=region,
                    imp_sdate=as.character(as.Date(start_date)),imp_fdate=as.character(as.Date(report_date)),
                    ev_sdate=as.character(as.Date(start_date)),ev_fdate=as.character(as.Date(report_date)),
-                   imp_unitdate=as.character(as.Date(report_date)),
+                   imp_unitdate=as.character(as.Date(start_date)),
+                   imp_repdate=as.character(as.Date(report_date)),
                    imp_src_URL="https://goadmin.ifrc.org/api/v2/field_reports",
                    imp_src_orglab="International Federation of Red Cross and Red Crescent Societies (IFRC)",
                    imp_src_org="IFRC",
@@ -300,29 +299,32 @@ convGOApp_Monty<-function(){
   # Clean using the old GCDB structure
   appeal%<>%CleanGO_app()%>%filter(!is.na(haz_spec) & imp_value>0)
   # Get rid of repeated entries
-  appeal%<>%distinct()%>%
-    arrange(ev_sdate)
+  appeal%<>%distinct()%>%arrange(ev_sdate)
   # Load the Monty JSON template
   appMonty<-jsonlite::fromJSON("./Taxonomies/Montandon_JSON-Example.json")
   
   #@@@@@ Event-level data @@@@@#
   # IDs
   ID_linkage<-Add_EvIDlink_Monty(
-    appeal%>%dplyr::select(event_ID, ev_name, code, imp_src_db, imp_src_org)%>%
-      rename(ext_ID=code,ext_ID_db=imp_src_db,ext_ID_org=imp_src_org)
+    appeal%>%dplyr::select(event_ID, ev_name, ext_ID, imp_src_db, imp_src_org)%>%
+      rename(ext_ID_db=imp_src_db,ext_ID_org=imp_src_org)%>%
+      distinct(event_ID,.keep_all=T)
   )
   # Spatial
   spatial<-Add_EvSpat_Monty(
-    appeal%>%dplyr::select(event_ID,imp_ISO3s,location)%>%
-    rename(ev_ISO3s=imp_ISO3s,gen_location=location)
+    appeal%>%dplyr::select(event_ID,imp_ISO3s,gen_location)%>%
+      distinct(event_ID,.keep_all=T)%>%
+    rename(ev_ISO3s=imp_ISO3s)
   )
   # temporal
   temporal<-Add_EvTemp_Monty(
-    appeal%>%dplyr::select(event_ID,ev_sdate,ev_fdate)
+    appeal%>%dplyr::select(event_ID,ev_sdate,ev_fdate)%>%
+    distinct(event_ID,.keep_all=T)
   )
   # Hazards
   allhaz_class<-Add_EvHazTax_Monty(
-    appeal%>%dplyr::select(event_ID, haz_Ab, haz_spec)
+    appeal%>%dplyr::select(event_ID, haz_Ab, haz_spec)%>%
+      distinct(event_ID,.keep_all=T)
   )
   # Gather it all and store it in the template!
   appMonty$event_Level<-data.frame(ev=ID_linkage$event_ID)
@@ -341,9 +343,9 @@ convGOApp_Monty<-function(){
   # IDs
   ID_linkage<-Add_ImpIDlink_Monty(
     appeal%>%mutate(ext_ID_db="GO-App",ext_ID_org="IFRC",haz_sub_ID=NA_character_)%>%
-      dplyr::select(event_ID, imp_sub_ID, haz_sub_ID, code,
+      dplyr::select(event_ID, imp_sub_ID, haz_sub_ID, ext_ID,
                     ext_ID_db,ext_ID_org)%>%
-      rename(ext_ID=code)
+      distinct(event_ID,imp_sub_ID,.keep_all=T)
   )
   # Sources for impact data
   srcy<-appeal%>%dplyr::select(imp_src_db,imp_src_URL,imp_src_org)
@@ -351,7 +353,8 @@ convGOApp_Monty<-function(){
   impact_detail<-appeal%>%distinct(imp_sub_ID,.keep_all = T)%>%
     dplyr::select(exp_spec,imp_value,imp_type,imp_units,imp_est_type,imp_unitdate)
   # Add temporal information
-  temporal<-appeal%>%distinct(imp_sub_ID,.keep_all = T)%>%dplyr::select(imp_sdate,imp_fdate)
+  temporal<-appeal%>%distinct(imp_sub_ID,.keep_all = T)%>%
+    dplyr::select(imp_sdate,imp_fdate,imp_credate,imp_moddate)
   # Spatial data relevant to the impact estimates
   # multiple-entry rows: imp_spat_rowname,imp_spat_colname,imp_ISO3s,imp_spat_res
   spatial<-Add_ImpSpatAll_Monty(

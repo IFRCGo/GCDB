@@ -141,7 +141,9 @@ CleanEMDAT_API<-function(EMDAT){
                   "No.Injured"="no_injured",
                   "No.Affected"="no_affected",
                   "No.Homeless"="no_homeless",
-                  "Total.Affected"="total_affected")
+                  "Total.Affected"="total_affected",
+                  "imp_credate"="entry_date",
+                  "imp_moddate"="last_update")
   # Also, make sure to convert to the full value in US dollars
   EMDAT[,c("AID.Contribution","Reconstruction.Costs","Reconstruction.Costs.Adjusted",
            "Insured.Damages","Insured.Damages.Adjusted","Total.Damages",
@@ -189,7 +191,7 @@ CleanEMDAT_API<-function(EMDAT){
                                                             EMDAT$end_month[i],
                                                             EMDAT$end_day[i]),collapse = "-"),simplify = T)
   # imp_sdate and imp_fdate are not what you would expect, they are related to the impact record not the event start/ends dates:EMDAT$imp_sdate<-
-  EMDAT%<>%rename("imp_fdate"="entry_date")%>%mutate(imp_sdate=ev_sdate)
+  EMDAT%<>%mutate(imp_sdate=ev_sdate,imp_fdate=ev_fdate)
   # Remove everything we dont need
   EMDAT%<>%dplyr::select(-c(start_day,start_month,start_year,
                             end_day,end_month,end_year,
@@ -537,29 +539,33 @@ convEMDAT_Monty<-function(){
   EMDAT<-API_EMDAT()
   # Get rid of repeated entries
   EMDAT%<>%distinct()%>%
-    arrange(ev_sdate)
+    arrange(ev_sdate)%>%filter(!is.na(haz_spec))
   # Load the Monty JSON template
   emdMonty<-jsonlite::fromJSON("./Taxonomies/Montandon_JSON-Example.json")
   
   #@@@@@ Event-level data @@@@@#
   # IDs
   ID_linkage<-Add_EvIDlink_Monty(
-    do.call(rbind,lapply(1:nrow(EMDAT),function(i) {
+    do.call(rbind,parallel::mclapply(1:nrow(EMDAT),function(i) {
       EMDAT$all_ext_IDs[[i]]%>%mutate(event_ID=EMDAT$event_ID[i],
                                       ev_name=EMDAT$ev_name[i])
-    }))
+    },mc.cores=ncores))%>%
+      distinct(ext_ID_db, ext_ID_org,event_ID,.keep_all=T)
   )
   # Spatial
   spatial<-Add_EvSpat_Monty(
-    EMDAT%>%dplyr::select(event_ID, ev_ISO3s, gen_location)
+    EMDAT%>%dplyr::select(event_ID, ev_ISO3s, gen_location)%>%
+      distinct()
   )
   # temporal
   temporal<-Add_EvTemp_Monty(
-    EMDAT%>%dplyr::select(event_ID,ev_sdate,ev_fdate)
+    EMDAT%>%dplyr::select(event_ID,ev_sdate,ev_fdate)%>%
+      distinct()
   )
   # Hazards
   allhaz_class<-Add_EvHazTax_Monty(
-    EMDAT%>%dplyr::select(event_ID, haz_Ab, haz_spec)
+    EMDAT%>%dplyr::select(event_ID, haz_Ab, haz_spec)%>%
+      distinct()
   )
   # Gather it all and store it in the template!
   emdMonty$event_Level<-data.frame(ev=ID_linkage$event_ID)
@@ -577,23 +583,25 @@ convEMDAT_Monty<-function(){
   EMDAT%<>%filter(!is.na(haz_spec) | !is.na(imp_value) | imp_value>0)
   # IDs
   ID_linkage<-Add_ImpIDlink_Monty(
-    do.call(rbind,lapply(1:nrow(EMDAT),function(i) {
+    do.call(rbind,parallel::mclapply(1:nrow(EMDAT),function(i) {
       EMDAT$all_ext_IDs[[i]]%>%mutate(event_ID=EMDAT$event_ID[i],
                                       imp_sub_ID=EMDAT$imp_sub_ID[i],
                                       haz_sub_ID=NA_character_)
-    }))
+    },mc.cores=ncores))%>%
+      distinct(ext_ID_db, ext_ID_org,event_ID,imp_sub_ID,.keep_all=T)
   )
   # Sources for impact data
-  srcy<-do.call(rbind,lapply(unique(EMDAT$imp_sub_ID),function(ID){
+  srcy<-do.call(rbind,parallel::mclapply(unique(EMDAT$imp_sub_ID),function(ID){
     return(EMDAT[EMDAT$imp_sub_ID==ID,]%>%
              dplyr::select(imp_src_db,imp_src_URL,imp_src_org)%>%
              slice(1))
-  }))
+  },mc.cores=ncores))
   # impact estimates
   impact_detail<-EMDAT%>%distinct(imp_sub_ID,.keep_all = T)%>%
     dplyr::select(exp_spec,imp_value,imp_type,imp_units,imp_est_type,imp_unitdate)
   # Add temporal information
-  temporal<-EMDAT%>%distinct(imp_sub_ID,.keep_all = T)%>%dplyr::select(imp_sdate,imp_fdate)
+  temporal<-EMDAT%>%distinct(imp_sub_ID,.keep_all = T)%>%
+    dplyr::select(imp_sdate,imp_fdate,imp_credate,imp_moddate)
   # Spatial data relevant to the impact estimates
   # multiple-entry rows: imp_ISO3s,imp_spat_res
   spatial<-Add_ImpSpatAll_Monty(

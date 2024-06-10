@@ -300,7 +300,9 @@
       },
       "temporal": {
         "imp_sdate": "2015-11-30",
-        "imp_fdate": "2016-01-28"
+        "imp_fdate": "2016-01-28",
+        "imp_credate": "2016-01-28",
+        "imp_moddate": "2016-01-28"
       },
       "spatial": {
         "ID_linkage": [
@@ -360,7 +362,9 @@
       },
       "temporal": {
         "imp_sdate": "2015-11-30",
-        "imp_fdate": "2016-01-05"
+        "imp_fdate": "2016-01-05",
+        "imp_credate": "2016-01-05",
+        "imp_moddate": "2016-01-05"
       },
       "spatial": {
         "ID_linkage": [
@@ -415,7 +419,9 @@
       },
       "temporal": {
         "imp_sdate": "2016-01-02",
-        "imp_fdate": "2016-01-02"
+        "imp_fdate": "2016-01-02",
+        "imp_credate": "2016-01-02",
+        "imp_moddate": "2016-01-02"
       },
       "spatial": {
         "ID_linkage": [
@@ -470,7 +476,9 @@
       },
       "temporal": {
         "imp_sdate": "2016-02-09",
-        "imp_fdate": "2016-02-23"
+        "imp_fdate": "2016-02-23",
+        "imp_credate": "2016-02-23",
+        "imp_moddate": "2016-02-23"
       },
       "spatial": {
         "ID_linkage": [
@@ -530,7 +538,9 @@
       },
       "temporal": {
         "imp_sdate": "2016-03-11",
-        "imp_fdate": "2016-04-12"
+        "imp_fdate": "2016-04-12",
+        "imp_credate": "2016-04-12",
+        "imp_moddate": "2016-04-12"
       },
       "spatial": {
         "ID_linkage": [
@@ -585,7 +595,9 @@
       },
       "temporal": {
         "imp_sdate": "2016-04-09",
-        "imp_fdate": "2016-04-09"
+        "imp_fdate": "2016-04-09",
+        "imp_credate": "2016-04-09",
+        "imp_moddate": "2016-04-09"
       },
       "spatial": {
         "ID_linkage": [
@@ -637,7 +649,9 @@
         "haz_est_type": "esttype_second",
         "all_hazs_Ab": "FL",
         "all_hazs_spec": ["MH0004", "MH0005", "MH0006", "MH0007", "MH0008", "MH0012"],
-        "concur_haz": []
+        "concur_haz": [],
+        "haz_maxvalue": null,
+        "haz_maxunits": null
       },
       "temporal": {
         "haz_sdate": "2015-11-30",
@@ -690,7 +704,9 @@
         "haz_est_type": "esttype_second",
         "all_hazs_Ab": "FL",
         "all_hazs_spec": ["MH0004", "MH0005", "MH0006", "MH0007", "MH0008", "MH0012"],
-        "concur_haz": []
+        "concur_haz": [],
+        "haz_maxvalue": null,
+        "haz_maxunits": null
       },
       "temporal": {
         "haz_sdate": "2015-11-30",
@@ -837,7 +853,9 @@
         "haz_est_type": "esttype_second",
         "all_hazs_Ab": "FL",
         "all_hazs_spec": ["MH0004", "MH0005", "MH0006", "MH0007", "MH0008", "MH0012"],
-        "concur_haz": []
+        "concur_haz": [],
+        "haz_maxvalue": null,
+        "haz_maxunits": null
       },
       "temporal": {
         "haz_sdate": "2016-03-11",
@@ -2739,243 +2757,443 @@
       {
         "ISO3": "ALA",
         "country": "Åland Islands",
-        "continent": "Europe"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "Europe",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "ASM",
         "country": "American Samoa",
-        "continent": "Oceania"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "Oceania",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "ATA",
         "country": "Antarctica",
-        "continent": "Antarctica"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "Antarctica",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "ABW",
         "country": "Aruba",
-        "continent": "South America"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "South America",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "BMU",
         "country": "Bermuda",
-        "continent": "North America"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "North America",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "BES",
         "country": "Caribbean Netherlands",
-        "continent": "South America"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "South America",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "BVT",
         "country": "Bouvet Island",
-        "continent": "Antarctica"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "Antarctica",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "IOT",
         "country": "British Indian Ocean Territory",
-        "continent": "Asia"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "Asia",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "CYM",
         "country": "Cayman Islands",
-        "continent": "North America"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "North America",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "CXR",
         "country": "Christmas Island",
-        "continent": "Asia"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "Asia",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "CCK",
         "country": "Cocos (Keeling) Islands",
-        "continent": "Asia"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "Asia",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "CUW",
         "country": "Curaçao",
-        "continent": "South America"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "South America",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "FLK",
         "country": "Falkland Islands",
-        "continent": "South America"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "South America",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "FRO",
         "country": "Faroe Islands",
-        "continent": "Europe"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "Europe",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "GUF",
         "country": "French Guiana",
-        "continent": "South America"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "South America",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "PYF",
         "country": "French Polynesia",
-        "continent": "Oceania"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "Oceania",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "ATF",
         "country": "French Southern Territories",
-        "continent": "Africa"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "Africa",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "GIB",
         "country": "Gibraltar",
-        "continent": "Europe"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "Europe",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "GRL",
         "country": "Greenland",
-        "continent": "North America"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "North America",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "GLP",
         "country": "Guadeloupe",
-        "continent": "North America"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "North America",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "GUM",
         "country": "Guam",
-        "continent": "Asia"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "Asia",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "GGY",
         "country": "Guernsey",
-        "continent": "Europe"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "Europe",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "HMD",
         "country": "Heard & McDonald Islands",
-        "continent": "Antarctica"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "Antarctica",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "HKG",
         "country": "Hong Kong SAR China",
-        "continent": "Asia"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "Asia",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "IMN",
         "country": "Isle of Man",
-        "continent": "Europe"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "Europe",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "JEY",
         "country": "Jersey",
-        "continent": "Europe"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "Europe",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
-        "ISO3": "XKX"
+        "ISO3": "XKX",
+        "country": null,
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": null,
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "MAC",
         "country": "Macao SAR China",
-        "continent": "Asia"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "Asia",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "MTQ",
         "country": "Martinique",
-        "continent": "North America"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "North America",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "MYT",
         "country": "Mayotte",
-        "continent": "Africa"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "Africa",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "NCL",
         "country": "New Caledonia",
-        "continent": "Oceania"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "Oceania",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "NFK",
         "country": "Norfolk Island",
-        "continent": "Oceania"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "Oceania",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "MNP",
         "country": "Northern Mariana Islands",
-        "continent": "Asia"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "Asia",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "PCN",
         "country": "Pitcairn Islands",
-        "continent": "Oceania"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "Oceania",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "PRI",
         "country": "Puerto Rico",
-        "continent": "North America"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "North America",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "REU",
         "country": "Réunion",
-        "continent": "Africa"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "Africa",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "BLM",
         "country": "St. Barthélemy",
-        "continent": "North America"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "North America",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "SHN",
         "country": "St. Helena",
-        "continent": "Africa"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "Africa",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "MAF",
         "country": "Saint Martin (French part)",
-        "continent": "North America"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "North America",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "SPM",
         "country": "St. Pierre & Miquelon",
-        "continent": "North America"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "North America",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "SXM",
         "country": "Sint Maarten",
-        "continent": "North America"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "North America",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "SGS",
         "country": "South Georgia & South Sandwich Islands",
-        "continent": "Antarctica"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "Antarctica",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "SJM",
         "country": "Svalbard & Jan Mayen",
-        "continent": "Europe"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "Europe",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "TWN",
         "country": "Taiwan",
-        "continent": "Asia"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "Asia",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
-        "ISO3": "XTX"
+        "ISO3": "XTX",
+        "country": null,
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": null,
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "UMI",
         "country": "United States Minor Outlying Islands (the)",
-        "continent": "Oceania"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "Oceania",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "VIR",
         "country": "U.S. Virgin Islands",
-        "continent": "North America"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "North America",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "WLF",
         "country": "Wallis & Futuna",
-        "continent": "Oceania"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "Oceania",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       },
       {
         "ISO3": "ESH",
         "country": "Western Sahara",
-        "continent": "Africa"
+        "unregion": null,
+        "worldbankregion": null,
+        "continent": "Africa",
+        "unsubregion": null,
+        "worldbankincomegroup": null
       }
     ],
     "exp_class": [
@@ -3332,96 +3550,128 @@
         "exp_cat_lab": "Financial/Economic Assets"
       },
       {
+        "exp_spec_code": null,
+        "exp_spec_lab": null,
         "exp_subcat_code": "expsubcat_infprec",
         "exp_subcat_lab": "Other Precious Resources",
         "exp_cat_code": "expcat_env",
         "exp_cat_lab": "Environmental & Ecological Assets"
       },
       {
+        "exp_spec_code": null,
+        "exp_spec_lab": null,
         "exp_subcat_code": "expsubcat_infmin",
         "exp_subcat_lab": "Mining Resources",
         "exp_cat_code": "expcat_env",
         "exp_cat_lab": "Environmental & Ecological Assets"
       },
       {
+        "exp_spec_code": null,
+        "exp_spec_lab": null,
         "exp_subcat_code": "expsubcat_infwater",
         "exp_subcat_lab": "Water",
         "exp_cat_code": "expcat_env",
         "exp_cat_lab": "Environmental & Ecological Assets"
       },
       {
+        "exp_spec_code": null,
+        "exp_spec_lab": null,
         "exp_subcat_code": "expsubcat_finfor",
         "exp_subcat_lab": "Forestry & Natural Vegetation",
         "exp_cat_code": "expcat_env",
         "exp_cat_lab": "Environmental & Ecological Assets"
       },
       {
+        "exp_spec_code": null,
+        "exp_spec_lab": null,
         "exp_subcat_code": "expsubcat_envaqu",
         "exp_subcat_lab": "Aquaculture & Fisheries",
         "exp_cat_code": "expcat_env",
         "exp_cat_lab": "Environmental & Ecological Assets"
       },
       {
+        "exp_spec_code": null,
+        "exp_spec_lab": null,
         "exp_subcat_code": "expsubcat_envgreen",
         "exp_subcat_lab": "Green Infrastructure",
         "exp_cat_code": "expcat_env",
         "exp_cat_lab": "Environmental & Ecological Assets"
       },
       {
+        "exp_spec_code": null,
+        "exp_spec_lab": null,
         "exp_subcat_code": "expsubcat_enveco",
         "exp_subcat_lab": "Ecological Zones & Nature Reserves",
         "exp_cat_code": "expcat_env",
         "exp_cat_lab": "Environmental & Ecological Assets"
       },
       {
+        "exp_spec_code": null,
+        "exp_spec_lab": null,
         "exp_subcat_code": "expsubcat_envhab",
         "exp_subcat_lab": "Sensitive Habitats or Species",
         "exp_cat_code": "expcat_env",
         "exp_cat_lab": "Environmental & Ecological Assets"
       },
       {
+        "exp_spec_code": null,
+        "exp_spec_lab": null,
         "exp_subcat_code": "expsubcat_physinfo",
         "exp_subcat_lab": "Information & Communication",
         "exp_cat_code": "expcat_phyinf",
         "exp_cat_lab": "Built Environment & Cultural Assets"
       },
       {
+        "exp_spec_code": null,
+        "exp_spec_lab": null,
         "exp_subcat_code": "expsubcat_physwater",
         "exp_subcat_lab": "Water & Sanitation Systems",
         "exp_cat_code": "expcat_phyinf",
         "exp_cat_lab": "Built Environment & Cultural Assets"
       },
       {
+        "exp_spec_code": null,
+        "exp_spec_lab": null,
         "exp_subcat_code": "expsubcat_infres",
         "exp_subcat_lab": "Residential Buildings",
         "exp_cat_code": "expcat_phyinf",
         "exp_cat_lab": "Built Environment & Cultural Assets"
       },
       {
+        "exp_spec_code": null,
+        "exp_spec_lab": null,
         "exp_subcat_code": "expsubcat_infnonres",
         "exp_subcat_lab": "Other Non-Residential Buildings",
         "exp_cat_code": "expcat_phyinf",
         "exp_cat_lab": "Built Environment & Cultural Assets"
       },
       {
+        "exp_spec_code": null,
+        "exp_spec_lab": null,
         "exp_subcat_code": "expsubcat_infind",
         "exp_subcat_lab": "Industrial Buildings",
         "exp_cat_code": "expcat_phyinf",
         "exp_cat_lab": "Built Environment & Cultural Assets"
       },
       {
+        "exp_spec_code": null,
+        "exp_spec_lab": null,
         "exp_subcat_code": "expsubcat_infener",
         "exp_subcat_lab": "Energy Supply & Electricity infrastructure",
         "exp_cat_code": "expcat_phyinf",
         "exp_cat_lab": "Built Environment & Cultural Assets"
       },
       {
+        "exp_spec_code": null,
+        "exp_spec_lab": null,
         "exp_subcat_code": "expsubcat_infnonmov",
         "exp_subcat_lab": "Socio-cultural Infrastructure (monuments, museums, etc)",
         "exp_cat_code": "expcat_phyinf",
         "exp_cat_lab": "Built Environment & Cultural Assets"
       },
       {
+        "exp_spec_code": null,
+        "exp_spec_lab": null,
         "exp_subcat_code": "expsubcat_popindig",
         "exp_subcat_lab": "Indigenous or first nations people",
         "exp_cat_code": "expcat_pop",
