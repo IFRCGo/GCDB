@@ -293,13 +293,16 @@ CleanGO_dref<-function(dref){
   colnames(tmp)
 }
 
-convGOApp_Monty<-function(){
+convGOApp_Monty<-function(taby=F){
   # Get the Emergency Appeal data from GO
   appeal<-ExtractGOdata(db = "GO-App", token = go_token)
   # Clean using the old GCDB structure
   appeal%<>%CleanGO_app()%>%filter(!is.na(haz_spec) & imp_value>0)
   # Get rid of repeated entries
   appeal%<>%distinct()%>%arrange(ev_sdate)
+  
+  if(taby) return(appeal)
+  
   # Load the Monty JSON template
   appMonty<-jsonlite::fromJSON("./Taxonomies/Montandon_JSON-Example.json")
   

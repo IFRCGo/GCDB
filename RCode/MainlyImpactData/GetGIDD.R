@@ -211,11 +211,14 @@ GetIDU_API<-function(){
 }
 
 
-convGIDD_Monty<-function(){
+convGIDD_Monty<-function(taby=F){
   # Get the GIDD data
   GIDD<-GetGIDD_API()
   # Arrange in event date order
   GIDD%<>%arrange(ev_sdate)
+  
+  if(taby) return(GIDD)
+  
   # Extract the Monty JSON schema template
   gMonty<-jsonlite::fromJSON("./Taxonomies/Montandon_JSON-Example.json")
   
@@ -318,11 +321,14 @@ convGIDD_Monty<-function(){
   return(gMonty)
 }
 
-convIDU_Monty<-function(){
+convIDU_Monty<-function(taby=F){
   # Get the IDU data
   IDU<-GetIDU_API()
   # Arrange in event date order
   IDU%<>%arrange(ev_sdate)
+  
+  if(taby) return(IDU)
+  
   # Extract the Monty JSON schema template
   gMonty<-jsonlite::fromJSON("./Taxonomies/Montandon_JSON-Example.json")
   
@@ -376,7 +382,7 @@ convIDU_Monty<-function(){
   impact_detail<-IDU%>%mutate()%>%
     dplyr::select(exp_spec,imp_value,imp_type,imp_units,imp_est_type,imp_unitdate)
   # Add temporal information
-  temporal<-IDU%>%dplyr::select(imp_sdate,imp_fdate)
+  temporal<-IDU%>%dplyr::select(imp_sdate,imp_fdate,imp_credate,imp_moddate)
   # Spatial data relevant to the impact estimates
   # multiple-entry rows: imp_ISO3s,imp_spat_res
   spatial<-Add_ImpSpatAll_Monty(

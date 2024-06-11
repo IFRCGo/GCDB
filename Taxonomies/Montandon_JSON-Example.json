@@ -655,7 +655,9 @@
       },
       "temporal": {
         "haz_sdate": "2015-11-30",
-        "haz_fdate": "2016-01-28"
+        "haz_fdate": "2016-01-28",
+        "haz_credate": "2015-11-30",
+        "haz_moddate": "2015-11-30"
       },
       "spatial": {
         "ID_linkage": [
@@ -710,7 +712,9 @@
       },
       "temporal": {
         "haz_sdate": "2015-11-30",
-        "haz_fdate": "2016-01-05"
+        "haz_fdate": "2016-01-05",
+        "haz_credate": "2015-11-30",
+        "haz_moddate": "2015-11-30"
       },
       "spatial": {
         "ID_linkage": [
@@ -757,7 +761,9 @@
       },
       "temporal": {
         "haz_sdate": "2016-01-02",
-        "haz_fdate": "2016-01-02"
+        "haz_fdate": "2016-01-02",
+        "haz_credate": "2016-01-02",
+        "haz_moddate": "2016-01-02"
       },
       "spatial": {
         "ID_linkage": [
@@ -804,7 +810,9 @@
       },
       "temporal": {
         "haz_sdate": "2016-02-09",
-        "haz_fdate": "2016-02-23"
+        "haz_fdate": "2016-02-23",
+        "haz_credate": "2016-02-09",
+        "haz_moddate": "2016-02-09"
       },
       "spatial": {
         "ID_linkage": [
@@ -859,7 +867,9 @@
       },
       "temporal": {
         "haz_sdate": "2016-03-11",
-        "haz_fdate": "2016-04-12"
+        "haz_fdate": "2016-04-12",
+        "haz_credate": "2016-03-11",
+        "haz_moddate": "2016-03-11"
       },
       "spatial": {
         "ID_linkage": [
@@ -906,7 +916,9 @@
       },
       "temporal": {
         "haz_sdate": "2016-04-09",
-        "haz_fdate": "2016-04-09"
+        "haz_fdate": "2016-04-09",
+        "haz_credate": "2016-04-09",
+        "haz_moddate": "2016-04-09"
       },
       "spatial": {
         "ID_linkage": [

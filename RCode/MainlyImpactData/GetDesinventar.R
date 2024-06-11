@@ -645,19 +645,19 @@ Des2tabGCDB<-function(Dessie){
   Dessie$imp_spat_res[!is.na(Dessie$level1)]<-1
   Dessie$imp_spat_res[!is.na(Dessie$level2)]<-2
   # Form the spatial ID
-  Dessie$imp_spat_ID<-lapply(1:nrow(Dessie),function(i){
+  Dessie$imp_spat_ID<-parallel::mclapply(1:nrow(Dessie),function(i){
     if(Dessie$imp_spat_res[i]==0) return(paste0("UNDRR-GovDes-ADM0-",Dessie$imp_ISO3s[i]))
     if(Dessie$imp_spat_res[i]==1) return(paste0("UNDRR-GovDes-ADM1-",Dessie$imp_ISO3s[i],
                                              "-",Dessie$level1[i]))
     if(Dessie$imp_spat_res[i]==2) return(paste0("UNDRR-GovDes-ADM2-",Dessie$imp_ISO3s[i],
                                              "-",Dessie$level2[i]))
     return(NA_character_)
-  })  
+  },mc.cores = ncores)  
   # Just in case the ID numbers were not included in the data
   if(is.null(Dessie$ext_ID)) Dessie$ext_ID<-Dessie$imp_ISO3s else 
     Dessie$ext_ID<-paste0(Dessie$imp_ISO3s,"-",Dessie$ext_ID)
   # Sort out the IDs and external IDs (GLIDE numbers)
-  Dessie$all_ext_IDs<-lapply(1:nrow(Dessie), function(i){
+  Dessie$all_ext_IDs<-parallel::mclapply(1:nrow(Dessie), function(i){
     # First extract EM-DAT event ID
     out<-data.frame(ext_ID=Dessie$ext_ID[i],
                     ext_ID_db="Desinventar",
@@ -667,7 +667,7 @@ Des2tabGCDB<-function(Dessie){
       return(rbind(out,data.frame(ext_ID=Dessie$GLIDE[i],
                                   ext_ID_db="GLIDE",
                                   ext_ID_org="ADRC")))
-  })
+  },mc.cores = ncores)
   # Generate GCDB event ID
   Dessie$event_ID<-GetMonty_ID(Dessie)
   # Correct the labels of the impacts, melting by impact detail
@@ -698,19 +698,21 @@ GetDesinventar<-function(ISO3s=NULL,forcer=F){
   # Get the translated names of the Desinventar countries
   DesIsos<-GetDessieISOs()
   # Get all countries data
-  Dessie<-do.call(dplyr::bind_rows,lapply(which(tISOS),function(i){
+  Dessie<-do.call(dplyr::bind_rows,parallel::mclapply(which(tISOS),function(i){
     # Extract impact data
-    out<-openxlsx::read.xlsx(paste0("./CleanedData/MostlyImpactData/Desinventar/",filez[i]))
+    out<-openxlsx::read.xlsx(paste0("./CleanedData/MostlyImpactData/Desinventar/",filez[i]))%>%
+      mutate(date=as.character(date))
     # if data isn't there, extract it
-    if(nrow(out)==0) {
-      if(!WrangleDessie(isos[i],forcer = T)) return(list())
-      out<-openxlsx::read.xlsx(paste0("./CleanedData/MostlyImpactData/Desinventar/",filez[i]))
-    }
+    if(nrow(out)==0) return(data.frame())
+    # if(nrow(out)==0) {
+    #   if(!WrangleDessie(isos[i],forcer = T)) return(data.frame())
+    #   out<-openxlsx::read.xlsx(paste0("./CleanedData/MostlyImpactData/Desinventar/",filez[i]))
+    # }
     # Add the country
     out$imp_ISO3s<-out$ev_ISO3s<-DesIsos$actualiso[DesIsos$isos==isos[i]]
     
     return(out)
-  }))
+  },mc.cores = ncores))
   # Get in tabGCDB format
   impies<-Des2tabGCDB(Dessie)
   # The Desinventar database has many entries per single event, so we take the most recent estimate
@@ -722,12 +724,12 @@ GetDesinventar<-function(ISO3s=NULL,forcer=F){
 }
 
 
-convDessie_Monty<-function(forcer=T, ISO3s=NULL){
+convDessie_Monty<-function(forcer=T, ISO3s=NULL, taby=F){
   # Only certain countries have Desinventar databases
   if(is.null(ISO3s)) ISO3s<-GetDessieISOs()$isos
   # Download the most recent data from Desinventar
   if(forcer) {
-    wran<-parallel::mclapply(ISO3s,function(is) WrangleDessie(is,forcer = forcer),mc.cores=min(10,ncores))
+    wran<-unname(unlist(parallel::mclapply(ISO3s,function(is) WrangleDessie(is,forcer = forcer),mc.cores=min(10,ncores))))
     if(any(!wran)) print("countries that didn't work = ",ISO3s[!wran],collapse(" ,"))
     ISO3s<-ISO3s[wran]
   }
@@ -735,8 +737,16 @@ convDessie_Monty<-function(forcer=T, ISO3s=NULL){
   Dessie<-GetDesinventar(ISO3s)
   # Get rid of repeated entries
   Dessie%<>%distinct()%>%arrange(ev_sdate)
+  
+  if(taby) return(Dessie)
+  
   # Extract the Monty JSON schema template
   dMonty<-jsonlite::fromJSON("./Taxonomies/Montandon_JSON-Example.json")
+  
+  # Don't max out the RAM!
+  s_ncores <- ncores
+  ncores <<- min(ncores,2)
+    
   #@@@@@ Event-level data @@@@@#
   # IDs
   ID_linkage<-Add_EvIDlink_Monty(
@@ -836,6 +846,9 @@ convDessie_Monty<-function(forcer=T, ISO3s=NULL){
   
   #@@@@@ Checks and validation @@@@@#
   dMonty%<>%checkMonty()
+  
+  # Don't max out the RAM!
+  ncores <<- s_ncores
   
   return(dMonty)
 }

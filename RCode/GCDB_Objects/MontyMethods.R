@@ -357,7 +357,7 @@ MergeMonty<-function(lMonty,jsoner=F){
   ID_linkage<-do.call(rbind,lapply(seq_along(lMonty),function(i){
     lMonty[[i]]$event_Level$ID_linkage}))
   temporal<-do.call(rbind,lapply(seq_along(lMonty),function(i){
-    lMonty[[i]]$event_Level$temporal}))
+    lMonty[[i]]$event_Level$temporal%>%mutate(across(where(~ !is.character(.x)),as.character))}))
   spatial<-do.call(rbind,lapply(seq_along(lMonty),function(i){
     lMonty[[i]]$event_Level$spatial}))
   allhaz_class<-do.call(c,lapply(seq_along(lMonty),function(i){
@@ -378,7 +378,7 @@ MergeMonty<-function(lMonty,jsoner=F){
   impact_detail<-do.call(rbind,lapply(seq_along(lMonty),function(i){
     lMonty[[i]]$impact_Data$impact_detail}))
   temporal<-do.call(rbind,lapply(seq_along(lMonty),function(i){
-    lMonty[[i]]$impact_Data$temporal}))
+    lMonty[[i]]$impact_Data$temporal%>%mutate(across(where(~ !is.character(.x)),as.character))}))
   spatial<-do.call(c,lapply(seq_along(lMonty),function(i){
     lMonty[[i]]$impact_Data$spatial}))
   # Replace the impact_Data field of Monty instance
@@ -392,12 +392,13 @@ MergeMonty<-function(lMonty,jsoner=F){
   #@@@@@@@@@@@@@@@ Merge the hazard-level data @@@@@@@@@@@@@@@#
   # Create a boolean array to check whether each list element has hazard data
   hasHaz<-sapply(seq_along(lMonty),function(i) length(lMonty[[i]]$hazard_Data)!=0,simplify = T)
+  
   if(any(hasHaz)) {
     if(sum(hasHaz)==1){
-      Monty$hazard_Data<-lMonty[[seq_along(lMonty)[hazHaz]]]$hazard_Data
+      Monty$hazard_Data<-lMonty[[seq_along(lMonty)[which(hasHaz)]]]$hazard_Data
     } else {
       # Only include elements that have hazard_Data
-      tMonty<-lMonty[[seq_along(lMonty)[hazHaz]]]
+      tMonty<-lMonty[seq_along(lMonty)[hasHaz]]
       # Store out the data we need
       ID_linkage<-do.call(rbind,lapply(seq_along(tMonty),function(i){
         tMonty[[i]]$hazard_Data$ID_linkage}))
@@ -406,7 +407,7 @@ MergeMonty<-function(lMonty,jsoner=F){
       hazard_detail<-do.call(rbind,lapply(seq_along(tMonty),function(i){
         tMonty[[i]]$hazard_Data$hazard_detail}))
       temporal<-do.call(rbind,lapply(seq_along(tMonty),function(i){
-        tMonty[[i]]$hazard_Data$temporal}))
+        tMonty[[i]]$hazard_Data$temporal%>%mutate(across(where(~ !is.character(.x)),as.character))}))
       spatial<-do.call(c,lapply(seq_along(tMonty),function(i){
         tMonty[[i]]$hazard_Data$spatial}))
       rm(tMonty)
@@ -745,28 +746,39 @@ JoinDFMonty<-function(DF,taxy,DFjoiner,taxyjoiner=NULL){
     } else if(class(DF[[1]])=="list" & length(DF)==1){
       DF<-DF[[1]]
       # if DF[[1]] is now a list of nested vectors, then convert to data.frame, left join, squish and then output
-      do.call(rbind,lapply(seq_along(DF),function(i){
-        tmp<-data.frame(DF[[i]]); colnames(tmp)<-taxyjoiner
-        tmp%>%left_join(taxy,by=taxyjoiner)%>%
+      do.call(rbind,parallel::mclapply(seq_along(DF),function(i){
+        left_join(as.data.frame(DF[[i]]),taxy,
+                  by=join_by(!!sym(DFjoiner)==!!sym(taxyjoiner)))%>%
           apply(2,function(x) paste0(unique(x),collapse=delim))
-      }))%>%as.data.frame()%>%return()
+      },mc.cores=ncores))%>%as.data.frame()%>%return()
     } else stop("Attempting to join a data.frame of a nested-list with a Monty taxonomy, see JoinDFMonty function")
   } else if(class(DF)=="list"){
     # If DF is a list:
     if(class(DF[[1]])=="data.frame"){
       # if DF[[1]] is a data.frame, then left_join then squish then output
-      lapply(seq_along(DF),function(i){
+      parallel::mclapply(seq_along(DF),function(i){
         # Join by the provided name: 'joiner'
-        colnames(DF[[i]])[colnames(DF[[i]])==DFjoiner]<-taxyjoiner
-        DF[[i]]%>%left_join(taxy,by=taxyjoiner)
-      })%>%squishLDF()%>%as.data.frame()%>%return()
+        left_join(DF[[i]],taxy,
+                  by=join_by(!!sym(DFjoiner)==!!sym(taxyjoiner)))
+      },mc.cores=ncores)%>%squishLDF()%>%as.data.frame()%>%return()
     } else if(class(DF[[1]])=="character"){
       # if DF[[1]] is a character vector, then convert to data.frame, left join, squish and then output
-      do.call(rbind,lapply(seq_along(DF),function(i){
-        tmp<-data.frame(DF[[i]]); colnames(tmp)<-taxyjoiner
-        tmp%>%left_join(taxy,by=taxyjoiner)%>%
-          apply(2,function(x) paste0(unique(x),collapse=delim))
-      }))%>%as.data.frame()%>%return()
+      do.call(rbind,parallel::mclapply(seq_along(DF),function(i){
+        # Join by the provided name: 'joiner'
+        otot<-left_join(data.frame(DF[[i]])%>%setNames(taxyjoiner),
+                  taxy,by=taxyjoiner)
+        if(nrow(otot)>1) apply(otot,2,function(x) paste0(unique(x),collapse=delim))
+        return(otot)
+      },mc.cores=ncores))%>%return()
+    } else if(class(DF[[1]])=="list"){
+      # if DF[[1]] is a list, then left_join then squish then output, per element
+      if(is.null(DF[[1]][DFjoiner])) stop("Attempting to join a nested-list object of inappropriate nested-class with a Monty taxonomy, see JoinDFMonty function")
+      # Otherwise go ahead
+      parallel::mclapply(seq_along(DF),function(i){
+        # Join by the provided name: 'joiner'
+        left_join(as.data.frame(DF[[i]][DFjoiner]),taxy,
+                            by=join_by(!!sym(DFjoiner)==!!sym(taxyjoiner)))
+      },mc.cores=ncores)%>%squishLDF()%>%as.data.frame()%>%return()
     } else stop("Attempting to join a nested-list object of inappropriate nested-class with a Monty taxonomy, see JoinDFMonty function")
   } else stop("Attempting to join an object of inappropriate class with a Monty taxonomy, see JoinDFMonty function")
 }
@@ -781,23 +793,26 @@ Monty_Ev2Tab<-function(Monty,red=F){
   #%%%%%%%%%%%%%%%%%%%%%% EVENT LEVEL %%%%%%%%%%%%%%%%%%%%%%#
   # IDs and linkages first
   ev_lv<-Monty$event_Level$ID_linkage[,c("event_ID","ev_name")]
-  # Hazard classifications
-  ev_lv%<>%cbind(squishLDF(Monty$event_Level$allhaz_class)%>%setNames("haz_spec_code"))
   # Hazard taxonomy from specific hazards
   ev_lv%<>%cbind(JoinDFMonty(Monty$event_Level$allhaz_class, 
                              Monty$taxonomies$haz_class,
                              "all_hazs_spec","haz_spec_code"))%>%
-    dplyr::select(-c("all_hazs_Ab","all_hazs_spec"))%>%
-    rename(haz_Ab=all_hazs_Ab)
+    rename(haz_spec_code=all_hazs_spec)
+  # Abbreviated hazard code
+  ev_lv$haz_Ab<-unname(unlist(parallel::mclapply(Monty$event_Level$allhaz_class,function(x){
+    paste0(unique(x$all_hazs_Ab),collapse=dely)
+  },mc.cores=ncores)))
   # Add the temporal information and general location variable
   ev_lv%<>%cbind(Monty$event_Level$temporal,
                  Monty$event_Level$spatial%>%dplyr::select(gen_location))
   # Add the ISOs
-  ev_lv$ev_ISO3s<-squishLDF(Monty$event_Level$spatial$ev_ISO3s)
+  ev_lv$ev_ISO3s<-unname(unlist(parallel::mclapply(1:length(Monty$event_Level$spatial$ev_ISO3s),function(i){
+    paste0(unique(Monty$event_Level$spatial$ev_ISO3s[[i]]),collapse=dely)
+  },mc.cores=ncores)))
   # Country info from ISOs (accounting for when ev_ISOs is a nested list of DFs)
-  ev_lv%<>%cbind(JoinDFMonty(Monty$event_Level$spatial%>%dplyr::select(ev_ISO3s), 
+  ev_lv%<>%cbind(JoinDFMonty(Monty$event_Level$spatial$ev_ISO3s, 
                              Monty$taxonomies$ISO_info,
-                             "ev_ISO3s","ISO3")%>%dplyr::select(-ISO3))
+                             "ev_ISO3s","ISO3"))
   # Add the external IDs
   ev_lv%<>%cbind(squishLDF(Monty$event_Level$ID_linkage$all_ext_IDs)%>%
                    setNames(c("all_ext_ID","all_extID_db","all_extID_org")))
@@ -1151,7 +1166,7 @@ checkCharMonty<-function(Monty){
     parallel::mclapply(Monty$impact_Data$ID_linkage$haz_sub_ID,
            function(x) {
              if(length(x)==0) return(x)
-             remSpecChar(x)
+             remSpecChar(unlist(x))
            },mc.cores=ncores)
   Monty$impact_Data$spatial<-
     parallel::mclapply(Monty$impact_Data$spatial, function(x){
@@ -1425,6 +1440,20 @@ ArrangeMonty<-function(Monty){
 }
 
 
+checkHazSpecs<-function(Monty){
+  # EVENTS
+  Monty$event_Level$allhaz_class%<>%parallel::mclapply(function(x){
+    x$all_hazs_spec<-trimws(c(str_split(x$all_hazs_spec,pattern = ":",simplify = T)))
+    return(x)
+  },mc.cores=ncores)
+  # HAZARDS
+  if(length(Monty$hazard_Data)!=0){
+    Monty$hazard_Data$hazard_detail$all_hazs_spec%<>%parallel::mclapply(function(x){
+      trimws(c(str_split(x,pattern = ":",simplify = T)))
+    },mc.cores=ncores)
+  }
+}
+
 checkMonty<-function(Monty){
   # Check all the awkward lists: all_ext_IDs + allhaz_class in the event object, haz_sub_ID + imp_ext_IDs in the impact object, haz_ext_IDs + all_hazs_spec + concur_haz in hazard object and the spatial elements of both
   Monty%<>%checkAwkListMonty()
@@ -1434,6 +1463,9 @@ checkMonty<-function(Monty){
   Monty%<>%checkCharMonty()
   # Check ev_sdate, ev_fdate, imp_sdate, imp_fdate
   Monty%<>%checkDateMonty()
+  # Check the haz_spec codes
+  Monty%<>%checkHazSpecs()
+  
   # Sources checked that they all exist in the src_info taxonomy
   
   # taxonomy checks for impacts, exposure and hazards

@@ -607,6 +607,8 @@ desADM<-do.call(rbind,lapply(seq_along(centrams)[1:6],function(i){
   
   if(any(unlist(sapply(cntimps$imp_spat_ID[1:100],function(x) grepl("UNDRR-GovDes",x))))) cntimps$imp_spat_ID<-str_split(unlist(cntimps$imp_spat_ID),paste0("-",iso3,"-"),simplify = T)[,2]
   
+  cntimps%<>%filter(!is.na(imp_spat_ID) & imp_spat_ID!="")
+  
   filer<-paste0("./CleanedData/SocioPoliticalData/Desinventar/",
                 stringr::str_to_lower(iso3),
                 "/ADM_",stringr::str_to_lower(iso3),
@@ -632,138 +634,150 @@ desADM<-do.call(rbind,lapply(seq_along(centrams)[1:6],function(i){
     sum(grepl(codie,unlist(cntimps$imp_spat_ID[cntimps$haz_Ab=="FL"]),ignore.case = T))
   },mc.cores = ncores))
   
+  ADM$EQrecords<-unlist(parallel::mclapply(ADM$ADMcode,function(codie){
+    sum(grepl(codie,unlist(cntimps$imp_spat_ID[cntimps$haz_Ab=="EQ"]),ignore.case = T))
+  },mc.cores = ncores))
+  
+  ADM$STrecords<-unlist(parallel::mclapply(ADM$ADMcode,function(codie){
+    sum(grepl(codie,unlist(cntimps$imp_spat_ID[cntimps$haz_Ab=="ST"]),ignore.case = T))
+  },mc.cores = ncores))
+  
+  ADM$WFrecords<-unlist(parallel::mclapply(ADM$ADMcode,function(codie){
+    sum(grepl(codie,unlist(cntimps$imp_spat_ID[cntimps$haz_Ab=="WF"]),ignore.case = T))
+  },mc.cores = ncores))
+  
   ADM$ISO3<-iso3
   
   return(ADM)
   
   
-  freqy<-cntimps%>%group_by(exp_spec,imp_type)%>%reframe(N=sum(imp_spat_ID>0))
-  espec<-"expspec_allpeop" #freqy$exp_spec[which.max(freqy$N)]
-  itype<- "imptypdeat" #freqy$imp_type[which.max(freqy$N)]
-  
-  for(hAb in unique(cntimps$haz_Ab)){
-    ADM$tmp<-unname(unlist(parallel::mclapply(ADM$ADMcode,function(codie){
-      tryCatch(cntimps%>%filter(exp_spec==espec & imp_type==itype & haz_Ab==hAb &
-                                  ev_sdate>1975 & 
-                                  grepl(codie,imp_spat_ID,ignore.case = T))%>%
-                 reframe(Rate=length(haz_Ab)/unique(hazcov$coverage[hazcov$haz_Ab==hAb & 
-                                                                                         hazcov$imp_src_db=="Desinventar"]))%>%
-                 pull(Rate),
-               error=function(e) NA)
-    },mc.cores=round(ncores/2))))
-    nomnom<-paste0(hAb,"_Rate")
-    ADM$tmp[ADM$tmp==0]<-NA
-    colnames(ADM@data)[ncol(ADM@data)]<-nomnom
-  }
-  
-  
-  for(espec in unique(cntimps$exp_spec)){
-    for(itype in unique(cntimps$imp_type)){
-      for(hAb in unique(cntimps$haz_Ab)){
-        ADM$tmp<-unname(unlist(parallel::mclapply(ADM$ADMcode,function(codie){
-          tryCatch(cntimps%>%filter(exp_spec==espec & imp_type==itype & haz_Ab==hAb &
-                                      ev_sdate>1975 & 
-                                      grepl(codie,imp_spat_ID,ignore.case = T))%>%
-                     reframe(Rate=length(haz_Ab)/unique(hazcov$coverage[hazcov$haz_Ab==hAb & 
-                                                                          hazcov$imp_src_db=="Desinventar"]))%>%
-                     pull(Rate),
-                   error=function(e) NA)
-        },mc.cores=round(ncores))))
-        nomnom<-paste0(hAb,"_",espec,"_",itype,"_AAImpact")
-        ADM$tmp[ADM$tmp==0]<-NA
-        colnames(ADM@data)[ncol(ADM@data)]<-nomnom
-      }
-    }
-  }
-  
-  lvl<-ADM@data%>%group_by(ADMlevel)%>%reframe(lvl=sum(EP_Rate>0,na.rm = T)); lvl<-lvl$ADMlevel[which.max(lvl$lvl)]
-  
-  ADM%>%sf::st_as_sf()%>%
-    filter(ADMlevel==2)%>%
-    ggplot() + 
-    geom_sf(aes(fill=EP_Rate))+scale_fill_gradient(name = "Count", trans = "log10")
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  ADM$deathsRP<-sapply(ADM$ADMcode,function(codie){
-    output<-tryCatch(cntimps%>%filter(exp_spec=="expspec_allpeop" & imp_type=="imptypdeat" &
-                                        ev_sdate>1975 & !is.na(imp_value) &
-                                        grepl(codie,imp_spat_ID,ignore.case = T))%>%
-                       impRP_calc(),error=function(e) data.frame(impRP=NA,N=NA))
-    ifelse(output$N>30,output$impRP,NA)
-  })
-  
-  ADM$costRP<-sapply(ADM$ADMcode,function(codie){
-    output<-tryCatch(cntimps%>%filter(imp_subcats%in%c("impecotot","impecodirtot") & imp_type=="imptypcost" & 
-                                        ev_sdate>1975 & !is.na(imp_value) &
-                                        grepl(codie,imp_spat_ID,ignore.case = T))%>%
-                       impRP_calc(),error=function(e) data.frame(impRP=NA,N=NA))
-    ifelse(output$N>30,output$impRP/1e6,NA)
-  })  
-  
-  # Extract the bounding box of the admin boundaries
-  # bbox<-expandBbox(unlist(unname(ExtractBBOXpoly(ADM)[1,2:5])),3)
-  
-  ggplot(ADM) + 
-    geom_sf(aes(fill=Allrecords))+scale_fill_gradient(name = "Count", trans = "log10")
-  
-  
-  
-  
-  
-  
-  
-  mad_map <- ggmap::get_stadiamap(expandBbox(ADM@bbox,3),maptype = "terrain",zoom=5)
-  
-  p<-ggmap(mad_map) + xlab("Longitude") + ylab("Latitude")
-  
-  q<-ADM[ADM$ADMlevel==min(max(ADM$ADMlevel),2),]%>%st_as_sf()%>%ggplot()+
-    geom_sf(aes(fill=Allrecords), color = "grey30", linewidth=0.1)+ #, inherit.aes = FALSE) +
-    scale_fill_gradient("No. Records",low="magenta4", high="magenta", trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
-  ggsave(paste0("Allrecords_ADM2_",iso3,"_Dessie.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
-  
-  q<-ADM[ADM$ADMlevel==min(ADM$ADMlevel),]%>%st_as_sf()%>%ggplot()+
-    geom_sf(aes(fill=Allrecords), color = "grey30", linewidth=0.1)+ #, inherit.aes = FALSE) +
-    scale_fill_gradient("No. Records",low="magenta4", high="magenta", trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
-  ggsave(paste0("Allrecords_ADM1_",iso3,"_Dessie.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
-  
-  q<-ADM[ADM$ADMlevel==min(ADM$ADMlevel),]%>%st_as_sf()%>%ggplot()+
-    geom_sf(aes(fill=deathsRP), color = "grey30", linewidth=0.1, inherit.aes = FALSE) +
-    scale_fill_gradient("Exp. No. Deaths 5Yr RP",low="magenta4", high="magenta", trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
-  ggsave(paste0("DeathsRP_Allrecords_ADM1_",iso3,"_Dessie.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
-  
-  q<-ADM[ADM$ADMlevel==min(ADM$ADMlevel),]%>%st_as_sf()%>%ggplot()+
-    geom_sf(aes(fill=costRP), color = "grey30", linewidth=0.1, inherit.aes = FALSE) +
-    scale_fill_gradient("Exp. Cost 5Yr RP [Millions Local Curr]",high="chartreuse",low="chartreuse4",trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
-  ggsave(paste0("CostRP_Allrecords_ADM1_",iso3,"_Dessie.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
-  
-  sapply(lhaz,function(hazzie){
-    
-    ADM$records<-sapply(ADM$ADMcode,function(codie){
-      sum(grepl(codie,cntimps$imp_spat_ID[cntimps$haz_Ab==hazzie],ignore.case = T))
-    })
-    
-    q<-ADM[ADM$ADMlevel==min(max(ADM$ADMlevel),2),]%>%st_as_sf()%>%ggplot()+
-      geom_sf(aes(fill=records), color = "grey30", linewidth=0.1)+
-      scale_fill_gradient(paste0("No. Records - ",hazzie), high=pal[names(pal)==hazzie], trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
-    ggsave(paste0(hazzie,"_records_ADM2_",iso3,"_Dessie.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
-    
-    q<-ADM[ADM$ADMlevel==min(ADM$ADMlevel),]%>%st_as_sf()%>%ggplot()+
-      geom_sf(aes(fill=records), color = "grey30", linewidth=0.1)+
-      scale_fill_gradient(paste0("No. Records - ",hazzie),high=pal[names(pal)==hazzie], trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
-    ggsave(paste0(hazzie,"_records_ADM1_",iso3,"_Dessie.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
-    
-    return(T)},simplify = T)
-  
-  return(T)}))
+  # freqy<-cntimps%>%group_by(exp_spec,imp_type)%>%reframe(N=sum(imp_spat_ID>0))
+  # espec<-"expspec_allpeop" #freqy$exp_spec[which.max(freqy$N)]
+  # itype<- "imptypdeat" #freqy$imp_type[which.max(freqy$N)]
+  # 
+  # for(hAb in unique(cntimps$haz_Ab)){
+  #   ADM$tmp<-unname(unlist(parallel::mclapply(ADM$ADMcode,function(codie){
+  #     tryCatch(cntimps%>%filter(exp_spec==espec & imp_type==itype & haz_Ab==hAb &
+  #                                 ev_sdate>1975 & 
+  #                                 grepl(codie,imp_spat_ID,ignore.case = T))%>%
+  #                reframe(Rate=length(haz_Ab)/unique(hazcov$coverage[hazcov$haz_Ab==hAb & 
+  #                                                                                        hazcov$imp_src_db=="Desinventar"]))%>%
+  #                pull(Rate),
+  #              error=function(e) NA)
+  #   },mc.cores=round(ncores/2))))
+  #   nomnom<-paste0(hAb,"_Rate")
+  #   ADM$tmp[ADM$tmp==0]<-NA
+  #   colnames(ADM@data)[ncol(ADM@data)]<-nomnom
+  # }
+  # 
+  # 
+  # for(espec in unique(cntimps$exp_spec)){
+  #   for(itype in unique(cntimps$imp_type)){
+  #     for(hAb in unique(cntimps$haz_Ab)){
+  #       ADM$tmp<-unname(unlist(parallel::mclapply(ADM$ADMcode,function(codie){
+  #         tryCatch(cntimps%>%filter(exp_spec==espec & imp_type==itype & haz_Ab==hAb &
+  #                                     ev_sdate>1975 & 
+  #                                     grepl(codie,imp_spat_ID,ignore.case = T))%>%
+  #                    reframe(Rate=length(haz_Ab)/unique(hazcov$coverage[hazcov$haz_Ab==hAb & 
+  #                                                                         hazcov$imp_src_db=="Desinventar"]))%>%
+  #                    pull(Rate),
+  #                  error=function(e) NA)
+  #       },mc.cores=round(ncores))))
+  #       nomnom<-paste0(hAb,"_",espec,"_",itype,"_AAImpact")
+  #       ADM$tmp[ADM$tmp==0]<-NA
+  #       colnames(ADM@data)[ncol(ADM@data)]<-nomnom
+  #     }
+  #   }
+  # }
+  # 
+  # lvl<-ADM@data%>%group_by(ADMlevel)%>%reframe(lvl=sum(EP_Rate>0,na.rm = T)); lvl<-lvl$ADMlevel[which.max(lvl$lvl)]
+  # 
+  # ADM%>%sf::st_as_sf()%>%
+  #   filter(ADMlevel==2)%>%
+  #   ggplot() + 
+  #   geom_sf(aes(fill=EP_Rate))+scale_fill_gradient(name = "Count", trans = "log10")
+  # 
+  # 
+  # 
+  # 
+  # 
+  # 
+  # 
+  # 
+  # 
+  # 
+  # ADM$deathsRP<-sapply(ADM$ADMcode,function(codie){
+  #   output<-tryCatch(cntimps%>%filter(exp_spec=="expspec_allpeop" & imp_type=="imptypdeat" &
+  #                                       ev_sdate>1975 & !is.na(imp_value) &
+  #                                       grepl(codie,imp_spat_ID,ignore.case = T))%>%
+  #                      impRP_calc(),error=function(e) data.frame(impRP=NA,N=NA))
+  #   ifelse(output$N>30,output$impRP,NA)
+  # })
+  # 
+  # ADM$costRP<-sapply(ADM$ADMcode,function(codie){
+  #   output<-tryCatch(cntimps%>%filter(imp_subcats%in%c("impecotot","impecodirtot") & imp_type=="imptypcost" & 
+  #                                       ev_sdate>1975 & !is.na(imp_value) &
+  #                                       grepl(codie,imp_spat_ID,ignore.case = T))%>%
+  #                      impRP_calc(),error=function(e) data.frame(impRP=NA,N=NA))
+  #   ifelse(output$N>30,output$impRP/1e6,NA)
+  # })  
+  # 
+  # # Extract the bounding box of the admin boundaries
+  # # bbox<-expandBbox(unlist(unname(ExtractBBOXpoly(ADM)[1,2:5])),3)
+  # 
+  # ggplot(ADM) + 
+  #   geom_sf(aes(fill=Allrecords))+scale_fill_gradient(name = "Count", trans = "log10")
+  # 
+  # 
+  # 
+  # 
+  # 
+  # 
+  # 
+  # mad_map <- ggmap::get_stadiamap(expandBbox(ADM@bbox,3),maptype = "terrain",zoom=5)
+  # 
+  # p<-ggmap(mad_map) + xlab("Longitude") + ylab("Latitude")
+  # 
+  # q<-ADM[ADM$ADMlevel==min(max(ADM$ADMlevel),2),]%>%st_as_sf()%>%ggplot()+
+  #   geom_sf(aes(fill=Allrecords), color = "grey30", linewidth=0.1)+ #, inherit.aes = FALSE) +
+  #   scale_fill_gradient("No. Records",low="magenta4", high="magenta", trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
+  # ggsave(paste0("Allrecords_ADM2_",iso3,"_Dessie.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
+  # 
+  # q<-ADM[ADM$ADMlevel==min(ADM$ADMlevel),]%>%st_as_sf()%>%ggplot()+
+  #   geom_sf(aes(fill=Allrecords), color = "grey30", linewidth=0.1)+ #, inherit.aes = FALSE) +
+  #   scale_fill_gradient("No. Records",low="magenta4", high="magenta", trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
+  # ggsave(paste0("Allrecords_ADM1_",iso3,"_Dessie.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
+  # 
+  # q<-ADM[ADM$ADMlevel==min(ADM$ADMlevel),]%>%st_as_sf()%>%ggplot()+
+  #   geom_sf(aes(fill=deathsRP), color = "grey30", linewidth=0.1, inherit.aes = FALSE) +
+  #   scale_fill_gradient("Exp. No. Deaths 5Yr RP",low="magenta4", high="magenta", trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
+  # ggsave(paste0("DeathsRP_Allrecords_ADM1_",iso3,"_Dessie.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
+  # 
+  # q<-ADM[ADM$ADMlevel==min(ADM$ADMlevel),]%>%st_as_sf()%>%ggplot()+
+  #   geom_sf(aes(fill=costRP), color = "grey30", linewidth=0.1, inherit.aes = FALSE) +
+  #   scale_fill_gradient("Exp. Cost 5Yr RP [Millions Local Curr]",high="chartreuse",low="chartreuse4",trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
+  # ggsave(paste0("CostRP_Allrecords_ADM1_",iso3,"_Dessie.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
+  # 
+  # sapply(lhaz,function(hazzie){
+  #   
+  #   ADM$records<-sapply(ADM$ADMcode,function(codie){
+  #     sum(grepl(codie,cntimps$imp_spat_ID[cntimps$haz_Ab==hazzie],ignore.case = T))
+  #   })
+  #   
+  #   q<-ADM[ADM$ADMlevel==min(max(ADM$ADMlevel),2),]%>%st_as_sf()%>%ggplot()+
+  #     geom_sf(aes(fill=records), color = "grey30", linewidth=0.1)+
+  #     scale_fill_gradient(paste0("No. Records - ",hazzie), high=pal[names(pal)==hazzie], trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
+  #   ggsave(paste0(hazzie,"_records_ADM2_",iso3,"_Dessie.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
+  #   
+  #   q<-ADM[ADM$ADMlevel==min(ADM$ADMlevel),]%>%st_as_sf()%>%ggplot()+
+  #     geom_sf(aes(fill=records), color = "grey30", linewidth=0.1)+
+  #     scale_fill_gradient(paste0("No. Records - ",hazzie),high=pal[names(pal)==hazzie], trans = "log10",na.value = "black");q #, inherit.aes = FALSE) +
+  #   ggsave(paste0(hazzie,"_records_ADM1_",iso3,"_Dessie.png"),q,path="./Plots/GCDB_Workshop/Sub-national/",width = 10)  
+  #   
+  #   return(T)},simplify = T)
+}))
 
+geojsonio::topojson_write(DesADM,geometry = "polygon",file = "COL_ADM.topojson")
 
 
 
@@ -875,7 +889,7 @@ lossy<-Monty%>%filter(ev_ISO3s%in%centrams)%>%
   arrange(ev_sdate)%>%
   group_by(Database,ev_ISO3s,Hazard,haz_Ab_grp,Impact)%>%
   reframe(coverage=max(unique(hazcov$coverage[hazcov$Hazard==unique(Hazard) & 
-                                            hazcov$imp_src_db==hazcov$imp_src_db])),
+                                            hazcov$imp_src_db==unique(Database)])),
           impact_value=sort(imp_value),
           N=n():1,
           probability=n():1/unique(coverage))%>%
@@ -966,6 +980,312 @@ Seasonality%>%filter(Impact=="People (All Demographics) Deaths [count]")%>%
   scale_y_log10()+
   # geom_line(aes(Month,AMI,colour=ev_ISO3s))+
   facet_wrap(~Hazard,scales = "free_y")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Monty<-convGOApp_Monty(taby=T)
+# EM-DAT
+Monty%<>%dplyr::bind_rows(convEMDAT_Monty(taby=T)%>%
+                            mutate_if(is.Date,as.character)%>%
+                            mutate(across(c(ext_ID,haz_maxvalue),as.character))%>%
+                            dplyr::select(-any_of(c("all_ext_IDs","imp_spat_ID","haz_ext_IDs"))))
+# IDMC GIDD
+Monty%<>%dplyr::bind_rows(convGIDD_Monty(taby=T)%>%
+                            mutate_if(is.Date,as.character)%>%
+                            mutate(across(c(ext_ID,haz_maxvalue),as.character))%>%
+                            dplyr::select(-any_of(c("all_ext_IDs","imp_spat_ID","haz_ext_IDs"))))
+# IDMC IDU
+Monty%<>%dplyr::bind_rows(convIDU_Monty(taby=T)%>%
+                            mutate_if(is.Date,as.character)%>%
+                            mutate(across(c(ext_ID,haz_maxvalue),as.character))%>%
+                            dplyr::select(-any_of(c("all_ext_IDs","imp_spat_ID","haz_ext_IDs"))))
+# GLIDE
+Monty%<>%dplyr::bind_rows(convGLIDE_Monty(taby=T)%>%
+                            mutate_if(is.Date,as.character)%>%
+                            mutate(across(c(ext_ID,haz_maxvalue),as.character))%>%
+                            dplyr::select(-any_of(c("all_ext_IDs","imp_spat_ID","haz_ext_IDs"))))
+# GDACS
+GDACS<-convGDACS_Monty(taby=T)
+  # The ISOs are vectors of characters
+GDACS$ev_ISO3s<-GDACS$imp_ISO3s<-GDACS$haz_ISO3s<-unname(unlist(parallel::mclapply(GDACS$imp_ISO3s,function(x){
+  paste0(unique(x),collapse=":")
+},mc.cores=ncores)))
+  # Now let's bind it all
+Monty%<>%dplyr::bind_rows(GDACS%>%
+                            mutate_if(is.Date,as.character)%>%
+                            mutate(across(c(ext_ID,haz_maxvalue),as.character))%>%
+                            dplyr::select(-any_of(c("all_ext_IDs","imp_spat_ID","haz_ext_IDs"))))
+# Desinventar
+Monty%<>%dplyr::bind_rows(convDessie_Monty(taby=T)%>%
+                            mutate_if(is.Date,as.character)%>%
+                            mutate(across(c(ext_ID,haz_maxvalue),as.character))%>%
+                            dplyr::select(-any_of(c("all_ext_IDs","imp_spat_ID","haz_ext_IDs"))))
+# DFO
+Monty%<>%dplyr::bind_rows(convDFO_Monty(taby=T)%>%
+                            mutate_if(is.Date,as.character)%>%
+                            mutate(across(c(ext_ID,haz_maxvalue),as.character))%>%
+                            dplyr::select(-any_of(c("all_ext_IDs","imp_spat_ID","haz_ext_IDs"))))
+
+
+Monty%<>%filter(imp_value!=0 & !is.na(haz_spec) & !is.na(imp_value))
+
+saveRDS(Monty,"./CleanedData/Monty_2024-06-11_tab.RData")
+
+
+
+
+
+
+
+
+Monty<-readRDS("./CleanedData/Monty_2024-06-11_tab.RData")
+
+Monty$year<-AsYear(Monty$imp_sdate)
+Monty%<>%filter(!is.na(year))
+
+Monty$haz_Ab_grp<-Monty$haz_Ab; 
+Monty$haz_Ab_grp[Monty$haz_Ab_grp%in%c("HW","CW","HT")]<-"ET"
+Monty$haz_Ab_grp[Monty$haz_Ab_grp%in%c("FR")]<-"WF"
+Monty$haz_Ab_grp[Monty$haz_Ab_grp%in%c("WV","WA")]<-"SS"
+Monty$haz_Ab_grp[Monty$haz_Ab_grp%in%c("MM","MS","SL","AV","ER")]<-"LS"
+Monty$haz_Ab_grp[Monty$haz_Ab_grp%in%c("TC,FL","EC")]<-"TC"
+Monty%<>%filter(!haz_Ab%in%c("EP","IN","SN"))
+
+
+taxies<-openxlsx::read.xlsx("./ImpactInformationProfiles.xlsx")
+# Exposure type class
+exp_class<-taxies%>%filter(list_name=="exp_specs")%>%dplyr::select(name,label)%>%
+  setNames(c("exp_spec","Exposure_Type"))
+# Impact type class
+imp_class<-taxies%>%filter(list_name=="imp_type")%>%dplyr::select(name,label)%>%
+  setNames(c("imp_type","Impact_Type"))
+# Impact units
+units_info<-taxies%>%filter(list_name=="measunits")%>%
+  dplyr::select(name,label)%>%
+  setNames(c("unit_code","Impact_Unit"))%>%na.omit()%>%distinct()
+# Add impact type label
+Monty%<>%left_join(imp_class,by="imp_type")
+# Add exposure type label
+Monty%<>%left_join(exp_class,by="exp_spec")
+# Add impact units label
+Monty%<>%left_join(units_info,by=join_by("imp_units"=="unit_code"))
+# Create a single label out of the three variables above
+Monty%<>%mutate(Impact=paste0(Exposure_Type," ",Impact_Type," [",Impact_Unit,"]"))
+# Database
+Monty%<>%mutate(Database=paste0(imp_src_db," - ",imp_src_org))
+# Neaten up some names
+Monty$Impact<-str_replace_all(str_replace_all(str_replace_all(str_replace_all(Monty$Impact," \\(All Demographics\\)",""),
+                                                              " \\(Cost\\)",""),"Inflation-Adjusted","Inf-Adj"),"\\(Unspecified-Inflation-Adjustment\\)","(Unspec. Inf-Adj)")
+
+
+haz_Ab_lab<-c("DR"="Drought",
+              "EQ"="Earthquake",
+              "ET"="Extreme Temperature",
+              "FL"="Flood",
+              "LS"="Landslide",
+              "ST"="Storm",
+              "SS"="Storm Surge",
+              "TC"="Tropical Cyclone",
+              "TO"="Tornado",
+              "TS"="Tsunami",
+              "WF"="Wildfire",
+              "VW"="Violent Wind",
+              "VO"="Volcanic Activity")
+
+hazcov<-data.frame()
+
+for(haz in names(haz_Ab_lab)){
+  hazcov%<>%rbind(Monty%>%filter(grepl(haz,haz_Ab_grp))%>%
+                    group_by(Database)%>%
+                    reframe(Hazard=haz,coverage=as.numeric(max(year) - min(year)))
+  )
+}
+
+Seasonality <- freqy <- lossy <- data.frame()
+
+for(haz in names(haz_Ab_lab)){
+  for(iso in unique(Monty$imp_ISO3s[nchar(Monty$imp_ISO3s)==3])){
+    
+    print(paste0("haz = ",haz," and ISO = ",iso))
+    
+    subMon<-Monty%>%filter(grepl(haz,haz_Ab_grp) & grepl(iso,imp_ISO3s))
+    
+    if(nrow(subMon)==0) next
+    
+    lossy%<>%rbind(subMon%>%arrange(imp_sdate)%>%
+      group_by(Database,Impact)%>%
+      reframe(ISO3=iso,haz_Ab=haz,
+              coverage=max(unique(hazcov$coverage[hazcov$Hazard==haz & 
+                                              hazcov$Database==unique(Database)])),
+              impact_value=sort(imp_value),
+              N=n():1,
+              probability=n():1/unique(coverage))%>%
+      dplyr::select(-coverage)%>%
+      setNames(c("Database","Impact_Type","ISO3","Hazard_Code",
+                 "Impact_Value","No_Impacts","Frequency_Occurrence")))
+    
+    freqy%<>%rbind(lossy%>%
+      group_by(Database,Impact_Type,ISO3,Hazard_Code)%>%
+      reframe(Count=max(No_Impacts),
+              AAI=mean(Impact_Value),
+              RP1=ifelse(min(Frequency_Occurrence)>1 | max(Frequency_Occurrence)<1,min(Impact_Value,na.rm=T),
+                         (splinefun(x=Frequency_Occurrence,
+                                    y=Impact_Value))(1)),
+              RP2=ifelse(min(Frequency_Occurrence)>(1/2) | max(Frequency_Occurrence)<(1/2),min(Impact_Value,na.rm=T),
+                         (splinefun(x=Frequency_Occurrence,
+                                    y=Impact_Value))(1/2)),
+              RP5=ifelse(min(Frequency_Occurrence)>(1/5) | max(Frequency_Occurrence)<(1/5),min(Impact_Value,na.rm=T),
+                         (splinefun(x=Frequency_Occurrence,
+                                    y=Impact_Value))(1/5)),
+              RP10=ifelse(min(Frequency_Occurrence)>(1/10) | max(Frequency_Occurrence)<(1/10),min(Impact_Value,na.rm=T),
+                          (splinefun(x=Frequency_Occurrence,
+                                     y=Impact_Value))(1/10)),
+              RP20=ifelse(min(Frequency_Occurrence)>(1/20) | max(Frequency_Occurrence)<(1/20),min(Impact_Value,na.rm=T),
+                          (splinefun(x=Frequency_Occurrence,
+                                     y=Impact_Value))(1/20)))%>%
+      setNames(c("Database","Impact_Type","ISO3","Hazard_Code","No_Impacts",
+                 "Average_Annual_Impact","Once_in_1_Year",
+                 "Once_in_2_Year","Once_in_5_Year",
+                 "Once_in_10_Year","Once_in_20_Year")))
+    
+    seasy<-subMon%>%
+      mutate(Month=as.integer(month(imp_sdate)))%>%
+      group_by(Database,Impact,Month)%>%
+      reframe(Evs=length(year),AMI=mean(imp_value))
+    
+    seasy%<>%rbind(seasy%>%mutate(Month=Month-12),
+                         seasy%>%mutate(Month=Month+12))%>%
+      arrange(Month)%>%
+      group_by(Database,Impact)%>%
+      mutate(ISO3=iso, Hazard_Type=haz_Ab_lab[haz], Hazard_Code=haz, Month=Month,
+             Evs=zoo::rollapply(Evs,3,function(x) mean(x,na.rm = T),align='center',fill=NA),
+             AMI=zoo::rollapply(AMI,3,function(x) mean(x,na.rm = T),align='center',fill=NA))%>%
+      filter(Month>=1 & Month<=12)%>%
+      setNames(c("Database","Impact_Type","ISO3","Hazard_Type","Hazard_Code",
+                 "Month","No_Impacts","Average_Monthly_Impact"))
+    
+    Seasonality%<>%rbind(seasy)
+    
+  }
+}
+
+lossy%<>%left_join(data.frame(Hazard_Code=names(haz_Ab_lab),
+                          Hazard=unname(haz_Ab_lab)),by="Hazard_Code")
+
+freqy%<>%mutate_at(grep(colnames(freqy),pattern = "Once_in"),function(x) pmax(x,0))
+freqy%<>%left_join(data.frame(Hazard_Code=names(haz_Ab_lab),
+                              Hazard=unname(haz_Ab_lab)),by="Hazard_Code")
+
+write_csv(lossy,"./CleanedData/MostlyImpactData/Monty_Loss.csv")
+write_csv(freqy,"./CleanedData/MostlyImpactData/Monty_FreqTabs.csv")
+write_csv(Seasonality,"./CleanedData/MostlyImpactData/Monty_Seasonality.csv")
+
+
+
+
+cntimps<-Monty%>%filter(imp_ISO3s==iso3 & !is.na(imp_lon) & !is.na(imp_lat))
+
+# ADM<-geojsonio::geojson_read("./CleanedData/SocioPoliticalData/EMDAT/COL/ADM_COL.geojson", 
+#                              what = "sp")
+# 
+# cntimps$imp_spat_ID<-NA_character_
+# 
+# for (j in 1:length(ADM@polygons)){
+#   
+#   if(sum(is.na(cntimps$imp_spat_ID))) next
+#   
+#   indy<-do.call(cbind,parallel::mclapply(ADM@polygons[[j]]@Polygons, function(poly){
+#     any(sp::point.in.polygon(cntimps$imp_lon,
+#                          cntimps$imp_lat,
+#                          poly@coords[,1],
+#                          poly@coords[,2])>0)
+#   },mc.cores=ncores))
+#   
+#   iii<-apply(indy,1,any)
+#   
+#   cntimps$imp_spat_ID[iii]<-ADM@data$ADM2_CODE[j]  
+#     
+# }
+
+
+
+
+# imp_spat_ID<-parallel::mclapply(1:length(ADM@polygons), function(j){
+#   
+#   poly<-ADM@polygons[[j]]
+#   
+#   imp_spat_ID<-rep(NA_character_,nrow(cntimps))
+#   
+#   out<-lapply(poly@Polygons, function(ppp){
+#     sp::point.in.polygon(cntimps$imp_lon,
+#                              cntimps$imp_lat,
+#                              ppp@coords[,1],
+#                              ppp@coords[,2])>0
+#   })
+#   
+#   if(length(poly@Polygons)==1) {
+#     imp_spat_ID[out[[1]]]<-ADM@data$ADM2_CODE[j]  
+#     return(imp_spat_ID)
+#   } else {
+#     iii<-apply(do.call(cbind,out),1,any)
+#     imp_spat_ID[iii]<-ADM@data$ADM2_CODE[j]  
+#     return(imp_spat_ID)
+#   }
+# },mc.cores=ncores)
+# 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

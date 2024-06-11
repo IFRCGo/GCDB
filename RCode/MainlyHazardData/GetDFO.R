@@ -213,6 +213,10 @@ GetDFO<-function(){
                 gen_location=COUNTRY,
                 ev_sdate=imp_sdate,haz_sdate=imp_sdate,
                 ev_fdate=imp_fdate,haz_fdate=imp_fdate,
+                imp_credate=NA_character_,
+                imp_moddate=NA_character_,
+                haz_credate=NA_character_,
+                haz_moddate=NA_character_,
                 exp_spec="expspec_allpeop",imp_units="unitscountnum",
                 imp_est_type="esttype_prim", haz_est_type="esttype_prim",
                 imp_unitdate=imp_sdate,
@@ -312,12 +316,15 @@ GetDFO<-function(){
 }
 
 # Wrangle into Monty JSON schema
-convDFO_Monty<-function(){
+convDFO_Monty<-function(taby=F){
   # Extract raw DFO data
   DFO<-GetDFO()
   # Get rid of repeated entries
   DFO$impacts%<>%arrange(ev_sdate)
   DFO$hazards%<>%arrange(ev_sdate)
+  
+  if(taby) return(left_join(DFO$impacts,st_drop_geometry(DFO$hazards)))
+  
   # Extract the Monty JSON schema template
   dMonty<-jsonlite::fromJSON("./Taxonomies/Montandon_JSON-Example.json")
   #@@@@@ Event-level data @@@@@#
@@ -353,6 +360,8 @@ convDFO_Monty<-function(){
   dMonty$event_Level$ev<-NULL
   
   #@@@@@ Hazard-level data @@@@@#
+  # Get rid of the geometry before combining it
+  DFO$hazards%<>%st_drop_geometry()
   # The ID linkage stuff is the same as for the event_Level element
   ID_linkage<-Add_hazIDlink_Monty(
     do.call(rbind,parallel::mclapply(1:nrow(DFO$hazards),function(i) {
@@ -366,13 +375,12 @@ convDFO_Monty<-function(){
   hazard_detail<-Add_HazTax_Monty(
     DFO$hazards%>%dplyr::select(haz_sub_ID, haz_Ab, haz_spec, 
                           haz_maxvalue,haz_maxunits,haz_est_type)%>%
-      st_drop_geometry()%>%
       rename(event_ID=haz_sub_ID)
   )
   # Concurrent hazard info:
   hazard_detail$concur_haz<-lapply(1:nrow(hazard_detail),function(i) list())
   # Add temporal information
-  temporal<-DFO$hazards%>%dplyr::select(haz_sdate,haz_fdate)%>%st_drop_geometry()
+  temporal<-DFO$hazards%>%dplyr::select(haz_sdate,haz_fdate,haz_credate,haz_moddate)
   # Spatial instance
   spatial_info<-DFO$hazards%>%
     dplyr::select(all_of(c("haz_lon","haz_lat","haz_spat_covcode",
@@ -383,13 +391,13 @@ convDFO_Monty<-function(){
   },mc.cores=ncores)
   # Form the object
   spatial<-Add_hazSpatAll_Monty(
-    ID_linkage=DFO$hazards%>%st_drop_geometry()%>%
+    ID_linkage=DFO$hazards%>%
       dplyr::select(
       haz_sub_ID,
       haz_spat_ID,
       haz_spat_fileloc
     ),
-    spatial_info=DFO$hazards%>%st_drop_geometry()%>%
+    spatial_info=DFO$hazards%>%
       dplyr::select(
       haz_ISO3s,
       haz_lon,
@@ -399,7 +407,7 @@ convDFO_Monty<-function(){
       haz_spat_resunits,
       haz_spat_crs
     ),
-    source=DFO$hazards%>%st_drop_geometry()%>%
+    source=DFO$hazards%>%
       dplyr::select(
       haz_spat_srcdb,
       haz_spat_URL,

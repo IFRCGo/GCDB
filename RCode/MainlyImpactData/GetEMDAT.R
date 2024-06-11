@@ -534,14 +534,21 @@ API_EMDAT<-function(){
     CleanEMDAT_API()
 }
 
-convEMDAT_Monty<-function(){
+convEMDAT_Monty<-function(taby=F){
   # Get the Emergency Appeal data from GO
   EMDAT<-API_EMDAT()
   # Get rid of repeated entries
   EMDAT%<>%distinct()%>%
     arrange(ev_sdate)%>%filter(!is.na(haz_spec))
+  
+  if(taby) return(EMDAT)
+  
   # Load the Monty JSON template
   emdMonty<-jsonlite::fromJSON("./Taxonomies/Montandon_JSON-Example.json")
+  
+  # Don't max out the RAM!
+  s_ncores <- ncores
+  ncores <<- min(ncores,20)
   
   #@@@@@ Event-level data @@@@@#
   # IDs
@@ -645,6 +652,9 @@ convEMDAT_Monty<-function(){
   # Write it out just for keep-sake
   write(jsonlite::toJSON(emdMonty,pretty = T,auto_unbox=T,na = 'null'),
         paste0("./CleanedData/MostlyImpactData/CRED/EMDAT_",Sys.Date(),".json"))
+  
+  # Don't max out the RAM!
+  ncores <<- s_ncores
   
   return(emdMonty)
 }

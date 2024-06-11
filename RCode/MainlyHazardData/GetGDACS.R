@@ -222,7 +222,7 @@ FilterGDACS<-function(haz=NULL,syear=2016L,fyear=NULL,list_GDACS=NULL,red=F){
     tmp$properties$glide[sum(!is.na(tmp$properties$glide) &
                         !grepl(tmp$properties$glide,pattern = "^[A-Z]{2}-\\d{4}-\\d{6}-[A-Z]{3}$"))]<-NA_character_
     
-    if(len>1 & !is.na(tmp$properties$glide) & str_remove_all(tmp$properties$glide," ")!="" &
+    if(!is.na(tmp$properties$glide) & str_remove_all(tmp$properties$glide," ")!="" &
        nchar(tmp$properties$glide)!=18) print(paste0("Check the GLIDE: ",tmp$properties$glide))
     
     for (j in 1:length(tmp$properties$episodealertlevel)){
@@ -236,6 +236,8 @@ FilterGDACS<-function(haz=NULL,syear=2016L,fyear=NULL,list_GDACS=NULL,red=F){
                          imp_src_URL=tmp$properties$url$details,
                          ev_sdate=as.Date(as.POSIXct(tmp$properties$fromdate),format = "%Y%m%d"),
                          ev_fdate=as.Date(as.POSIXct(tmp$properties$todate),format = "%Y%m%d"),
+                         imp_credate=as.Date(as.POSIXct(tmp$properties$fromdate),format = "%Y%m%d"),
+                         imp_moddate=as.Date(as.POSIXct(tmp$properties$datemodified),format = "%Y%m%d"),
                          haz_Ab=tmp$properties$eventtype,
                          hazard_severity=tmp$properties$severitydata$severity,
                          txt,
@@ -290,6 +292,8 @@ restructGDACS<-function(GDACS){
     # This estimate is modelled
     imp_est_type="esttype_model",
     haz_est_type="esttype_second",
+    haz_credate=imp_credate,
+    haz_moddate=imp_moddate,
     # Organisation
     imp_src_db="GDACS",
     imp_src_org="EC-JRC",
@@ -344,11 +348,14 @@ GetGDACS_GCDB<-function(){
   GDACS%>%restructGDACS()
 }
 
-convGDACS_Monty<-function(){
+convGDACS_Monty<-function(taby=F){
   # Extract raw GDACS data
   GDACS<-GetGDACS_GCDB()
   # Get rid of repeated entries
   GDACS%<>%arrange(ev_sdate)
+  
+  if(taby) return(GDACS)
+  
   # Extract the Monty JSON schema template
   gMonty<-jsonlite::fromJSON("./Taxonomies/Montandon_JSON-Example.json")
   
@@ -404,7 +411,7 @@ convGDACS_Monty<-function(){
   # Concurrent hazard info:
   hazard_detail$concur_haz<-lapply(1:nrow(hazard_detail),function(i) list())
   # Add temporal information
-  temporal<-GDACS%>%dplyr::select(haz_sdate,haz_fdate)
+  temporal<-GDACS%>%dplyr::select(haz_sdate,haz_fdate,haz_credate,haz_moddate)
   # Spatial instance
   spatial_info<-GDACS%>%
     dplyr::select(all_of(c("haz_lon","haz_lat","haz_spat_covcode",

@@ -112,27 +112,19 @@ GetGLIDEimps<-function(){
   GLIDE<-rjson::fromJSON(file = baseurl)[[1]]; 
   GLIDE<-do.call(dplyr::bind_rows,lapply(1:length(GLIDE),function(i) as.data.frame(GLIDE[[i]])))%>%distinct()
   # Now let's treat this as a source of impact estimates!
-  colnames(GLIDE)<-c("ev_name",
-                   "Year",
-                   "docid", # Nope!
-                   "imp_lat", # Nope!
-                   "imptyphomles",
-                   "idsource", # Nope!
-                   "imptypdeat",
-                   "imptypaffe",
-                   "duration",
-                   "ext_ID",
-                   "imptypinju",
-                   "month",
-                   "imp_ISO3s",
-                   "gen_location",
-                   "haz_maxvalue",
-                   "time", # Nope!
-                   "id", # Nope!
-                   "haz_Ab",
-                   "day",
-                   "status", # Nope!
-                   "imp_lon")
+  GLIDE%<>%rename("ev_name"="comments",
+                  "Year"="year",
+                  "imp_lat"="latitude",
+                  "imptyphomles"="homeless",
+                  "imptypdeat"="killed",
+                  "imptypaffe"="affected",
+                  "ext_ID"="number",
+                  "imptypinju"="injured",
+                  "imp_ISO3s"="geocode",
+                  "gen_location"="location",
+                  "haz_maxvalue"="magnitude",
+                  "haz_Ab"="event",
+                  "imp_lon"="longitude")
   # The source reference isn't well structured, use NLP to extract organisation name
   GLIDE%<>%mutate(imp_src_db="GLIDE",imp_src_org="ADRC",
                 imp_src_URL=paste0(str_split(baseurl,"\\?",simplify = T)[1],"?glide=",ext_ID))
@@ -177,12 +169,15 @@ GetGLIDEimps<-function(){
                 imp_spat_ID="GO-ADM0-World-shp",
                 imp_spat_srcorg="IFRC",
                 imp_spat_srcdb="GO-Maps",
+                imp_credate=imp_sdate,
+                imp_moddate=imp_fdate,
                 imp_spat_URL="https://go-user-library.ifrc.org/maps",
                 imp_spat_fileloc="https://go-user-library.ifrc.org/maps",
                 imp_spat_res=0,
                 imp_spat_resunits="adminlevel",
                 imp_spat_crs="EPSG:4326",
-                imp_spat_covcode="spat_polygon")
+                imp_spat_covcode="spat_polygon")%>%
+    filter(!is.na(imp_ISO3s))
   # Try to extract as much as possible from the estimated magnitude and its units
   GLIDE%<>%modGLIDEmagunits()
   # And the sub IDs
@@ -192,11 +187,14 @@ GetGLIDEimps<-function(){
 }
 
 
-convGLIDE_Monty<-function(){
+convGLIDE_Monty<-function(taby=F){
   # Extract raw GLIDE data
   GLIDE<-GetGLIDEimps()
   # Get rid of repeated entries
   GLIDE%<>%arrange(ev_sdate)
+  
+  if(taby) return(GLIDE)
+  
   # Extract the Monty JSON schema template
   glideMonty<-jsonlite::fromJSON("./Taxonomies/Montandon_JSON-Example.json")
   

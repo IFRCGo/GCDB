@@ -952,6 +952,16 @@ Monty$`$defs`$Hazard_obj=list(
           title="Hazard End Date",
           description="End date of this specific hazard. For unclear end dates, please use the latest plausible date. Please note that this is when the hazard ended, not when the post-disaster recovery was achieved.",
           `$ref`="#/$defs/Date_obj"
+        ),
+        haz_credate=list(
+          title="Hazard Report Creation Date",
+          description="Date that the impact record was created",
+          `$ref`="#/$defs/Date_obj"
+        ),
+        haz_moddate=list(
+          title="Hazard Report Update Date",
+          description="Date that the impact record was last updated",
+          `$ref`="#/$defs/Date_obj"
         )
       )
       # required=list("haz_sdate","haz_fdate")

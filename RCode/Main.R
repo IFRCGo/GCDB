@@ -20,7 +20,7 @@ GetTabMonty<-function(){
   Monty<-tryCatch(MergeMonty(list(Monty,checkMonty(convGDACS_Monty()))),
                   error=function(e) {print("Error extracting EC-JRC - GDACS data"); return(Monty)})
   # Desinventar
-  Monty<-tryCatch(MergeMonty(list(Monty,checkMonty(convDessie_Monty(forcer = T)))),
+  Monty<-tryCatch(MergeMonty(list(Monty,checkMonty(convDessie_Monty()))),
                   error=function(e) {print("Error extracting UNDRR - Desinventar data"); return(Monty)})
   # DFO
   Monty<-tryCatch(MergeMonty(list(Monty,checkMonty(convDFO_Monty()))),
