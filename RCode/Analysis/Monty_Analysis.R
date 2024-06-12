@@ -778,7 +778,7 @@ desADM<-do.call(rbind,lapply(seq_along(centrams)[1:6],function(i){
 }))
 
 geojsonio::topojson_write(DesADM,geometry = "polygon",file = "COL_ADM.topojson")
-
+geojsonio::geojson_write(DesADM,file="./CleanedData/MostlyImpactData/COL_ADM.geojson",geometry = "polygon")
 
 
 Monty<-jsonlite::fromJSON("./CleanedData/Monty_cleaned_2024-04-25.json")
