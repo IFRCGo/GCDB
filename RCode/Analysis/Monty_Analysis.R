@@ -1204,6 +1204,24 @@ freqy%<>%mutate_at(grep(colnames(freqy),pattern = "Once_in"),function(x) pmax(x,
 freqy%<>%left_join(data.frame(Hazard_Code=names(haz_Ab_lab),
                               Hazard=unname(haz_Ab_lab)),by="Hazard_Code")
 
+freqy %<>%
+  mutate(
+    Once_in_1_Year = if_else(Once_in_1_Year == Once_in_2_Year, NA_real_, Once_in_1_Year),
+    Once_in_2_Year = if_else(Once_in_2_Year == Once_in_5_Year, NA_real_, Once_in_2_Year),
+    Once_in_5_Year = if_else(Once_in_5_Year == Once_in_10_Year, NA_real_, Once_in_5_Year),
+    Once_in_10_Year = if_else(Once_in_10_Year == Once_in_20_Year, NA_real_, Once_in_10_Year)
+  )%>%
+  mutate(
+    Once_in_20_Year = if_else(!is.na(Once_in_10_Year) & Once_in_10_Year > Once_in_20_Year, Once_in_10_Year, Once_in_20_Year),
+    Once_in_10_Year = if_else(!is.na(Once_in_10_Year) & Once_in_10_Year >= Once_in_20_Year, NA_real_, Once_in_10_Year),
+    Once_in_10_Year = if_else(!is.na(Once_in_5_Year) & Once_in_5_Year > Once_in_10_Year, Once_in_5_Year, Once_in_10_Year),
+    Once_in_5_Year = if_else(!is.na(Once_in_5_Year) & Once_in_5_Year >= Once_in_10_Year, NA_real_, Once_in_5_Year),
+    Once_in_5_Year = if_else(!is.na(Once_in_2_Year) & Once_in_2_Year > Once_in_5_Year, Once_in_2_Year, Once_in_5_Year),
+    Once_in_2_Year = if_else(!is.na(Once_in_2_Year) & Once_in_2_Year >= Once_in_5_Year, NA_real_, Once_in_2_Year),
+    Once_in_2_Year = if_else(!is.na(Once_in_1_Year) & Once_in_1_Year > Once_in_2_Year, Once_in_1_Year, Once_in_2_Year),
+    Once_in_1_Year = if_else(!is.na(Once_in_1_Year) & Once_in_1_Year >= Once_in_2_Year, NA_real_, Once_in_1_Year)
+  )
+
 write_csv(lossy,"./CleanedData/MostlyImpactData/Monty_Loss.csv")
 write_csv(freqy,"./CleanedData/MostlyImpactData/Monty_FreqTabs.csv")
 write_csv(Seasonality,"./CleanedData/MostlyImpactData/Monty_Seasonality.csv")
