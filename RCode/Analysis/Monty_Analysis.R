@@ -1105,6 +1105,11 @@ Monty%<>%mutate(Database=paste0(imp_src_db," - ",imp_src_org))
 Monty$Impact<-str_replace_all(str_replace_all(str_replace_all(str_replace_all(Monty$Impact," \\(All Demographics\\)",""),
                                                               " \\(Cost\\)",""),"Inflation-Adjusted","Inf-Adj"),"\\(Unspecified-Inflation-Adjustment\\)","(Unspec. Inf-Adj)")
 
+Monty%<>%filter((imp_src_db=="Desinventar" & year>1990) |
+                  (imp_src_db=="EMDAT" & year>1990) |  
+                  (imp_src_db=="GIDD" & year>2016) | 
+                  (imp_src_db=="DFO" & year>1990) |
+                  !imp_src_db%in%c("Desinventar","EMDAT","GIDD","DFO"))
 
 haz_Ab_lab<-c("DR"="Drought",
               "EQ"="Earthquake",
