@@ -32,15 +32,20 @@ tables$colnames<-unname(sapply(tables$table,function(x){
 
 View(tables)
 
-pdc<-st_read(conn,"imminent_pdc")
+pdc<-sf::st_read(conn,"imminent_pdc")
+pdcdis<-sf::st_read(conn,"imminent_pdcdisplacement")
+adam<-sf::st_read(conn,"imminent_adam")
+gwis<-sf::st_read(conn,"imminent_gwis")
+
+
+length(unique(pdc$hazard_id))
+length(unique(pdc$id))
+table(pdc$hazard_type)
 
 tables$rowcount<-unname(sapply(tables$table,function(x){
   dbGetQuery(conn,paste0("SELECT COUNT(*) FROM ",x,";"))$count
 },simplify = T))
 write_csv(tables%>%dplyr::select(-colnames),"./CleanedData/Monty_Forecast_Data_Info.csv")
-
-
-
 
 
 
