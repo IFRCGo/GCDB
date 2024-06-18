@@ -48,6 +48,36 @@ tables$rowcount<-unname(sapply(tables$table,function(x){
 write_csv(tables%>%dplyr::select(-colnames),"./CleanedData/Monty_Forecast_Data_Info.csv")
 
 
+CleanADAM<-function(adam){
+  adam<-rename("ev_name" = "title",
+               "haz_Ab" = "hazard_type",
+               "ext_ID" = "event_id",
+               "publish_date" = "imp_moddate",
+               "population_exposure")
+  
+  
+  
+  stop("extract the population_impact variable from the storm_position_geojson geojson variable")
+  stop("country_id needs sorting")
+  stop("make sure to modify the id to ensure the publish_date is the imp_moddate")
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
