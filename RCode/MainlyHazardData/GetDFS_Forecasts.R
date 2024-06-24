@@ -57,7 +57,7 @@ url = "https://sentry.pdc.org/hp_srv/services/hazards/t/json/get_active_hazards"
 headers <- httr::add_headers(Authorization = paste0("Bearer ", PDC_ACCESS_TOKEN))
 response <- httr::GET(url, headers)
 out<-jsonlite::fromJSON(httr::content(response, "text"))
-
+stop("sort issues with dates from PDC data")
 # # Create the JSON body as a list
 # bod <- jsonlite::toJSON(list(
 #   username = "hamish.patten@ifrc.org",
