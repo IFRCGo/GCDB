@@ -1106,10 +1106,13 @@ Monty$Impact<-str_replace_all(str_replace_all(str_replace_all(str_replace_all(Mo
                                                               " \\(Cost\\)",""),"Inflation-Adjusted","Inf-Adj"),"\\(Unspecified-Inflation-Adjustment\\)","(Unspec. Inf-Adj)")
 
 Monty%<>%filter((imp_src_db=="Desinventar" & year>1980) |
+                  (imp_src_db=="GLIDE" & year>1980) |
                   (imp_src_db=="EMDAT" & year>1990) |  
                   (imp_src_db=="GIDD" & year>2016) | 
                   (imp_src_db=="DFO" & year>1990) |
                   !imp_src_db%in%c("Desinventar","EMDAT","GIDD","DFO"))
+
+Monty%<>%filter(imp_value!=0 & !is.na(imp_value))
 
 haz_Ab_lab<-c("DR"="Drought",
               "EQ"="Earthquake",
@@ -1202,6 +1205,18 @@ for(haz in names(haz_Ab_lab)){
   }
 }
 
+lossy$Impact_Value[is.infinite(lossy$Impact_Value)]<-NA_real_
+freqy%<>%mutate_if(is.numeric,function(x) {if(any(is.infinite(x))) x[is.infinite(x)]<-NA_real_; return(x)})
+Seasonality$Average_Monthly_Impact[is.infinite(Seasonality$Average_Monthly_Impact)]<-NA_real_
+
+freqy%<>%distinct()
+lossy%<>%distinct()
+Seasonality%<>%distinct()
+
+write_csv(lossy,"./CleanedData/MostlyImpactData/Monty_Loss_premod.csv")
+write_csv(freqy,"./CleanedData/MostlyImpactData/Monty_FreqTabs_premod.csv")
+write_csv(Seasonality,"./CleanedData/MostlyImpactData/Monty_Seasonality_premod.csv")
+
 lossy%<>%left_join(data.frame(Hazard_Code=names(haz_Ab_lab),
                           Hazard=unname(haz_Ab_lab)),by="Hazard_Code")
 
@@ -1211,10 +1226,10 @@ freqy%<>%left_join(data.frame(Hazard_Code=names(haz_Ab_lab),
 
 freqy %<>%
   mutate(
-    Once_in_1_Year = if_else(Once_in_1_Year == Once_in_2_Year, NA_real_, Once_in_1_Year),
-    Once_in_2_Year = if_else(Once_in_2_Year == Once_in_5_Year, NA_real_, Once_in_2_Year),
-    Once_in_5_Year = if_else(Once_in_5_Year == Once_in_10_Year, NA_real_, Once_in_5_Year),
-    Once_in_10_Year = if_else(Once_in_10_Year == Once_in_20_Year, NA_real_, Once_in_10_Year)
+    Once_in_1_Year = if_else(!is.na(Once_in_2_Year) & Once_in_1_Year == Once_in_2_Year, NA_real_, Once_in_1_Year),
+    Once_in_2_Year = if_else(!is.na(Once_in_5_Year) & Once_in_2_Year == Once_in_5_Year, NA_real_, Once_in_2_Year),
+    Once_in_5_Year = if_else(!is.na(Once_in_10_Year) & Once_in_5_Year == Once_in_10_Year, NA_real_, Once_in_5_Year),
+    Once_in_10_Year = if_else(!is.na(Once_in_20_Year) & Once_in_10_Year == Once_in_20_Year, NA_real_, Once_in_10_Year)
   )%>%
   mutate(
     Once_in_20_Year = if_else(!is.na(Once_in_10_Year) & Once_in_10_Year > Once_in_20_Year, Once_in_10_Year, Once_in_20_Year),
