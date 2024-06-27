@@ -47,6 +47,29 @@ tables$rowcount<-unname(sapply(tables$table,function(x){
 },simplify = T))
 write_csv(tables%>%dplyr::select(-colnames),"./CleanedData/Monty_Forecast_Data_Info.csv")
 
+# Only the active earthquake events are displayed... no long term storage access
+adam_eq<-jsonlite::fromJSON("https://x8qclqysv7.execute-api.eu-west-1.amazonaws.com/dev/events/earthquakes")
+adam_fl<-jsonlite::fromJSON("https://x8qclqysv7.execute-api.eu-west-1.amazonaws.com/dev/events/floods")
+adam_tc<-jsonlite::fromJSON("https://x8qclqysv7.execute-api.eu-west-1.amazonaws.com/dev/events/cyclones")
+
+# Api request url
+url = "https://sentry.pdc.org/hp_srv/services/hazards/t/json/get_active_hazards"
+headers <- httr::add_headers(Authorization = paste0("Bearer ", PDC_ACCESS_TOKEN))
+response <- httr::GET(url, headers)
+out<-jsonlite::fromJSON(httr::content(response, "text"))
+stop("sort issues with dates from PDC data")
+# # Create the JSON body as a list
+# bod <- jsonlite::toJSON(list(
+#   username = "hamish.patten@ifrc.org",
+#   password = psswd
+# ), auto_unbox = T)
+# # Make the POST request
+# response <- httr::GET(
+#   "https://goadmin.ifrc.org/get_auth_token",
+#   httr::add_headers(`Content-Type` = "application/json"),
+#   # body = bod,
+#   httr::timeout(10000)
+# )
 
 CleanADAM<-function(adam){
   # Minor changes that make things work later on
@@ -216,30 +239,5 @@ CleanADAM<-function(adam){
 dfs<-readRDS("~/Downloads/DFS_Forecast_noPDCdis.Rdata")
 adam<-dfs$adam
 rm(dfs)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
