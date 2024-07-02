@@ -137,7 +137,7 @@ CleanADAM<-function(adam){
     # If not, add it!
     if(!x2%in%x & !is.na(x2) & !is.null(x2) & stringi::stri_trim_both(x2)!="") x<-c(x,x2)
     # Return a single character rather than a vector
-    paste0(sort(x),collapse=" : ")
+    paste0(sort(x),collapse=" ; ")
   }, mc.cores = ncores)))
   # rearrange by date and slice the latest date, leaving the others out for the time being
   adam%<>%dplyr::select(-c(country_id, population_exposure, population, name, 
@@ -201,10 +201,12 @@ CleanADAM<-function(adam){
     haz_spat_ID=NA_character_,
     imp_lat=haz_lat,
     imp_lon=haz_lon,
-    imp_src_URL=haz_src_URL,
+    imp_src_URL=haz_spat_fileloc,
     imp_unitdate=NA_character_,
     imp_credate=NA_character_,
-    haz_credate=NA_character_
+    haz_credate=NA_character_,
+    all_hazs_Ab=haz_Ab,
+    all_ext_IDs=ext_ID
   )
   # Generate GCDB event ID
   adam$event_ID<-GetMonty_ID(adam)
@@ -213,31 +215,110 @@ CleanADAM<-function(adam){
   # Create an impact-specific ID
   adam%<>%GetGCDB_impID()
   
-  
-  
-  # Lists
-  # all_hazs_Ab=haz_Ab,
-  # all_ext_IDs=ext_ID
-  
-  
-  
-  x<-MontyJSONnames()[!MontyJSONnames()%in%colnames(adam)]
-  x[!grepl("_code",x) & !grepl("_lab",x) & !grepl("_class",x)]
-  
-  
-  
-  
-  
-  
-  
-  
   # Add missing columns & reorder the dataframe to fit imp_GCDB object
   adam%>%dplyr::select(any_of(MontyJSONnames())) 
 }
 
 
 dfs<-readRDS("~/Downloads/DFS_Forecast_noPDCdis.Rdata")
+pdc<-dfs$pdc
 adam<-dfs$adam
 rm(dfs)
+
+
+PDChazards<-function(pdc){
+  colConv<-openxlsx::read.xlsx("./Taxonomies/MostlyImpactData/PDC-HIP.xlsx")
+  # Reduce the translated vector and merge
+  pdc%<>%left_join(colConv,by = c("haz_Ab"),
+                     relationship="many-to-one")
+}
+
+CleanPDC<-function(pdc){
+  # Rename and add variables
+  pdc%<>%rename("imp_credate"="created_at",
+                "ext_ID"="uuid",
+                "imp_sub_ID"="id",
+                "ev_name"="hazard_name",
+                "haz_Ab"="hazard_type",
+                "haz_lat"="latitude",
+                "haz_lon"="longitude",
+                "ev_sdate"="start_date",
+                "ev_fdate"="end_date",
+                "imp_moddate"="pdc_updated_at")%>%
+    mutate(haz_credate=imp_credate,
+           haz_moddate=imp_moddate,
+           imp_sdate=ev_sdate,
+           imp_fdate=imp_moddate,
+           haz_sdate=ev_sdate,
+           haz_fdate=ev_fdate,
+           imp_lat=haz_lat,
+           imp_lon=haz_lon,
+           all_ext_IDs=ext_ID,
+           imp_src_URL=paste0("https://sentry.pdc.org/hp_srv/services/hazard/",ext_ID,"/exposure/latest/"),
+           haz_spat_URL=paste0("https://sentry.pdc.org/hp_srv/services/hazard/",ext_ID,"/exposure/latest/"),
+           all_hazs_Ab=haz_Ab,
+           imp_src_org="PDC",
+           imp_src_db="DisasterAWARE",
+           haz_src_org="PDC",
+           haz_src_db="DisasterAWARE",
+           imp_src_orgtype="orgtypeacad",
+           imp_spat_srcorg="IFRC",
+           imp_spat_srcdb="GO",
+           imp_spat_URL="https://go-user-library.ifrc.org/maps",
+           imp_spat_fileloc="https://go-user-library.ifrc.org/maps",
+           imp_spat_res=0,
+           imp_spat_resunits="adminlevel",
+           imp_spat_crs="EPSG:4326",
+           imp_spat_covcode="spat_polygon",
+           imp_spat_ID=NA_character_,
+           haz_spat_covcode="spat_polygon",
+           haz_spat_res=NA_real_,
+           haz_spat_resunits="spatresother",
+           haz_spat_crs="EPSG:4326",
+           haz_spat_srcorg="PDC",
+           haz_spat_srcdb="DisasterAWARE",
+           haz_est_type="esttype_second",
+           haz_spat_ID=NA_character_,
+           imp_unitdate=NA_character_)
+  # Now sort out the specific hazards
+  pdc%<>%PDChazards()%>%mutate(all_hazs_spec=haz_spec)
+  # Generate GCDB event ID
+  pdc$event_ID<-GetMonty_ID(pdc)
+  
+  
+  
+  
+  # left_join with immminent_pdcdisplacement for impact forecast
+  
+  
+  
+  
+  
+  # Correct the labels of the impacts, melting by impact detail
+  pdc%<>%ImpLabs(nomDB = "PDC")
+  # Create an impact-specific ID
+  pdc%<>%GetGCDB_impID()
+  
+  # Add missing columns & reorder the dataframe to fit imp_GCDB object
+  pdc%>%dplyr::select(any_of(MontyJSONnames())) 
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
