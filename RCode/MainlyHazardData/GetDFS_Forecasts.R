@@ -83,7 +83,7 @@ CleanADAM<-function(adam){
   adam%<>%cbind(do.call(dplyr::bind_rows,parallel::mclapply(adam$event_details, function(x){
     if(all(is.na(x))) return(data.frame(ev=NA))
     x<-jsonlite::fromJSON(x)
-    x$url=paste0(unname(unlist(x$url)), collapse=" ; ")
+    x$url=paste0(unname(unlist(x$url)), collapse=delim)
     if(!is.null(x$event_id)) x$event_id<-as.character(x$event_id)
     return(as.data.frame(Filter(Negate(is.null),x)))
   },mc.cores=ncores)))%>%dplyr::select(-c(event_details,geojson))
@@ -137,7 +137,7 @@ CleanADAM<-function(adam){
     # If not, add it!
     if(!x2%in%x & !is.na(x2) & !is.null(x2) & stringi::stri_trim_both(x2)!="") x<-c(x,x2)
     # Return a single character rather than a vector
-    paste0(sort(x),collapse=" ; ")
+    paste0(sort(x),collapse=delim)
   }, mc.cores = ncores)))
   # rearrange by date and slice the latest date, leaving the others out for the time being
   adam%<>%dplyr::select(-c(country_id, population_exposure, population, name, 
