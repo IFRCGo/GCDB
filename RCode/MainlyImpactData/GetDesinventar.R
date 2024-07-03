@@ -526,74 +526,74 @@ SpitDesTrans<-function(Dessie){
 
 PostModTransies<-function(colConv){
   # General Hazard Definitions 
-  colConv$haz[grepl("earthquake",colConv$event_en,ignore.case = T)]<-"EQ"
-  colConv$haz[grepl("flood",colConv$event_en,ignore.case = T)]<-"FL"
-  colConv$haz[grepl("inundation",colConv$event_en,ignore.case = T)]<-"FL"
-  colConv$haz[grepl("tsunami",colConv$event_en,ignore.case = T)]<-"TS"
-  colConv$haz[grepl("tidal wave",colConv$event_en,ignore.case = T)]<-"TS"
-  colConv$haz[grepl("rain",colConv$event_en,ignore.case = T)]<-"ST"
-  colConv$haz[grepl("storm",colConv$event_en,ignore.case = T)]<-"ST"
-  colConv$haz[grepl("wind",colConv$event_en,ignore.case = T)]<-"VW"
-  colConv$haz[grepl("lightning",colConv$event_en,ignore.case = T)]<-"ST"
-  colConv$haz[grepl("surge",colConv$event_en,ignore.case = T)]<-"SS"
-  colConv$haz[grepl("torrent",colConv$event_en,ignore.case = T)]<-"FL"
-  colConv$haz[grepl("cyclone",colConv$event_en,ignore.case = T)]<-"TC"
-  colConv$haz[grepl("hurricane",colConv$event_en,ignore.case = T)]<-"TC"
-  colConv$haz[grepl("tornado",colConv$event_en,ignore.case = T)]<-"TC"
-  colConv$haz[grepl("typhoon",colConv$event_en,ignore.case = T)]<-"TC"
-  colConv$haz[grepl("heat",colConv$event_en,ignore.case = T)]<-"HW"
-  colConv$haz[grepl("cold",colConv$event_en,ignore.case = T)]<-"CW"
-  colConv$haz[grepl("frost",colConv$event_en,ignore.case = T)]<-"ET"
-  colConv$haz[grepl("ice ",colConv$event_en,ignore.case = T)]<-"ET"
-  colConv$haz[grepl("fire",colConv$event_en,ignore.case = T)]<-"WF"
-  colConv$haz[grepl("eruption",colConv$event_en,ignore.case = T)]<-"VO"
-  colConv$haz[grepl("volcan",colConv$event_en,ignore.case = T)]<-"VO"
-  colConv$haz[grepl("lava",colConv$event_en,ignore.case = T)]<-"VO"
-  colConv$haz[grepl("landslide",colConv$event_en,ignore.case = T)]<-"LS"
-  colConv$haz[grepl("liquefaction",colConv$event_en,ignore.case = T)]<-"LS"
-  colConv$haz[grepl("mudflow",colConv$event_en,ignore.case = T)]<-"MS"
-  colConv$haz[grepl("mud flow",colConv$event_en,ignore.case = T)]<-"MS"
-  colConv$haz[grepl("land slide",colConv$event_en,ignore.case = T)]<-"LS"
-  colConv$haz[grepl("debris flow",colConv$event_en,ignore.case = T)]<-"LS"
-  colConv$haz[grepl("rock",colConv$event_en,ignore.case = T)]<-"LS"
-  colConv$haz[grepl("avalanche",colConv$event_en,ignore.case = T)]<-"AV"
-  colConv$haz[grepl("drought",colConv$event_en,ignore.case = T)]<-"DR"
-  colConv$haz[grepl("hail",colConv$event_en,ignore.case = T)]<-"ST"
-  colConv$haz[grepl("snow",colConv$event_en,ignore.case = T)]<-"SN"
-  colConv$haz[grepl("epidemic",colConv$event_en,ignore.case = T)]<-"EP"
-  colConv$haz[grepl("biolog",colConv$event_en,ignore.case = T)]<-"EP"
-  colConv$haz[grepl("cyclone & flood",colConv$event_en,ignore.case = T)]<-"TC,FL"
+  colConv$haz_Ab[grepl("earthquake",colConv$event_en,ignore.case = T)]<-"EQ"
+  colConv$haz_Ab[grepl("flood",colConv$event_en,ignore.case = T)]<-"FL"
+  colConv$haz_Ab[grepl("inundation",colConv$event_en,ignore.case = T)]<-"FL"
+  colConv$haz_Ab[grepl("tsunami",colConv$event_en,ignore.case = T)]<-"TS"
+  colConv$haz_Ab[grepl("tidal wave",colConv$event_en,ignore.case = T)]<-"TS"
+  colConv$haz_Ab[grepl("rain",colConv$event_en,ignore.case = T)]<-"ST"
+  colConv$haz_Ab[grepl("storm",colConv$event_en,ignore.case = T)]<-"ST"
+  colConv$haz_Ab[grepl("wind",colConv$event_en,ignore.case = T)]<-"VW"
+  colConv$haz_Ab[grepl("lightning",colConv$event_en,ignore.case = T)]<-"ST"
+  colConv$haz_Ab[grepl("surge",colConv$event_en,ignore.case = T)]<-"SS"
+  colConv$haz_Ab[grepl("torrent",colConv$event_en,ignore.case = T)]<-"FL"
+  colConv$haz_Ab[grepl("cyclone",colConv$event_en,ignore.case = T)]<-"TC"
+  colConv$haz_Ab[grepl("hurricane",colConv$event_en,ignore.case = T)]<-"TC"
+  colConv$haz_Ab[grepl("tornado",colConv$event_en,ignore.case = T)]<-"TC"
+  colConv$haz_Ab[grepl("typhoon",colConv$event_en,ignore.case = T)]<-"TC"
+  colConv$haz_Ab[grepl("heat",colConv$event_en,ignore.case = T)]<-"HW"
+  colConv$haz_Ab[grepl("cold",colConv$event_en,ignore.case = T)]<-"CW"
+  colConv$haz_Ab[grepl("frost",colConv$event_en,ignore.case = T)]<-"ET"
+  colConv$haz_Ab[grepl("ice ",colConv$event_en,ignore.case = T)]<-"ET"
+  colConv$haz_Ab[grepl("fire",colConv$event_en,ignore.case = T)]<-"WF"
+  colConv$haz_Ab[grepl("eruption",colConv$event_en,ignore.case = T)]<-"VO"
+  colConv$haz_Ab[grepl("volcan",colConv$event_en,ignore.case = T)]<-"VO"
+  colConv$haz_Ab[grepl("lava",colConv$event_en,ignore.case = T)]<-"VO"
+  colConv$haz_Ab[grepl("landslide",colConv$event_en,ignore.case = T)]<-"LS"
+  colConv$haz_Ab[grepl("liquefaction",colConv$event_en,ignore.case = T)]<-"LS"
+  colConv$haz_Ab[grepl("mudflow",colConv$event_en,ignore.case = T)]<-"MS"
+  colConv$haz_Ab[grepl("mud flow",colConv$event_en,ignore.case = T)]<-"MS"
+  colConv$haz_Ab[grepl("land slide",colConv$event_en,ignore.case = T)]<-"LS"
+  colConv$haz_Ab[grepl("debris flow",colConv$event_en,ignore.case = T)]<-"LS"
+  colConv$haz_Ab[grepl("rock",colConv$event_en,ignore.case = T)]<-"LS"
+  colConv$haz_Ab[grepl("avalanche",colConv$event_en,ignore.case = T)]<-"AV"
+  colConv$haz_Ab[grepl("drought",colConv$event_en,ignore.case = T)]<-"DR"
+  colConv$haz_Ab[grepl("hail",colConv$event_en,ignore.case = T)]<-"ST"
+  colConv$haz_Ab[grepl("snow",colConv$event_en,ignore.case = T)]<-"SN"
+  colConv$haz_Ab[grepl("epidemic",colConv$event_en,ignore.case = T)]<-"EP"
+  colConv$haz_Ab[grepl("biolog",colConv$event_en,ignore.case = T)]<-"EP"
+  colConv$haz_Ab[grepl("cyclone & flood",colConv$event_en,ignore.case = T)]<-"TC:FL"
   
   # hazard Types
-  colConv$haz_type[colConv$haz%in%c("FL","ST","TC","DR","ET","SN","CW","HW","SS")]<-"haztypehydromet"
-  colConv$haz_type[colConv$haz%in%c("EQ","LS","TS","VO","AV")]<-"haztypegeohaz"
-  colConv$haz_type[colConv$haz=="WF"]<-"haztypeenviron"
-  colConv$haz_type[colConv$haz=="EP"]<-"haztypebio"
+  colConv$haz_type[colConv$haz_Ab%in%c("FL","ST","TC","DR","ET","SN","CW","HW","SS")]<-"haztypehydromet"
+  colConv$haz_type[colConv$haz_Ab%in%c("EQ","LS","TS","VO","AV")]<-"haztypegeohaz"
+  colConv$haz_type[colConv$haz_Ab=="WF"]<-"haztypeenviron"
+  colConv$haz_type[colConv$haz_Ab=="EP"]<-"haztypebio"
   colConv$haz_type[grepl("cyclone & flood",colConv$event_en,ignore.case = T)]<-"haztypehydromet"
   
   # Hazard clusters
-  colConv$haz_cluster[colConv$haz=="DR"]<-"hazhmprecip,hazhmtemp"
-  colConv$haz_cluster[colConv$haz=="FL"]<-"hazhmflood"
-  colConv$haz_cluster[colConv$haz=="ST"]<-"hazhmconv,hazhmwind,hazhmpress,hazhmflood"
+  colConv$haz_cluster[colConv$haz_Ab=="DR"]<-"hazhmprecip:hazhmtemp"
+  colConv$haz_cluster[colConv$haz_Ab=="FL"]<-"hazhmflood"
+  colConv$haz_cluster[colConv$haz_Ab=="ST"]<-"hazhmconv:hazhmwind:hazhmpress:hazhmflood"
   colConv$haz_cluster[grepl("rain",colConv$event_en,ignore.case = T)]<-"hazhmprecip"
   colConv$haz_cluster[grepl("wind",colConv$event_en,ignore.case = T)]<-"hazhmwind,hazhmpress"
   colConv$haz_cluster[grepl("lightning",colConv$event_en,ignore.case = T)]<-"hazhmconv"
-  colConv$haz_cluster[colConv$haz=="ET"]<-"hazhmtemp"
-  colConv$haz_cluster[colConv$haz=="TC"]<-"hazhmwind,hazhmpress,hazhmconv,hazhmflood"
-  colConv$haz_cluster[colConv$haz=="TS"]<-"hazgeoother,hazhmmarine,hazhmflood"
-  colConv$haz_cluster[colConv$haz=="EQ"]<-"hazgeoseis"
-  colConv$haz_cluster[colConv$haz=="VO"]<-"hazgeovolc"
-  colConv$haz_cluster[colConv$haz=="WF"]<-"hazenvenvdeg"
+  colConv$haz_cluster[colConv$haz_Ab=="ET"]<-"hazhmtemp"
+  colConv$haz_cluster[colConv$haz_Ab=="TC"]<-"hazhmwind:hazhmpress:hazhmconv:hazhmflood"
+  colConv$haz_cluster[colConv$haz_Ab=="TS"]<-"hazgeoother:hazhmmarine:hazhmflood"
+  colConv$haz_cluster[colConv$haz_Ab=="EQ"]<-"hazgeoseis"
+  colConv$haz_cluster[colConv$haz_Ab=="VO"]<-"hazgeovolc"
+  colConv$haz_cluster[colConv$haz_Ab=="WF"]<-"hazenvenvdeg"
   colConv$haz_cluster[grepl("hail",colConv$event_en,ignore.case = T)]<-"hazhmprecip"
-  colConv$haz_cluster[colConv$haz=="LS"]<-"hazgeoseis,hazenvenvdeg,hazgeovolc,hazgeoother"
+  colConv$haz_cluster[colConv$haz_Ab=="LS"]<-"hazgeoseis:hazenvenvdeg:hazgeovolc:hazgeoother"
   colConv$haz_cluster[grepl("rock",colConv$event_en,ignore.case = T)]<-"hazhmterr"
   colConv$haz_cluster[grepl("mud",colConv$event_en,ignore.case = T)]<-"hazhmterr"
-  colConv$haz_cluster[grepl("liquefaction",colConv$event_en,ignore.case = T)]<-"hazgeoseis,hazgeoother"
-  colConv$haz_cluster[colConv$haz=="AV"]<-"hazhmterr"
-  colConv$haz_cluster[grepl("surge",colConv$event_en,ignore.case = T)]<-"hazhmmarine,hazhmflood,hazhmwind"
-  colConv$haz_cluster[grepl("tidal",colConv$event_en,ignore.case = T)]<-"hazhmmarine,hazhmflood"
-  colConv$haz_cluster[grepl("coastal flood",colConv$event_en,ignore.case = T)]<-"hazhmflood,hazhmmarine"
-  colConv$haz_cluster[grepl("wave",colConv$event_en,ignore.case = T)]<-"hazhmmarine,hazhmflood"
+  colConv$haz_cluster[grepl("liquefaction",colConv$event_en,ignore.case = T)]<-"hazgeoseis:hazgeoother"
+  colConv$haz_cluster[colConv$haz_Ab=="AV"]<-"hazhmterr"
+  colConv$haz_cluster[grepl("surge",colConv$event_en,ignore.case = T)]<-"hazhmmarine:hazhmflood:hazhmwind"
+  colConv$haz_cluster[grepl("tidal",colConv$event_en,ignore.case = T)]<-"hazhmmarine:hazhmflood"
+  colConv$haz_cluster[grepl("coastal flood",colConv$event_en,ignore.case = T)]<-"hazhmflood:hazhmmarine"
+  colConv$haz_cluster[grepl("wave",colConv$event_en,ignore.case = T)]<-"hazhmmarine:hazhmflood"
   colConv$haz_cluster[grepl("hail",colConv$event_en,ignore.case = T)]<-"hazhmprecip"
   colConv$haz_cluster[grepl("tropical storm",colConv$event_en,ignore.case = T)]<-"hazhmwind"
   colConv$haz_cluster[grepl("convective storm",colConv$event_en,ignore.case = T)]<-"hazhmconv"
@@ -601,8 +601,46 @@ PostModTransies<-function(colConv){
   colConv$haz_cluster[grepl("cold wave",colConv$event_en,ignore.case = T)]<-"hazhmtemp"
   
   # Specific Hazards
-  colConv$haz_spec[colConv$haz=="EQ"]<-"GH0001,GH0002"
-  colConv$haz_potlink[colConv$haz=="EQ"]<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
+  # Avalanche
+  colConv$haz_spec[colConv$haz_Ab=="AV"]<-"MH0050"
+  # Cold wave
+  colConv$haz_spec[colConv$haz_Ab=="CW"]<-"MH0040"
+  # Drought
+  colConv$haz_spec[colConv$haz_Ab=="DR"]<-"MH0035"
+  # Dzud
+  colConv$haz_spec[colConv$haz_Ab=="DZ"]<-"MH0041"
+  # Extreme precipitation
+  colConv$haz_spec[colConv$haz_Ab=="EP"]<-"MH0006:MH0007:TL0046"
+  # Earthquakes
+  colConv$haz_spec[colConv$haz_Ab=="EQ"]<-"GH0001:GH0002"
+  # Extreme temperatures
+  colConv$haz_spec[colConv$haz_Ab=="ET"]<-"MH0047:MH0040:MH0042:MH0043:MH0037:MH0038:MH0039"
+  # Floods
+  colConv$haz_spec[colConv$haz_Ab=="FL"]<-"MH0004:MH0005:MH0006:MH0007:MH0008:MH0012"
+  # Heatwave
+  colConv$haz_spec[colConv$haz_Ab=="HW"]<-"MH0047"
+  # Landslide
+  colConv$haz_spec[colConv$haz_Ab=="LS"]<-"GH0007:GH0005:MH0051:MH0052"
+  # Mudslide
+  colConv$haz_spec[colConv$haz_Ab=="MS"]<-"MH0051"
+  # Snow
+  colConv$haz_spec[colConv$haz_Ab=="SN"]<-"MH0038"
+  # Storm surge
+  colConv$haz_spec[colConv$haz_Ab=="SS"]<-"MH0027"
+  # Storm
+  colConv$haz_spec[colConv$haz_Ab=="ST"]<-"MH0059:MH0001:MH0002:MH0003:MH0027:MH0054:MH0060"
+  # Tropical cyclone
+  colConv$haz_spec[colConv$haz_Ab=="TC"]<-"MH0057:MH0059"
+  # Tsunami
+  colConv$haz_spec[colConv$haz_Ab=="TS"]<-"GH0006"
+  # Volcanic activity
+  colConv$haz_spec[colConv$haz_Ab=="VO"]<-"GH0012:GH0013:GH0009:GH0010"
+  # Violent winds
+  colConv$haz_spec[colConv$haz_Ab=="VW"]<-"MH0054:MH0060"
+  # Wildfire
+  colConv$haz_spec[colConv$haz_Ab=="WF"]<-"EN0013"
+  # Tropical cyclone and flooding
+  colConv$haz_spec[colConv$haz_Ab=="TC:FL"]<-"MH0057:MH0059:MH0004:MH0005:MH0006:MH0007:MH0008:MH0012"
   
   # Save it out
   openxlsx::write.xlsx(colConv,"./Taxonomies/MostlyImpactData/Desinventar_HIP.xlsx")
@@ -736,7 +774,7 @@ convDessie_Monty<-function(forcer=T, ISO3s=NULL, taby=F){
   # Extract raw Dessie data
   Dessie<-GetDesinventar(ISO3s)
   # Get rid of repeated entries
-  Dessie%<>%distinct()%>%arrange(ev_sdate)
+  Dessie%<>%distinct()%>%arrange(ev_sdate)%>%filter(!is.na(haz_spec))
   
   if(taby) return(Dessie)
   
