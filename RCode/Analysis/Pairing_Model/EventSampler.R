@@ -8,7 +8,7 @@ UnbiasedSample<-function(Monty,maxsize=200){
   if(is.null(Monty$year)) Monty$year<-AsYear(Monty$ev_sdate)
   # Filter to leave only the important variables
   Monty%<>%dplyr::select(event_ID, ev_sdate, ev_fdate, year, 
-                         haz_Ab, haz_spec, ev_ISO3s)
+                         haz_Ab, haz_spec, ev_ISO3s, URL, ext_ID)
   # Convert this into a factor of the maxsize
   targnum<-ceiling(maxsize/targnum)
   # Skeleton
@@ -62,9 +62,9 @@ SimHazs<-function(hazs,targhaz){
 PairedSample<-function(samply,aMonty,yeardiff=1){
   # Keep only the variables we need
   aMonty%<>%dplyr::select(event_ID, ev_sdate, ev_fdate, year, 
-                         haz_Ab, haz_spec, ev_ISO3s)
+                         haz_Ab, haz_spec, ev_ISO3s, URL, ext_ID)
   samply%<>%dplyr::select(event_ID, ev_sdate, ev_fdate, year, 
-                         haz_Ab, haz_spec, ev_ISO3s)
+                         haz_Ab, haz_spec, ev_ISO3s, URL, ext_ID)
   # This will help later on
   aMonty%<>%mutate_at(c("ev_sdate","ev_fdate"),as.Date)
   samply%<>%mutate_at(c("ev_sdate","ev_fdate"),as.Date)

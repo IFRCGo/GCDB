@@ -48,7 +48,7 @@ tables$rowcount<-unname(sapply(tables$table,function(x){
 write_csv(tables%>%dplyr::select(-colnames),"./CleanedData/Monty_Forecast_Data_Info.csv")
 
 # Only the active earthquake events are displayed... no long term storage access
-adam_eq<-jsonlite::fromJSON("https://x8qclqysv7.execute-api.eu-west-1.amazonaws.com/dev/events/earthquakes")
+adam_eq<-sf::st_read("https://x8qclqysv7.execute-api.eu-west-1.amazonaws.com/dev/events/earthquakes")
 adam_fl<-jsonlite::fromJSON("https://x8qclqysv7.execute-api.eu-west-1.amazonaws.com/dev/events/floods")
 adam_tc<-jsonlite::fromJSON("https://x8qclqysv7.execute-api.eu-west-1.amazonaws.com/dev/events/cyclones")
 
@@ -72,6 +72,8 @@ stop("sort issues with dates from PDC data")
 # )
 
 CleanADAM<-function(adam){
+  # temporary
+  ncores<-10
   # Minor changes that make things work later on
   adam%<>%rename("ev_name" = "title",
                "haz_Ab" = "hazard_type",
