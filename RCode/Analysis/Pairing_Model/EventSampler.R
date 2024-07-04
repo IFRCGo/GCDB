@@ -42,11 +42,11 @@ UnbiasedSample<-function(Monty,maxsize=200){
 }
 
 # Function to create the function of probabilities for sampling the dates
-PYrDiffSampler <- function(x, eqwt=30) {
+PYrDiffSampler <- function(x, eqwt=30, endwt=0.02) {
   # Ensure the function is symmetric
   x<-abs(x)
   # If within the time window then probability of 1 otherwise decaying to 1-in-30 at 365 days
-  ifelse(x <= 30, 1, 1/exp(-log(0.02) / 335 * (x - eqwt)))
+  ifelse(x <= eqwt, 1, 1/exp(-log(endwt) / 335 * (x - eqwt)))
 }
 
 # Create the weightings of the date-difference based sampler
@@ -65,10 +65,15 @@ WeightDateDiff<-function(y,sdate,eqweigdays=30){
 # hazmat: matrix used to check the probability of occurrence between the hazards
 MatHazFilter<-function(hazs,targhaz,hazmat){
   # Extract only target hazard and get into a dictionary-style variable
-  out<-hazmat[,c("hazard",targhaz)]; names(out)<-colnames(hazmat)
+  bindy<-data.frame(hazard=colnames(hazmat)[2:ncol(hazmat)],
+                    prob=hazmat[,c("hazard",targhaz)])
   # Create weighting from this and return it out
-  return(c(left_join(data.frame(hazard=hazs),out)[,targhaz]))
+  out<-left_join(data.frame(hazard=hazs),bindy)$prob
+  # Now do this for the inverse: triggering hazards
+  bindy<-data.frame(hazard=colnames(hazmat)[2:ncol(hazmat)],
+                    prob=c(hazmat[hazmat$hazard==targhaz,2:ncol(hazmat)]))
   
+  return(out>0 | left_join(data.frame(hazard=hazs),bindy)$prob>0)
 }
   
 # Given an unbiased sample of the target database, sample from the paired database
