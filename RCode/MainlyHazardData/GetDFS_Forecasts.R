@@ -224,11 +224,13 @@ CleanADAM<-function(adam){
 
 dfs<-readRDS("~/Downloads/DFS_Forecast_noPDCdis.Rdata")
 pdc<-dfs$pdc
-adam<-dfs$adam
+adam<-dfs$adam%>%CleanADAM()
+rm(dfs)
 
 gdacs<-convGDACS_Monty(T)
 
-rm(dfs)
+Monty<-dplyr::bind_rows(adam,gdacs)
+
 
 
 PDChazards<-function(pdc){

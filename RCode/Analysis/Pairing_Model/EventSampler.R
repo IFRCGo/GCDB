@@ -8,7 +8,7 @@ UnbiasedSample<-function(Monty,maxsize=200){
   if(is.null(Monty$year)) Monty$year<-AsYear(Monty$ev_sdate)
   # Filter to leave only the important variables
   Monty%<>%dplyr::select(event_ID, ev_sdate, ev_fdate, year, 
-                         haz_Ab, haz_spec, ev_ISO3s, URL, ext_ID)
+                         haz_Ab, haz_spec, ev_ISO3s, URL, ext_ID)%>%distinct()
   # Convert this into a factor of the maxsize
   targnum<-ceiling(maxsize/targnum)
   # Skeleton
@@ -80,9 +80,9 @@ MatHazFilter<-function(hazs,targhaz,hazmat){
 PairedSample<-function(samply,aMonty,yeardiff=1){
   # Keep only the variables we need
   aMonty%<>%dplyr::select(event_ID, ev_sdate, ev_fdate, year, Database,
-                         haz_Ab, haz_spec, ev_ISO3s, URL, ext_ID)
+                         haz_Ab, haz_spec, ev_ISO3s, URL, ext_ID)%>%distinct()
   samply%<>%dplyr::select(event_ID, ev_sdate, ev_fdate, year, Database,
-                         haz_Ab, haz_spec, ev_ISO3s, URL, ext_ID)
+                         haz_Ab, haz_spec, ev_ISO3s, URL, ext_ID)%>%distinct()
   # This will help later on
   aMonty%<>%mutate_at(c("ev_sdate","ev_fdate"),as.Date)
   samply%<>%mutate_at(c("ev_sdate","ev_fdate"),as.Date)
@@ -204,13 +204,12 @@ EventSampler<-function(Monty){
   if(is.null(Monty$ext_ID)) Monty$ext_ID<-NA_character_
   # Automated pairing and unpairing of events based on things like GLIDE number
   out<-AutomatedPairUnpairing(Monty); Monty<-out$Monty; out<-out$out
-  
-  
-  
+  # Extract which databases to iterate over
+  mondbs<-c(unique(Monty$imp_src_db),unique(Monty$haz_src_db)); mondbs<-mondbs[!is.na(mondbs)]
   
   out<-data.frame()
   # Sample from the target database, then sample from potential paired events from destination databases
-  for (db in unique(Monty$imp_src_db)){
+  for (db in mondbs){
     # Filter out only the database to be paired
     submon<-filter(Monty,imp_src_db==db)
     # Unbiased sample from the target database
