@@ -225,6 +225,9 @@ CleanADAM<-function(adam){
 dfs<-readRDS("~/Downloads/DFS_Forecast_noPDCdis.Rdata")
 pdc<-dfs$pdc
 adam<-dfs$adam
+
+gdacs<-convGDACS_Monty(T)
+
 rm(dfs)
 
 
