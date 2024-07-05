@@ -35,6 +35,8 @@ units_class<-taxies%>%filter(list_name=="measunits")%>%dplyr::select(2:3)%>%
 GetMonty_ID<-function(DF,haz=NULL) {
   # In case a specific hazard is fed in
   if(!is.null(haz)) DF%<>%mutate(haz_Ab=haz)
+  # When more than one iso code is given
+  if(is.list(DF$ev_ISO3s)) DF$ev_ISO3s<-unname(unlist(parallel::mclapply(DF$ev_ISO3s,paste0,collapse=":",mc.cores=ncores)))
   # Generate the names from the dataframe
   namerz<-DF%>%
     dplyr::select(haz_Ab,ev_sdate,ev_ISO3s)%>%

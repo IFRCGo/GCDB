@@ -32,9 +32,9 @@ tables$colnames<-unname(sapply(tables$table,function(x){
 
 View(tables)
 
-pdc<-sf::st_read(conn,"imminent_pdc")
+pdc<-sf::st_read(conn,"imminent_pdc")%>%CleanPDC()
 pdcdis<-sf::st_read(conn,"imminent_pdcdisplacement")
-adam<-sf::st_read(conn,"imminent_adam")
+adam<-sf::st_read(conn,"imminent_adam")%>%CleanADAM()
 gwis<-sf::st_read(conn,"imminent_gwis")
 
 
@@ -81,6 +81,14 @@ CleanADAM<-function(adam){
                "imp_moddate" = "publish_date")
   # Get rid of the few entries that have barely any information
   adam%<>%filter(!is.na(event_details))
+  # Sort the external IDs
+  adam$all_ext_IDs<-parallel::mclapply(1:nrow(adam),function(i){
+    out<-data.frame(ext_ID=adam$ext_ID[i],
+               ext_ID_db="ADAM", ext_ID_org="WFP")
+    if(adam$haz_Ab[i]=="EQ") {
+      return(rbind(out,mutate(out,ext_ID_db="Atlas", ext_ID_org="USGS")))
+    } else return(out)
+  },mc.cores=ncores)
   # Difficult... the event details information
   adam%<>%cbind(do.call(dplyr::bind_rows,parallel::mclapply(adam$event_details, function(x){
     if(all(is.na(x))) return(data.frame(ev=NA))
@@ -125,7 +133,7 @@ CleanADAM<-function(adam){
   # Cleaning again from the messy adam data
   adam$countries[is.na(adam$countries)]<-adam$country[is.na(adam$countries)]
   # Extract ISO3Cs when there are multiple countries involved
-  adam$haz_ISO3s<-adam$imp_ISO3s<-adam$ev_ISO3s<-unname(unlist(parallel::mclapply(1:nrow(adam), function(i){
+  adam$haz_ISO3s<-adam$imp_ISO3s<-adam$ev_ISO3s<-parallel::mclapply(1:nrow(adam), function(i){
     # Get the country names
     x<-adam$countries[i]
     # Check if there is nothing there to convert
@@ -138,9 +146,9 @@ CleanADAM<-function(adam){
     x2<-adam$iso3[i]
     # If not, add it!
     if(!x2%in%x & !is.na(x2) & !is.null(x2) & stringi::stri_trim_both(x2)!="") x<-c(x,x2)
-    # Return a single character rather than a vector
-    paste0(sort(x),collapse=delim)
-  }, mc.cores = ncores)))
+    # Return a vector
+    sort(x)
+  }, mc.cores = ncores)
   # rearrange by date and slice the latest date, leaving the others out for the time being
   adam%<>%dplyr::select(-c(country_id, population_exposure, population, name, 
                           title, alert_sent, episode_id, analysis_output,
@@ -149,16 +157,15 @@ CleanADAM<-function(adam){
                           date_processed, effective_date, country, countries,
                           max_storm_surge, dashboard_url))%>%
     rename(
-    "haz_sub_ID"="id",
     "haz_spat_fileloc"="url",
     "haz_sdate"="from_date",
     "haz_fdate"="to_date",
     "haz_lat"="latitude",
     "haz_lon"="longitude",
-    "gen_location"="place"
-  )
+    "gen_location"="place")%>%
+    mutate_at(c("haz_sdate","haz_fdate","imp_moddate"),
+              function(x) as.character(as.Date(x)))
   # Check through dates
-  adam$imp_moddate<-as.character(as.Date(adam$imp_moddate))
   adam$haz_sdate[is.na(adam$haz_sdate)]<-adam$imp_moddate[is.na(adam$haz_sdate)]
   adam$haz_fdate[is.na(adam$haz_fdate)]<-adam$imp_moddate[is.na(adam$haz_fdate)]
   # Add HIPs taxonomy & tidy
@@ -176,7 +183,6 @@ CleanADAM<-function(adam){
       TRUE ~ "MH0057:MH0006"
     ),
     all_hazs_Ab=haz_Ab,
-    all_ext_IDs=ext_ID,
     all_hazs_spec=haz_spec,
     imp_src_org="WFP",
     imp_src_db="ADAM",
@@ -207,8 +213,7 @@ CleanADAM<-function(adam){
     imp_unitdate=NA_character_,
     imp_credate=NA_character_,
     haz_credate=NA_character_,
-    all_hazs_Ab=haz_Ab,
-    all_ext_IDs=ext_ID
+    all_hazs_Ab=haz_Ab
   )
   # Generate GCDB event ID
   adam$event_ID<-GetMonty_ID(adam)
@@ -216,6 +221,8 @@ CleanADAM<-function(adam){
   adam%<>%ImpLabs(nomDB = "ADAM")
   # Create an impact-specific ID
   adam%<>%GetGCDB_impID()
+  # Create a hazard-specific ID
+  adam%<>%GetGCDB_hazID()
   
   # Add missing columns & reorder the dataframe to fit imp_GCDB object
   adam%>%dplyr::select(any_of(MontyJSONnames())) 
@@ -228,6 +235,8 @@ adam<-dfs$adam%>%CleanADAM()
 rm(dfs)
 
 gdacs<-convGDACS_Monty(T)
+gdacs%<>%mutate_at(c("ext_ID","haz_credate","haz_moddate",
+                     "imp_credate","imp_moddate"),as.character)
 
 Monty<-dplyr::bind_rows(adam,gdacs)
 

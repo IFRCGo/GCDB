@@ -276,10 +276,8 @@ GDACSHazards<-function(GDACS){
 }
 
 restructGDACS<-function(GDACS){
-  # Form the ID for the event
-  GDACS$event_ID<-GetMonty_ID(GDACS)
   # Make the dates the correct type
-  GDACS%<>%mutate_at(vars(ev_sdate,ev_fdate),as.character)
+  GDACS%<>%mutate_at(vars(ev_sdate,ev_fdate,imp_credate,imp_moddate),as.character)
   # Date shifts
   GDACS$imp_sdate<-GDACS$imp_unitdate<-GDACS$haz_sdate<-GDACS$ev_sdate
   GDACS$imp_fdate<-GDACS$haz_fdate<-GDACS$ev_fdate
@@ -297,6 +295,8 @@ restructGDACS<-function(GDACS){
     # Organisation
     imp_src_db="GDACS",
     imp_src_org="EC-JRC",
+    haz_src_db="GDACS",
+    haz_src_org="EC-JRC",
     imp_src_orgtype="orgtyperio",
     imp_spat_covcode="spat_polygon",
     imp_spat_res=0,
@@ -316,7 +316,8 @@ restructGDACS<-function(GDACS){
     haz_spat_srcorg="EC-JRC",
     haz_spat_fileloc=haz_src_URL,
     haz_spat_srcdb="GDACS",
-    haz_spat_URL=haz_src_URL)
+    haz_spat_URL=haz_src_URL)%>%
+    mutate_if(is.Date,as.character)
   
   GDACS$all_ext_IDs<-lapply(1:nrow(GDACS), function(i){
     # First extract EM-DAT event ID
@@ -331,6 +332,8 @@ restructGDACS<-function(GDACS){
   })
   # Convert to the UNDRR-ISC hazard taxonomy
   GDACS%<>%GDACSHazards()
+  # Form the ID for the event
+  GDACS$event_ID<-GetMonty_ID(GDACS)
   # Create the impact and hazard sub-ID for the speciic level, not event level
   GDACS%<>%GetGCDB_impID()
   GDACS$imp_spat_ID<-GetGCDB_imp_spatID(GDACS)
