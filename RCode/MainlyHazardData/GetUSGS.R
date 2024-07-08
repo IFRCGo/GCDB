@@ -332,3 +332,157 @@ GetUSGS<-function(USGSid=NULL,bbox,sdate,fdate=NULL,titlz="tmp",I0=4.5,minmag=5)
   
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+GetUSGSiso<-function(atlas){
+  # Extract country names and isos
+  isos<-openxlsx::read.xlsx("./Taxonomies/IsoContinentRegion.xlsx")%>%
+    filter(!is.na(Country))%>%mutate(Country=str_to_lower(Country))
+  # If we form one big regex pattern, we can quickly check through the data to find matching countries
+  country_pattern <- paste0("\\b(", paste(isos$Country, collapse = "|"), ")\\b")
+  # Skeleton template
+  atlas$ev_ISO3s<-NA_character_
+  # Also put string to lower for ease
+  atlas$gen_location%<>%str_to_lower()
+  # First extract Mexican earthquakes that are labelled with respect to the US...
+  atlas$ev_ISO3s[stringr::str_ends(atlas$gen_location,", mx")]<-"MEX"
+  # Replace some annoying earthquake word fillers
+  atlas$gen_location<-str_replace_all(str_replace_all(atlas$gen_location,", earthquake","")," earthquake","")
+  # Also the direction
+  atlas$gen_location<-str_replace_all(str_replace_all(atlas$gen_location,", earthquake","")," earthquake","")
+  # Let's do it!
+  atlas$ev_ISO3s[is.na(atlas$ev_ISO3s)]<-
+    unname(unlist(parallel::mclapply(atlas$gen_location[is.na(atlas$ev_ISO3s)],function(x){
+      # Find the matching countries
+      cnty<-unlist(str_extract_all(x, country_pattern))
+      # If empty, return na, if not, return the ISO3C code
+      if(length(cnty)==0) return(NA_character_) 
+      else return(paste0(isos$ISO.Code[isos$Country==cnty],collapse = delim))
+    },mc.cores=ncores)))
+  # Then do the other way round
+  issplit<-str_split(atlas$gen_location[is.na(atlas$ev_ISO3s)],", ",simplify = T)
+  # Now check the country names against all elements
+  atlas$ev_ISO3s[is.na(atlas$ev_ISO3s)]<-
+    unname(unlist(parallel::mclapply(1:sum(is.na(atlas$ev_ISO3s)),function(i){
+      # Extract and modify the split string
+      splity<-issplit[i,]; splity<-splity[splity!=""]
+      # Now check if there are any matches
+      ind<-sapply(splity,function(x) any(grepl(pattern = x,isos$Country)))
+      if(any(ind))
+        return(paste0(isos$ISO.Code[grepl(pattern = splity[ind],isos$Country)],collapse = delim))
+      return(NA_character_)
+    },mc.cores=ncores)))
+  # Now the others
+  issplit<-str_split(atlas$gen_location[is.na(atlas$ev_ISO3s)],", ",simplify = T)
+  issplit<-unname(unlist(parallel::mclapply(1:sum(is.na(atlas$ev_ISO3s)),function(i){
+      # Extract and modify the split string
+      splity<-issplit[i,]; splity<-splity[splity!=""]; 
+      return(splity[length(splity)])
+    },mc.cores=ncores)))
+  atlas$ev_ISO3s[is.na(atlas$ev_ISO3s)]<-convCountryIso3(issplit)
+  # Now for the USA state names... (found the file here: https://github.com/jasonong/List-of-US-States/blob/master/states.csv)
+  us_states<-read.csv("./CleanedData/SocioPoliticalData/USA_states.csv")$State%>%str_to_lower()
+  # Check if there are any in the missing event ISOs
+  issplit<-str_split(atlas$gen_location[is.na(atlas$ev_ISO3s)],", ",simplify = T)
+  atlas$ev_ISO3s[is.na(atlas$ev_ISO3s)]<-unname(unlist(parallel::mclapply(1:sum(is.na(atlas$ev_ISO3s)),function(i){
+    # Extract and modify the split string
+    splity<-issplit[i,]; splity<-splity[splity!=""]; 
+    if(splity[length(splity)]%in%us_states) return("USA") else return(NA_character_)
+  },mc.cores=ncores)))
+  # Exceptions... eughhhhhh
+  atlas$ev_ISO3s[is.na(atlas$ev_ISO3s) & grepl("california",atlas$gen_location)]<-"USA"
+  atlas$ev_ISO3s[is.na(atlas$ev_ISO3s) & grepl("alaska",atlas$gen_location)]<-"USA"
+  atlas$ev_ISO3s[is.na(atlas$ev_ISO3s) & grepl("sumatra",atlas$gen_location)]<-"IDN"
+  # I know, it's not like I want to do this... but I don't see another wayyyyy
+  atlas$ev_ISO3s[is.na(atlas$ev_ISO3s) & grepl("xizang",atlas$gen_location)]<-"CHN"
+  atlas$ev_ISO3s[is.na(atlas$ev_ISO3s) & grepl("tibet",atlas$gen_location)]<-"CHN"
+  
+  atlas%<>%filter(!is.na(ev_ISO3s))
+  
+  atlas$ev_ISO3s<-lapply(atlas$ev_ISO3s,function(x){x})
+  
+  return(atlas)
+}
+
+GetAtlasTab<-function(){
+  # Just for now, extract from the CSV file until we work out what is going on with their API
+  atlas<-read.csv("/home/hamishwp/Documents/BEAST/Coding/IFRC/GCDB/RawData/MostlyHazardData/USGS/query.csv")%>%
+    mutate_at(c("time","updated"),function(x) as.character(as.Date(x)))%>%
+    rename("ev_sdate"="time",
+           "haz_moddate"="updated",
+           "haz_lon"="longitude",
+           "haz_lat"="latitude",
+           "haz_maxvalue"="mag",
+           "ext_ID"="id",
+           "gen_location"="place")%>%
+    mutate(haz_sdate=ev_sdate,
+           ev_fdate=ev_sdate,
+           haz_fdate=ev_sdate,
+           haz_credate=ev_sdate,
+           haz_src_db="Atlas",
+           haz_src_org="USGS",
+           haz_est_type="esttype_second",
+           haz_Ab="EQ",
+           haz_spec="GH0001:GH0002",
+           haz_src_URL="https://earthquake.usgs.gov",
+           haz_spat_fileloc=paste0("https://earthquake.usgs.gov/earthquakes/eventpage/",ext_ID,"/executive"))
+  # External IDs
+  atlas$all_ext_IDs<-lapply(1:nrow(atlas), function(i){
+    # First extract EM-DAT event ID
+    data.frame(ext_ID=atlas$ext_ID[i],
+               ext_ID_db="Atlas",
+               ext_ID_org="USGS")
+  })
+  # drop the ext_ID variable now
+  atlas%<>%dplyr::select(-ext_ID)
+  # Extract the location
+  atlas%<>%GetUSGSiso()
+  # Form the ID for the event
+  atlas$event_ID<-GetMonty_ID(atlas)
+  
+  atlas%>%dplyr::select(any_of(MontyJSONnames()))%>%distinct()
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

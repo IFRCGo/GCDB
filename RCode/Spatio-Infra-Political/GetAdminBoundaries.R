@@ -262,7 +262,7 @@ GetGAUL<-function(ISO3C,lADM=2,retobj=F,spout=F){
 
 }
 
-GetIFRCgeo<-function(){
+GetIFRCgeo<-function(type=1){
   # baseline url
   baseurl<-"https://goadmin.ifrc.org/api/v2/country/?limit=20000" 
   # Get the data, including headers for CSV only
@@ -271,8 +271,9 @@ GetIFRCgeo<-function(){
   # Check output
   if(response$status_code==200){
     # Extract the data then export it directly
-    return(jsonlite::fromJSON(httr::content(response, "text"))$results%>%
-      filter((!is.na(iso3) | !is.na(iso)) & record_type==1))
+    out<-jsonlite::fromJSON(httr::content(response, "text"))$results%>%
+      filter((!is.na(iso3) | !is.na(iso)))
+    if(is.na(type)) return(out) else return(out[out$record_type==1,])
   # Otherwise, error
   } else stop("issues extracting the IFRC NS admin boundaries")
 }

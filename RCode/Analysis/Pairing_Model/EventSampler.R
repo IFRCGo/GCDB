@@ -1,8 +1,10 @@
 # TO DO TODAY
 # - Modify sampling methodology: lists for countries and hazards instead of character
+# - ensure number of samples of each database is Ndatabases*ssize_db even as number of dbs decreases
 
 
-# - At some point, extract and wrangle IBTrACS + USGS-Atlas databases into Monty and sample from them too
+
+# - At some point, extract and wrangle IBTrACS database into Monty and sample from it too
 
 
 
@@ -387,23 +389,56 @@ EventSampler<-function(Monty,ssize_db=50){
   return(out)
 }
 
-# Get ADAM data
-drv <- DBI::dbDriver("PostgreSQL")
-conn <- RPostgreSQL::dbConnect(drv, host = "localhost", port=5432,
-                  dbname = "risk", user = "postgres",password=" ")
-# Extract + clean ADAM data
-adam<-sf::st_read(conn,"imminent_adam")%>%CleanADAM()
-# # Extract PDC tabular data
-pdc<-readRDS("./CleanedData/MostlyHazardData/PDC-DFS_clean.RData")
-# pdc<-sf::st_read(conn,"imminent_pdc")
-# # Now the geospatial element, but only to get access to the country information
-# pdcdis<-sf::st_read(conn,"imminent_pdcdisplacement")
-# pdc%<>%filter()
-# pdc%<>%CleanPDC()
-# Get GDACS data
-gdacs<-convGDACS_Monty(T)
-# Merge them
-Monty<-dplyr::bind_rows(adam,gdacs,pdc)
+
+
+
+# # Get ADAM data
+# drv <- DBI::dbDriver("PostgreSQL")
+# conn <- RPostgreSQL::dbConnect(drv, host = "localhost", port=5432,
+#                   dbname = "risk", user = "postgres",password=" ")
+# # Extract + clean ADAM data
+# adam<-sf::st_read(conn,"imminent_adam")%>%CleanADAM()
+# # # Extract PDC tabular data
+# pdc<-readRDS("./CleanedData/MostlyHazardData/PDC-DFS_clean.RData")
+# # pdc<-sf::st_read(conn,"imminent_pdc")
+# # # Now the geospatial element, but only to get access to the country information
+# # pdcdis<-sf::st_read(conn,"imminent_pdcdisplacement")
+# # pdc%<>%filter()
+# # pdc%<>%CleanPDC()
+# # Get GDACS data
+# gdacs<-convGDACS_Monty(T)
+# # Merge them
+# Monty<-dplyr::bind_rows(adam,gdacs,pdc)
+# 
+# # Store database information
+# Monty%<>%mutate(database=paste0(haz_src_db," - ",haz_src_org))
+# ind<-is.na(Monty$haz_src_db)
+# Monty$database[ind]<-paste0(Monty$imp_src_db[ind]," - ",Monty$imp_src_org[ind])
+# # Add some IDs to ensure we can replicate this later
+# Monty$m_id<-paste0("monty_",sapply(paste0(Monty$event_ID,Monty$database,sep="_"), digest::digest, algo = "sha256"))
+# # Which databases exist in the Monty sample?
+# dbs<-paste0(str_replace_all(sort(unique(Monty$database))," ",""),collapse="_")
+# saveRDS(Monty,paste0("Analysis_Results/Pairing/Monty_sample_",dbs,"_",Sys.Date(),".RData"))
+
+
+
+
+
+
+# Other Monty data, pre-prepped from ARO workshop
+Monty<-readRDS("./CleanedData/Monty_2024-06-11_tab.RData")%>%
+  filter(imp_src_db!="Desinventar")%>%
+  mutate_at("haz_maxvalue",as.numeric)
+Monty$ev_ISO3s<-Monty$imp_ISO3s<-Monty$haz_ISO3s<-
+  lapply(Monty$ev_ISO3s,function(x){unlist(str_split(x,pattern = delim))})
+# Pre-prepped forecast data
+Monty%<>%dplyr::bind_rows(readRDS("Analysis_Results/Pairing/Monty_sample_ADAM-WFP_DisasterAWARE-PDC_GDACS-EC-JRC_2024-07-08.RData"))
+Monty$haz_src_db[Monty$imp_src_db=="GDACS"]<-"GDACS"
+Monty$haz_src_org[Monty$imp_src_db=="GDACS"]<-"EC-JRC"
+# Add ReliefWeb and USGS-Atlas. LEAVE DESINVENTAR OUT FOR NOW
+Monty%<>%dplyr::bind_rows(GetReliefWeb())
+Monty%<>%dplyr::bind_rows(GetAtlasTab())
+
 
 # Store database information
 Monty%<>%mutate(database=paste0(haz_src_db," - ",haz_src_org))
@@ -413,7 +448,11 @@ Monty$database[ind]<-paste0(Monty$imp_src_db[ind]," - ",Monty$imp_src_org[ind])
 Monty$m_id<-paste0("monty_",sapply(paste0(Monty$event_ID,Monty$database,sep="_"), digest::digest, algo = "sha256"))
 # Which databases exist in the Monty sample?
 dbs<-paste0(str_replace_all(sort(unique(Monty$database))," ",""),collapse="_")
-saveRDS(Monty,"Analysis_Results/Pairing/Monty_sample")
+saveRDS(Monty,paste0("Analysis_Results/Pairing/Monty_sample_",dbs,"_",Sys.Date(),".RData"))
+
+
+Monty%>%arrange(desc(ev_sdate))%>%group_by(database)%>%slice(1:5)%>%ungroup()%>%View()
+
 
 
 # Sample the data!

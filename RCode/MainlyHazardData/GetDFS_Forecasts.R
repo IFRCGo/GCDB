@@ -34,7 +34,7 @@ View(tables)
 
 pdc<-sf::st_read(conn,"imminent_pdc")
 isos<-openxlsx::read.xlsx("./Taxonomies/IsoContinentRegion.xlsx")%>%
-  filter(!is.na(isos$Country))
+  filter(!is.na(Country))
 # If we form one big regex pattern, we can quickly check through the data to find matching countries
 country_pattern <- paste0("\\b(", paste(isos$Country, collapse = "|"), ")\\b")
 # Let's do it!

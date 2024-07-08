@@ -42,6 +42,23 @@ ProcessReliefWeb<-function(json.content){
                                   ext_ID_db="GLIDE",
                                   ext_ID_org="ADRC")))
   })
+  # drop the ext_ID variable now
+  rweb%<>%dplyr::select(-ext_ID)
+  # Add some important fillers in
+  rweb%<>%mutate(imp_ISO3s=ev_ISO3s,
+         imp_lat=NA_real_,
+         imp_lon=NA_real_,
+         imp_src_URL="https://api.reliefweb.int/v1/disasters",
+         all_hazs_Ab=haz_Ab,
+         imp_src_org="UNOCHA",
+         imp_src_db="ReliefWeb",
+         imp_spat_res=NA_integer_,
+         imp_spat_resunits=NA_character_,
+         imp_spat_crs=NA_character_,
+         imp_spat_covcode=NA_character_,
+         imp_spat_ID=NA_character_,
+         haz_spat_ID=NA_character_,
+         imp_unitdate=NA_character_)
   # Convert to the UNDRR-ISC hazard taxonomy
   rweb%<>%RWebHazards()%>%filter(!is.na(haz_spec))%>%
     mutate(all_hazs_spec=haz_spec)
