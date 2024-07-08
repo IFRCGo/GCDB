@@ -283,6 +283,7 @@ restructGDACS<-function(GDACS){
   GDACS$imp_fdate<-GDACS$haz_fdate<-GDACS$ev_fdate
   # Add alertscore as the impact value
   GDACS%<>%mutate(
+    ext_ID=as.character(ext_ID),
     imp_value=GDACS$alertscore,
     exp_spec="expspec_alert",
     imp_type="imptypalert",

@@ -1,36 +1,54 @@
+RWebHazards<-function(rweb){
+  colConv<-openxlsx::read.xlsx("./Taxonomies/MostlyImpactData/ReliefWeb_HIP.xlsx")
+  # Reduce the translated vector and merge
+  rweb%<>%left_join(colConv,by = c("haz_Ab"),
+                     relationship="many-to-one")
+}
+
 ProcessReliefWeb<-function(json.content){
   # Extract everything directly from the json file of the API call
-  do.call(rbind,lapply(json.content, function(x) {
-    rweb<-data.frame(
+  rweb<-do.call(rbind,lapply(json.content, function(x) {
+    out<-data.frame(
       ext_ID=x$id,
       ev_name=x$fields$name,
       GLIDE=ifelse(is.null(x$fields$glide),NA_character_,x$fields$glide),
       url=x$fields$url,
       description=ifelse(is.null(x$fields$description),NA_character_,x$fields$description),
-      imp_fdate=x$fields$date$created,
+      imp_credate=x$fields$date$created,
+      imp_moddate=x$fields$date$changed,
       ev_sdate=x$fields$date$event
-    )%>%mutate(imp_sdate=ev_sdate,ev_fdate=ev_sdate)
+    )%>%mutate_at(c("imp_credate","imp_moddate","ev_sdate"),
+                function(x) as.character(as.Date(x)))%>%
+      mutate(imp_sdate=ev_sdate, imp_fdate=imp_credate,
+             ev_fdate=ev_sdate)
     # Can be many countries per event, keep them all
-    rweb$ev_ISO3s<-list(unlist(lapply(x$fields$country,function(xx) str_to_upper(xx$iso3))))
+    out$ev_ISO3s<-list(unlist(lapply(x$fields$country,function(xx) str_to_upper(xx$iso3))))
     # Can be many different hazards per event, keep them all
-    rweb$hazard<-list(unlist(lapply(x$fields$type,function(xx) xx$name)))
+    out$hazard<-list(unlist(lapply(x$fields$type,function(xx) xx$name)))
     # Do the same with the abbreviated hazards
-    rweb$haz_Ab_rw<-list(unlist(lapply(x$fields$type,function(xx) xx$code)))
-    # Form the external ID object
-    rweb$all_ext_IDs<-lapply(1:nrow(rweb), function(i){
-      # First extract EM-DAT event ID
-      out<-data.frame(ext_ID=rweb$ext_ID[i],
-                      ext_ID_db="ReliefWeb",
-                      ext_ID_org="UNOCHA")
-      # If no other external IDs are provided, return only the Em-DAT ID
-      if(is.na(rweb$GLIDE[i])) return(out) else 
-        return(rbind(out,data.frame(ext_ID=rweb$GLIDE[i],
-                                    ext_ID_db="GLIDE",
-                                    ext_ID_org="ADRC")))
-    })
+    out$haz_Ab<-paste0(unlist(lapply(x$fields$type,function(xx) xx$code)),collapse=delim)
     
-    return(rweb)
+    return(out)
   }))
+  # Form the external ID object
+  rweb$all_ext_IDs<-lapply(1:nrow(rweb), function(i){
+    # First extract EM-DAT event ID
+    out<-data.frame(ext_ID=rweb$ext_ID[i],
+                    ext_ID_db="ReliefWeb",
+                    ext_ID_org="UNOCHA")
+    # If no other external IDs are provided, return only the Em-DAT ID
+    if(is.na(rweb$GLIDE[i])) return(out) else 
+      return(rbind(out,data.frame(ext_ID=rweb$GLIDE[i],
+                                  ext_ID_db="GLIDE",
+                                  ext_ID_org="ADRC")))
+  })
+  # Convert to the UNDRR-ISC hazard taxonomy
+  rweb%<>%RWebHazards()%>%filter(!is.na(haz_spec))%>%
+    mutate(all_hazs_spec=haz_spec)
+  # Form the ID for the event
+  rweb$event_ID<-GetMonty_ID(rweb)
+  
+  rweb%>%dplyr::select(any_of(MontyJSONnames()))%>%distinct()
 }
 # Function to call to ReliefWeb
 CallReliefWeb<-function(maxdate=NULL){

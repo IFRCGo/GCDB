@@ -1,4 +1,4 @@
-library(RPostgreSQL)
+  library(RPostgreSQL)
 
 drv <- dbDriver("PostgreSQL")
 conn <- dbConnect(drv, host = "localhost", port=5432,
@@ -32,8 +32,41 @@ tables$colnames<-unname(sapply(tables$table,function(x){
 
 View(tables)
 
-pdc<-sf::st_read(conn,"imminent_pdc")%>%CleanPDC()
-pdcdis<-sf::st_read(conn,"imminent_pdcdisplacement")
+pdc<-sf::st_read(conn,"imminent_pdc")
+isos<-openxlsx::read.xlsx("./Taxonomies/IsoContinentRegion.xlsx")%>%
+  filter(!is.na(isos$Country))
+# If we form one big regex pattern, we can quickly check through the data to find matching countries
+country_pattern <- paste0("\\b(", paste(isos$Country, collapse = "|"), ")\\b")
+# Let's do it!
+pdc$ev_ISO3s<-unname(unlist(mclapply(pdc$hazard_name,function(x){
+  # Find the matching countries
+  cnty<-unlist(str_extract_all(x, country_pattern))
+  # If empty, return na, if not, return the ISO3C code
+  if(length(cnty)==0) return(NA_character_) 
+  else return(paste0(isos$ISO.Code[isos$Country==cnty],collapse = delim))
+},mc.cores=ncores)))
+# Clean it up
+pdc%<>%CleanPDC()%>%filter(!is.na(ev_ISO3s))
+# Sort isos
+pdc$ev_ISO3s<-pdc$imp_ISO3s<-pdc$haz_ISO3s<-
+  lapply(pdc$ev_ISO3s,function(x){unlist(str_split(x,pattern = delim))})
+# Save this out for a rainy day
+saveRDS(pdc,"./CleanedData/MostlyHazardData/PDC-DFS_clean.RData")
+
+
+# pdcdis<-sf::st_read(conn,"imminent_pdcdisplacement")
+# # Sort out the countries
+# cids<-GetIFRCgeo()%>%dplyr::select(id,iso3)%>%rename("country_id"="id")
+# pdcdis%<>%left_join(cids,by="country_id")%>%
+#   dplyr::select(-c(population_exposure,capital_exposure,id))%>%
+#   rename("id"="pdc_id")%>%distinct()
+# rm(cids)
+#   
+# pdc%<>%left_join(pdcdis,by=c("id","hazard_type"))%>%
+#   rename("ev_ISO3s"="iso3")
+
+
+
 adam<-sf::st_read(conn,"imminent_adam")%>%CleanADAM()
 gwis<-sf::st_read(conn,"imminent_gwis")
 
@@ -261,12 +294,16 @@ CleanPDC<-function(pdc){
                 "ev_sdate"="start_date",
                 "ev_fdate"="end_date",
                 "imp_moddate"="pdc_updated_at")%>%
+    mutate_at(c("ev_sdate","ev_fdate","imp_moddate","imp_credate"),
+              function(x) as.character(as.Date(x)))%>%
     mutate(haz_credate=imp_credate,
            haz_moddate=imp_moddate,
            imp_sdate=ev_sdate,
            imp_fdate=imp_moddate,
            haz_sdate=ev_sdate,
            haz_fdate=ev_fdate,
+           imp_ISO3s=ev_ISO3s,
+           haz_ISO3s=ev_ISO3s,
            imp_lat=haz_lat,
            imp_lon=haz_lon,
            all_ext_IDs=ext_ID,
@@ -295,25 +332,46 @@ CleanPDC<-function(pdc){
            haz_spat_srcdb="DisasterAWARE",
            haz_est_type="esttype_second",
            haz_spat_ID=NA_character_,
-           imp_unitdate=NA_character_)
+           imp_unitdate=NA_character_)%>%
+    mutate_at("imp_sub_ID",as.character)
+  # External IDs
+  pdc$all_ext_IDs<-lapply(1:nrow(pdc), function(i){
+    # First extract EM-DAT event ID
+    data.frame(ext_ID=pdc$ext_ID[i],
+                    ext_ID_db="DisasterAWARE",
+                    ext_ID_org="PDC")
+  })
   # Now sort out the specific hazards
-  pdc%<>%PDChazards()%>%mutate(all_hazs_spec=haz_spec)
+  pdc%<>%PDChazards()%>%mutate(all_hazs_spec=haz_spec)%>%dplyr::select(-ext_ID)
   # Generate GCDB event ID
   pdc$event_ID<-GetMonty_ID(pdc)
   
   
   
   
+  
+  
   # left_join with immminent_pdcdisplacement for impact forecast
+  # Also sort out the countries using cids, above
+  
   
   
   
   
   
   # Correct the labels of the impacts, melting by impact detail
-  pdc%<>%ImpLabs(nomDB = "PDC")
+  # pdc%<>%ImpLabs(nomDB = "PDC")
   # Create an impact-specific ID
-  pdc%<>%GetGCDB_impID()
+  # pdc%<>%GetGCDB_impID()
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
   # Add missing columns & reorder the dataframe to fit imp_GCDB object
   pdc%>%dplyr::select(any_of(MontyJSONnames())) 

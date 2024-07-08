@@ -262,6 +262,22 @@ GetGAUL<-function(ISO3C,lADM=2,retobj=F,spout=F){
 
 }
 
+GetIFRCgeo<-function(){
+  # baseline url
+  baseurl<-"https://goadmin.ifrc.org/api/v2/country/?limit=20000" 
+  # Get the data, including headers for CSV only
+  response<-httr::GET(baseurl, httr::add_headers(Accept = "text/csv"))
+  response<-httr::GET(baseurl)
+  # Check output
+  if(response$status_code==200){
+    # Extract the data then export it directly
+    return(jsonlite::fromJSON(httr::content(response, "text"))$results%>%
+      filter((!is.na(iso3) | !is.na(iso)) & record_type==1))
+  # Otherwise, error
+  } else stop("issues extracting the IFRC NS admin boundaries")
+}
+
+
 GetIFRCADM<-function(ISO,level=0){
   ADM<-as(sf::st_read(paste0("./CleanedData/SocioPoliticalData/IFRC/GO-admin1-shp/",ISO,"-admin1/",ISO,"-admin1.shp")),"Spatial")
   projection(ADM)<-"+proj=longlat +datum=WGS84 +no_defs"
