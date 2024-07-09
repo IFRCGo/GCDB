@@ -1,26 +1,3 @@
-# TO DO TODAY
-# - Modify sampling methodology: lists for countries and hazards instead of character
-# - ensure number of samples of each database is Ndatabases*ssize_db even as number of dbs decreases
-
-
-
-# - At some point, extract and wrangle IBTrACS database into Monty and sample from it too
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # Sample events from Monty tabular dataframe in an unbiased manner
 UnbiasedSample<-function(Monty,maxsize=200){
   # How can we generate a sample size of roughly maxsize? Let's find the number of available events
@@ -107,24 +84,31 @@ WeightDistance<-function(x,y){
 # hazs: vector of abbreviated hazard types (e.g. EQ earthquake)
 # targhaz: abbreviated hazard type to check against
 # hazmat: matrix used to check the probability of occurrence between the hazards
-MatHazFilter<-function(hazs,targhaz,hazmat){
-  
-  stop("modify MatHazFilter to allow multiple haz_Abs")
-  # Extract only target hazard and get into a dictionary-style variable
-  bindy<-data.frame(hazard=colnames(hazmat)[2:ncol(hazmat)],
-                    prob=hazmat[,targhaz])
-  # Create weighting from this and return it out
-  out<-left_join(data.frame(hazard=hazs),bindy,by="hazard")$prob
-  # Now do this for the inverse: triggering hazards
-  bindy<-data.frame(hazard=colnames(hazmat)[2:ncol(hazmat)],
-                    prob=as.numeric(hazmat[hazmat$hazard==targhaz,2:ncol(hazmat)]))
-  
-  return(out>0 | left_join(data.frame(hazard=hazs),bindy,by="hazard")$prob>0)
+MatHazFilter <- function(hazs, targhaz, hazmat) {
+  # Split the hazard strings by the delimiter
+  split_hazs <- strsplit(hazs, delim)
+  split_targhaz <- strsplit(targhaz, delim)[[1]]
+  # Loop through each element in hazs
+  unlist(lapply(split_hazs, function(haz_list){
+    # Check for direct matches (unnecessary but a backup in case hazmat file is modified)
+    match_targ <- any(haz_list %in% split_targhaz)
+    # Now using the matrix
+    match_hazmat <- any(sapply(haz_list, function(h1) {
+      any(sapply(split_targhaz, function(h2) {
+        hazmat[h1, h2]>0 || hazmat[h2, h1]>0
+      }))
+    }))
+    
+    # If any match is found, set the result to TRUE
+    match_targ || match_hazmat
+  }))
 }
+
 
 # Function to create a boolean to filter out the distances below the threshold (current idea: 2500km)
 DistFilter<-function(x,y,maxlim=2500){
-  geosphere::distHaversine(y[,c("dest_lon","dest_lat")],x[,c("targ_lon","targ_lat")])/1000<maxlim
+  geosphere::distHaversine(as.matrix(y[,c("dest_lon","dest_lat")]),
+                           x[,c("targ_lon","targ_lat")])/1000<maxlim
 }
   
 # Given an unbiased sample of the target database, sample from the paired database
@@ -142,7 +126,7 @@ PairedSample<-function(samply,aMonty,yeardiff=0.5){
                       "targ_lon","targ_lat","targ_hzAb","targ_evISOs",
                       "targ_URL","targ_ID")
   # Bring in the taxonomy file of overlapping hazards
-  hazmat<-read.csv("./Taxonomies/Hazard_CrossProbability.csv")
+  hazmat<-read.csv("./Taxonomies/Hazard_CrossProbability.csv"); rownames(hazmat)<-colnames(hazmat)
   # Just in case we have Desinventar database where only one country is present, skip the last sampling routine
   kk<-ifelse(length(unique(aMonty$dest_evISOs))==1 | 
      length(unique(samply$targ_evISOs))==1,3,4)
@@ -159,24 +143,37 @@ PairedSample<-function(samply,aMonty,yeardiff=0.5){
   
   # Using the unbiased target sample, sample possible pairs using:
   #   a) exponential-weighted year-difference
-  pairsam<-do.call(rbind,lapply(inds[[1]],function(i){
+  pairsam<-do.call(rbind,parallel::mclapply(inds[[1]],function(i){
     # reduce look-up costs
     x<-samply[i,]
     # Filter destination database to a reasonable dataset
     y<-aMonty[aMonty$dest_evsdate>(x$targ_evsdate[1]-365*yeardiff) & 
                 aMonty$dest_evsdate<(x$targ_evsdate[1]+365*yeardiff) &
-                MatHazFilter(aMonty$dest_hzAb,x$targ_hzAb,hazmat) &
-                DistFilter(x[,c("targ_lon","targ_lat")],
-                           aMonty[,c("dest_lon","dest_lat")]),]
+                MatHazFilter(aMonty$dest_hzAb,x$targ_hzAb,hazmat),]
+    # Checks
+    if(nrow(y)==0) return(data.frame())
+    # Check for distance values: default is TRUE if geolocation data is missing
+    distfilts<-!logical(nrow(y))
+    # Now check by distance
+    if(!is.na(x$targ_lon) & !is.na(x$targ_lat) &
+       any(!is.na(y$dest_lon) & !is.na(y$dest_lat))) {
+      jj<-!is.na(y$dest_lon) & !is.na(y$dest_lat)
+      distfilts[jj]<-DistFilter(x[,c("targ_lon","targ_lat")],
+                            y[jj,c("dest_lon","dest_lat")])
+    }
+    # Filter by distance
+    y%<>%filter(distfilts)
     # Checks
     if(nrow(y)==0) return(data.frame())
     # Create the weighting for the sample & scaling it to max 1
-    www<-WeightDateDiff(y$dest_evsdate,x$targ_evsdate[1]); www<-www/max(www)
+    www<-WeightDateDiff(y$dest_evsdate,x$targ_evsdate[1])
+    if(max(www,na.rm = T)==0) www[]<-1
+    www<-www/max(www,na.rm = T)
     # Sample from the destination dataframe, with the given weighting
     iii<-sample(1:nrow(y), 1, replace = F, prob = www)
     # Merge the two samples into one dataframe
     cbind(x,y[iii,])
-  }))
+  },mc.cores=ncores))
   # Filter out these values from the destination database
   aMonty%<>%filter(!dest_evID%in%pairsam$dest_evID)
   # Insert checks to make sure we still have enough destination data
@@ -186,23 +183,41 @@ PairedSample<-function(samply,aMonty,yeardiff=0.5){
   }
   
   #   b) Same hazard type, with max 1-year difference
-  pairsam%<>%rbind(do.call(rbind,lapply(inds[[2]],function(i){
+  pairsam%<>%rbind(do.call(rbind,parallel::mclapply(inds[[2]],function(i){
     # reduce look-up costs
     x<-samply[i,]
     # Filter destination database to a reasonable dataset
     y<-aMonty[aMonty$dest_evsdate>(x$targ_evsdate[1]-365*yeardiff) & 
                 aMonty$dest_evsdate<(x$targ_evsdate[1]+365*yeardiff) &
-                aMonty$dest_hzAb==x$targ_hzAb &
-                MatHazFilter(aMonty$dest_hzAb,x$targ_hzAb,hazmat) &
-                DistFilter(x[,c("targ_lon","targ_lat")],
-                           aMonty[,c("dest_lon","dest_lat")]),]
+                MatHazFilter(aMonty$dest_hzAb,x$targ_hzAb,hazmat),]
+    # Checks
+    if(nrow(y)==0) return(data.frame())
+    # Identify same country ISO data
+    hazs<-str_split(x$targ_hzAb[1],pattern = delim)
+    samehaz<-sapply(y$dest_hzAb,
+                    function(hzy) any(str_split(hzy,pattern = delim)%in%hazs))
+    # Filter them out
+    y<-y[samehaz,]
+    # Checks
+    if(nrow(y)==0) return(data.frame())
+    # Check for distance values: default is TRUE if geolocation data is missing
+    distfilts<-!logical(nrow(y))
+    # Now check by distance
+    if(!is.na(x$targ_lon) & !is.na(x$targ_lat) &
+       any(!is.na(y$dest_lon) & !is.na(y$dest_lat))) {
+      jj<-!is.na(y$dest_lon) & !is.na(y$dest_lat)
+      distfilts[jj]<-DistFilter(x[,c("targ_lon","targ_lat")],
+                                y[jj,c("dest_lon","dest_lat")])
+    }
+    # Filter by distance
+    y%<>%filter(distfilts)
     # Checks
     if(nrow(y)==0) return(data.frame())
     # Sample from the destination dataframe, with equal weighting
     iii<-sample(1:nrow(y), 1, replace = F)
     # Merge the two samples into one dataframe
     cbind(x,y[iii,])
-  })))
+  },mc.cores=ncores)))
   # Filter out these values from the 
   aMonty%<>%filter(!dest_evID%in%pairsam$dest_evID)
   # Insert checks to make sure we still have enough destination data
@@ -214,24 +229,37 @@ PairedSample<-function(samply,aMonty,yeardiff=0.5){
   
   # Using the unbiased target sample, sample possible pairs using:
   #   c) exponential-weighted year-difference
-  pairsam<-do.call(rbind,lapply(inds[[3]],function(i){
+  pairsam<-do.call(rbind,parallel::mclapply(inds[[3]],function(i){
     # reduce look-up costs
     x<-samply[i,]
     # Filter destination database to a reasonable dataset
     y<-aMonty[aMonty$dest_evsdate>(x$targ_evsdate[1]-365*yeardiff) & 
                 aMonty$dest_evsdate<(x$targ_evsdate[1]+365*yeardiff) &
-                MatHazFilter(aMonty$dest_hzAb,x$targ_hzAb,hazmat) &
-                DistFilter(x[,c("targ_lon","targ_lat")],
-                           aMonty[,c("dest_lon","dest_lat")]),]
+                MatHazFilter(aMonty$dest_hzAb,x$targ_hzAb,hazmat),]
+    # Checks
+    if(nrow(y)==0) return(data.frame())
+    # Check for distance values: default is TRUE if geolocation data is missing
+    distfilts<-!logical(nrow(y))
+    # Now check by distance
+    if(!is.na(x$targ_lon) & !is.na(x$targ_lat) &
+       any(!is.na(y$dest_lon) & !is.na(y$dest_lat))) {
+      jj<-!is.na(y$dest_lon) & !is.na(y$dest_lat)
+      distfilts[jj]<-DistFilter(x[,c("targ_lon","targ_lat")],
+                                y[jj,c("dest_lon","dest_lat")])
+    }
+    # Filter by distance
+    y%<>%filter(distfilts)
     # Checks
     if(nrow(y)==0) return(data.frame())
     # Create the weighting for the sample & scaling it to max 1
-    www<-WeightDistance(x[,c("targ_lon","targ_lat")],y[,c("dest_lon","dest_lat")]); www<-www/max(www)
+    www<-WeightDistance(x[,c("targ_lon","targ_lat")],y[,c("dest_lon","dest_lat")])
+    if(max(www,na.rm = T)==0) www[]<-1
+    www<-www/max(www,na.rm = T)
     # Sample from the destination dataframe, with the given weighting
     iii<-sample(1:nrow(y), 1, replace = F, prob = www)
     # Merge the two samples into one dataframe
     cbind(x,y[iii,])
-  }))
+  },mc.cores=ncores))
   # Filter out these values from the destination database
   aMonty%<>%filter(!dest_evID%in%pairsam$dest_evID)
   # Insert checks to make sure we still have enough destination data
@@ -247,23 +275,41 @@ PairedSample<-function(samply,aMonty,yeardiff=0.5){
   if(kk==3) return(pairsam)
   
   #   d) Same country, with max 1-year difference
-  pairsam%>%rbind(do.call(rbind,lapply(inds[[4]],function(i){
+  pairsam%>%rbind(do.call(rbind,parallel::mclapply(inds[[4]],function(i){
     # reduce look-up costs
     x<-samply[i,]
     # Filter destination database to a reasonable dataset
     y<-aMonty[aMonty$dest_evsdate>(x$targ_evsdate[1]-365*yeardiff) & 
                 aMonty$dest_evsdate<(x$targ_evsdate[1]+365*yeardiff) & 
-                aMonty$dest_evISOs==x$targ_evISOs[1] &
-                MatHazFilter(aMonty$dest_hzAb,x$targ_hzAb,hazmat) &
-                DistFilter(x[,c("targ_lon","targ_lat")],
-                           aMonty[,c("dest_lon","dest_lat")]),]
+                MatHazFilter(aMonty$dest_hzAb,x$targ_hzAb,hazmat),]
+    # Checks
+    if(nrow(y)==0) return(data.frame())
+    # Check for distance values: default is TRUE if geolocation data is missing
+    distfilts<-!logical(nrow(y))
+    # Now check by distance
+    if(!is.na(x$targ_lon) & !is.na(x$targ_lat) &
+       any(!is.na(y$dest_lon) & !is.na(y$dest_lat))) {
+      jj<-!is.na(y$dest_lon) & !is.na(y$dest_lat)
+      distfilts[jj]<-DistFilter(x[,c("targ_lon","targ_lat")],
+                                y[jj,c("dest_lon","dest_lat")])
+    }
+    # Filter by distance
+    y%<>%filter(distfilts)
+    # Checks
+    if(nrow(y)==0) return(data.frame())
+    # Identify same country ISO data
+    isos<-str_split(x$targ_evISOs[1],pattern = delim)
+    sameiso<-sapply(y$dest_evISOs,
+                    function(isy) any(str_split(isy,pattern = delim)%in%isos))
+    # Filter them out
+    y<-y[sameiso,]
     # Checks
     if(nrow(y)==0) return(data.frame())
     # Sample from the destination dataframe, with equal weighting
     iii<-sample(1:nrow(y), 1, replace = F)
     # Merge the two samples into one dataframe
     cbind(x,y[iii,])
-  })))
+  },mc.cores=ncores)))
 }
 
 AutomatedPairUnpairing<-function(Monty){
@@ -272,6 +318,7 @@ AutomatedPairUnpairing<-function(Monty){
   #    then extract them and generate an unbiased sample using the method for (1), below.
   # 0b) Equally, for all obvious unpaired data, also generate an unbiased sample.
   # 0c) Remove all of these pre-paired events from the database after sampling some from non-paired databases for the same event
+  out<-data.frame()
   
   return(list(Monty=Monty,out=out))
 }
@@ -283,7 +330,7 @@ PasteExtID<-function(x){
 
 # Code to consolidate the nested country ISO3C codes list vector into a 1D character vector
 PasteISO3s<-function(x){
-  unname(unlist(parallel::mclapply(x,paste0,collapse=delim,mc.cores=ncores)))
+  unname(unlist(lapply(x,paste0,collapse=delim)))
 }
 
 # Function to sort external IDs
@@ -294,6 +341,8 @@ SortExtIDSampler<-function(Monty){
   Monty%<>%cbind(do.call(rbind,parallel::mclapply(1:length(Monty$all_ext_IDs),function(i){
     # Extract list
     x<-Monty$all_ext_IDs[[i]]
+    # Check for empties
+    if(is.null(x)) return(data.frame(ext_ID=NA_character_,extext_ID=NA_character_))
     # Find the index that corresponds to the sources own id 
     j<-x$ext_ID_db==Monty$imp_src_db[i] |
       x$ext_ID_db==Monty$haz_src_db[i]
@@ -326,9 +375,11 @@ PrepareMontySampler<-function(Monty){
   Monty$URL[is.na(Monty$URL)]<-Monty$haz_src_URL[is.na(Monty$URL)]
   Monty$URL[is.na(Monty$URL)]<-Monty$imp_src_URL[is.na(Monty$URL)]
   # Split all the Desinventar databases into individual country databases
-  Monty$imp_src_db[Monty$imp_src_db=="Desinventar"]<-
-    paste0(Monty$imp_src_db[Monty$imp_src_db=="Desinventar"],"-",
-           Monty$imp_ISO3s[Monty$imp_src_db=="Desinventar"])
+  indy<-!is.na(Monty$imp_src_db) & Monty$imp_src_db=="Desinventar"
+  if(sum(indy,na.rm = T)>0)
+    Monty$imp_src_db[indy]<-
+    paste0(Monty$imp_src_db[indy],"-",
+           Monty$imp_ISO3s[indy])
   # The GO-EA, GO-DREF, GO-FBA databases are actually all from the same one and so shouldn't be paired between them
   Monty$imp_src_db[Monty$imp_src_db%in%c("GO-EA","GO-DREF","GO-FBA")]<-"GO-DREF"
   # Store database information
@@ -344,11 +395,18 @@ PrepareMontySampler<-function(Monty){
   # Sort also the longitude and latitude position
   Monty%<>%mutate(longitude=case_when(is.na(haz_lon)~imp_lon, TRUE~haz_lon),
                   latitude=case_when(is.na(haz_lat)~imp_lat, TRUE~haz_lat))
+  # Modify the hazard types and make sure we only include what we have information on
+  Monty%<>%filter(haz_Ab%in%colnames(read.csv("./Taxonomies/Hazard_CrossProbability.csv")))%>%
+    mutate(haz_Ab=case_when(haz_Ab=="LS_HM" ~ "LS",
+                            TRUE~haz_Ab))
   
-  return(Monty)
+  return(Monty%>%dplyr::select(m_id, event_ID, database, ev_sdate, ev_fdate, year, 
+                               longitude, latitude, haz_Ab, ev_ISO3s, 
+                               URL, ext_ID)%>%distinct())
 }
 
-
+# Sample from the records in the monty tabular instance,
+# returns ssize_db number of samples between any two databases
 EventSampler<-function(Monty,ssize_db=50){
   # Clean up and prepare Monty for the sampling
   Monty%<>%PrepareMontySampler()
@@ -360,8 +418,13 @@ EventSampler<-function(Monty,ssize_db=50){
   out<-data.frame()
   # Sample from the target database one at a time
   for (targ_db in mondbs){
+    print(paste0("Target database = ",targ_db))
+    # First make sure we know how many databases are currently present
+    ndb<-length(unique(Monty$database))
+    if(ndb<=1) next
     # Sample from potential paired events from destination databases
     for(dest_db in mondbs[mondbs!=targ_db]){
+      print(paste0("Destination database = ",dest_db))
       # Filter out only the database to be paired
       submon<-filter(Monty,database==targ_db); if(nrow(submon)==0) next
       # Filter out the database to be paired to leave only the others
@@ -374,10 +437,12 @@ EventSampler<-function(Monty,ssize_db=50){
                          ev_ISO3s%in%PrepCondISOs(antimon$ev_ISO3s)); if(nrow(submon)==0) next
       antimon%<>%filter(ev_sdate>=dates[1] & ev_sdate<=dates[2] &
                           ev_ISO3s%in%PrepCondISOs(submon$ev_ISO3s)); if(nrow(antimon)==0) next
+      # Checks
+      if(nrow(submon)==0 | nrow(antimon)==0) next
       # Unbiased sample from the target database
-      samply<-UnbiasedSample(submon,min(c(ssize_db,nrow(submon),nrow(antimon))))
+      samply<-UnbiasedSample(submon,min(c(as.integer(ndb*ssize_db),nrow(submon),nrow(antimon))))
       # Unbiased sample from the destination database
-      out%<>%rbind(PairedSample(samply,antimon))
+      out%<>%rbind(tryCatch(PairedSample(samply,antimon),error=function(e) return(data.frame())))
     }
     # Remove this database from what will next be sampled
     Monty%<>%filter(database!=targ_db)
@@ -426,39 +491,37 @@ EventSampler<-function(Monty,ssize_db=50){
 
 
 # Other Monty data, pre-prepped from ARO workshop
-Monty<-readRDS("./CleanedData/Monty_2024-06-11_tab.RData")%>%
-  filter(imp_src_db!="Desinventar")%>%
-  mutate_at("haz_maxvalue",as.numeric)
-Monty$ev_ISO3s<-Monty$imp_ISO3s<-Monty$haz_ISO3s<-
-  lapply(Monty$ev_ISO3s,function(x){unlist(str_split(x,pattern = delim))})
-# Pre-prepped forecast data
-Monty%<>%dplyr::bind_rows(readRDS("Analysis_Results/Pairing/Monty_sample_ADAM-WFP_DisasterAWARE-PDC_GDACS-EC-JRC_2024-07-08.RData"))
-Monty$haz_src_db[Monty$imp_src_db=="GDACS"]<-"GDACS"
-Monty$haz_src_org[Monty$imp_src_db=="GDACS"]<-"EC-JRC"
-# Add ReliefWeb and USGS-Atlas. LEAVE DESINVENTAR OUT FOR NOW
-Monty%<>%dplyr::bind_rows(GetReliefWeb())
-Monty%<>%dplyr::bind_rows(GetAtlasTab())
+# Monty<-readRDS("./CleanedData/Monty_2024-06-11_tab.RData")%>%
+#   filter(imp_src_db!="Desinventar")%>%
+#   mutate_at("haz_maxvalue",as.numeric)
+# Monty$ev_ISO3s<-Monty$imp_ISO3s<-Monty$haz_ISO3s<-
+#   lapply(Monty$ev_ISO3s,function(x){unlist(str_split(x,pattern = delim))})
+# # Pre-prepped forecast data
+# Monty%<>%dplyr::bind_rows(readRDS("Analysis_Results/Pairing/Monty_sample_ADAM-WFP_DisasterAWARE-PDC_GDACS-EC-JRC_2024-07-08.RData"))
+# Monty$haz_src_db[Monty$imp_src_db=="GDACS"]<-"GDACS"
+# Monty$haz_src_org[Monty$imp_src_db=="GDACS"]<-"EC-JRC"
+# # Add ReliefWeb and USGS-Atlas. LEAVE DESINVENTAR OUT FOR NOW
+# Monty%<>%dplyr::bind_rows(GetReliefWeb())
+# Monty%<>%dplyr::bind_rows(GetAtlasTab())
+# 
+# 
+# # Store database information
+# Monty%<>%mutate(database=paste0(haz_src_db," - ",haz_src_org))
+# ind<-is.na(Monty$haz_src_db)
+# Monty$database[ind]<-paste0(Monty$imp_src_db[ind]," - ",Monty$imp_src_org[ind])
+# # Add some IDs to ensure we can replicate this later
+# Monty$m_id<-paste0("monty_",sapply(paste0(Monty$event_ID,Monty$database,sep="_"), digest::digest, algo = "sha256"))
+# # Which databases exist in the Monty sample?
+# dbs<-paste0(str_replace_all(sort(unique(Monty$database))," ",""),collapse="_")
+# # Save it out!
+# saveRDS(Monty,paste0("Analysis_Results/Pairing/Monty_sample_",dbs,"_",Sys.Date(),".RData"))
 
 
-# Store database information
-Monty%<>%mutate(database=paste0(haz_src_db," - ",haz_src_org))
-ind<-is.na(Monty$haz_src_db)
-Monty$database[ind]<-paste0(Monty$imp_src_db[ind]," - ",Monty$imp_src_org[ind])
-# Add some IDs to ensure we can replicate this later
-Monty$m_id<-paste0("monty_",sapply(paste0(Monty$event_ID,Monty$database,sep="_"), digest::digest, algo = "sha256"))
-# Which databases exist in the Monty sample?
-dbs<-paste0(str_replace_all(sort(unique(Monty$database))," ",""),collapse="_")
-saveRDS(Monty,paste0("Analysis_Results/Pairing/Monty_sample_",dbs,"_",Sys.Date(),".RData"))
-
-
-Monty%>%arrange(desc(ev_sdate))%>%group_by(database)%>%slice(1:5)%>%ungroup()%>%View()
-
-
-
+Monty<-readRDS("./Analysis_Results/Pairing/Monty_sample_ADAM-WFP_Atlas-USGS_DFO-UniColumbia_DisasterAWARE-PDC_EMDAT-CRED_GDACS-EC-JRC_GIDD-IDMC_GLIDE-ADRC_GO-DREF-IFRC_GO-EA-IFRC_GO-FBA-IFRC_IDU-IDMC_ReliefWeb-UNOCHA_2024-07-08.RData")
 # Sample the data!
-sam<-EventSampler(Monty,150)
+sam<-EventSampler(Monty,50)
 # Add the pairing column
-sam$paired<-""
+sam%<>%mutate(paired="",description="")
 # Trim down the length of the numerical columns
 sam%<>%mutate_if(is.numeric,round,digits=3)
 # Which databases were present for this sample?
