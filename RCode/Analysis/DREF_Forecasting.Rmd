@@ -185,6 +185,30 @@ tDREF%>%mutate(ev_sdate=as.Date(ev_sdate))%>%arrange(ev_sdate)%>%
   filter(exp_spec=="expspec_ecoifrcall")%>%
   group_by(year)%>%reframe(Count=length(year),DREF=median(imp_value))%>%
   ggplot()+geom_point(aes(year,Count,size=DREF,colour=DREF))+geom_line(aes(year,Count))
+# Total monthly average funding, since 2021
+tDREF%>%mutate(ev_sdate=as.Date(ev_sdate),
+               month=as.factor(month(ev_sdate)))%>%arrange(ev_sdate)%>%
+  filter(exp_spec=="expspec_ecoifrcall")%>%
+  group_by(year,month)%>%reframe(Count=length(year),DREF=sum(imp_value))%>%
+  ggplot()+geom_boxplot(aes(month,DREF,fill=month))#+geom_line(aes(month,DREF))
+# Check the number of past two years monthly funding allocations
+tDREF%>%mutate(ev_sdate=as.Date(ev_sdate),
+               month=(as.integer(month(ev_sdate))/12-0.5/12))%>%arrange(ev_sdate)%>%
+  filter(exp_spec=="expspec_ecoifrcall" & year>2021)%>%
+  group_by(year,month)%>%reframe(Count=length(year),DREF=sum(imp_value),yrmonth=year+month)%>%
+  ggplot()+geom_point(aes(yrmonth,Count,size=DREF,colour=DREF))+geom_line(aes(yrmonth,Count))
+# Check the past two years monthly funding allocations
+tDREF%>%mutate(ev_sdate=as.Date(ev_sdate),
+               month=(as.integer(month(ev_sdate))/12-0.5/12))%>%arrange(ev_sdate)%>%
+  filter(exp_spec=="expspec_ecoifrcall" & year>2021)%>%
+  group_by(year,month)%>%reframe(Count=length(year),DREF=sum(imp_value),yrmonth=year+month)%>%
+  ggplot()+geom_point(aes(yrmonth,DREF,colour=Count))+geom_line(aes(yrmonth,DREF))
+
+# Check the average number of events + total monthly funding allocated
+tDREF%>%mutate(ev_sdate=as.Date(ev_sdate))%>%arrange(ev_sdate)%>%
+  filter(exp_spec=="expspec_ecoifrcall")%>%
+  group_by(year)%>%reframe(Count=length(year),DREF=median(imp_value))%>%
+  ggplot()+geom_point(aes(year,Count,size=DREF,colour=DREF))+geom_line(aes(year,Count))
 
 # Check only the median yearly funding allocated per event
 tDREF%>%mutate(ev_sdate=as.Date(ev_sdate))%>%arrange(ev_sdate)%>%
