@@ -112,7 +112,7 @@ DistFilter<-function(x,y,maxlim=2500){
 }
   
 # Given an unbiased sample of the target database, sample from the paired database
-PairedSample<-function(samply,aMonty,yeardiff=0.5){
+PairedSample<-function(samply,aMonty,yeardiff=0.25){
   # Keep only the variables we need
   aMonty%<>%dplyr::select(m_id, event_ID, database, ev_sdate, ev_fdate, longitude, latitude, 
                          haz_Ab, ev_ISO3s, URL, ext_ID)%>%distinct()

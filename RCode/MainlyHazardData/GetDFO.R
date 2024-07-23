@@ -426,7 +426,7 @@ convDFO_Monty<-function(taby=F){
   
   #@@@@@ Impact-level data @@@@@#
   # First need to ensure that any impacts with zero impacts estimated are removed to prevent bias
-  DFO$impacts%<>%filter(!is.na(haz_spec) | !is.na(imp_value) | imp_value>0)
+  DFO$impacts%<>%filter(!is.na(haz_spec) & !is.na(imp_value) & imp_value>0)%>%distinct()
   # IDs
   ID_linkage<-Add_ImpIDlink_Monty(
     do.call(rbind,parallel::mclapply(1:nrow(DFO$impacts),function(i) {

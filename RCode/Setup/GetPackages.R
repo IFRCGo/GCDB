@@ -28,6 +28,7 @@ GetSourceFiles<-function(packred){
   source(paste0(dir,'RCode/Spatio-Infra-Political/GetOSM.R'))
   source(paste0(dir,'RCode/Spatio-Infra-Political/GetAdminBoundaries.R'))
   # Other:
+  source(paste0(dir,'RCode/Other/GetWorldBank.R'))
   # source(paste0(dir,'RCode/Other/GetGoogleEarthEngineData.R'))
 }
 
@@ -77,7 +78,7 @@ GetPackages<-function(packred){
                         "GADMTools","akima","adehabitatMA","flexsurv", "ExtDist", 
                         'EnvStats', 'posterior', 'doParallel', 'VGAM', 'abind',
                         'Rmpi', 'openxlsx', 'ecochange','googlesheets4', 'bookdown',
-                        "AzureStor", "plumber","ghql")
+                        "AzureStor", "plumber","ghql","wbstats")
   
   if(!packred) list.of.packages<-c(list.of.packages,
                                    "codetools","latex2exp","fixest",
