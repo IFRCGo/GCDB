@@ -716,14 +716,37 @@ Des2tabGCDB<-function(Dessie){
   Dessie%>%dplyr::select(any_of(MontyJSONnames()))
 }
 
+GetDesinventar_ind<-function(ISO3,forcer=F){
+  # Desinventar is in lower case ISO3C code
+  ISO3%<>%str_to_lower()
+  # Find the impact files
+  filer<-paste0("./CleanedData/MostlyImpactData/Desinventar/",ISO3,"/",ISO3,".xlsx")
+  # Check if the file exists
+  if(!file.exists(filer)) {
+    # If not, try to extract it from the database
+    if(!WrangleDessie(isos[i],forcer = T)) {
+      print(paste0("Desinventar data not possible for ", ISO3))
+      return(data.frame())
+    }
+  }
+  # Load the data
+  out<-openxlsx::read.xlsx(paste0("./CleanedData/MostlyImpactData/Desinventar/",filez[i]))
+  # Add the country ISO3 code to the data
+  out$imp_ISO3s<-out$ev_ISO3s<-DesIsos$actualiso[DesIsos$isos==isos[i]]
+  # Get in tabGCDB format
+  impies<-Des2tabGCDB(Dessie)
+  # The Desinventar database has many entries per single event, so we take the most recent estimate
+  impies<-impies[nrow(impies):1,]#%>%filter(imp_value>0)
+  # Find the duplicated elements
+  inds<-impies%>%dplyr::select(imp_sub_ID)%>%duplicated()
+  
+  return(impies[!inds,])
+}
+
 GetDesinventar<-function(ISO3s=NULL,forcer=F){
   # Find the impact files
   filez<-list.files("./CleanedData/MostlyImpactData/Desinventar/",
                     pattern = ".xlsx",
-                    include.dirs = T,all.files = T,recursive = T,ignore.case = T)
-  # Find the Desinventar spatial files
-  spatf<-list.files("./CleanedData/SocioPoliticalData/Desinventar/",
-                    pattern = "ADM_",
                     include.dirs = T,all.files = T,recursive = T,ignore.case = T)
   # Extract data for all countries which have spatial data 
   isos<-stringr::str_split(filez,"/",simplify = T)[,1]
@@ -771,110 +794,112 @@ convDessie_Monty<-function(forcer=T, ISO3s=NULL, taby=F){
     if(any(!wran)) print("countries that didn't work = ",ISO3s[!wran],collapse(" ,"))
     ISO3s<-ISO3s[wran]
   }
-  # Extract raw Dessie data
-  Dessie<-GetDesinventar(ISO3s)
-  # Get rid of repeated entries
-  Dessie%<>%distinct()%>%arrange(ev_sdate)%>%filter(!is.na(haz_spec))
-  
-  if(taby) return(Dessie)
-  
   # Extract the Monty JSON schema template
   dMonty<-jsonlite::fromJSON("./Taxonomies/Montandon_JSON-Example.json")
   
-  # Don't max out the RAM!
-  s_ncores <- ncores
-  ncores <<- min(ncores,2)
+  if(taby) funcy<-function(x) do.call(dplyr::bind_rows,x) else funcy<-MergeMonty
+  
+  fulldes<-funcy(lapply(ISO3s,function(iso){
+    # Extract raw Dessie data
+    Dessie<-GetDesinventar_ind(iso)
+    # Get rid of repeated entries
+    Dessie%<>%distinct()%>%arrange(ev_sdate)%>%filter(!is.na(haz_spec))
     
-  #@@@@@ Event-level data @@@@@#
-  # IDs
-  ID_linkage<-Add_EvIDlink_Monty(
-    do.call(rbind,parallel::mclapply(1:nrow(Dessie),function(i) {
-      Dessie$all_ext_IDs[[i]]%>%mutate(event_ID=Dessie$event_ID[i],
-                                      ev_name=Dessie$ev_name[i])
-    },mc.cores=ncores))
-  )
-  # Spatial
-  spatial<-Add_EvSpat_Monty(
-    Dessie%>%dplyr::select(event_ID, ev_ISO3s, gen_location)
-  )
-  # temporal
-  temporal<-Add_EvTemp_Monty(
-    Dessie%>%dplyr::select(event_ID,ev_sdate,ev_fdate)
-  )
-  # Hazards
-  allhaz_class<-Add_EvHazTax_Monty(
-    Dessie%>%dplyr::select(event_ID, haz_Ab, haz_spec)
-  )
-  # Gather it all and store it in the template!
-  dMonty$event_Level<-data.frame(ev=ID_linkage$event_ID)
-  dMonty$event_Level$ID_linkage<-ID_linkage
-  dMonty$event_Level$temporal<-temporal
-  dMonty$event_Level$spatial<-spatial
-  dMonty$event_Level$allhaz_class<-allhaz_class
-  dMonty$event_Level$ev<-NULL
-  
-  #@@@@@ Hazard-level data @@@@@#
-  # Nothing to put here as we haven't linked any hazard data yet
-  dMonty$hazard_Data<-list()
-  
-  #@@@@@ Impact-level data @@@@@#
-  # First need to ensure that any impacts with zero impacts estimated are removed to prevent bias
-  Dessie%<>%filter(!is.na(haz_spec) & !is.na(imp_value) & imp_value>0)%>%distinct()
-  # IDs
-  ID_linkage<-Add_ImpIDlink_Monty(
-    do.call(rbind,parallel::mclapply(1:nrow(Dessie),function(i) {
-      Dessie$all_ext_IDs[[i]]%>%mutate(event_ID=Dessie$event_ID[i],
-                                      imp_sub_ID=Dessie$imp_sub_ID[i],
-                                      haz_sub_ID=NA_character_)
-    },mc.cores=ncores))
-  )
-  # Sources for impact data
-  srcy<-do.call(rbind,parallel::mclapply(unique(Dessie$imp_sub_ID),function(ID){
-    return(Dessie[Dessie$imp_sub_ID==ID,]%>%
-             dplyr::select(imp_src_db,imp_src_URL,imp_src_org)%>%
-             slice(1))
-  },mc.cores=ncores))
-  # impact estimates
-  impact_detail<-Dessie%>%distinct(imp_sub_ID,.keep_all = T)%>%
-    dplyr::select(exp_spec,imp_value,imp_type,imp_units,imp_est_type,imp_unitdate)
-  # Add temporal information
-  temporal<-Dessie%>%distinct(imp_sub_ID,.keep_all = T)%>%
-    dplyr::select(imp_sdate,imp_fdate,imp_credate,imp_moddate)
-  # Spatial data relevant to the impact estimates
-  # multiple-entry rows: imp_ISO3s,imp_spat_res
-  spatial<-Add_ImpSpatAll_Monty(
-    ID_linkage=Dessie%>%dplyr::select(imp_sub_ID,imp_spat_ID,imp_spat_fileloc),
-    spatial_info=Dessie%>%dplyr::select(
-      imp_ISO3s,
-      imp_lon,
-      imp_lat,
-      imp_spat_covcode,
-      imp_spat_res,
-      imp_spat_resunits,
-      imp_spat_crs
-    ),
-    source=Dessie%>%dplyr::select(
-      imp_spat_srcdb,
-      imp_spat_URL,
-      imp_spat_srcorg
+    if(taby) return(Dessie)
+    
+    #@@@@@ Event-level data @@@@@#
+    # IDs
+    ID_linkage<-Add_EvIDlink_Monty(
+      do.call(rbind,parallel::mclapply(1:nrow(Dessie),function(i) {
+        Dessie$all_ext_IDs[[i]]%>%mutate(event_ID=Dessie$event_ID[i],
+                                         ev_name=Dessie$ev_name[i])
+      },mc.cores=ncores))
     )
-  )
-  
-  # Gather it all and store it in the template!
-  # (I know this is hideous, but I don't understand how JSON files can have lists that are also S3 data.frames)
-  dMonty$impact_Data<-data.frame(imp_sub_ID=unique(Dessie$imp_sub_ID))
-  dMonty$impact_Data$ID_linkage=ID_linkage
-  dMonty$impact_Data$source=srcy
-  dMonty$impact_Data$impact_detail=impact_detail
-  dMonty$impact_Data$temporal=temporal
-  dMonty$impact_Data$spatial=spatial
-  dMonty$impact_Data$imp_sub_ID<-NULL
-  
-  #@@@@@ Response-level data @@@@@#
-  # Nothing to put here as we haven't linked any response data yet
-  dMonty$response_Data<-list()
-  #@@@@@ Source Data In Taxonomy Field @@@@@#
-  dMonty$taxonomies$src_info<-readxl::read_xlsx("./Taxonomies/Monty_DataSources.xlsx")%>%distinct()
+    # Spatial
+    spatial<-Add_EvSpat_Monty(
+      Dessie%>%dplyr::select(event_ID, ev_ISO3s, gen_location)
+    )
+    # temporal
+    temporal<-Add_EvTemp_Monty(
+      Dessie%>%dplyr::select(event_ID,ev_sdate,ev_fdate)
+    )
+    # Hazards
+    allhaz_class<-Add_EvHazTax_Monty(
+      Dessie%>%dplyr::select(event_ID, haz_Ab, haz_spec)
+    )
+    # Gather it all and store it in the template!
+    dMonty$event_Level<-data.frame(ev=ID_linkage$event_ID)
+    dMonty$event_Level$ID_linkage<-ID_linkage
+    dMonty$event_Level$temporal<-temporal
+    dMonty$event_Level$spatial<-spatial
+    dMonty$event_Level$allhaz_class<-allhaz_class
+    dMonty$event_Level$ev<-NULL
+    
+    #@@@@@ Hazard-level data @@@@@#
+    # Nothing to put here as we haven't linked any hazard data yet
+    dMonty$hazard_Data<-list()
+    
+    #@@@@@ Impact-level data @@@@@#
+    # First need to ensure that any impacts with zero impacts estimated are removed to prevent bias
+    Dessie%<>%filter(!is.na(haz_spec) & !is.na(imp_value) & imp_value>0)%>%distinct()
+    # IDs
+    ID_linkage<-Add_ImpIDlink_Monty(
+      do.call(rbind,parallel::mclapply(1:nrow(Dessie),function(i) {
+        Dessie$all_ext_IDs[[i]]%>%mutate(event_ID=Dessie$event_ID[i],
+                                         imp_sub_ID=Dessie$imp_sub_ID[i],
+                                         haz_sub_ID=NA_character_)
+      },mc.cores=ncores))
+    )
+    # Sources for impact data
+    srcy<-do.call(rbind,parallel::mclapply(unique(Dessie$imp_sub_ID),function(ID){
+      return(Dessie[Dessie$imp_sub_ID==ID,]%>%
+               dplyr::select(imp_src_db,imp_src_URL,imp_src_org)%>%
+               slice(1))
+    },mc.cores=ncores))
+    # impact estimates
+    impact_detail<-Dessie%>%distinct(imp_sub_ID,.keep_all = T)%>%
+      dplyr::select(exp_spec,imp_value,imp_type,imp_units,imp_est_type,imp_unitdate)
+    # Add temporal information
+    temporal<-Dessie%>%distinct(imp_sub_ID,.keep_all = T)%>%
+      dplyr::select(imp_sdate,imp_fdate,imp_credate,imp_moddate)
+    # Spatial data relevant to the impact estimates
+    # multiple-entry rows: imp_ISO3s,imp_spat_res
+    spatial<-Add_ImpSpatAll_Monty(
+      ID_linkage=Dessie%>%dplyr::select(imp_sub_ID,imp_spat_ID,imp_spat_fileloc),
+      spatial_info=Dessie%>%dplyr::select(
+        imp_ISO3s,
+        imp_lon,
+        imp_lat,
+        imp_spat_covcode,
+        imp_spat_res,
+        imp_spat_resunits,
+        imp_spat_crs
+      ),
+      source=Dessie%>%dplyr::select(
+        imp_spat_srcdb,
+        imp_spat_URL,
+        imp_spat_srcorg
+      )
+    )
+    
+    # Gather it all and store it in the template!
+    # (I know this is hideous, but I don't understand how JSON files can have lists that are also S3 data.frames)
+    dMonty$impact_Data<-data.frame(imp_sub_ID=unique(Dessie$imp_sub_ID))
+    dMonty$impact_Data$ID_linkage=ID_linkage
+    dMonty$impact_Data$source=srcy
+    dMonty$impact_Data$impact_detail=impact_detail
+    dMonty$impact_Data$temporal=temporal
+    dMonty$impact_Data$spatial=spatial
+    dMonty$impact_Data$imp_sub_ID<-NULL
+    
+    #@@@@@ Response-level data @@@@@#
+    # Nothing to put here as we haven't linked any response data yet
+    dMonty$response_Data<-list()
+    #@@@@@ Source Data In Taxonomy Field @@@@@#
+    dMonty$taxonomies$src_info<-readxl::read_xlsx("./Taxonomies/Monty_DataSources.xlsx")%>%distinct()
+    
+    return(dMonty)
+  }))
   
   # Create the path for the output
   dir.create("./CleanedData/MostlyHazardData/UNDRR",showWarnings = F)
@@ -884,9 +909,6 @@ convDessie_Monty<-function(forcer=T, ISO3s=NULL, taby=F){
   
   #@@@@@ Checks and validation @@@@@#
   dMonty%<>%checkMonty()
-  
-  # Don't max out the RAM!
-  ncores <<- s_ncores
   
   return(dMonty)
 }
