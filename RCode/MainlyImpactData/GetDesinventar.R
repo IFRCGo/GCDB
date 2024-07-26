@@ -796,6 +796,8 @@ convDessie_Monty<-function(forcer=T, ISO3s=NULL, taby=F){
   }
   # Extract the Monty JSON schema template
   dMonty<-jsonlite::fromJSON("./Taxonomies/Montandon_JSON-Example.json")
+  # Create the path for the output
+  dir.create("./CleanedData/MostlyHazardData/UNDRR",showWarnings = F)
   
   if(taby) funcy<-function(x) do.call(dplyr::bind_rows,x) else funcy<-MergeMonty
   
@@ -803,7 +805,8 @@ convDessie_Monty<-function(forcer=T, ISO3s=NULL, taby=F){
     # Extract raw Dessie data
     Dessie<-GetDesinventar_ind(iso)
     # Get rid of repeated entries
-    Dessie%<>%distinct()%>%arrange(ev_sdate)%>%filter(!is.na(haz_spec))
+    Dessie%<>%distinct()%>%arrange(ev_sdate)%>%
+      filter(!is.na(haz_spec) & !is.na(imp_value) & imp_value>0)
     
     if(taby) return(Dessie)
     
@@ -898,11 +901,13 @@ convDessie_Monty<-function(forcer=T, ISO3s=NULL, taby=F){
     #@@@@@ Source Data In Taxonomy Field @@@@@#
     dMonty$taxonomies$src_info<-readxl::read_xlsx("./Taxonomies/Monty_DataSources.xlsx")%>%distinct()
     
+    # Write it out just for keep-sake
+    write(jsonlite::toJSON(dMonty,pretty = T,auto_unbox=T,na = 'null'),
+          paste0("./CleanedData/MostlyHazardData/UNDRR/Desinventar_",iso,"_",Sys.Date(),".json"))
+    
     return(dMonty)
   }))
   
-  # Create the path for the output
-  dir.create("./CleanedData/MostlyHazardData/UNDRR",showWarnings = F)
   # Write it out just for keep-sake
   write(jsonlite::toJSON(dMonty,pretty = T,auto_unbox=T,na = 'null'),
         paste0("./CleanedData/MostlyHazardData/UNDRR/Desinventar_",Sys.Date(),".json"))
