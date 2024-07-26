@@ -471,10 +471,27 @@ EventSampler<-function(Monty,ssize_db=50){
                           ev_ISO3s%in%PrepCondISOs(submon$ev_ISO3s)); if(nrow(antimon)==0) next
       # Checks
       if(nrow(submon)==0 | nrow(antimon)==0) next
-      # Unbiased sample from the target database
-      samply<-UnbiasedSample(submon,min(c(as.integer(ndb*ssize_db),nrow(submon),nrow(antimon))))
-      # Unbiased sample from the destination database
-      out%<>%rbind(tryCatch(PairedSample(samply,antimon),error=function(e) return(data.frame())))
+      # How many values do we wish to sample?
+      nsam<-min(c(as.integer(ndb*ssize_db),nrow(submon),nrow(antimon)))
+      # Skeleton dataframe
+      outsam<-data.frame(); mmm<-0
+      # Loop over the sampling until we have enough samples
+      while(nrow(outsam)<nsam | nrow(submon)!=0 | mmm<3){
+        # Set the upper threshold for the number of re-samples
+        mmm<-mmm+1
+        # Unbiased sample from the target database
+        samply<-UnbiasedSample(submon,min(nsam,nrow(submon)))
+        # Sample the destination data
+        outsam<-tryCatch(PairedSample(samply,antimon),error=function(e) return(NULL))
+        # If an error occurred, leave this one
+        if(is.null(outsam)) break
+        # If we no longer have anymore data then try again
+        if(nrow(outsam)==0) next
+        # Unbiased sample from the destination database
+        out%<>%rbind(outsam)
+        # Remove the sampled values from the target dataframe
+        submon%<>%filter(!m_id%in%outsam$targ_mid)
+      }
     }
     # Remove this database from what will next be sampled
     Monty%<>%filter(database!=targ_db)
