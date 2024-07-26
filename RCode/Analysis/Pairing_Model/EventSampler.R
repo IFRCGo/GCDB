@@ -476,7 +476,7 @@ EventSampler<-function(Monty,ssize_db=50){
       # Skeleton dataframe
       outsam<-data.frame(); mmm<-0
       # Loop over the sampling until we have enough samples
-      while(nrow(outsam)<nsam | nrow(submon)!=0 | mmm<3){
+      while(nrow(outsam)<nsam | nrow(submon)!=0 | mmm<5){
         # Set the upper threshold for the number of re-samples
         mmm<-mmm+1
         # Unbiased sample from the target database
