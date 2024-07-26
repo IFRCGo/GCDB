@@ -16,30 +16,42 @@ UnbiasedSample<-function(Monty,maxsize=200){
   samsam<-data.frame()
   # For each hazard in
   hazzies <- unique(stringi::stri_trim_both(str_split(Monty$haz_Ab,";"))); hazzies<-hazzies[!is.na(hazzies)]
-  # Sample
-  for (haz in hazzies){
-    # Filter out other hazards
-    sMonty<-filter(Monty,grepl(haz,haz_Ab))
-    if(nrow(sMonty)==0) next
-    # For each country
-    isos <- sort(unique(stringi::stri_trim_both(str_split(sMonty$ev_ISO3s,";")))); isos<-isos[!is.na(isos)]
+  # Repeat sampling until we reach maxsize
+  while(nrow(samsam) < maxsize) {
     # Sample
-    for (is in isos){
-      # Filter out other countries
-      ssMonty<-filter(sMonty,grepl(is,ev_ISO3s))
-      if(nrow(ssMonty)==0) next
-      # For each year
-      yearies<-unique(ssMonty$year)
+    for (haz in hazzies){
+      # Filter out other hazards
+      sMonty<-filter(Monty,grepl(haz,haz_Ab))
+      if(nrow(sMonty)==0) next
+      # For each country
+      isos <- sort(unique(stringi::stri_trim_both(str_split(sMonty$ev_ISO3s,";")))); isos<-isos[!is.na(isos)]
       # Sample
-      for (yr in yearies){ 
-        sssMonty<-filter(ssMonty,year==yr)
-        if(nrow(sssMonty)==0) next
-        # Sample targnum rows from the filtered dataframe
-        samsam%<>%rbind(sssMonty[sample(1:nrow(sssMonty),pmin(targnum,nrow(sssMonty)),replace = F),])
+      for (is in isos){
+        # Filter out other countries
+        ssMonty<-filter(sMonty,grepl(is,ev_ISO3s))
+        if(nrow(ssMonty)==0) next
+        # For each year
+        yearies<-unique(ssMonty$year)
+        # Sample
+        for (yr in yearies){ 
+          sssMonty<-filter(ssMonty,year==yr)
+          if(nrow(sssMonty)==0) next
+          # Sample the rows
+          minisam<-sssMonty[sample(1:nrow(sssMonty),pmin(targnum,nrow(sssMonty)),replace = F),]
+          # Add to the sampler dataframe
+          samsam%<>%rbind(minisam)
+          # Remove sampled rows from Monty
+          Monty<-anti_join(Monty, minisam)
+          # Check if we've reached maxsize
+          if (nrow(samsam) >= maxsize) break
+        }
+        # Check if we've reached maxsize
+        if (nrow(samsam) >= maxsize) break
       }
+      # Check if we've reached maxsize
+      if (nrow(samsam) >= maxsize) break
     }
   }
-  
   # In case the number of entries is more than maxsize
   if(nrow(samsam)>maxsize) samsam<-samsam[sample(1:nrow(samsam),maxsize,F),]
   
@@ -104,6 +116,22 @@ MatHazFilter <- function(hazs, targhaz, hazmat) {
   }))
 }
 
+# Function to filter out rows where the countries could never correspond to the same event
+# targISO: target country/territory ISO3C code
+# destISO: destination list of country/territory ISO3C codes
+# isomat: matrix used to check the centroid distance between the countries
+MatISOFilter<-function(targISO, destISO, isomat, disty=5000){
+  # To be safe, by default all of the countries are included
+  innies<-!logical(length(destISO))
+  # First check whether the 
+  if(!targISO%in%colnames(isomat)) return(innies)
+  # Check that the ISO code exists in the distance calculation
+  ind<-destISO%in%colnames(isomat)
+  # Evaluate the distance for the rest
+  innies[ind]<-unname(sapply(destISO[ind],function(x) isomat[row.names(isomat)==x,targISO]<disty))
+  
+  return(innies)
+}
 
 # Function to create a boolean to filter out the distances below the threshold (current idea: 2500km)
 DistFilter<-function(x,y,maxlim=2500){
@@ -125,12 +153,13 @@ PairedSample<-function(samply,aMonty,yeardiff=0.25){
   colnames(samply)<-c("targ_mid","targ_evID","targ_db","targ_evsdate","targ_evfdate",
                       "targ_lon","targ_lat","targ_hzAb","targ_evISOs",
                       "targ_URL","targ_ID")
-  # Bring in the taxonomy file of overlapping hazards
-  hazmat<-read.csv("./Taxonomies/Hazard_CrossProbability.csv"); rownames(hazmat)<-colnames(hazmat)
+  # Bring in the taxonomy file of overlapping hazards and the country centroid distances
+  hazmat<-read.csv("./Taxonomies/Hazard_CrossProbability.csv"); hazmat<-hazmat[,2:nrow(hazmat)]; rownames(hazmat)<-colnames(hazmat); 
+  isomat<-openxlsx::read.xlsx("./Taxonomies/Country_DistanceProbability.xlsx"); isomat<-isomat[,2:ncol(isomat)]; isomat<-as.data.frame(apply(isomat,2,as.numeric)); rownames(isomat)<-colnames(isomat);
   # Just in case we have Desinventar database where only one country is present, skip the last sampling routine
   kk<-ifelse(length(unique(aMonty$dest_evISOs))==1 | 
      length(unique(samply$targ_evISOs))==1,3,4)
-  # Create three lists of sampled indices of the target database
+  # Create kk lists of sampled indices of the target database
   # that will be used to sample in time, country and hazard type the destination database
   inds<-caret::createFolds(1:nrow(samply), k = kk, list = TRUE)
   
@@ -149,7 +178,8 @@ PairedSample<-function(samply,aMonty,yeardiff=0.25){
     # Filter destination database to a reasonable dataset
     y<-aMonty[aMonty$dest_evsdate>(x$targ_evsdate[1]-365*yeardiff) & 
                 aMonty$dest_evsdate<(x$targ_evsdate[1]+365*yeardiff) &
-                MatHazFilter(aMonty$dest_hzAb,x$targ_hzAb,hazmat),]
+                MatHazFilter(aMonty$dest_hzAb,x$targ_hzAb,hazmat) &
+                MatISOFilter(aMonty$dest_evISOs, x$targ_evISOs[1], isomat),]
     # Checks
     if(nrow(y)==0) return(data.frame())
     # Check for distance values: default is TRUE if geolocation data is missing
@@ -189,7 +219,8 @@ PairedSample<-function(samply,aMonty,yeardiff=0.25){
     # Filter destination database to a reasonable dataset
     y<-aMonty[aMonty$dest_evsdate>(x$targ_evsdate[1]-365*yeardiff) & 
                 aMonty$dest_evsdate<(x$targ_evsdate[1]+365*yeardiff) &
-                MatHazFilter(aMonty$dest_hzAb,x$targ_hzAb,hazmat),]
+                MatHazFilter(aMonty$dest_hzAb,x$targ_hzAb,hazmat) &
+                MatISOFilter(aMonty$dest_evISOs, x$targ_evISOs[1], isomat),]
     # Checks
     if(nrow(y)==0) return(data.frame())
     # Identify same country ISO data
@@ -235,7 +266,8 @@ PairedSample<-function(samply,aMonty,yeardiff=0.25){
     # Filter destination database to a reasonable dataset
     y<-aMonty[aMonty$dest_evsdate>(x$targ_evsdate[1]-365*yeardiff) & 
                 aMonty$dest_evsdate<(x$targ_evsdate[1]+365*yeardiff) &
-                MatHazFilter(aMonty$dest_hzAb,x$targ_hzAb,hazmat),]
+                MatHazFilter(aMonty$dest_hzAb,x$targ_hzAb,hazmat) &
+                MatISOFilter(aMonty$dest_evISOs, x$targ_evISOs[1], isomat),]
     # Checks
     if(nrow(y)==0) return(data.frame())
     # Check for distance values: default is TRUE if geolocation data is missing
