@@ -1,6 +1,6 @@
 GetDessieISOs<-function(){
   DesIsos<-data.frame(isos=
-                        c("ago", "alb", "arg", "arm", "atg", "bdi", "bfa", "blr", "blz", "bol",
+                        c("ago", "alb", "arg", "arm", "atg", "bfa", "bdi", "blr", "blz", "bol", 
                           "brb", "btn", "chl", "col", "com", "cpv", "cri", "dji", "dma", "dom",
                           "ecu", "egy", "esp", "eth", "etm", "gha", "gin", "gmb", "gnb", "gnq", 
                           "grd", "gtm", "guy", "hnd", "idn", "irn", "irq", "jam", "jor", "ken", 
@@ -659,6 +659,8 @@ Des2tabGCDB<-function(Dessie){
   Dessie$event%<>%str_to_lower()
   # Extract only the relevant hazards
   Dessie%<>%DesHazards()
+  # Exception... sigh
+  if(is.null(Dessie$location)) Dessie$location<-NA_character_
   # Rename some of the variables
   Dessie%<>%rename("ev_name"="event",
                    "imp_lon"="longitude",
@@ -719,22 +721,26 @@ Des2tabGCDB<-function(Dessie){
 GetDesinventar_ind<-function(ISO3,forcer=F){
   # Desinventar is in lower case ISO3C code
   ISO3%<>%str_to_lower()
+  # Get the translated names of the Desinventar countries
+  DesIsos<-GetDessieISOs()
   # Find the impact files
   filer<-paste0("./CleanedData/MostlyImpactData/Desinventar/",ISO3,"/",ISO3,".xlsx")
   # Check if the file exists
   if(!file.exists(filer)) {
     # If not, try to extract it from the database
-    if(!WrangleDessie(isos[i],forcer = T)) {
+    if(!WrangleDessie(ISO3,forcer = T)) {
       print(paste0("Desinventar data not possible for ", ISO3))
       return(data.frame())
     }
   }
   # Load the data
-  out<-openxlsx::read.xlsx(paste0("./CleanedData/MostlyImpactData/Desinventar/",filez[i]))
+  out<-openxlsx::read.xlsx(filer)
+  # error if there is no data
+  if(nrow(out)==0) stop(paste0("no Desinventar data for ISO code ",str_to_upper(ISO3)))
   # Add the country ISO3 code to the data
-  out$imp_ISO3s<-out$ev_ISO3s<-DesIsos$actualiso[DesIsos$isos==isos[i]]
+  out$imp_ISO3s<-out$ev_ISO3s<-DesIsos$actualiso[DesIsos$isos==ISO3]
   # Get in tabGCDB format
-  impies<-Des2tabGCDB(Dessie)
+  impies<-Des2tabGCDB(out)
   # The Desinventar database has many entries per single event, so we take the most recent estimate
   impies<-impies[nrow(impies):1,]#%>%filter(imp_value>0)
   # Find the duplicated elements
@@ -799,11 +805,13 @@ convDessie_Monty<-function(forcer=T, ISO3s=NULL, taby=F){
   # Create the path for the output
   dir.create("./CleanedData/MostlyHazardData/UNDRR",showWarnings = F)
   
-  if(taby) funcy<-function(x) do.call(dplyr::bind_rows,x) else funcy<-MergeMonty
+  if(taby) {funcy<-function(x) do.call(dplyr::bind_rows,Filter(isemptylist, x)) 
+  } else funcy<-function(x) MergeMonty(Filter(isemptylist, x))
   
   fulldes<-funcy(lapply(ISO3s,function(iso){
     # Extract raw Dessie data
-    Dessie<-GetDesinventar_ind(iso)
+    Dessie<-tryCatch(GetDesinventar_ind(iso),error=function(e) NULL)
+    if(is.null(Dessie)) return(list())
     # Get rid of repeated entries
     Dessie%<>%distinct()%>%arrange(ev_sdate)%>%
       filter(!is.na(haz_spec) & !is.na(imp_value) & imp_value>0)
