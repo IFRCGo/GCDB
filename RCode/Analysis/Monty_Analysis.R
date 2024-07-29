@@ -1262,7 +1262,7 @@ freqy<-read.csv("./CleanedData/MostlyImpactData/Monty_FreqTabs.csv")%>%
 freqy$ISO3[freqy$ISO3=="ZAR"]<-"COD"
 # Make the summary from the return period data
 lDREF<-freqy%>%filter(Impact_Type=="People Deaths [count]" &
-                        !Hazard_Code%in%c("DR","TO","TS","SS","VO","VW"))%>%
+                        !Hazard_Code%in%c("TO","TS","SS","VO","VW"))%>%
   group_by(Hazard,Impact_Type,ISO3)%>%
   reframe(Once_in_5_Year=max(Once_in_5_Year,na.rm = T))
 # Where NAs were present in the Once_in_5_Year column
