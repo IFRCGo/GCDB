@@ -204,11 +204,11 @@ write_csv(freqy,"./CleanedData/MostlyImpactData/Monty_FreqTabs_premod.csv")
 write_csv(Seasonality,"./CleanedData/MostlyImpactData/Monty_Seasonality_premod.csv")
 
 lossy%<>%left_join(data.frame(Hazard_Code=names(haz_Ab_lab),
-                              Hazard=unname(haz_Ab_lab)),by="Hazard_Code")
+                              Hazard_Type=unname(haz_Ab_lab)),by="Hazard_Code")
 
 freqy%<>%mutate_at(grep(colnames(freqy),pattern = "Once_in"),function(x) pmax(x,0))
 freqy%<>%left_join(data.frame(Hazard_Code=names(haz_Ab_lab),
-                              Hazard=unname(haz_Ab_lab)),by="Hazard_Code")
+                              Hazard_Type=unname(haz_Ab_lab)),by="Hazard_Code")
 
 freqy %<>%
   # mutate(

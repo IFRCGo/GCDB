@@ -30,6 +30,18 @@ lDREF%<>%left_join(wbdata,by="ISO3")
 unique(lDREF$ISO3[is.na(lDREF$Population)])[is.na(convIso3Country(unique(lDREF$ISO3[is.na(lDREF$Population)])))]
 # Where NAs were present in the Once_in_5_Year column
 lDREF$Once_in_5_Year[is.infinite(lDREF$Once_in_5_Year)]<-0
+
+
+
+
+
+
+# Pair with INFORM data & HDI
+
+
+
+
+
 # Create the per-capita deaths variable
 stop("case_when is economic or not to be divided by population or GDP-PPP per capita")
 lDREF%<>%mutate(Once_in_5_Year_pCap=1e6*Once_in_5_Year/Population)
@@ -43,9 +55,6 @@ outDREF<-lDREF%>%
   arrange(Hazard,desc(Once_in_5_Year_pCap)) %>%
   group_by(Hazard, Impact_Type) %>%
   slice_head(n = 20) %>%
-  # mutate(Once_in_5_Year_pCap=round(case_when(
-  #   Once_in_5_Year_pCap==0 ~ runif(n(),0.5), TRUE ~ Once_in_5_Year_pCap
-  # ),3))%>%
   arrange(Hazard,desc(Once_in_5_Year_pCap)) %>%
   mutate(Ranking=1:20)%>%
   ungroup()%>%
@@ -62,9 +71,6 @@ outDREF<-lDREF%>%
   arrange(Hazard,desc(Once_in_5_Year)) %>%
   group_by(Hazard, Impact_Type) %>%
   slice_head(n = 20) %>%
-  # mutate(Once_in_5_Year=round(case_when(
-  #   Once_in_5_Year==0 ~ runif(n(),0.5), TRUE ~ Once_in_5_Year
-  # ),3))%>%
   arrange(Hazard,desc(Once_in_5_Year)) %>%
   mutate(Ranking=1:20)%>%
   ungroup()%>%
@@ -80,10 +86,3 @@ openxlsx::writeData(wb,
 openxlsx::saveWorkbook(wb,"./CleanedData/MostlyImpactData/EAP-Country-Prioritisation.xlsx",overwrite = T)
 
 
-
-# Pair with country names
-
-
-
-
-# Pair with INFORM data & HDI

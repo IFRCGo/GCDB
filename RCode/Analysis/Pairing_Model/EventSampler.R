@@ -41,7 +41,7 @@ UnbiasedSample<-function(Monty,maxsize=200){
           # Add to the sampler dataframe
           samsam%<>%rbind(minisam)
           # Remove sampled rows from Monty
-          Monty<-anti_join(Monty, minisam)
+          Monty<-suppressMessages(anti_join(Monty, minisam))
           # Check if we've reached maxsize
           if (nrow(samsam) >= maxsize) break
         }
@@ -154,7 +154,7 @@ PairedSample<-function(samply,aMonty,yeardiff=0.25){
                       "targ_lon","targ_lat","targ_hzAb","targ_evISOs",
                       "targ_URL","targ_ID")
   # Bring in the taxonomy file of overlapping hazards and the country centroid distances
-  hazmat<-read.csv("./Taxonomies/Hazard_CrossProbability.csv"); hazmat<-hazmat[,2:nrow(hazmat)]; rownames(hazmat)<-colnames(hazmat); 
+  hazmat<-read.csv("./Taxonomies/Hazard_CrossProbability.csv"); hazmat<-hazmat[,2:ncol(hazmat)]; rownames(hazmat)<-colnames(hazmat); 
   isomat<-openxlsx::read.xlsx("./Taxonomies/Country_DistanceProbability.xlsx"); isomat<-isomat[,2:ncol(isomat)]; isomat<-as.data.frame(apply(isomat,2,as.numeric)); rownames(isomat)<-colnames(isomat);
   # Just in case we have Desinventar database where only one country is present, skip the last sampling routine
   kk<-ifelse(length(unique(aMonty$dest_evISOs))==1 | 
@@ -179,7 +179,7 @@ PairedSample<-function(samply,aMonty,yeardiff=0.25){
     y<-aMonty[aMonty$dest_evsdate>(x$targ_evsdate[1]-365*yeardiff) & 
                 aMonty$dest_evsdate<(x$targ_evsdate[1]+365*yeardiff) &
                 MatHazFilter(aMonty$dest_hzAb,x$targ_hzAb,hazmat) &
-                MatISOFilter(aMonty$dest_evISOs, x$targ_evISOs[1], isomat),]
+                MatISOFilter(x$targ_evISOs[1], aMonty$dest_evISOs, isomat),]
     # Checks
     if(nrow(y)==0) return(data.frame())
     # Check for distance values: default is TRUE if geolocation data is missing
@@ -220,7 +220,7 @@ PairedSample<-function(samply,aMonty,yeardiff=0.25){
     y<-aMonty[aMonty$dest_evsdate>(x$targ_evsdate[1]-365*yeardiff) & 
                 aMonty$dest_evsdate<(x$targ_evsdate[1]+365*yeardiff) &
                 MatHazFilter(aMonty$dest_hzAb,x$targ_hzAb,hazmat) &
-                MatISOFilter(aMonty$dest_evISOs, x$targ_evISOs[1], isomat),]
+                MatISOFilter(x$targ_evISOs[1], aMonty$dest_evISOs, isomat),]
     # Checks
     if(nrow(y)==0) return(data.frame())
     # Identify same country ISO data
@@ -267,7 +267,7 @@ PairedSample<-function(samply,aMonty,yeardiff=0.25){
     y<-aMonty[aMonty$dest_evsdate>(x$targ_evsdate[1]-365*yeardiff) & 
                 aMonty$dest_evsdate<(x$targ_evsdate[1]+365*yeardiff) &
                 MatHazFilter(aMonty$dest_hzAb,x$targ_hzAb,hazmat) &
-                MatISOFilter(aMonty$dest_evISOs, x$targ_evISOs[1], isomat),]
+                MatISOFilter(x$targ_evISOs[1], aMonty$dest_evISOs, isomat),]
     # Checks
     if(nrow(y)==0) return(data.frame())
     # Check for distance values: default is TRUE if geolocation data is missing
@@ -399,6 +399,13 @@ PrepCondISOs<-function(is){
   return(unique(isos))
 }
 
+PrepCondHazs<-function(desthazs,targhazs){
+  # Get the hazard matrix
+  hazmat<-read.csv("./Taxonomies/Hazard_CrossProbability.csv"); hazmat<-hazmat[,2:ncol(hazmat)]; row.names(hazmat)<-colnames(hazmat); 
+  # Check which hazards are in and return the hazard code
+  desthazs[MatHazFilter(desthazs, targhazs, hazmat)]
+}
+
 PrepareMontySampler<-function(Monty){
   # Add the year to the dataset
   if(is.null(Monty$year)) Monty$year<-AsYear(Monty$ev_sdate)
@@ -427,10 +434,11 @@ PrepareMontySampler<-function(Monty){
   # Sort also the longitude and latitude position
   Monty%<>%mutate(longitude=case_when(is.na(haz_lon)~imp_lon, TRUE~haz_lon),
                   latitude=case_when(is.na(haz_lat)~imp_lat, TRUE~haz_lat))
+  # Which hazards are we covering here?
+  hazzies<-colnames(read.csv("./Taxonomies/Hazard_CrossProbability.csv")); hazzies<-hazzies[nchar(hazzies)==2]
   # Modify the hazard types and make sure we only include what we have information on
-  Monty%<>%filter(haz_Ab%in%colnames(read.csv("./Taxonomies/Hazard_CrossProbability.csv")))%>%
-    mutate(haz_Ab=case_when(haz_Ab=="LS_HM" ~ "LS",
-                            TRUE~haz_Ab))
+  Monty%<>%filter(apply(sapply(hazzies, function(hz) {stringi::stri_detect_fixed(haz_Ab, hz)}),1,any))%>%
+    mutate(haz_Ab = gsub("LS_HM|LS_G", "LS", haz_Ab))
   
   return(Monty%>%dplyr::select(m_id, event_ID, database, ev_sdate, ev_fdate, year, 
                                longitude, latitude, haz_Ab, ev_ISO3s, 
@@ -466,32 +474,36 @@ EventSampler<-function(Monty,ssize_db=50){
                min(max(submon$ev_sdate,na.rm=T),max(antimon$ev_sdate,na.rm=T)))
       # Filter out from both dataframes to leave what can be matched, including with ISO3C codes
       submon%<>%filter(ev_sdate>=dates[1] & ev_sdate<=dates[2] &
+                         submon$haz_Ab%in%PrepCondHazs(unique(submon$haz_Ab),unique(antimon$haz_Ab)) &
                          ev_ISO3s%in%PrepCondISOs(antimon$ev_ISO3s)); if(nrow(submon)==0) next
       antimon%<>%filter(ev_sdate>=dates[1] & ev_sdate<=dates[2] &
+                          antimon$haz_Ab%in%PrepCondHazs(unique(antimon$haz_Ab),unique(submon$haz_Ab)) &
                           ev_ISO3s%in%PrepCondISOs(submon$ev_ISO3s)); if(nrow(antimon)==0) next
       # Checks
       if(nrow(submon)==0 | nrow(antimon)==0) next
-      # How many values do we wish to sample?
-      nsam<-min(c(as.integer(ndb*ssize_db),nrow(submon),nrow(antimon)))
       # Skeleton dataframe
       outsam<-data.frame(); mmm<-0
       # Loop over the sampling until we have enough samples
-      while(nrow(outsam)<nsam | nrow(submon)!=0 | mmm<5){
+      while(nrow(outsam)<ssize_db & nrow(submon)!=0 & mmm<5){
         # Set the upper threshold for the number of re-samples
         mmm<-mmm+1
         # Unbiased sample from the target database
-        samply<-UnbiasedSample(submon,min(nsam,nrow(submon)))
+        samply<-UnbiasedSample(submon,min(c(ssize_db,nrow(submon),nrow(antimon))))
         # Sample the destination data
-        outsam<-tryCatch(PairedSample(samply,antimon),error=function(e) return(NULL))
+        tmpsam<-tryCatch(PairedSample(samply,antimon),error=function(e) return(NULL))
         # If an error occurred, leave this one
-        if(is.null(outsam)) break
+        if(is.null(tmpsam)) break
         # If we no longer have anymore data then try again
-        if(nrow(outsam)==0) next
-        # Unbiased sample from the destination database
-        out%<>%rbind(outsam)
+        if(nrow(tmpsam)==0) next
+        # Add to outsam
+        outsam%<>%rbind(tmpsam)
         # Remove the sampled values from the target dataframe
         submon%<>%filter(!m_id%in%outsam$targ_mid)
       }
+      # Trim down when there are too many results
+      if(nrow(outsam)>ssize_db) outsam<-outsam[sample(1:nrow(outsam),size = ssize_db,F),]
+      # Unbiased sample from the destination database
+      out%<>%rbind(outsam)
     }
     # Remove this database from what will next be sampled
     Monty%<>%filter(database!=targ_db)
@@ -566,17 +578,21 @@ EventSampler<-function(Monty,ssize_db=50){
 # saveRDS(Monty,paste0("Analysis_Results/Pairing/Monty_sample_",dbs,"_",Sys.Date(),".RData"))
 
 
-Monty<-readRDS("./Analysis_Results/Pairing/Monty_sample_ADAM-WFP_Atlas-USGS_DFO-UniColumbia_DisasterAWARE-PDC_EMDAT-CRED_GDACS-EC-JRC_GIDD-IDMC_GLIDE-ADRC_GO-DREF-IFRC_GO-EA-IFRC_GO-FBA-IFRC_IDU-IDMC_ReliefWeb-UNOCHA_2024-07-08.RData")
+Monty<-readRDS("Analysis_Results/Pairing/Monty_sample_ADAM-WFP_Atlas-USGS_DFO-UniColumbia_DisasterAWARE-PDC_EMDAT-CRED_GDACS-EC-JRC_GIDD-IDMC_GLIDE-ADRC_GO-DREF-IFRC_GO-EA-IFRC_GO-FBA-IFRC_IDU-IDMC_ReliefWeb-UNOCHA_2024-07-29.RData")
 # Sample the data!
-sam<-EventSampler(Monty,50)
+sam<-EventSampler(Monty,100)
+# Check out the pairing
+sapply(unique(c(sam$targ_db,sam$dest_db)),function(db){table(c(sam$dest_db[(sam$targ_db==db & sam$dest_db!=db)],sam$targ_db[(sam$targ_db!=db & sam$dest_db==db)]))})%>%View()
 # Add the pairing column
 sam%<>%mutate(paired="",description="")
 # Trim down the length of the numerical columns
 sam%<>%mutate_if(is.numeric,round,digits=3)
+# Remove NA database IDs
+sam$targ_ID<-str_replace_all(sam$targ_ID,"NA = NA-NA",""); sam$dest_ID<-str_replace_all(sam$dest_ID,"NA = NA-NA","")
 # Which databases were present for this sample?
 dbs<-paste0(str_replace_all(sort(unique(c(sam$targ_db,sam$dest_db)))," ",""),collapse="_")
 # Write it out
-openxlsx::write.xlsx(sam,paste0("./Analysis_Results/Pairing/Sampled_",dbs,"_",Sys.Date(),".xlsx"))
+openxlsx::write.xlsx(sam,paste0("./Analysis_Results/Pairing/Sampled_",nrow(sam),"N_",dbs,"_",Sys.Date(),".xlsx"))
 
 
 
