@@ -1281,7 +1281,7 @@ checkDateMonty<-function(Monty,filties=F){
   
   if(length(Monty$impact_Data)!=0){
     # Event start and end dates
-    indy<-apply(Monty$impact_Data$temporal,1,function(x) !any(is.na(as.Date(x))))
+    indy<-apply(Monty$impact_Data$temporal[,1:2],1,function(x) !any(is.na(as.Date(x))))
     # Filter them out
     evs<-unique(Monty$impact_Data$ID_linkage$event_ID[indy])
     # Provide a warning about this, including source(s) info
@@ -1295,7 +1295,7 @@ checkDateMonty<-function(Monty,filties=F){
   }
   if(length(Monty$hazard_Data)!=0){
     # Event start and end dates
-    indy<-apply(Monty$hazard_Data$temporal,1,function(x) !any(is.na(as.Date(x))))
+    indy<-apply(Monty$hazard_Data$temporal[,1:2],1,function(x) !any(is.na(as.Date(x))))
     # Filter them out
     evs<-unique(Monty$hazard_Data$ID_linkage$event_ID[indy])
     # Provide a warning about this, including source(s) info
@@ -1309,7 +1309,7 @@ checkDateMonty<-function(Monty,filties=F){
   }
   if(length(Monty$response_Data)!=0){
     # Event start and end dates
-    indy<-apply(Monty$response_Data$temporal,1,function(x) !any(is.na(as.Date(x))))
+    indy<-apply(Monty$response_Data$temporal[,1:2],1,function(x) !any(is.na(as.Date(x))))
     # Filter them out
     evs<-unique(Monty$response_Data$ID_linkage$event_ID[indy])
     # Provide a warning about this, including source(s) info
@@ -1337,7 +1337,10 @@ checkAwkEvsMonty<-function(Monty){
     } else stop("Something went wrong with the external ID variable in the event object")
   }
   # Hazard classifications of the events
-  if (class(Monty$event_Level$allhaz_class)!="list") stop("Something went wrong with the allhaz_class variable in the event object")
+  if (class(Monty$event_Level$allhaz_class)=="data.frame" &
+      all(colnames(Monty$event_Level$allhaz_class)%in%c("all_hazs_Ab","all_hazs_spec"))) {
+    Monty$event_Level$allhaz_class<-lapply(1:nrow(Monty$event_Level$allhaz_class),function(i) Monty$event_Level$allhaz_class[i,])
+  } else if (class(Monty$event_Level$allhaz_class)!="list") stop("Something went wrong with the allhaz_class variable in the event object")
   if(any(sapply(Monty$event_Level$allhaz_class,function(x) is.null(x$all_hazs_Ab)))) {
     if(any(sapply(Monty$event_Level$allhaz_class,function(x) class(x[[1]]))!="character")) {
       Monty$event_Level$allhaz_class<-lapply(Monty$event_Level$allhaz_class, function(x) x[[1]])
@@ -1380,7 +1383,10 @@ checkAwkHazsMonty<-function(Monty){
     } else stop("Something went wrong with the external ID variable in the hazard object")
   }
   # all_hazs_spec
-  if (class(Monty$hazard_Data$hazard_detail$all_hazs_spec)!="list") stop("Something went wrong with the all_hazs_spec variable in the hazard object")
+  if (class(Monty$hazard_Data$hazard_detail$all_hazs_spec)=="data.frame" &
+      all(colnames(Monty$hazard_Data$hazard_detail$all_hazs_spec)%in%c("all_hazs_Ab","all_hazs_spec"))) {
+    Monty$hazard_Data$hazard_detail$all_hazs_spec<-lapply(1:nrow(Monty$hazard_Data$hazard_detail$all_hazs_spec),function(i) Monty$hazard_Data$hazard_detail$all_hazs_spec[i,])
+  } else if (class(Monty$hazard_Data$hazard_detail$all_hazs_spec)!="list") stop("Something went wrong with the all_hazs_spec variable in the hazard object")
   if(any(sapply(Monty$hazard_Data$hazard_detail$all_hazs_spec,function(x) class(x))!="character"))
     stop("Something went wrong with the all_hazs_spec variable in the hazard object")
   
@@ -1445,15 +1451,17 @@ ArrangeMonty<-function(Monty){
 checkHazSpecs<-function(Monty){
   # EVENTS
   Monty$event_Level$allhaz_class%<>%parallel::mclapply(function(x){
-    x$all_hazs_spec<-trimws(c(str_split(x$all_hazs_spec,pattern = ":",simplify = T)))
+    x$all_hazs_spec<-list(trimws(c(str_split(x$all_hazs_spec,pattern = ":",simplify = T))))
     return(x)
   },mc.cores=ncores)
   # HAZARDS
   if(length(Monty$hazard_Data)!=0){
     Monty$hazard_Data$hazard_detail$all_hazs_spec%<>%parallel::mclapply(function(x){
-      trimws(c(str_split(x,pattern = ":",simplify = T)))
+      list(trimws(c(str_split(x,pattern = ":",simplify = T))))
     },mc.cores=ncores)
   }
+  
+  return(Monty)
 }
 
 checkMonty<-function(Monty){

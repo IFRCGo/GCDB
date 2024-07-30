@@ -667,8 +667,7 @@ Des2tabGCDB<-function(Dessie){
                    "imp_lat"="latitude",
                    "gen_location"="location")
   # Add some of the extra details that are Desinventar-specific
-  Dessie%<>%mutate(imp_est_type="esttype_prim",
-                   imp_src_URL=paste0("https://www.desinventar.net/DesInventar/download/DI_export_",imp_ISO3s,".zip"),
+  Dessie%<>%mutate(imp_src_URL=paste0("https://www.desinventar.net/DesInventar/download/DI_export_",imp_ISO3s,".zip"),
                    imp_spat_fileloc=imp_src_URL,
                    imp_spat_URL=imp_src_URL,
                    imp_src_db="Desinventar",
@@ -679,7 +678,9 @@ Des2tabGCDB<-function(Dessie){
                    imp_src_orgtype="orgtypeacad",
                    imp_spat_covcode="spat_polygon",
                    imp_spat_resunits="adminlevel",
-                   imp_spat_crs="EPSG:4326")
+                   imp_spat_crs="EPSG:4326",
+                   imp_credate=imp_sdate,
+                   imp_moddate=NA_character_)
   # Admin level resolution
   Dessie$imp_spat_res<-0
   Dessie$imp_spat_res[!is.na(Dessie$level1)]<-1
@@ -696,6 +697,7 @@ Des2tabGCDB<-function(Dessie){
   # Just in case the ID numbers were not included in the data
   if(is.null(Dessie$ext_ID)) Dessie$ext_ID<-Dessie$imp_ISO3s else 
     Dessie$ext_ID<-paste0(Dessie$imp_ISO3s,"-",Dessie$ext_ID)
+  # In case GLIDE is missing
   # Sort out the IDs and external IDs (GLIDE numbers)
   Dessie$all_ext_IDs<-parallel::mclapply(1:nrow(Dessie), function(i){
     # First extract EM-DAT event ID
@@ -703,8 +705,9 @@ Des2tabGCDB<-function(Dessie){
                     ext_ID_db="Desinventar",
                     ext_ID_org="UNDRR")
     # If no other external IDs are provided, return only the Em-DAT ID
-    if(is.na(Dessie$GLIDE[i])) return(out) else 
-      return(rbind(out,data.frame(ext_ID=Dessie$GLIDE[i],
+    if(is.null(Dessie$GLIDE)) {return(out) 
+    }else if(is.na(Dessie$GLIDE[i])) {return(out) 
+    } else return(rbind(out,data.frame(ext_ID=Dessie$GLIDE[i],
                                   ext_ID_db="GLIDE",
                                   ext_ID_org="ADRC")))
   },mc.cores = ncores)
@@ -806,7 +809,7 @@ convDessie_Monty<-function(forcer=T, ISO3s=NULL, taby=F){
   dir.create("./CleanedData/MostlyHazardData/UNDRR",showWarnings = F)
   
   if(taby) {funcy<-function(x) do.call(dplyr::bind_rows,Filter(isemptylist, x)) 
-  } else funcy<-function(x) MergeMonty(Filter(isemptylist, x))
+  } else funcy<-function(x) MergeMonty(lapply(Filter(isemptylist, x),checkMonty))
   
   fulldes<-funcy(lapply(ISO3s,function(iso){
     # Extract raw Dessie data
@@ -911,14 +914,14 @@ convDessie_Monty<-function(forcer=T, ISO3s=NULL, taby=F){
     
     # Write it out just for keep-sake
     write(jsonlite::toJSON(dMonty,pretty = T,auto_unbox=T,na = 'null'),
-          paste0("./CleanedData/MostlyHazardData/UNDRR/Desinventar_",iso,"_",Sys.Date(),".json"))
+          paste0("./CleanedData/MostlyImpactData/UNDRR/Desinventar_",iso,"_",Sys.Date(),".json"))
     
     return(dMonty)
   }))
   
   # Write it out just for keep-sake
   write(jsonlite::toJSON(dMonty,pretty = T,auto_unbox=T,na = 'null'),
-        paste0("./CleanedData/MostlyHazardData/UNDRR/Desinventar_",Sys.Date(),".json"))
+        paste0("./CleanedData/MostlyImpactData/UNDRR/Desinventar_",Sys.Date(),".json"))
   
   #@@@@@ Checks and validation @@@@@#
   dMonty%<>%checkMonty()
@@ -926,8 +929,13 @@ convDessie_Monty<-function(forcer=T, ISO3s=NULL, taby=F){
   return(dMonty)
 }
 
-
-
+# ISO3s<-names(sort(table(readRDS("./CleanedData/MostlyImpactData/Desinventar/fullDessie_20240729.RData")$ev_ISO3s)))
+# isis<-str_split(list.files("./CleanedData/MostlyHazardData/UNDRR/"),"_",simplify = T)[,2]
+# 
+# ISO3s<-ISO3s[!ISO3s%in%isis]
+# 
+# dMonty<-MergeMonty(lapply(list.files("./CleanedData/MostlyImpactData/UNDRR/",full.names = T),
+#                           function(x) checkMonty(jsonlite::fromJSON(x))))
 
 # 
 # DesIsos<-list.dirs("./RawData/MostlyImpactData/Desinventar/",recursive = F,full.names = F)
