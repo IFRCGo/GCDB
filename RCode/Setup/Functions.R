@@ -27,6 +27,10 @@ ConvDateExcel<-function(dater){
   as.Date(dater, origin = "1899-12-30")
 }
 
+isemptylist<-function(x) {
+  !(is.null(x) || (is.character(x) && x == "") || (is.list(x) && length(x) == 0))
+}
+
 # Used to save output files by date and time for model validation comparison in time
 DateTimeString<-function(){
   return(gsub(gsub(Sys.time(),pattern = " ", replacement = "_"),pattern = ":",replacement = ""))
