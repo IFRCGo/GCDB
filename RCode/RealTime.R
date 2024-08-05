@@ -46,7 +46,8 @@ MinuteMontyEDL<-function(){
 DiffRealTimeMonty<-function(Monty){
   # Get the Monty data to compare to
   cMonty<-GetCurrMonty()
-  # 
+  # Calculate the differences between the two, starting with the events database
+  
   
 }
 
