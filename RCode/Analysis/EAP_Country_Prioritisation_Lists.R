@@ -1,18 +1,13 @@
+# Import (and install, if necessary) all packages
 source("./RCode/Setup/GetPackages.R")
 # Extract the required data - dashboard data from the Monty dashboards
 source("./RCode/Analysis/Monty_Dashboard_Data.R")
 
+# Import underlying data
 freqy<-read.csv("./CleanedData/MostlyImpactData/Monty_FreqTabs.csv")%>%
   dplyr::select(Hazard_Type,Hazard_Code,Impact_Type,Database,ISO3,No_Impacts,Once_in_5_Year)
 freqy$ISO3[freqy$ISO3=="ZAR"]<-"COD"
 # Make the summary from the return period data
-<<<<<<< HEAD
-lDREF<-freqy%>%filter(Impact_Type=="People Deaths [count]")%>%
-  group_by(Hazard_Type,Hazard_Code,Impact_Type,ISO3)%>%
-  reframe(Once_in_5_Year=max(Once_in_5_Year),
-          No_Impacts=No_Impacts[which.max(Once_in_5_Year)],
-          Database=Database[which.max(Once_in_5_Year)])
-=======
 lDREF<-freqy%>%filter(Impact_Type%in%c("People Deaths [count]",
                                        "People Internally Displaced Persons (IDPs) [count]",
                                        "People Homeless [count]",
@@ -35,7 +30,6 @@ lDREF<-freqy%>%filter(Impact_Type%in%c("People Deaths [count]",
                                TRUE ~ Impact_Type))%>%
   group_by(Hazard_Type,Impact_Type,ISO3)%>%
   reframe(Once_in_5_Year=max(Once_in_5_Year,na.rm = T))
->>>>>>> e1169bf6446475ae02de9aab0e32db8a3765e0f2
 # Where NAs were present in the Once_in_5_Year column
 lDREF$Once_in_5_Year[is.infinite(lDREF$Once_in_5_Year)]<-0
 # Create a function to remove the NAs and take the most recent value
@@ -66,35 +60,10 @@ lDREF$Once_in_5_Year[is.infinite(lDREF$Once_in_5_Year)]<-0
 lDREF%<>%mutate(Once_in_5_Year_pCap=case_when(Impact_Type=="Total Cost [USD]" ~ Once_in_5_Year/GDP_PPP,
                                               TRUE ~ 1e6*Once_in_5_Year/Population))
 
-<<<<<<< HEAD
 iftop20<-T
 # Also filter to the required hazards only
 if(iftop20) lDREF%<>%filter(!Hazard_Code%in%c("TO","TS","SS","VO","VW","EQ","WF","ET"))
 
-wb<-openxlsx::createWorkbook()
-# Create all the worksheets
-wb%>%openxlsx::addWorksheet("Deaths")
-wb%>%openxlsx::addWorksheet("Deaths Per Capita")
-# Reduce to the top-20 worst, wrt deaths per capita
-outDREF<-lDREF%>%
-  arrange(Hazard_Type,desc(Once_in_5_Year_pCap)) %>%
-  group_by(Hazard_Type, Impact_Type) %>%
-  arrange(Hazard_Type,desc(Once_in_5_Year_pCap)) %>%
-  mutate(Ranking=1:n())%>%
-  ungroup()%>%
-  dplyr::select(Hazard_Type,Impact_Type,ISO3,Country_Territory,Population,Database,No_Impacts,Once_in_5_Year_pCap,Ranking)%>%
-  setNames(c("Hazard_Type","Impact Type","ISO3 Code","Country/Territory","Population","Database","No. Records","One-in-Five Year Impact, Per Capita [Per Million]","Ranking"))
-# If we're only concentrating on the top 20
-if(iftop20) outDREF%<>%filter(Ranking<=20)
-# Write to Workbook
-openxlsx::writeData(wb, 
-                    sheet="Deaths Per Capita",
-                    outDREF, 
-                    headerStyle=openxlsx::createStyle(textDecoration = "Bold"),
-                    keepNA = F)
-# Reduce to the top-20 worst, wrt deaths
-outDREF<-lDREF%>%
-=======
 # Create the workbook to saveout
 wb<-openxlsx::createWorkbook()
 
@@ -102,24 +71,18 @@ wb<-openxlsx::createWorkbook()
 # Reduce to the top-20 worst, wrt deaths
 outDREF<-lDREF%>%
   filter(Impact_Type!="Total Cost [USD]")%>%
->>>>>>> e1169bf6446475ae02de9aab0e32db8a3765e0f2
   arrange(Hazard_Type,desc(Once_in_5_Year)) %>%
   group_by(Hazard_Type, Impact_Type) %>%
   arrange(Hazard_Type,desc(Once_in_5_Year)) %>%
   mutate(Ranking=1:n())%>%
   ungroup()%>%
-<<<<<<< HEAD
   dplyr::select(Hazard_Type,Impact_Type,ISO3,Country_Territory,Population,Database,No_Impacts,Once_in_5_Year,Ranking)%>%
-  setNames(c("Hazard_Type","Impact Type","ISO3 Code","Country/Territory","Population","Database","No. Records","One-in-Five Year Impact","Ranking"))
+  setNames(c("Hazard Type","Impact Type","ISO3 Code","Country/Territory","Population","Database","No. Records","One-in-Five Year Impact","Ranking"))
 # If we're only concentrating on the top 20
 if(iftop20) outDREF%<>%filter(Ranking<=20)
-=======
-  dplyr::select(Hazard_Type,Impact_Type,ISO3,Country_Territory,Population,Once_in_5_Year,Ranking)%>%
-  setNames(c("Hazard Type","Impact Type","ISO3 Code","Country/Territory","Population","One-in-Five Year Impact","Ranking"))
 
 # Deaths
 wb%>%openxlsx::addWorksheet("Deaths")
->>>>>>> e1169bf6446475ae02de9aab0e32db8a3765e0f2
 # Write to Workbook
 openxlsx::writeData(wb, 
                     sheet="Deaths",

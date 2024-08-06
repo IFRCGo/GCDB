@@ -1382,7 +1382,21 @@ checkAwkHazsMonty<-function(Monty){
       })
     } else stop("Something went wrong with the external ID variable in the hazard object")
   }
+  
+  
+  
+  
+  
+  
+  
   # all_hazs_spec
+  
+  
+  
+  
+  
+  
+  # Check if its a dataframe or not
   if (class(Monty$hazard_Data$hazard_detail$all_hazs_spec)=="data.frame" &
       all(colnames(Monty$hazard_Data$hazard_detail$all_hazs_spec)%in%c("all_hazs_Ab","all_hazs_spec"))) {
     Monty$hazard_Data$hazard_detail$all_hazs_spec<-lapply(1:nrow(Monty$hazard_Data$hazard_detail$all_hazs_spec),function(i) Monty$hazard_Data$hazard_detail$all_hazs_spec[i,])
