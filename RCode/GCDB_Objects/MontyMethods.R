@@ -179,11 +179,11 @@ Add_HazTax_Monty<-function(dframe){
   output<-dframe%>%dplyr::select(event_ID,haz_maxvalue,haz_maxunits,haz_est_type)%>%distinct()
   # Extract all of the haz_Ab codes and output a list
   output$all_hazs_Ab<-parallel::mclapply(output$event_ID,function(ev){
-    all_hazs_Ab=c(gsub(" ", "",str_split(dframe$haz_Ab[dframe$event_ID==ev],":",simplify = T)))
+    all_hazs_Ab=as.character(unlist(gsub(" ", "",str_split(dframe$haz_Ab[dframe$event_ID==ev],":",simplify = T))))
   },mc.cores=ncores)
   # Extract all of the haz_spec codes and output a list
   output$all_hazs_spec<-parallel::mclapply(output$event_ID,function(ev){
-    all_hazs_spec=c(gsub(" ", "",str_split(dframe$haz_spec[dframe$event_ID==ev],":",simplify = T)))
+    all_hazs_spec=as.character(unlist(gsub(" ", "",str_split(dframe$haz_spec[dframe$event_ID==ev],":",simplify = T))))
   },mc.cores=ncores)
   
   return(output%>%dplyr::select(-event_ID))
@@ -1387,8 +1387,12 @@ checkAwkHazsMonty<-function(Monty){
       all(colnames(Monty$hazard_Data$hazard_detail$all_hazs_spec)%in%c("all_hazs_Ab","all_hazs_spec"))) {
     Monty$hazard_Data$hazard_detail$all_hazs_spec<-lapply(1:nrow(Monty$hazard_Data$hazard_detail$all_hazs_spec),function(i) Monty$hazard_Data$hazard_detail$all_hazs_spec[i,])
   } else if (class(Monty$hazard_Data$hazard_detail$all_hazs_spec)!="list") stop("Something went wrong with the all_hazs_spec variable in the hazard object")
-  if(any(sapply(Monty$hazard_Data$hazard_detail$all_hazs_spec,function(x) class(x))!="character"))
-    stop("Something went wrong with the all_hazs_spec variable in the hazard object")
+  if(any(sapply(Monty$hazard_Data$hazard_detail$all_hazs_spec,function(x) class(x))!="character")){
+    if(all(sapply(Monty$hazard_Data$hazard_detail$all_hazs_spec,function(x) class(x))=="list") &
+       all(sapply(Monty$hazard_Data$hazard_detail$all_hazs_spec,function(x) class(x[[1]]))=="character")){
+      Monty$hazard_Data$hazard_detail$all_hazs_spec<-lapply(Monty$hazard_Data$hazard_detail$all_hazs_spec,function(x) unlist(x))
+    } else stop("Something went wrong with the all_hazs_spec variable in the hazard object")
+  }
   
   return(Monty)
 }

@@ -119,7 +119,7 @@ hazcov<-data.frame()
 for(haz in names(haz_Ab_lab)){
   hazcov%<>%rbind(Monty%>%filter(grepl(haz,haz_Ab_grp))%>%
                     group_by(Database)%>%
-                    reframe(Hazard=haz,coverage=as.numeric(max(year) - min(year)))
+                    reframe(Hazard_Type=haz,coverage=as.numeric(max(year) - min(year)))
   )
 }
 
@@ -137,7 +137,7 @@ for(haz in names(haz_Ab_lab)){
     lossy%<>%rbind(subMon%>%arrange(imp_sdate)%>%
                      group_by(Database,Impact)%>%
                      reframe(ISO3=iso,haz_Ab=haz,
-                             coverage=max(unique(hazcov$coverage[hazcov$Hazard==haz & 
+                             coverage=max(unique(hazcov$coverage[hazcov$Hazard_Type==haz & 
                                                                    hazcov$Database==unique(Database)])),
                              impact_value=sort(imp_value),
                              N=n():1,
@@ -183,11 +183,10 @@ for(haz in names(haz_Ab_lab)){
              Evs=zoo::rollapply(Evs,3,function(x) mean(x,na.rm = T),align='center',fill=NA),
              AMI=zoo::rollapply(AMI,3,function(x) mean(x,na.rm = T),align='center',fill=NA))%>%
       filter(Month>=1 & Month<=12)%>%
-      setNames(c("Database","Impact_Type","ISO3","Hazard_Type","Hazard_Code",
-                 "Month","No_Impacts","Average_Monthly_Impact"))
+      setNames(c("Database","Impact_Type","Month","No_Impacts",
+                 "Average_Monthly_Impact","ISO3","Hazard_Type","Hazard_Code"))
     
     Seasonality%<>%rbind(seasy)
-    
   }
 }
 
