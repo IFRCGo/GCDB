@@ -48,7 +48,12 @@ Monty%<>%filter(imp_value!=0 & !is.na(haz_spec) & !is.na(imp_value))
 
 # saveRDS(Monty,"./CleanedData/Monty_2024-06-11_tab.RData")
 
-# Monty<-readRDS("./CleanedData/Monty_2024-06-11_tab.RData")
+
+
+
+
+
+Monty<-readRDS("./CleanedData/Monty_2024-07-29_tab.RData")
 
 Monty$year<-AsYear(Monty$imp_sdate)
 Monty%<>%filter(!is.na(year))
@@ -84,6 +89,7 @@ Monty%<>%left_join(units_info,by=join_by("imp_units"=="unit_code"))
 Monty%<>%mutate(Impact=paste0(Exposure_Type," ",Impact_Type," [",Impact_Unit,"]"))
 # Database
 Monty%<>%mutate(Database=paste0(imp_src_db," - ",imp_src_org))
+Monty$Database[Monty$imp_src_db=="Desinventar"]<-paste0(Monty$Database[Monty$imp_src_db=="Desinventar"]," - ",Monty$imp_ISO3s[Monty$imp_src_db=="Desinventar"])
 # Neaten up some names
 Monty$Impact<-str_replace_all(str_replace_all(str_replace_all(str_replace_all(Monty$Impact," \\(All Demographics\\)",""),
                                                               " \\(Cost\\)",""),"Inflation-Adjusted","Inf-Adj"),"\\(Unspecified-Inflation-Adjustment\\)","(Unspec. Inf-Adj)")
@@ -190,6 +196,10 @@ for(haz in names(haz_Ab_lab)){
   }
 }
 
+lossy$Database[grepl("Desinventar",lossy$Database)]<-"Desinventar - UNDRR"
+freqy$Database[grepl("Desinventar",freqy$Database)]<-"Desinventar - UNDRR"
+Seasonality$Database[grepl("Desinventar",Seasonality$Database)]<-"Desinventar - UNDRR"
+
 lossy$Impact_Value[is.infinite(lossy$Impact_Value)]<-NA_real_
 freqy%<>%mutate_if(is.numeric,function(x) {if(any(is.infinite(x))) x[is.infinite(x)]<-NA_real_; return(x)})
 Seasonality$Average_Monthly_Impact[is.infinite(Seasonality$Average_Monthly_Impact)]<-NA_real_
@@ -230,3 +240,29 @@ freqy %<>%
 write_csv(lossy,"./CleanedData/MostlyImpactData/Monty_Loss.csv")
 write_csv(freqy,"./CleanedData/MostlyImpactData/Monty_FreqTabs.csv")
 write_csv(Seasonality,"./CleanedData/MostlyImpactData/Monty_Seasonality.csv")
+
+#@@@@@@@@@@@@@@@@@@@@@@@ SORT OUT THE CONFIDENCE INTERVALS @@@@@@@@@@@@@@@@@@@@@@@@@@@#
+# Left join the number of years of each database covering each hazard just to check
+5*as.numeric(prop.test(1, 30, conf.level=0.95, correct = FALSE)$conf.int)
+
+stop("Need to modify Desinventar range to be country-wise and also include the end date of the range")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
