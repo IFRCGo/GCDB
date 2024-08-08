@@ -1,4 +1,4 @@
-dir<-directory<-paste0(getwd(),"/")
+directory<-paste0(getwd(),"/")
 # Prep work
 dir.create("./RawData/tmp",showWarnings = F,recursive = T); dir.create("./CleanedData",showWarnings = F,recursive = T)
 
@@ -6,30 +6,33 @@ GetSourceFiles<-function(packred){
   
   #@@@@@ SOURCE FILES @@@@@#
   # Basic functions:
-  source(paste0(dir,'RCode/Setup/Functions.R'))
-  source(paste0(dir,'RCode/Setup/GetEnv.R'))
+  source(paste0(directory,'RCode/Setup/Functions.R'))
+  if(!file.exists(paste0(directory,'RCode/Setup/GetEnv.R'))) 
+    file.copy(paste0(directory,'RCode/Setup/GetEnv_Example.R'),
+              paste0(directory,'RCode/Setup/GetEnv.R'),overwrite = F)
+  source(paste0(directory,'RCode/Setup/GetEnv.R'))
   # Objects
-  source(paste0(dir,'RCode/GCDB_Objects/GCDB_table.R'))
-  source(paste0(dir,'RCode/GCDB_Objects/MontyMethods.R'))
+  source(paste0(directory,'RCode/GCDB_Objects/GCDB_table.R'))
+  source(paste0(directory,'RCode/GCDB_Objects/MontyMethods.R'))
+  source(paste0(directory,'RCode/GCDB_Objects/CheckMonty.R'))
   # Impact related:
-  source(paste0(dir,'RCode/MainlyImpactData/GetDesinventar.R'))
-  source(paste0(dir,'RCode/MainlyImpactData/GetEMDAT.R'))
-  source(paste0(dir,'RCode/MainlyImpactData/GetGIDD.R'))
-  source(paste0(dir,'RCode/MainlyImpactData/GetReliefWeb.R'))
-  source(paste0(dir,'RCode/MainlyImpactData/GetIFRCappeal.R'))
+  source(paste0(directory,'RCode/MainlyImpactData/GetDesinventar.R'))
+  source(paste0(directory,'RCode/MainlyImpactData/GetEMDAT.R'))
+  source(paste0(directory,'RCode/MainlyImpactData/GetGIDD.R'))
+  source(paste0(directory,'RCode/MainlyImpactData/GetReliefWeb.R'))
+  source(paste0(directory,'RCode/MainlyImpactData/GetIFRCappeal.R'))
   # Hazard related:
-  source(paste0(dir,'RCode/MainlyHazardData/GetGDACS.R'))
-  source(paste0(dir,'RCode/MainlyHazardData/GetDFO.R'))
-  source(paste0(dir,'RCode/MainlyHazardData/GetUSGS.R'))
-  # source(paste0(dir,'RCode/MainlyHazardData/GetDisaster.R'))
-  source(paste0(dir,'RCode/MainlyHazardData/GetGLIDEnumber.R'))
-  source(paste0(dir,'RCode/MainlyHazardData/GetGFD.R'))
+  source(paste0(directory,'RCode/MainlyHazardData/GetGDACS.R'))
+  source(paste0(directory,'RCode/MainlyHazardData/GetDFO.R'))
+  source(paste0(directory,'RCode/MainlyHazardData/GetUSGS.R'))
+  source(paste0(directory,'RCode/MainlyHazardData/GetGLIDEnumber.R'))
+  source(paste0(directory,'RCode/MainlyHazardData/GetGFD.R'))
   # Admin boundaries & Infrastructure related:
-  source(paste0(dir,'RCode/Spatio-Infra-Political/GetOSM.R'))
-  source(paste0(dir,'RCode/Spatio-Infra-Political/GetAdminBoundaries.R'))
+  source(paste0(directory,'RCode/Spatio-Infra-Political/GetOSM.R'))
+  source(paste0(directory,'RCode/Spatio-Infra-Political/GetAdminBoundaries.R'))
   # Other:
-  source(paste0(dir,'RCode/Other/GetWorldBank.R'))
-  # source(paste0(dir,'RCode/Other/GetGoogleEarthEngineData.R'))
+  source(paste0(directory,'RCode/Other/GetWorldBank.R'))
+  # source(paste0(directory,'RCode/Other/GetGoogleEarthEngineData.R'))
 }
 
 LoadLibraries<-function(packred){
@@ -107,14 +110,14 @@ GetPackages<-function(packred){
 
 GetPackages(packred=T)
 
-# Delimiter used for GCDB objects, all CSV files, etc
-dely<-"!@!"
+# How does the Monty delimit some of the data variables, such as ISO3C codes?
+delim<-"  :  "
 
 # Retrieve the most up-to-date version of the hazard & impact taxonomies
 
 
 # # Check the structure of the repository
-# filers<-c(paste0(dir,"Plots"))
+# filers<-c(paste0(directory,"Plots"))
 # # Make sure these files exist
 # tmp<-vapply(filers, function(fff) dir.create(fff, showWarnings = FALSE),numeric(1)) ; rm(tmp)
 

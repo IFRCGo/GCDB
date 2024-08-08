@@ -360,7 +360,7 @@ CleanEMDAT<-function(EMDAT){
   # Melt the columns and apply the impact categorisation
   EMDAT%<>%ImpLabs(nomDB = "EMDAT")
   # Now get rid of the extra columns of data
-  EMDAT%<>%dplyr::select(-which(!colnames(EMDAT)%in%names(col_tabGCDB)))
+  EMDAT%<>%dplyr::select(any_of(MontyJSONnames()))
   # Create an impact-specific ID
   EMDAT%<>%distinct()%>%GetGCDB_impID()
   # Make sure to remove all NA impact estimates
@@ -444,7 +444,7 @@ CleanEMDAT_old<-function(EMDAT){
   # Melt the columns and apply the impact categorisation
   EMDAT%<>%ImpLabs(nomDB = "EMDAT")
   # Now get rid of the extra columns of data
-  EMDAT%<>%dplyr::select(-which(!colnames(EMDAT)%in%names(col_tabGCDB)))
+  EMDAT%<>%dplyr::select(any_of(MontyJSONnames()))
   # Create an impact-specific ID
   EMDAT%<>%GetGCDB_impID()
   # Make sure to remove all NA impact estimates

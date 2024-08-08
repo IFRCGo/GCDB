@@ -1,7 +1,9 @@
 # Import (and install, if necessary) all packages
 source("./RCode/Setup/GetPackages.R")
+
 # Extract the required data - dashboard data from the Monty dashboards
-# source("./RCode/Analysis/Monty_Dashboard_Data.R")
+if(!file.exists("./CleanedData/MostlyImpactData/Monty_FreqTabs.csv")) 
+  source("./RCode/Analysis/Monty_Dashboard_Data.R")
 
 # For the DREF-team to specifically focus on certain hazards
 iftop20<-T
