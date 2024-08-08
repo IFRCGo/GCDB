@@ -483,7 +483,7 @@ WrangleDessie<-function(iso3,forcer=T){
 
 DesHazards<-function(Dessie){
   # Extract the list of translated Desinventar hazards
-  colConv<-openxlsx::read.xlsx("./Taxonomies/MostlyImpactData/Desinventar_HIP.xlsx")
+  colConv<-openxlsx::read.xlsx("./Taxonomies/ConvertFromDatabases/Desinventar_HIP.xlsx")
   # Make sure to avoid missing out!
   colConv$event%<>%str_to_lower()
   # Also check for duplicates
@@ -519,7 +519,7 @@ SpitDesTrans<-function(Dessie){
     data.frame(ev_ISO3s=out$ev_ISO3s[i],event=out$event[i],event_en=trtr$translation,src_lang=src_lang)
   }))
   # Save it out
-  openxlsx::write.xlsx(colConv,"./Taxonomies/MostlyImpactData/Desinventar_HIP.xlsx")
+  openxlsx::write.xlsx(colConv,"./Taxonomies/ConvertFromDatabases/Desinventar_HIP.xlsx")
   
   return(colConv)
 }
@@ -643,7 +643,7 @@ PostModTransies<-function(colConv){
   colConv$haz_spec[colConv$haz_Ab=="TC:FL"]<-"MH0057:MH0059:MH0004:MH0005:MH0006:MH0007:MH0008:MH0012"
   
   # Save it out
-  openxlsx::write.xlsx(colConv,"./Taxonomies/MostlyImpactData/Desinventar_HIP.xlsx")
+  openxlsx::write.xlsx(colConv,"./Taxonomies/ConvertFromDatabases/Desinventar_HIP.xlsx")
   
   return(colConv)
 }

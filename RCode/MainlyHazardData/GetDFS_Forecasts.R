@@ -276,7 +276,7 @@ Monty<-dplyr::bind_rows(adam,gdacs)
 
 
 PDChazards<-function(pdc){
-  colConv<-openxlsx::read.xlsx("./Taxonomies/MostlyImpactData/PDC-HIP.xlsx")
+  colConv<-openxlsx::read.xlsx("./Taxonomies/ConvertFromDatabases/PDC-HIP.xlsx")
   # Reduce the translated vector and merge
   pdc%<>%left_join(colConv,by = c("haz_Ab"),
                      relationship="many-to-one")

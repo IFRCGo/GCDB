@@ -85,7 +85,7 @@ PostModGO<-function(colConv){
   colConv$haz_potlink[colConv$haz_Ab=="EQ"]<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
   
   # Save it out
-  openxlsx::write.xlsx(colConv,"./Taxonomies/MostlyImpactData/IFRC_HIP.xlsx")
+  openxlsx::write.xlsx(colConv,"./Taxonomies/ConvertFromDatabases/IFRC_HIP.xlsx")
   
   return(colConv)
 }
@@ -93,7 +93,7 @@ PostModGO<-function(colConv){
 GOHazards<-function(impies){
   
   # Read in the EMDAT-HIPS taxonomy conversion dataframe
-  colConv<-openxlsx::read.xlsx("./Taxonomies/MostlyImpactData/IFRC_HIP.xlsx")
+  colConv<-openxlsx::read.xlsx("./Taxonomies/ConvertFromDatabases/IFRC_HIP.xlsx")
   # Make sure spelling is a little less error prone
   colConv$dtype%<>%str_to_lower();impies$dtype%<>%str_to_lower()
   # Reduce the translated vector and merge

@@ -269,7 +269,7 @@ FilterGDACS<-function(haz=NULL,syear=2016L,fyear=NULL,list_GDACS=NULL,red=F){
 }
 
 GDACSHazards<-function(GDACS){
-  colConv<-openxlsx::read.xlsx("./Taxonomies/MostlyImpactData/GDACS-HIP.xlsx")
+  colConv<-openxlsx::read.xlsx("./Taxonomies/ConvertFromDatabases/GDACS-HIP.xlsx")
   # Reduce the translated vector and merge
   GDACS%<>%left_join(colConv,by = c("haz_Ab"),
                      relationship="many-to-one")

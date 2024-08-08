@@ -1,6 +1,6 @@
 GLIDEHazards<-function(GLIDE){
   # Read in the GLIDE-HIPS taxonomy conversion dataframe
-  colConv<-openxlsx::read.xlsx("./Taxonomies/MostlyImpactData/GLIDE-HIP.xlsx")
+  colConv<-openxlsx::read.xlsx("./Taxonomies/ConvertFromDatabases/GLIDE-HIP.xlsx")
   # Reduce the translated vector and merge
   GLIDE%>%left_join(colConv,by = c("haz_Ab"),
                      relationship="many-to-one")

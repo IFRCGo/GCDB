@@ -1,5 +1,5 @@
 RWebHazards<-function(rweb){
-  colConv<-openxlsx::read.xlsx("./Taxonomies/MostlyImpactData/ReliefWeb_HIP.xlsx")
+  colConv<-openxlsx::read.xlsx("./Taxonomies/ConvertFromDatabases/ReliefWeb_HIP.xlsx")
   # Reduce the translated vector and merge
   rweb%<>%left_join(colConv,by = c("haz_Ab"),
                      relationship="many-to-one")

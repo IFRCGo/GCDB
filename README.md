@@ -114,6 +114,8 @@ For this final section, an explanation is provided on how to extract future data
 
 ### Hazard taxonomy classification
 
+In order to convert the hazard taxonomy from one organisations database to Montys,  
+
 ### Impact taxonomy classification
 
 ### Converting to the Monty object data model

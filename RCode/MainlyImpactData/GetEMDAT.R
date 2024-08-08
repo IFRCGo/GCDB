@@ -51,7 +51,7 @@ EMDATHazards_API<-function(EMDAT){
   EMDAT$type%<>%str_to_lower()
   EMDAT$subtype%<>%str_to_lower()
   # Read in the EMDAT-HIPS taxonomy conversion dataframe
-  colConv<-openxlsx::read.xlsx("./Taxonomies/MostlyImpactData/EMDAT_HIP_API.xlsx")
+  colConv<-openxlsx::read.xlsx("./Taxonomies/ConvertFromDatabases/EMDAT_HIP_API.xlsx")
   colConv$subgroup%<>%str_to_lower()
   colConv$type%<>%str_to_lower()
   colConv$subtype%<>%str_to_lower()
@@ -67,7 +67,7 @@ EMDATHazards<-function(EMDAT){
   EMDAT$Disaster.Type%<>%str_to_lower()
   EMDAT$Disaster.Subtype%<>%str_to_lower()
   # Read in the EMDAT-HIPS taxonomy conversion dataframe
-  colConv<-openxlsx::read.xlsx("./Taxonomies/MostlyImpactData/EMDAT_HIP_new.xlsx")
+  colConv<-openxlsx::read.xlsx("./Taxonomies/ConvertFromDatabases/EMDAT_HIP_new.xlsx")
   colConv$Disaster.Subgroup%<>%str_to_lower()
   colConv$Disaster.Type%<>%str_to_lower()
   colConv$Disaster.Subtype%<>%str_to_lower()
@@ -100,7 +100,7 @@ EMDATHazards_old<-function(EMDAT){
   EMDAT$Disaster.Type%<>%str_to_lower()
   EMDAT$Disaster.Subtype%<>%str_to_lower()
   # Read in the EMDAT-HIPS taxonomy conversion dataframe
-  colConv<-openxlsx::read.xlsx("./Taxonomies/MostlyImpactData/EMDAT_HIP.xlsx")
+  colConv<-openxlsx::read.xlsx("./Taxonomies/ConvertFromDatabases/EMDAT_HIP.xlsx")
   colConv$Disaster.Subgroup%<>%str_to_lower()
   colConv$Disaster.Type%<>%str_to_lower()
   colConv$Disaster.Subtype%<>%str_to_lower()
@@ -738,7 +738,7 @@ GetEMDAT<-function(new_format=T){
 #   colConv$haz_potlink[colConv$hazEM=="EQ"]<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
 #   
 #   # Save it out
-#   openxlsx::write.xlsx(colConv,"./Taxonomies/MostlyImpactData/EMDAT_HIP.xlsx")
+#   openxlsx::write.xlsx(colConv,"./Taxonomies/ConvertFromDatabases/EMDAT_HIP.xlsx")
 #   
 #   return(colConv)
 # }

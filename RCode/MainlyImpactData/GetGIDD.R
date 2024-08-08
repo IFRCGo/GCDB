@@ -14,7 +14,7 @@ GIDDHazards<-function(GIDD){
   GIDD$HazardType%<>%str_to_lower()
   GIDD$HazardSubType%<>%str_to_lower()
   # Read in the GIDD-HIPS taxonomy conversion dataframe
-  colConv<-openxlsx::read.xlsx("./Taxonomies/MostlyImpactData/GIDD-HIP.xlsx")
+  colConv<-openxlsx::read.xlsx("./Taxonomies/ConvertFromDatabases/GIDD-HIP.xlsx")
   colConv$HazardCategory%<>%str_to_lower()
   colConv$HazardType%<>%str_to_lower()
   colConv$HazardSubType%<>%str_to_lower()
@@ -471,7 +471,7 @@ convIDU_Monty<-function(taby=F){
 #   colConv$haz_potlink[colConv$hazG=="EQ"]<-paste0(c("GH0003","GH0004","GH0005","GH0006","GH0007"),collapse = ",")
 #   
 #   # Save it out
-#   openxlsx::write.xlsx(colConv,"./Taxonomies/MostlyImpactData/GIDD-HIP.xlsx")
+#   openxlsx::write.xlsx(colConv,"./Taxonomies/ConvertFromDatabases/GIDD-HIP.xlsx")
 #   
 #   return(colConv)
 # }
