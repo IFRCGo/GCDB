@@ -114,12 +114,15 @@ For this final section, an explanation is provided on how to extract future data
 
 ### Hazard taxonomy classification
 
-In order to convert the hazard taxonomy from one organisations database to Montys,  
+In order to convert the hazard taxonomy from one organisations database to Montys, this conversion takes place using database-specific excel spreadsheets that are located in the folder `Taxonomies/ConvertFromDatabases/`. There can be many columns to the table in each of these spreadsheets, but there must be the following Monty-specific hazard taxonomy layers: *haz_Ab, haz_type, haz_cluster* and *haz_spec*. These are used to essentially do a left-join of the spreadsheet to the Monty data. For each unique taxonomy classification of the external database, the specific hazards from the [UNDRR-ISC Hazard Information Profiles (HIPs)](https://www.undrr.org/publication/hazard-information-profiles-hips) must be classified to it. Note that there are almost always multiple HIP specific hazards associated to a single hazard taxonomy of an external database.
 
 ### Impact taxonomy classification
 
+In order to convert the impact taxonomy from one organisations database to Monty, this conversion takes place using an excel spreadsheet that covers all databases: `Taxonomies/ConvertFromDatabases/ConvertImpact_Taxonomy.xlsx`. This file, similar to the conversion for the hazard taxonomies, has a line for each impact record that is labelled in the external database and is then converted with respect to the Monty exposure taxonomy, the impact type taxonomy and the impact unit taxonomy. All of these taxonomies can be found in the file `ImpactInformationProfiles.xlsx`.
+
 ### Converting to the Monty object data model
 
+The first thing that is required is to transform the metadata of the external database. This is mainly just renaming the variables in the dataframe to match with what it should correspond to the different elements in the Monty. Note that some variables that are located in different dataframes in the Monty are actually nested lists which need to be properly handled when you export to a tabular (e.g. Excel) format. An example of this is the ev_ISO3s, imp_ISO3s and haz_ISO3s variables of the *event_info*, *impact_data* and *hazard_data* elements of the Monty object, respectively. Each disaster record can have multiple countries/territories associated to it, hence the requirement for nested lists. One tricky thing to get around is the inclusion of external IDs that we want to include in the data transferred to the end user. For example, a single entry in GDACS may also refer to a DFO ID and a GLIDE number, which would result in three external IDs (including the GDACS ID). Please use-case examples of the functions *Add_hazIDlink_Monty* and *Add_impIDlink_Monty* for some of the databases already wrangled to see how the external ID is handled for hazard and impact data.
 
 
 
