@@ -12,15 +12,15 @@ Monty, an abbreviated name for the Montandon - Global Crisis Data Bank, is a dat
 
 Here we describe the layout of the code. The code base is located in the folder `RCode`. Inside this folder, you will find the following folders and files:
 
-  - `Analysis`: this folder contains the scripts used to generate the analyses of the Monty database, including for the Monty dashboards and the World Disaster Report 2024.
+  - `Analysis:` this folder contains the scripts used to generate the analyses of the Monty database, including for the Monty dashboards and the World Disaster Report 2024.
   - `GCDB_Objects:` all scripts related to handling Monty objects can be found here. This includes transforming dataframes to the Monty data model and merging different Monty objects, for example.
   - `MainlyHazardData:` here is where we find the scripts that focus on extracting the hazard data (or, at least, data that speaks more about hazards than impacts). For example, the GDACS database, which also provides the GDACS-alertscore which is based on predicting mortality (thus also impact-related data).
   - `MainlyImpactData:` here is where we find the scripts that focus on extracting the impact data (or, at least, data that speaks more about impacts than hazards). For example, the EM-DAT database.
   - `Other:` this folder contains a collection of miscellaneous scripts that may or may not be needed anymore, but were at least very important in the development of the Monty data model and structure. For example, a script that extracts all of the currency codes via the ISO website.
   - `Setup:` this folder provides everything you need in order to get setup with using Monty, including installing all of the necessary R packages.
   - `Spatio-Infra-Political:` this folder contains scripts that access and download data related to spatio-political and spatio-infrastructural information, such as poltical administrative boundary datasets. Note that lots of these are required because different databases use different administrative boundaries.
-  - `Main.R:` this file is where the principal code is that extracts the foundation layer of the Monty database. This file was used to get all of the historical data from all of the different databases, harmonise it and then build the first version of the Monty database.
-  - `RealTime.R:` this file is where new and updated records are imported from the different databases, transformed and then pushed/merged onto the Monty database.
+  - (File) `Main.R:` this file is where the principal code is that extracts the foundation layer of the Monty database. This file was used to get all of the historical data from all of the different databases, harmonise it and then build the first version of the Monty database.
+  - (File) `RealTime.R:` this file is where new and updated records are imported from the different databases, transformed and then pushed/merged onto the Monty database.
 
 More information about each folder and files is detailed below.
 
