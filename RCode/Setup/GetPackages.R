@@ -12,7 +12,6 @@ GetSourceFiles<-function(packred){
               paste0(directory,'RCode/Setup/GetEnv.R'),overwrite = F)
   source(paste0(directory,'RCode/Setup/GetEnv.R'))
   # Objects
-  source(paste0(directory,'RCode/GCDB_Objects/GCDB_table.R'))
   source(paste0(directory,'RCode/GCDB_Objects/MontyMethods.R'))
   source(paste0(directory,'RCode/GCDB_Objects/CheckMonty.R'))
   # Impact related:
