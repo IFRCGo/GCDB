@@ -148,12 +148,12 @@ Add_EvTemp_Monty<-function(dframe){
 
 Add_EvHazTax_Monty<-function(dframe){
   # Extract all of the haz_spec codes and output a list
-  out<-parallel::mclapply(unique(dframe$event_ID),function(ev){
+  parallel::mclapply(unique(dframe$event_ID),function(ev){
     # indices
     indy<-which(dframe$event_ID==ev)
     
-    return(list(all_hazs_Ab=unique(c(str_split(dframe$haz_Ab[indy],delim,simplify = T))),
-                all_hazs_spec=unique(c(str_split(dframe$haz_spec[indy],delim,simplify = T)))))
+    return(list(all_hazs_Ab=str_replace_all(unique(as.character(unname(unlist(str_split(dframe$haz_Ab[indy],":",simplify = T)))))," ",""),
+                all_hazs_spec=str_replace_all(unique(as.character(unname(unlist(str_split(dframe$haz_spec[indy],":",simplify = T)))))," ","")))
   },mc.cores=ncores)
 }
 
@@ -179,11 +179,11 @@ Add_HazTax_Monty<-function(dframe){
   output<-dframe%>%dplyr::select(event_ID,haz_maxvalue,haz_maxunits,haz_est_type)%>%distinct()
   # Extract all of the haz_Ab codes and output a list
   output$all_hazs_Ab<-parallel::mclapply(output$event_ID,function(ev){
-    all_hazs_Ab=as.character(unlist(gsub(" ", "",str_split(dframe$haz_Ab[dframe$event_ID==ev],":",simplify = T))))
+    as.character(unlist(gsub(" ", "",str_split(dframe$haz_Ab[dframe$event_ID==ev],":",simplify = T))))
   },mc.cores=ncores)
   # Extract all of the haz_spec codes and output a list
   output$all_hazs_spec<-parallel::mclapply(output$event_ID,function(ev){
-    all_hazs_spec=as.character(unlist(gsub(" ", "",str_split(dframe$haz_spec[dframe$event_ID==ev],":",simplify = T))))
+    as.character(unlist(gsub(" ", "",str_split(dframe$haz_spec[dframe$event_ID==ev],":",simplify = T))))
   },mc.cores=ncores)
   
   return(output%>%dplyr::select(-event_ID))
@@ -564,7 +564,7 @@ MFilter_Impacts<-function(Monty,indy,allobjs=F){
   source<-Monty$impact_Data$source[indy,]
   impact_detail<-Monty$impact_Data$impact_detail[indy,]
   temporal<-Monty$impact_Data$temporal[indy,]
-  spatial<-Monty$impact_Data$spatial[indy]
+  spatial<-Monty$impact_Data$spatial[indy,]
   # Replace the impact_Data field of Monty instance
   if(!is.logical(indy)) indy<-rep(T,length(indy))
   Monty$impact_Data<-data.frame(indy=which(indy))
@@ -592,7 +592,7 @@ MFilter_Hazards<-function(Monty,indy,allobjs=F){
   source<-Monty$hazard_Data$source[indy,]
   hazard_detail<-Monty$hazard_Data$hazard_detail[indy,]
   temporal<-Monty$hazard_Data$temporal[indy,]
-  spatial<-Monty$hazard_Data$spatial[indy]
+  spatial<-Monty$hazard_Data$spatial[indy,]
   # Replace the hazard_Data field of Monty instance
   if(!is.logical(indy)) indy<-rep(T,length(indy))
   Monty$hazard_Data<-data.frame(indy=which(indy))
@@ -1176,115 +1176,7 @@ MontyJSONnames<-function(adder=T){
            "imp_type","imp_est_type","haz_est_type"))))
 }
 
-# Function to extract all of the variable names directly from the Monty JSON schema
-MontyJSONdocumentation<-function(adder=T){
-  # JSON schema
-  schemy<-jsonlite::fromJSON("./Taxonomies/Montandon_Schema_V1-00.json")
-  # Unravelled JSON scheme
-  unjson<-plyr::llply(schemy, unlist)
-  # First extract the names from the taxonomies section of the schema
-  jsy<-names(unjson$properties)
-  # Find titles, descriptions and data type
-  indies<-which(grepl("taxonomies",jsy) &!grepl("enum",jsy) & !grepl("description",jsy) &
-    !grepl("type",jsy) & !grepl("codelist",jsy) & !grepl("openCodelist",jsy) &
-    !grepl("\\$ref",jsy) & !grepl("minItems",jsy) & !grepl("uniqueItems",jsy) & !grepl(".format",jsy))
-  # but we want to make sure to add descriptions and data types to this
-  indies<-sort(c(indies,indies+1,indies+2))
-  # clean it up
-  taxy<-as.data.frame(unjson$properties[indies]); colnames(taxy)<-"var_desc_name"
-  # Add the important variables about this variable: coded name and the location in the data model/JSON schema
-  taxy%<>%cbind(do.call(rbind,lapply(rownames(taxy),function(x) {
-    y<-as.character(str_split(x,pattern = "\\.",simplify = T))
-    data.frame(coded_name=y[(length(y)-1)],
-               type=y[length(y)],
-               field_layer=paste0(y[1:(length(y)-2)],collapse = "/"))
-  })))
-  # JSON objects come up as type="$ref" so we need to change this
-  taxy$var_desc_name[taxy$type=="$ref"]<-"nested-object"; taxy$type[taxy$type=="$ref"]<-"type"
-  taxy$type[taxy$type=="format"]<-"type"
-  # Now convert this to wide format to correctly display the information
-  taxy<-cbind(filter(taxy,type=="title")%>%dplyr::select(-type),
-              filter(taxy,type=="description")%>%dplyr::select(1)%>%setNames("description"),
-              filter(taxy,type=="type")%>%dplyr::select(1)%>%setNames("var_type"))
-  # Cleanup
-  rownames(taxy)<-NULL; taxy<-taxy[,c(2,1,3:ncol(taxy))]
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  jsy<-names(unjson$`$defs`)
-  # Find titles, descriptions and data type
-  indies<-which(grepl("title",jsy) & !grepl("enum",jsy) & !grepl("description",jsy) & !grepl("type",jsy) & 
-                  !grepl("codelist",jsy) & !grepl("openCodelist",jsy) & !grepl("\\$ref",jsy) & 
-                  !grepl("minItems",jsy) & !grepl("uniqueItems",jsy) & !grepl(".format",jsy) &
-                  !grepl("pattern",jsy) & !grepl("required",jsy) & !grepl("minLength",jsy))
-  # but we want to make sure to add descriptions and data types to this
-  indies<-sort(c(indies,indies+1,indies+2))
-  # clean it up
-  defy<-as.data.frame(unjson$`$defs`[indies]); colnames(defy)<-"var_desc_name"
-  # Add the important variables about this variable: coded name and the location in the data model/JSON schema
-  defy%<>%cbind(do.call(rbind,lapply(rownames(defy),function(x) {
-    y<-as.character(str_split(x,pattern = "\\.",simplify = T))
-    data.frame(coded_name=y[(length(y)-1)],
-               type=y[length(y)],
-               field_layer=paste0(y[1:(length(y)-2)],collapse = "/"))
-  })))
-  # JSON objects come up as type="$ref" so we need to change this
-  defy$var_desc_name[defy$type=="$ref"]<-"nested-object"; defy$type[defy$type=="$ref"]<-"type"
-  # Now convert this to wide format to correctly display the information
-  defy<-cbind(filter(defy,type=="title")%>%dplyr::select(-type),
-              filter(defy,type=="description")%>%dplyr::select(1)%>%setNames("description"),
-              filter(defy,type=="type")%>%dplyr::select(1)%>%setNames("var_type"))
-  # Cleanup
-  rownames(defy)<-NULL; defy<-defy[,c(2,1,3:ncol(defy))]
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  taxy<-jsy[indies]
-  # clean it up again
-  taxy<-sort(unname(sapply(taxy,function(x) {
-    x<-str_split(x,pattern = ".title",simplify = T)[1,1]
-    tmp<-str_split(x,"\\.",simplify = T)
-    return(tmp[length(tmp)])
-  },simplify=T))[-1])
-  # Now extract from the objects inside the schema, using the 'defs' field
-  jsy<-names(unjson$`$defs`)
-  # clean it up
-  defs<-jsy[grepl("title",jsy) & !grepl("enum",jsy) & !grepl("description",jsy) & !grepl("type",jsy) & 
-              !grepl("codelist",jsy) & !grepl("openCodelist",jsy) & !grepl("\\$ref",jsy) & 
-              !grepl("minItems",jsy) & !grepl("uniqueItems",jsy) & !grepl(".format",jsy) &
-              !grepl("pattern",jsy) & !grepl("required",jsy) & !grepl("minLength",jsy)]
-  # clean it up again
-  defs<-sort(unname(sapply(defs,function(x) {
-    x<-str_split(x,pattern = ".title",simplify = T)[1,1]
-    tmp<-str_split(x,"\\.",simplify = T)
-    return(tmp[length(tmp)])
-  },simplify=T))[-1])
-  # make sure to keep only the deepest nested variable names, not the umbrella terms
-  defs<-unique(defs[!grepl("_obj",defs)])
-  # Same again
-  defs<-defs[!defs%in%c("spatial","spatial_info","temporal","ID_linkage","allhaz_class","concur_haz","impact_detail","items","source")]
-  
-  if(!adder) return(c(taxy,defs))
-  
-  return(sort(unique(c(taxy,defs,"ext_ID","imp_src_orgtype","haz_type","haz_cluster",
-                       "haz_spec","haz_potlink","hazlink","exp_cat","exp_subcat",
-                       "imp_type","imp_est_type","haz_est_type"))))
-}
+
 
 
 

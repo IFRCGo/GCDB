@@ -226,3 +226,37 @@ openxlsx::writeData(wb,
 if(iftop20) {openxlsx::saveWorkbook(wb,"./CleanedData/MostlyImpactData/EAP-Country-Prioritisation.xlsx",overwrite = T)
 } else openxlsx::saveWorkbook(wb,"./CleanedData/MostlyImpactData/full_Country-Prioritisation_5yrRP-Deaths.xlsx",overwrite = T)
 
+
+
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#
+#@@@@@@@@@@ modelling the definition of risk for IFRC DREF allocations @@@@@@@@@@#
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#
+
+dref<-freqy%>%filter(Database=="GO-DREF - IFRC" &
+                       grepl("Aid Con",Impact_Type))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

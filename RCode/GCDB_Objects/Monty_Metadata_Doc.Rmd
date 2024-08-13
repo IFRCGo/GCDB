@@ -1,0 +1,120 @@
+---
+title: "Monty Metadata Documentation"
+author: "Hamish Patten"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(dplyr)
+library(magrittr)
+library(tidyverse)
+
+# Function to extract all of the variable names directly from the Monty JSON schema
+MontyJSONdocumentation<-function(){
+  # JSON schema
+  schemy<-jsonlite::fromJSON("../../Taxonomies/Montandon_Schema_V1-00.json")
+  # Unravelled JSON scheme
+  unjson<-plyr::llply(schemy, unlist)
+  
+  #@@@@@@@@@@@@@@@@@@@@@@@ Properties Field @@@@@@@@@@@@@@@@@@@@@@@#
+  # First extract the names from the taxonomies section of the schema
+  jsy<-names(unjson$properties)
+  # Find titles, descriptions and data type
+  indies<-which(grepl("taxonomies",jsy) &!grepl("enum",jsy) & !grepl("description",jsy) &
+    !grepl("type",jsy) & !grepl("codelist",jsy) & !grepl("openCodelist",jsy) &
+    !grepl("\\$ref",jsy) & !grepl("minItems",jsy) & !grepl("uniqueItems",jsy) & !grepl(".format",jsy))
+  # but we want to make sure to add descriptions and data types to this
+  indies<-sort(c(indies,indies+1,indies+2))
+  # clean it up
+  taxy<-as.data.frame(unjson$properties[indies]); colnames(taxy)<-"var_desc_name"
+  # Add the important variables about this variable: coded name and the location in the data model/JSON schema
+  taxy%<>%cbind(do.call(rbind,lapply(rownames(taxy),function(x) {
+    y<-as.character(str_split(x,pattern = "\\.",simplify = T))
+    data.frame(coded_name=y[(length(y)-1)],
+               type=y[length(y)],
+               field_layer=paste0(y[1:(length(y)-2)],collapse = "/"))
+  })))
+  # JSON objects come up as type="$ref" so we need to change this
+  taxy$var_desc_name[taxy$type=="$ref"]<-"nested-object"; taxy$type[taxy$type=="$ref"]<-"type"
+  taxy$type[taxy$type=="format"]<-"type"
+  # Now convert this to wide format to correctly display the information
+  taxy<-cbind(filter(taxy,type=="title")%>%dplyr::select(-type),
+              filter(taxy,type=="description")%>%dplyr::select(1)%>%setNames("description"),
+              filter(taxy,type=="type")%>%dplyr::select(1)%>%setNames("var_type"))
+  # Cleanup
+  rownames(taxy)<-NULL; taxy<-taxy[,c(2,1,3:ncol(taxy))]
+  
+  #@@@@@@@@@@@@@@@@@@@@@@@ Definitions Field @@@@@@@@@@@@@@@@@@@@@@@#
+  jsy<-names(unjson$`$defs`)
+  # Find titles, descriptions and data type
+  indies<-which(grepl("title",jsy) & !grepl("enum",jsy) & !grepl("description",jsy) & !grepl("type",jsy) & 
+                  !grepl("codelist",jsy) & !grepl("openCodelist",jsy) & !grepl("\\$ref",jsy) & 
+                  !grepl("minItems",jsy) & !grepl("uniqueItems",jsy) & !grepl(".format",jsy) &
+                  !grepl("pattern",jsy) & !grepl("required",jsy) & !grepl("minLength",jsy))
+  # but we want to make sure to add descriptions and data types to this
+  indies<-sort(c(indies,indies+1,indies+2))
+  # clean it up
+  defy<-as.data.frame(unjson$`$defs`[indies]); colnames(defy)<-"var_desc_name"
+  # Add the important variables about this variable: coded name and the location in the data model/JSON schema
+  defy%<>%cbind(do.call(rbind,lapply(rownames(defy),function(x) {
+    y<-as.character(str_split(x,pattern = "\\.",simplify = T))
+    data.frame(coded_name=y[(length(y)-1)],
+               type=y[length(y)],
+               field_layer=paste0(y[1:(length(y)-2)],collapse = "/"))
+  })))
+  # JSON objects come up as type="$ref" so we need to change this
+  defy$var_desc_name[defy$type=="$ref"]<-"nested-object"; defy$type[defy$type=="$ref"]<-"type"
+  defy$type[defy$type=="format"]<-"description"
+  # Now convert this to wide format to correctly display the information
+  defy<-cbind(filter(defy,type=="title")%>%dplyr::select(-type),
+              filter(defy,type=="description")%>%dplyr::select(1)%>%setNames("description"),
+              filter(defy,type=="type")%>%dplyr::select(1)%>%setNames("var_type"))
+  # Cleanup
+  rownames(defy)<-NULL; defy<-defy[,c(2,1,3:ncol(defy))]
+  
+  #@@@@@@@@@@@@@@@@@@@@@@@ Combined @@@@@@@@@@@@@@@@@@@@@@@#
+  return(rbind(taxy,defy)%>%arrange(field_layer))
+}
+# Extract this
+metdoc<-MontyJSONdocumentation()%>%filter(!stringi::stri_endswith(field_layer,fixed = "_obj"))
+
+```
+
+## Monty Metadata Documentation
+
+This page is to help users of the Monty - Global Crisis Data Bank to understand the metadata of the database. This documentation therefore provides a detailed explanation of the data model of Monty. In combination with the Monty API, which can be found [here](montandon.westeurope.cloudapp.azure.com:8000/__docs__/), users of Monty data should have a more complete picture of the unique structure of the database.
+
+```{r json_doc, echo=FALSE}
+ metdoc %>%
+  kableExtra::kbl() %>%
+  kableExtra::kable_styling()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

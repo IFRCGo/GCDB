@@ -729,7 +729,7 @@ GetDesinventar_ind<-function(ISO3,forcer=F){
   # Find the impact files
   filer<-paste0("./CleanedData/MostlyImpactData/Desinventar/",ISO3,"/",ISO3,".xlsx")
   # Check if the file exists
-  if(!file.exists(filer)) {
+  if(!file.exists(filer) & forcer) {
     # If not, try to extract it from the database
     if(!WrangleDessie(ISO3,forcer = T)) {
       print(paste0("Desinventar data not possible for ", ISO3))
@@ -812,6 +812,8 @@ convDessie_Monty<-function(forcer=T, ISO3s=NULL, taby=F){
   } else funcy<-function(x) MergeMonty(lapply(Filter(isemptylist, x),checkMonty))
   
   fulldes<-funcy(lapply(ISO3s,function(iso){
+    
+    print(str_to_upper(iso))
     # Extract raw Dessie data
     Dessie<-tryCatch(GetDesinventar_ind(iso),error=function(e) NULL)
     if(is.null(Dessie)) return(list())

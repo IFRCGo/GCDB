@@ -45,7 +45,7 @@ GetTabMonty<-function(){
   
   # Write it out just for keep-sake
   write(jsonlite::toJSON(Monty,pretty = T,auto_unbox=T,na = 'null'),
-        paste0("./CleanedData/Monty_",Sys.time(),".json"))
+        paste0("./CleanedData/Monty_",format(Sys.time(), "%Y-%m-%d_%H:%M"),".json"))
   
   return(Monty)
 }
