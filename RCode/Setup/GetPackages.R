@@ -59,6 +59,7 @@ LoadLibraries<-function(packred){
   library(geosphere)
   library(terra)
   library(patchwork)
+  library(uuid)
   # library(lwgeom)
   
   if(!packred) {
@@ -75,7 +76,7 @@ GetPackages<-function(packred){
   list.of.packages <- c("devtools","dplyr", "ggplot2","sf","tidyverse","openxlsx","pracma",
                         "geojsonR", "tiff", "gstat", "mvtnorm","xml2","rgdal",
                         "RColorBrewer", "geosphere","GGally", "wbstats","reshape2",
-                        "rjson","geodist","lwgeom","ggthemes","patchwork",
+                        "rjson","geodist","lwgeom","ggthemes","patchwork","uuid",
                         "countrycode","rworldmap","rworldxtra","chron","ncdf4",
                         "GADMTools","akima","adehabitatMA","flexsurv", "ExtDist", 
                         'EnvStats', 'posterior', 'doParallel', 'VGAM', 'abind',

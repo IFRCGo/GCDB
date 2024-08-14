@@ -352,8 +352,9 @@ ArrangeMonty<-function(Monty){
 checkHazSpecs<-function(Monty){
   # EVENTS
   Monty$event_Level$allhaz_class%<>%parallel::mclapply(function(x){
-    x$all_hazs_spec<-as.character(trimws(unname(unlist(str_split(eval(parse(text=x$all_hazs_spec)),pattern = ":",simplify = T)))))
-    x$all_hazs_Ab<-as.character(trimws(unname(unlist(str_split(eval(parse(text=x$all_hazs_Ab)),pattern = ":",simplify = T)))))
+    if(class(x)=="data.frame") x%<>%as.list()
+    if(any(nchar(x$all_hazs_spec)>6)) x$all_hazs_spec<-as.character(trimws(unname(unlist(str_split(eval(parse(text=x$all_hazs_spec)),pattern = ":",simplify = T)))))
+    if(any(nchar(x$all_hazs_Ab)>2)) x$all_hazs_Ab<-as.character(trimws(unname(unlist(str_split(str_split(x$all_hazs_Ab,pattern = ":",simplify = T),pattern = ",",simplify = T)))))
     return(x)
   },mc.cores=ncores)
   # HAZARDS

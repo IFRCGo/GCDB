@@ -293,7 +293,8 @@ GetDFO<-function(){
   hDFO<-DFO%>%dplyr::select(colnames(DFO)[!grepl("imp_",colnames(DFO))])
   iDFO<-DFO%>%dplyr::select(c(colnames(DFO)[!grepl("haz_",colnames(DFO))],
                               "haz_Ab","haz_spec"))%>%st_drop_geometry()
-  
+  hgeom<-hDFO%>%st_drop_geometry%>%GetGCDB_hazID(); 
+  hDFO$haz_sub_ID<-hgeom$haz_sub_ID; iDFO$haz_sub_ID<-hgeom$haz_sub_ID; rm(hgeom)
   # Sort the impact estimates
   iDFO%<>%reshape2::melt(measure.vars=c("DEAD","DISPLACED"))%>%
     rename("imp_type"="variable","imp_value"="value")%>%
@@ -304,7 +305,6 @@ GetDFO<-function(){
   iDFO%<>%GetGCDB_impID()
   iDFO$imp_spat_ID<-GetGCDB_imp_spatID(iDFO)
   # Now for hazards
-  hgeom<-hDFO%>%st_drop_geometry%>%GetGCDB_hazID(); hDFO$haz_sub_ID<-hgeom$haz_sub_ID; rm(hgeom)
   hDFO$haz_spat_ID<-GetGCDB_haz_spatID(hDFO%>%st_drop_geometry())
   
   # Damn sf geometries

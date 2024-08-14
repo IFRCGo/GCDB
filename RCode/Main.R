@@ -1,7 +1,7 @@
 # Read in all the necessary libraries and GCDB scripts
 source("./RCode/Setup/GetPackages.R")
 
-GetTabMonty<-function(){
+InitMonty<-function(){
   # IFRC DREF-EA data
   Monty<-checkMonty(convGOApp_Monty())
   # EM-DAT
