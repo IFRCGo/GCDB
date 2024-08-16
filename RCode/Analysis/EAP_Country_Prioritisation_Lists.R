@@ -5,9 +5,6 @@ source("./RCode/Setup/GetPackages.R")
 if(!file.exists("./CleanedData/MostlyImpactData/Monty_FreqTabs.csv")) 
   source("./RCode/Analysis/Monty_Dashboard_Data.R")
 
-# For the DREF-team to specifically focus on certain hazards
-iftop20<-T
-
 # Import underlying data
 freqy<-read.csv("./CleanedData/MostlyImpactData/Monty_FreqTabs.csv")%>%
   dplyr::select(Hazard_Type,Hazard_Code,Impact_Type,Database,ISO3,No_Impacts,Once_in_5_Year)
@@ -32,8 +29,9 @@ lDREF<-freqy%>%filter(Impact_Type%in%c("People Deaths [count]",
                                grepl("Displaced Persons", Impact_Type)  ~ "People Total Displaced [count]",
                                Impact_Type=="People Homeless [count]" ~ "People Total Displaced [count]",
                                TRUE ~ Impact_Type))%>%
-  group_by(Hazard_Type,Hazard_Code,Impact_Type,Database,ISO3)%>%
-  reframe(Once_in_5_Year=max(Once_in_5_Year,na.rm = T),
+  group_by(Hazard_Type,Hazard_Code,Impact_Type,ISO3)%>%
+  reframe(Database=Database[which.max(Once_in_5_Year)],
+          Once_in_5_Year=max(Once_in_5_Year,na.rm = T),
           No_Impacts=No_Impacts[which.max(Once_in_5_Year)])
 # Where NAs were present in the Once_in_5_Year column
 lDREF$Once_in_5_Year[is.infinite(lDREF$Once_in_5_Year)]<-0
@@ -67,164 +65,191 @@ lDREF$Once_in_5_Year_pCap[lDREF$Impact_Type=="Total Cost [USD]"]<-
   100*lDREF$Once_in_5_Year[lDREF$Impact_Type=="Total Cost [USD]"]/
   lDREF$GDP_PPP[lDREF$Impact_Type=="Total Cost [USD]"]
 
-# Filter certain hazards and extract ODA country data
-if(iftop20) {
-  # Filter to the required hazards only
-  lDREF%<>%filter(!Hazard_Code%in%c("TO","TS","SS","VO","VW","EQ","WF","ET"))
-  # To extract the list of ODA countries
-  odas<-tryCatch(wbstats::wb_data(indicator = "DT.ODA.ALLD.CD",mrnev = 1)%>%
-                   dplyr::select(iso3c)%>%setNames("ISO3")%>%distinct(),
-                 error=function(e) NULL)
-  # Check if that worked
-  if(is.null(odas)) {
-    # Try downloading direct from their website
-    rety<-tryCatch(download.file("https://api.worldbank.org/v2/en/indicator/DT.ODA.ALLD.CD?downloadformat=excel&_gl=1*g8mrts*_gcl_au*MjA4MzQ4ODk5MS4xNzE1NTg5MjIy",
-                                 "./CleanedData/SocioPoliticalData/ODA.xlsx"),error=function(e) NULL)
-    # Check if that worked
-    if(is.null(rety)) stop("Issues downloading the list of ODA countries from World Bank")
-    # if it worked, load the data
-    odas<-xlsx::read.xlsx("./CleanedData/SocioPoliticalData/ODA.xlsx",
-                          sheetIndex = 1,startRow = 3)
-    # Which years do we want to include?
-    yrs<-as.integer(AsYear(Sys.Date())); yrs<-paste0("X",c(yrs-3,yrs-2,yrs-1))
-    # Select certain columns
-    odas<-odas[,c("Country.Code",yrs)] 
-    # Check which countries are in the list of ODA recipients
-    odas$isODA<-apply(odas[,2:4],1,function(x) !all(is.na(x)))
-    # Filter the other countries out
-    odas%<>%filter(isODA)%>%dplyr::select(Country.Code)%>%setNames("ISO3")%>%distinct()
-  }
-  # Now remove all countries that aren't in that list
-  lDREF%<>%filter(ISO3%in%odas$ISO3)
-}
-
-# Create the workbook to saveout
-wb<-openxlsx::createWorkbook()
-
 ###################### Deaths, Affected & Displaced  ######################
 # Reduce to the top-20 worst, wrt deaths
-outDREF<-lDREF%>%
+fullout<-lDREF%>%
   filter(Impact_Type!="Total Cost [USD]")%>%
   arrange(Hazard_Type,desc(Once_in_5_Year)) %>%
   group_by(Hazard_Type, Impact_Type) %>%
   arrange(Hazard_Type,desc(Once_in_5_Year)) %>%
   mutate(Ranking=1:n())%>%
   ungroup()%>%
-  dplyr::select(Hazard_Type,Impact_Type,ISO3,Country_Territory,Population,Database,No_Impacts,Once_in_5_Year,Ranking)%>%
-  setNames(c("Hazard Type","Impact Type","ISO3 Code","Country/Territory","Population","Database","No. Records","One-in-Five Year Impact","Ranking"))
-# If we're only concentrating on the top 20
-if(iftop20) outDREF%<>%filter(Ranking<=20)
-
-# Deaths
-wb%>%openxlsx::addWorksheet("Deaths")
-# Write to Workbook
-openxlsx::writeData(wb, 
-                    sheet="Deaths",
-                    outDREF%>%filter(`Impact Type`=="People Deaths [count]"), 
-                    headerStyle=openxlsx::createStyle(textDecoration = "Bold"),
-                    keepNA = F)
-# Affected
-wb%>%openxlsx::addWorksheet("Affected")
-# Write to Workbook
-openxlsx::writeData(wb, 
-                    sheet="Affected",
-                    outDREF%>%filter(`Impact Type`=="People Total Affected [count]"), 
-                    headerStyle=openxlsx::createStyle(textDecoration = "Bold"),
-                    keepNA = F)
-# Affected
-wb%>%openxlsx::addWorksheet("Displaced")
-# Write to Workbook
-openxlsx::writeData(wb, 
-                    sheet="Displaced",
-                    outDREF%>%filter(`Impact Type`=="People Total Displaced [count]"), 
-                    headerStyle=openxlsx::createStyle(textDecoration = "Bold"),
-                    keepNA = F)
+  dplyr::select(Hazard_Type,Impact_Type,ISO3,Country_Territory,Population,Database,No_Impacts,Once_in_5_Year,Ranking)
 
 #@@@@@@@@@@@@@@@ Economic Losses @@@@@@@@@@@@@@@#
 # Reduce to the top-20 worst, wrt economic losses
-outDREF<-lDREF%>%
+fullout%<>%rbind(lDREF%>%
   filter(Impact_Type=="Total Cost [USD]")%>%
   arrange(Hazard_Type,desc(Once_in_5_Year)) %>%
   group_by(Hazard_Type, Impact_Type) %>%
   arrange(Hazard_Type,desc(Once_in_5_Year)) %>%
   mutate(Ranking=1:n())%>%
   ungroup()%>%
-  dplyr::select(Hazard_Type,Impact_Type,ISO3,Country_Territory,Population,Database,No_Impacts,Once_in_5_Year,Ranking)%>%
-  setNames(c("Hazard Type","Impact Type","ISO3 Code","Country/Territory","Population","Database","No. Records","One-in-Five Year Impact","Ranking"))
-# If we're only concentrating on the top 20
-if(iftop20) outDREF%<>%filter(Ranking<=20)
-
-# Economic losses
-wb%>%openxlsx::addWorksheet("Economic Losses")
-# Write to Workbook
-openxlsx::writeData(wb, 
-                    sheet="Economic Losses",
-                    outDREF, 
-                    headerStyle=openxlsx::createStyle(textDecoration = "Bold"),
-                    keepNA = F)
+  dplyr::select(Hazard_Type,Impact_Type,ISO3,Country_Territory,Population,Database,No_Impacts,Once_in_5_Year,Ranking))
 
 ###################### Deaths, Affected & Displaced PER CAPITA  ######################
 # Reduce to the top-20 worst, wrt deaths per capita
-outDREF<-lDREF%>%
+fullout%<>%rbind(lDREF%>%
   filter(Impact_Type!="Total Cost [USD]")%>%
   arrange(Hazard_Type,desc(Once_in_5_Year_pCap)) %>%
   group_by(Hazard_Type, Impact_Type) %>%
   arrange(Hazard_Type,desc(Once_in_5_Year_pCap)) %>%
   mutate(Ranking=1:n())%>%
   ungroup()%>%
+    mutate(Impact_Type=gsub("\\[count\\]","Per Capita \\[count per million\\]", Impact_Type))%>%
   dplyr::select(Hazard_Type,Impact_Type,ISO3,Country_Territory,Population,Database,No_Impacts,Once_in_5_Year_pCap,Ranking)%>%
-  setNames(c("Hazard Type","Impact Type","ISO3 Code","Country/Territory","Population","Database","No. Records","One-in-Five Year Impact, Per Million","Ranking"))
-# Deaths
-wb%>%openxlsx::addWorksheet("Deaths Per Capita")
-# Write to Workbook
-openxlsx::writeData(wb, 
-                    sheet="Deaths Per Capita",
-                    outDREF%>%filter(`Impact Type`=="People Deaths [count]"), 
-                    headerStyle=openxlsx::createStyle(textDecoration = "Bold"),
-                    keepNA = F)
-# Affected
-wb%>%openxlsx::addWorksheet("Affected Per Capita")
-# Write to Workbook
-openxlsx::writeData(wb, 
-                    sheet="Affected Per Capita",
-                    outDREF%>%filter(`Impact Type`=="People Total Affected [count]"), 
-                    headerStyle=openxlsx::createStyle(textDecoration = "Bold"),
-                    keepNA = F)
-# Affected
-wb%>%openxlsx::addWorksheet("Displaced Per Capita")
-# Write to Workbook
-openxlsx::writeData(wb, 
-                    sheet="Displaced Per Capita",
-                    outDREF%>%filter(`Impact Type`=="People Total Displaced [count]"), 
-                    headerStyle=openxlsx::createStyle(textDecoration = "Bold"),
-                    keepNA = F)
+    rename(Once_in_5_Year = Once_in_5_Year_pCap))
 
 #@@@@@@@@@@@@@@@ Economic Losses PER % GDP-PPP @@@@@@@@@@@@@@@#
 # Reduce to the top-20 worst, wrt economic losses per GDP
-outDREF<-lDREF%>%
+fullout%<>%rbind(lDREF%>%
   filter(Impact_Type=="Total Cost [USD]")%>%
   arrange(Hazard_Type,desc(Once_in_5_Year_pCap)) %>%
   group_by(Hazard_Type, Impact_Type) %>%
   arrange(Hazard_Type,desc(Once_in_5_Year_pCap)) %>%
   mutate(Ranking=1:n())%>%
   ungroup()%>%
+    mutate(Impact_Type=gsub("\\[USD\\]","Per GDP-PPP \\[USD per million USD\\]", Impact_Type))%>%
   dplyr::select(Hazard_Type,Impact_Type,ISO3,Country_Territory,Population,Database,No_Impacts,Once_in_5_Year_pCap,Ranking)%>%
-  setNames(c("Hazard Type","Impact Type","ISO3 Code","Country/Territory","Population","Database","No. Records","One-in-Five Year Impact, per % GDP-PPP","Ranking"))
-# If we're only concentrating on the top 20
-if(iftop20) outDREF%<>%filter(Ranking<=20)
+    rename(Once_in_5_Year = Once_in_5_Year_pCap))
 
+#@@@@@@@@@@@ Now make the overall risk metric @@@@@@@@@@@#
+# Ensure that the overall risk score goes from 0 to 1 with respect to the number of countries in the ranking
+scaleRank<-function(x, haz) 1-((x-1)/(max(fullout$Ranking[fullout$Hazard_Type==haz])-1))
+# Calculate the overall risk!
+overrisk<-fullout%>%filter(Impact_Type!="Total Cost [USD]")%>%
+  group_by(Hazard_Type,ISO3,Country_Territory,Population)%>%
+  reframe(Ranking=scaleRank(median(Ranking,na.rm = T),unique(Hazard_Type)),
+          # lowRank=scaleRank(min(Ranking,na.rm = T),unique(Hazard_Type)),
+          # uppRank=scaleRank(max(Ranking,na.rm = T),unique(Hazard_Type)),
+          Imp_Completeness=100*n()/7,
+          Avg_NoImpacts=mean(No_Impacts,na.rm = T))%>%
+  arrange(Hazard_Type,desc(Ranking))
+
+# Function to create the sheet in the xlsx file and save out the impacts individually
+addWB<-function(outDREF,namer="Deaths"){
+  # Add the sheet
+  wb%>%openxlsx::addWorksheet(namer)
+  # Write to Workbook
+  openxlsx::writeData(wb, 
+                      sheet=namer,
+                      outDREF, 
+                      headerStyle=openxlsx::createStyle(textDecoration = "Bold"),
+                      keepNA = F)
+  
+  return(NULL)
+}
+
+# Change the names for a less coded-type-name
+fullout%<>%setNames(c("Hazard Type","Impact Type","ISO3 Code",
+                      "Country/Territory","Population","Database",
+                      "No. Records","One-in-Five Year Impact","Ranking"))
+
+# Change the names for a less coded-type-name
+overrisk%<>%setNames(c("Hazard Type","ISO3 Code",
+                      "Country/Territory","Population","Risk Score",
+                      "Impact Completeness","Avg No. Impacts"))
+
+# Create the xlsx file to save out to
+wb<-openxlsx::createWorkbook()
+
+# Overall Risk
+addWB(overrisk, "Combined Risk Score")
+# Deaths
+addWB(fullout%>%filter(`Impact Type`=="People Deaths [count]"), "Deaths")
+# Affected
+addWB(fullout%>%filter(`Impact Type`=="People Total Affected [count]"), "Affected")
+# Displaced
+addWB(fullout%>%filter(`Impact Type`=="People Total Displaced [count]"), "Displaced")
 # Economic losses
-wb%>%openxlsx::addWorksheet("Economic Losses Per GDP-PPP")
-# Write to Workbook
-openxlsx::writeData(wb, 
-                    sheet="Economic Losses Per GDP-PPP",
-                    outDREF, 
-                    headerStyle=openxlsx::createStyle(textDecoration = "Bold"),
-                    keepNA = F)
+# addWB(fullout%>%filter(`Impact Type`=="Total Cost [USD]"), "Economic Losses")
+# Deaths per capita
+addWB(fullout%>%filter(`Impact Type`=="People Deaths Per Capita [count per million]"), "Deaths Per Capita")
+# Affected per capita
+addWB(fullout%>%filter(`Impact Type`=="People Total Affected Per Capita [count per million]"), "Affected Per Capita")
+# Displaced per capita
+addWB(fullout%>%filter(`Impact Type`=="People Total Displaced Per Capita [count per million]"), "Displaced Per Capita")
+# Economic losses per GDP-PPP [%]
+addWB(fullout%>%filter(`Impact Type`=="Total Cost Per GDP-PPP [USD per million USD]"), "Economic Losses Per GDP-PPP")
 
-# Save it out!
-if(iftop20) {openxlsx::saveWorkbook(wb,"./CleanedData/MostlyImpactData/EAP-Country-Prioritisation.xlsx",overwrite = T)
-} else openxlsx::saveWorkbook(wb,"./CleanedData/MostlyImpactData/full_Country-Prioritisation_5yrRP-Deaths.xlsx",overwrite = T)
+# Save it all to the xlsx file!
+openxlsx::saveWorkbook(wb,"./CleanedData/MostlyImpactData/full_Country-Prioritisation_5yrRP-Deaths.xlsx",overwrite = T)
+
+
+# Filter to the required hazards only
+fullout%<>%filter(!`Hazard Type`%in%
+                    unique(lDREF$Hazard_Type[lDREF$Hazard_Code %in% 
+                                               c("TO","TS","SS","VO","VW","EQ","WF","ET")]))
+overrisk%<>%filter(!`Hazard Type`%in%
+                    unique(lDREF$Hazard_Type[lDREF$Hazard_Code %in% 
+                                               c("TO","TS","SS","VO","VW","EQ","WF","ET")]))
+
+# To extract the list of ODA countries
+odas<-tryCatch(wbstats::wb_data(indicator = "DT.ODA.ALLD.CD",mrnev = 1)%>%
+                 dplyr::select(iso3c)%>%setNames("ISO3")%>%distinct(),
+               error=function(e) NULL)
+# Check if that worked
+if(is.null(odas)) {
+  # Try downloading direct from their website
+  rety<-tryCatch(download.file("https://api.worldbank.org/v2/en/indicator/DT.ODA.ALLD.CD?downloadformat=excel&_gl=1*g8mrts*_gcl_au*MjA4MzQ4ODk5MS4xNzE1NTg5MjIy",
+                               "./CleanedData/SocioPoliticalData/ODA.xlsx"),error=function(e) NULL)
+  # Check if that worked
+  if(is.null(rety)) stop("Issues downloading the list of ODA countries from World Bank")
+  # if it worked, load the data
+  odas<-xlsx::read.xlsx("./CleanedData/SocioPoliticalData/ODA.xlsx",
+                        sheetIndex = 1,startRow = 3)
+  # Which years do we want to include?
+  yrs<-as.integer(AsYear(Sys.Date())); yrs<-paste0("X",c(yrs-3,yrs-2,yrs-1))
+  # Select certain columns
+  odas<-odas[,c("Country.Code",yrs)] 
+  # Check which countries are in the list of ODA recipients
+  odas$isODA<-apply(odas[,2:4],1,function(x) !all(is.na(x)))
+  # Filter the other countries out
+  odas%<>%filter(isODA)%>%dplyr::select(Country.Code)%>%setNames("ISO3")%>%distinct()
+}
+
+# Now remove all countries that aren't in that list
+fullout%<>%filter(`ISO3 Code`%in%odas$ISO3)
+overrisk%<>%filter(`ISO3 Code`%in%odas$ISO3)
+
+# If we're only concentrating on the top 20
+fullout%<>%arrange(`Hazard Type`, desc(Ranking))%>%
+  group_by(`Hazard Type`,`Impact Type`)%>%slice_min(Ranking,n=20)%>%ungroup()
+overrisk%<>%arrange(`Hazard Type`, `Risk Score`)%>%group_by(`Hazard Type`)%>%slice_max(`Risk Score`,n=20)%>%ungroup()
+
+# Create the xlsx file to save out to
+wb<-openxlsx::createWorkbook()
+
+# Overall risk score
+addWB(overrisk, "Combined Risk Score")
+# Deaths
+addWB(fullout%>%filter(`Impact Type`=="People Deaths [count]"), "Deaths")
+# Affected
+addWB(fullout%>%filter(`Impact Type`=="People Total Affected [count]"), "Affected")
+# Displaced
+addWB(fullout%>%filter(`Impact Type`=="People Total Displaced [count]"), "Displaced")
+# Economic losses
+# addWB(fullout%>%filter(`Impact Type`=="Total Cost [USD]"), "Economic Losses")
+# Deaths per capita
+addWB(fullout%>%filter(`Impact Type`=="People Deaths Per Capita [count per million]"), "Deaths Per Capita")
+# Affected per capita
+addWB(fullout%>%filter(`Impact Type`=="People Total Affected Per Capita [count per million]"), "Affected Per Capita")
+# Displaced per capita
+addWB(fullout%>%filter(`Impact Type`=="People Total Displaced Per Capita [count per million]"), "Displaced Per Capita")
+# Economic losses per GDP-PPP [%]
+addWB(fullout%>%filter(`Impact Type`=="Total Cost Per GDP-PPP [USD per million USD]"), "Economic Losses Per GDP-PPP")
+
+# Save it all to the xlsx file!
+openxlsx::saveWorkbook(wb,"./CleanedData/MostlyImpactData/EAP-Country-Prioritisation.xlsx",overwrite = T)
+
+
+
+
+
+
+
+
+
 
 
 
@@ -232,31 +257,5 @@ if(iftop20) {openxlsx::saveWorkbook(wb,"./CleanedData/MostlyImpactData/EAP-Count
 #@@@@@@@@@@ modelling the definition of risk for IFRC DREF allocations @@@@@@@@@@#
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#
 
-dref<-freqy%>%filter(Database=="GO-DREF - IFRC" &
-                       grepl("Aid Con",Impact_Type))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# dref<-freqy%>%filter(Database=="GO-DREF - IFRC" &
+#                        grepl("Aid Con",Impact_Type))
