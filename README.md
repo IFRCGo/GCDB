@@ -2,11 +2,11 @@
 
 ## Montandon - Global Crisis Data Bank
 
-Welcome to the repository for the realtime Extraction, Transformation and Loading (ETL) scripts of the Monty database. This repository mostly deals with extracting the data from all of the external databases, whereby it then processes and transforms this data into a common hazard, exposure, impact, and response taxonomy classification system and then pushes this data onto the Monty database. However, this repository also contains the analysis scripts that were required to provide the data for, for example, the World Disaster Report 2024 or the [@Monty dashboards](https://app.powerbi.com/view?r=eyJrIjoiODNhOTk5ZmUtMTJhYi00NDQwLTgzZjEtN2JiZTIzZmFhZDFmIiwidCI6ImEyYjUzYmU1LTczNGUtNGU2Yy1hYjBkLWQxODRmNjBmZDkxNyIsImMiOjh9). Here is where the magic happens!
+Welcome to the repository for the realtime Extraction, Transformation and Loading (ETL) scripts of the Monty database. This repository mostly deals with extracting the data from all of the external databases, whereby it then processes and transforms this data into a common hazard, exposure, impact, and response taxonomy classification system and then pushes this data onto the Monty database. However, this repository also contains the analysis scripts that were required to provide the data for, for example, the World Disaster Report 2024 or the [Monty dashboards](https://app.powerbi.com/view?r=eyJrIjoiODNhOTk5ZmUtMTJhYi00NDQwLTgzZjEtN2JiZTIzZmFhZDFmIiwidCI6ImEyYjUzYmU1LTczNGUtNGU2Yy1hYjBkLWQxODRmNjBmZDkxNyIsImMiOjh9). Here is where the magic happens!
 
 ## About Monty
 
-Monty, an abbreviated name for the Montandon - Global Crisis Data Bank, is a database that brings in hazard and impact data for current, historical and forecasted disasters around the globe. By combining lots of different sources of information, Monty aims to fill-in-the-gaps and provide a more complete picture of disaster risk for the National Societies. For more information about the Montandon project, please check out [@this 5-minute video](https://www.youtube.com/watch?v=BEWxqYfrQek).
+Monty, an abbreviated name for the Montandon - Global Crisis Data Bank, is a database that brings in hazard and impact data for current, historical and forecasted disasters around the globe. By combining lots of different sources of information, Monty aims to fill-in-the-gaps and provide a more complete picture of disaster risk for the National Societies. For more information about the Montandon project, please check out [this 5-minute video](https://www.youtube.com/watch?v=BEWxqYfrQek). You can [directly access the Monty data through the API here](https://monty-api.ifrc.org/). Please note that the API code is stored in a separate GitHub repository, [here](https://github.com/IFRCGo/Monty-IFRC).
 
 ## Code Layout
 
@@ -33,7 +33,7 @@ This folder contains the scripts used to analyse the Monty data.
   - `DREF_Forecasting.Rmd:` an RMarkdown script that allows you to extract the latest DREF+EA data and then forecast the next few months worth of allocations based upon yearly and seasonal trends in the different sub-regions, for each hazard.
   - `EAP_Country_Prioritisation_List.R:` this script allows the user to extract country rankings for different hazards with respect to certain metrics such as deaths and economic losses, based on the data that goes into the Monty dashboard (see below)
   - `Monty_Analysis:` this file is mostly outdated, but contains lots of the preliminary analyses made to calculate things like the impact-exceedance curves and the geospatial impact return period calculations. 
-  - `Monty_Dashboard_Data.R:` all of the data that went into the [@Monty dashboards](https://app.powerbi.com/view?r=eyJrIjoiODNhOTk5ZmUtMTJhYi00NDQwLTgzZjEtN2JiZTIzZmFhZDFmIiwidCI6ImEyYjUzYmU1LTczNGUtNGU2Yy1hYjBkLWQxODRmNjBmZDkxNyIsImMiOjh9) comes from this file. That includes the impact return period analyses, the impact exceedance curves and the impact-based seasonality estimates.
+  - `Monty_Dashboard_Data.R:` all of the data that went into the [Monty dashboards](https://app.powerbi.com/view?r=eyJrIjoiODNhOTk5ZmUtMTJhYi00NDQwLTgzZjEtN2JiZTIzZmFhZDFmIiwidCI6ImEyYjUzYmU1LTczNGUtNGU2Yy1hYjBkLWQxODRmNjBmZDkxNyIsImMiOjh9) comes from this file. That includes the impact return period analyses, the impact exceedance curves and the impact-based seasonality estimates.
   - `WDR_Analysis.R:` this script was developed in order to provide the data foundation for the World Disaster Report 2024, speak to Kirsten Hagon for more information.
   
 ### GCDB_Objects
