@@ -1,12 +1,27 @@
 # Read in all the necessary libraries and GCDB scripts
 source("./RCode/Setup/GetPackages.R")
 
-# Daily Monty
+# Code to extract the data from the Monty API
+GetCurrMonty<-function(){
+  # link to Monty
+  url<-paste0("https://monty-api.ifrc.org/data/JSON?Mtoken=",monty_token,"&sdate=",as.character(Sys.Date()-1))
+  # Download from the API
+  jsonlite::fromJSON(url)
+}
+
+# Daily Monty - datasets that are updated at best once a day
 DailyMontyEDL<-function(){
+  # First extract the current Monty data
+  Monty<-tryCatch(GetCurrMonty(),error=function(e) stop("problems extracting the current Monty data... API issues"))
+  # Extract the lengths of the current data to save time later
+  lennies<-c(nrow(Monty$event_Level$temporal),
+             ifelse(is.null(nrow(Monty$impact_Data$temporal)),0,nrow(Monty$impact_Data$temporal)),
+             ifelse(is.null(nrow(Monty$hazard_Data$temporal)),0,nrow(Monty$hazard_Data$temporal)))
   # From today!
   fromdate<-Sys.Date()-1
   # IFRC DREF-EA data
-  Monty<-checkMonty(convGOApp_Monty(fromdate=fromdate))
+  Monty<-tryCatch(MergeMonty(list(Monty,checkMonty(convGOApp_Monty(fromdate=fromdate)))),
+                  error=function(e) {print("Error extracting IFRC DREF+EA (appeal) data"); return(Monty)})
   # EM-DAT
   Monty<-tryCatch(MergeMonty(list(Monty,checkMonty(convEMDAT_Monty(fromdate=fromdate)))),
                   error=function(e) {print("Error extracting CRED - EM-DAT data"); return(Monty)})
@@ -27,11 +42,22 @@ DailyMontyEDL<-function(){
   # Monty<-tryCatch(MergeMonty(list(Monty,checkMonty(convDFO_Monty()))),
   #                 error=function(e) {print("Error extracting University Columbia - DFO data"); return(Monty)})
   
-  # If there is no data, there is nothing to return!
-  if(nrow(Monty$event_Level$temporal)==0) return(NULL)
-  # Merge with the current API data
-  tryCatch(MergeMonty(list(Monty,GetCurrMonty())),
-                  error=function(e) {stop("issues combining the Monty data with the recently updated data"); return(Monty)})
+  # Save time if no data is available
+  finlen<-c(nrow(Monty$event_Level$temporal),
+             ifelse(is.null(nrow(Monty$impact_Data$temporal)),0,nrow(Monty$impact_Data$temporal)),
+             ifelse(is.null(nrow(Monty$hazard_Data$temporal)),0,nrow(Monty$hazard_Data$temporal)))
+  # If the lengths are all the same, then no new data was loaded. 
+  if(all(lennies-finlen==0)) return(NULL)
+  
+  # Write out in JSON format
+  write(jsonlite::toJSON(Monty,pretty = T,auto_unbox=T,na = 'null'),
+        paste0(monty_API_data,"/API/data/Monty.json"))
+  # Also in a easier-to-load RData file
+  saveRDS(Monty,paste0(monty_API_data,"/API/data/MontyAPI.RData"))
+  # Finally, convert to tabular format and save out
+  stop("output to tabular format here then save out")
+  
+  return(NULL)
 }
 
 # 10-minute Monty
@@ -52,15 +78,6 @@ MinuteMontyEDL<-function(){
   
   return(Monty)
 }
-
-# Code to extract the data from the Monty API
-GetCurrMonty<-function(){
-  # link to Monty
-  url<-paste0("https://monty-api.ifrc.org/data/JSON?Mtoken=",monty_token,"&sdate=",as.character(Sys.Date()-1))
-  # Download from the API
-  jsonlite::fromJSON(url)
-}
-
 
 
 

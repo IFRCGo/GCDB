@@ -552,6 +552,7 @@ convEMDAT_Monty<-function(taby=F, fromdate=NULL){
     arrange(ev_sdate)%>%filter(!is.na(haz_spec))
   
   if(!is.null(fromdate)) EMDAT%<>%filter(as.Date(imp_moddate)>=fromdate)
+  if(nrow(EMDAT)==0) stop("no EM-DAT data for the dates provided, try setting fromdate further back in time")
   
   if(taby) return(EMDAT)
   

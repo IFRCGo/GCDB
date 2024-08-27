@@ -312,6 +312,7 @@ convGOApp_Monty<-function(taby=F, fromdate=NULL){
   appeal%<>%distinct()%>%arrange(ev_sdate)
   
   if(!is.null(fromdate)) appeal%<>%filter(as.Date(imp_credate)>=fromdate)
+  if(nrow(EMDAT)==0) stop("no DREF-EA data for the dates provided, try setting fromdate further back in time")
   
   if(taby) return(appeal)
   
