@@ -440,12 +440,16 @@ MergeMonty<-function(lMonty,jsoner=F){
     lMonty[[i]]$event_Level$spatial}))
   allhaz_class<-do.call(c,lapply(seq_along(lMonty),function(i){
     lMonty[[i]]$event_Level$allhaz_class}))
+  # Check for uniqueness! Note we remove the event_ID as it is a UUID
+  indy<-duplicated(cbind(ID_linkage%>%dplyr::select(event_name),temporal,spatial,
+                         squishAllHaz(Monty$event_Level$allhaz_class,
+                                      Monty$taxonomies$haz_class)))
   # Replace the event_Level field of Monty instance 
-  Monty$event_Level<-data.frame(indy=1:nrow(ID_linkage))
-  Monty$event_Level$ID_linkage<-ID_linkage
-  Monty$event_Level$temporal<-temporal
-  Monty$event_Level$spatial<-spatial
-  Monty$event_Level$allhaz_class<-allhaz_class
+  Monty$event_Level<-data.frame(indy=1:nrow(ID_linkage))[indy,]
+  Monty$event_Level$ID_linkage<-ID_linkage[indy,]
+  Monty$event_Level$temporal<-temporal[indy,]
+  Monty$event_Level$spatial<-spatial[indy,]
+  Monty$event_Level$allhaz_class<-allhaz_class[indy]
   Monty$event_Level$indy<-NULL
   #@@@@@@@@@@@@@@@ Merge the impact-level data @@@@@@@@@@@@@@@#
   # Store out the data we need
@@ -459,13 +463,16 @@ MergeMonty<-function(lMonty,jsoner=F){
     lMonty[[i]]$impact_Data$temporal%>%mutate(across(where(~ !is.character(.x)),as.character))}))
   spatial<-do.call(c,lapply(seq_along(lMonty),function(i){
     lMonty[[i]]$impact_Data$spatial}))
+  # Check for uniqueness! Note we remove the event_ID as it is a UUID
+  indy<-duplicated(cbind(temporal,impact_detail,source,
+                         data.frame(ISOs=unname(unlist(lapply(Monty$impact_Data$spatial,function(x) paste0(x$spatial_info$imp_ISO3s,collapse = delim)))))))
   # Replace the impact_Data field of Monty instance
-  Monty$impact_Data<-data.frame(indy=1:nrow(ID_linkage))
-  Monty$impact_Data$ID_linkage<-ID_linkage
-  Monty$impact_Data$source<-source
-  Monty$impact_Data$impact_detail<-impact_detail
-  Monty$impact_Data$temporal<-temporal
-  Monty$impact_Data$spatial<-spatial
+  Monty$impact_Data<-data.frame(indy=1:nrow(ID_linkage))[indy,]
+  Monty$impact_Data$ID_linkage<-ID_linkage[indy,]
+  Monty$impact_Data$source<-source[indy,]
+  Monty$impact_Data$impact_detail<-impact_detail[indy,]
+  Monty$impact_Data$temporal<-temporal[indy,]
+  Monty$impact_Data$spatial<-spatial[indy]
   Monty$impact_Data$indy<-NULL
   #@@@@@@@@@@@@@@@ Merge the hazard-level data @@@@@@@@@@@@@@@#
   # Create a boolean array to check whether each list element has hazard data
@@ -489,13 +496,16 @@ MergeMonty<-function(lMonty,jsoner=F){
       spatial<-do.call(c,lapply(seq_along(tMonty),function(i){
         tMonty[[i]]$hazard_Data$spatial}))
       rm(tMonty)
+      # Check for uniqueness! Note we remove the event_ID as it is a UUID
+      indy<-duplicated(cbind(temporal,hazard_detail,source,
+                             data.frame(ISOs=unname(unlist(lapply(Monty$hazard_Data$spatial,function(x) paste0(x$spatial_info$haz_ISO3s,collapse = delim)))))))
       # Replace the impact_Data field of Monty instance
-      Monty$hazard_Data<-data.frame(indy=1:nrow(ID_linkage))
-      Monty$hazard_Data$ID_linkage<-ID_linkage
-      Monty$hazard_Data$source<-source
-      Monty$hazard_Data$hazard_detail<-hazard_detail
-      Monty$hazard_Data$temporal<-temporal
-      Monty$hazard_Data$spatial<-spatial
+      Monty$hazard_Data<-data.frame(indy=1:nrow(ID_linkage))[indy,]
+      Monty$hazard_Data$ID_linkage<-ID_linkage[indy,]
+      Monty$hazard_Data$source<-source[indy,]
+      Monty$hazard_Data$hazard_detail<-hazard_detail[indy,]
+      Monty$hazard_Data$temporal<-temporal[indy,]
+      Monty$hazard_Data$spatial<-spatial[indy]
       Monty$hazard_Data$indy<-NULL
     }
   }

@@ -111,7 +111,7 @@ GetPackages<-function(packred){
 GetPackages(packred=T)
 
 # How does the Monty delimit some of the data variables, such as ISO3C codes?
-delim<-"  :  "
+delim<-dely<-"  :  "
 
 # Retrieve the most up-to-date version of the hazard & impact taxonomies
 

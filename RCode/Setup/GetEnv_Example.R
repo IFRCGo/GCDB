@@ -18,6 +18,8 @@ delim<-"  :  "
 emdat_token <-""
 # IDMC token
 idmc_token<-""
+# Monty token
+monty_token<-""
 # Number of cores to use
 ncores<-parallel::detectCores()
 # ssh -i githubkeys ifrctgc0root@98.71.131.43

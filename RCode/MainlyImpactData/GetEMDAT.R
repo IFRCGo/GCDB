@@ -534,12 +534,24 @@ API_EMDAT<-function(){
     CleanEMDAT_API()
 }
 
-convEMDAT_Monty<-function(taby=F){
+convEMDAT_Monty<-function(taby=F, fromdate=NULL){
+  # Check the input date
+  if(!is.null(fromdate)) {
+    # Convert to date
+    fromdate%<>%as.Date(format="%Y-%m-%d")
+    # Checks
+    if(is.na(fromdate)) {
+      warning("date provided to EM-DAT to filter the recent data is not in the correct format of %Y-%m-%d")
+      fromdate<-NULL
+    }
+  }
   # Get the Emergency Appeal data from GO
   EMDAT<-API_EMDAT()
   # Get rid of repeated entries
   EMDAT%<>%distinct()%>%
     arrange(ev_sdate)%>%filter(!is.na(haz_spec))
+  
+  if(!is.null(fromdate)) EMDAT%<>%filter(as.Date(imp_moddate)>=fromdate)
   
   if(taby) return(EMDAT)
   
