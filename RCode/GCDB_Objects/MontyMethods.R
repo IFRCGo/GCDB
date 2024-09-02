@@ -864,7 +864,7 @@ squishISOs<-function(ISO3s,taxy,namer="ev_ISO3s"){
     apply(left_join(data.frame(ISO3=unique(as.character(x))),
                     taxy,by="ISO3"),2,paste0,collapse = dely)
   }))%>%as.data.frame()
-  colnames(out)<-namer
+  colnames(out)[1]<-namer
   return(out)
 }
 
