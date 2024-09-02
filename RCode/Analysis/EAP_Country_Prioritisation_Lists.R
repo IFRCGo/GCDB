@@ -113,6 +113,8 @@ fullout%<>%rbind(lDREF%>%
   dplyr::select(Hazard_Type,Impact_Type,ISO3,Country_Territory,Population,Database,No_Impacts,Once_in_5_Year_pCap,Ranking)%>%
     rename(Once_in_5_Year = Once_in_5_Year_pCap))
 
+fullout%<>%as.data.frame()
+
 #@@@@@@@@@@@ Now make the overall risk metric @@@@@@@@@@@#
 # Ensure that the overall risk score goes from 0 to 1 with respect to the number of countries in the ranking
 scaleRank<-function(x, haz) 1-((x-1)/(max(fullout$Ranking[fullout$Hazard_Type==haz])-1))
@@ -122,9 +124,10 @@ overrisk<-fullout%>%filter(Impact_Type!="Total Cost [USD]")%>%
   reframe(Ranking=scaleRank(median(Ranking,na.rm = T),unique(Hazard_Type)),
           # lowRank=scaleRank(min(Ranking,na.rm = T),unique(Hazard_Type)),
           # uppRank=scaleRank(max(Ranking,na.rm = T),unique(Hazard_Type)),
-          Imp_Completeness=100*n()/7,
+          Imp_Completeness=n(),
+          Imp_types=paste0(sort(Impact_Type),collapse = ", "),
           Avg_NoImpacts=mean(No_Impacts,na.rm = T))%>%
-  arrange(Hazard_Type,desc(Ranking))
+  arrange(Hazard_Type,desc(Ranking))%>%as.data.frame()
 
 # Function to create the sheet in the xlsx file and save out the impacts individually
 addWB<-function(outDREF,namer="Deaths"){
@@ -148,7 +151,7 @@ fullout%<>%setNames(c("Hazard Type","Impact Type","ISO3 Code",
 # Change the names for a less coded-type-name
 overrisk%<>%setNames(c("Hazard Type","ISO3 Code",
                       "Country/Territory","Population","Risk Score",
-                      "Impact Completeness","Avg No. Impacts"))
+                      "Impact Completeness","Impact Types","Avg No. Impacts"))
 
 # Create the xlsx file to save out to
 wb<-openxlsx::createWorkbook()
