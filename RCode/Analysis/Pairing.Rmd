@@ -1,0 +1,341 @@
+---
+title: Monty Pairing
+subtitle: "Hamish Patten, Karla Ayivi, Marcela Duran Arias, <br> Arun Gandhi and Jemimah Ndugwa"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+    css: styles.css
+---
+
+<style type="text/css">
+h1.title {
+  font-size: 50px;
+  color: White;
+}
+h3.subtitle {
+  font-size: 20px;
+  color: White;
+}
+<!-- .table-hover > tbody > tr:hover { -->
+<!--   background-color: #f7f7e6; -->
+<!-- } -->
+.main-container {
+  width: 95%;
+    <!-- max-width: unset; -->
+  }
+</style>
+
+<div style= "position:relative">
+<!-- <div style= "float:left; position:relative; top:-100px;margin-bottom:-100px;margin-left:-10px;"> -->
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(magrittr)
+library(tidyverse)
+library(kableExtra)
+library(knitr)
+library(rmdformats)
+library(prettydoc)
+library(caret)
+knitr::opts_chunk$set(echo = TRUE)
+options(kableExtra.latex.load_packages = FALSE,
+        knitr.kable.NA = '')
+# Read in the data
+pairies<-openxlsx::read.xlsx("~/Downloads/Monty Pairing Validation Data Sample.xlsx",
+                             detectDates = T)
+# First of all, let's clean up the paired values
+table(pairies$paired)
+# We see a few errors, let's correct this
+pairies%<>%mutate(paired=case_when(paired=="9-" ~ "-9.0", 
+                                   paired=="9.0" ~"-9.0",
+                                   T ~ paired))%>%
+  mutate(paired=as.integer(paired))
+# Convert ISO3Cs to continent
+convIso3Continent<-function(iso3){
+  continents<-countrycode::countrycode(sourcevar = iso3,
+                                       origin = "iso3c",
+                                       destination = "continent",warn = F)
+}
+```
+
+</div>
+
+## Database
+
+These are the databases we're working with:
+
+```{r dbs, message=FALSE,warning=FALSE, echo=FALSE}
+
+table(c(pairies$targ_db,pairies$dest_db))%>%as.data.frame()%>%
+  mutate(Var2=str_split(Var1," - ",simplify = T)[,1],
+         Var1=str_split(Var1," - ",simplify = T)[,2])%>%
+  dplyr::select(Var1,Var2,Freq)%>%arrange(Var1)%>%
+kable(col.names = c("Organisation","Database","Number of Records Sampled"))
+
+```
+
+<br><br>
+
+The number of events per year:
+
+```{r yrevs, message=FALSE,warning=FALSE, echo=FALSE}
+
+pairies%>%ggplot()+geom_density(aes(as.integer(format(targ_evsdate,"%Y"))),
+                                stat = "count")+
+  xlim(c(1980,2024))+xlab("Year")+ylab("Number of Records")
+
+```
+
+<br><br>
+
+The number of records per region
+
+```{r isos, message=FALSE,warning=FALSE, echo=FALSE}
+
+table(convIso3Continent(c(pairies$targ_evISOs,pairies$dest_evISOs)))%>%as.data.frame()%>%
+  arrange(desc(Freq))%>%
+kable(col.names = c("Region","Number of Records Sampled"))
+
+```
+
+<br><br>
+
+We're working with multiple hazards
+
+```{r hazzies, message=FALSE,warning=FALSE, echo=FALSE}
+
+haz_Ab_lab<-c("AV"="Avalanche",
+              "CW"="Cold Wave",
+              "DR"="Drought",
+              "EQ"="Earthquake",
+              "EP"="Epidemic",
+              "ER"="Erosion",
+              "EC"="Extra-Tropical Cyclone",
+              "ET"="Extreme Temperature",
+              "FR"="Fire",
+              "FF"="Flash Flood",
+              "FL"="Flood",
+              "HW"="Heat Wave",
+              "HT"="High Temperature",
+              "IN"="Insect Infestation",
+              "LS"="Landslide",
+              "MM"="Mass Movement",
+              "MS"="Mudslide",
+              "SL"="Slide",
+              "SN"="Snowfall",
+              "ST"="Storm",
+              "SS"="Storm Surge",
+              "TO"="Tornado",
+              "TC"="Tropical Cyclone",
+              "TS"="Tsunami",
+              "WF"="Wildfire",
+              "VW"="Violent Wind",
+              "VO"="Volcanic Activity",
+              "WV"="Wave",
+              "WA"="Wave Action")
+
+hazzies<-unique(as.vector(str_split(c(pairies$targ_hzAb,pairies$dest_hzAb)," : ",simplify = T)))
+hazzies<-hazzies[nchar(hazzies)==2]
+
+tmp<-do.call(rbind,lapply(hazzies,function(haz){
+  data.frame(hazAb=haz,Hazard=haz_Ab_lab[haz],
+             Count=sum(grepl(haz,c(pairies$targ_hzAb,pairies$dest_hzAb),ignore.case = F)))
+}))%>%arrange(desc(Count))
+
+manyhaz<-tmp$hazAb[tmp$Count>10]
+
+tmp%>%kable(col.names = c("Hazard Code","Hazard","Number of Records Sampled"))
+
+```
+
+<br><br>
+
+Here's a sample of the data:
+
+```{r database, message=FALSE,warning=FALSE, echo=FALSE}
+pairies%>%
+  slice(sample(1:nrow(pairies),20,replace = F))%>%
+  dplyr::select(-targ_mid,-targ_evID,-targ_URL,-targ_ID,
+                        -dest_mid,-dest_evID,-dest_URL,-dest_ID,
+                        -QA.score,-QA.Comments,-description)%>%
+  kable(align="l", format = "html", 
+        col.names=c("Database","Start Date","End Date","Longitude","Latitude",
+                    "Hazard Code","ISO3C",
+                    "Database","Start Date","End Date","Longitude","Latitude",
+                    "Hazard Code","ISO3C","Distance","Paired"))%>%
+  add_header_above(c("TARGET" = 7, "DESTINATION" = 7, "PAIRING" = 2))%>%
+  kable_styling(c("bordered", "condensed"), full_width = T)
+```
+
+
+## Analysis of Manual Pairings
+
+Pairing allocation, per database
+
+```{r confpair, echo=FALSE,message=FALSE,warning=FALSE}
+pairies%<>%mutate(confpair=case_when(paired==-9 ~ "Not enough info",
+                                    paired==0 ~ "Unpaired - high confidence",
+                                    paired==1 ~ "Unpaired - low confidence",
+                                    paired==2 ~ "Unknown - no confidence",
+                                    paired==3 ~ "Paired - low confidence",
+                                    paired==4 ~ "Paired - high confidence"))
+nomies<-colnames(pairies[,c(1:11,23:ncol(pairies))])
+tmp<-rbind(pairies[,c(1:11,23:ncol(pairies))],
+           pairies[,c(12:ncol(pairies))]%>%setNames(nomies))
+
+ploty<-tmp %>%
+  group_by(targ_db, confpair) %>%
+  summarise(count = n()) %>%
+  mutate(percentage = count / sum(count))%>%
+  ggplot()+geom_bar(aes(targ_db,percentage,fill=confpair),stat="identity")+
+  xlab("Database")+ylab("Percentage of Records")+labs(fill="Pairing")+
+  scale_y_continuous(labels = scales::percent_format())+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+plotly::ggplotly(ploty)%>% plotly::layout(yaxis = list(hoverformat = '.4f'))
+```
+
+<br><br>
+
+Let's specifically look at the percentage of high confidence estimates to the others
+
+```{r confperc, echo=FALSE,message=FALSE,warning=FALSE}
+# Create a confidence variable
+tmp$confidence<-0L; tmp$confidence[tmp$paired==4 | tmp$paired==0] <- 1L
+tmp %<>% mutate(confidence=as.factor(confidence))
+
+ploty<-tmp%>%
+  group_by(targ_db, confidence) %>%
+  summarise(count = n()) %>%
+  mutate(percentage = count / sum(count))%>%
+  filter(confidence==1)%>%
+  ggplot()+geom_bar(aes(targ_db,percentage),fill="purple",stat="identity")+
+  xlab("Database")+ylab("Percentage of Confident Pairings")+
+  scale_y_continuous(labels = scales::label_number(accuracy = 0.01)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+plotly::ggplotly(ploty)%>% plotly::layout(yaxis = list(hoverformat = '.4f'))
+```
+
+<br><br>
+
+How does the confidence in the pairing vary per hazard?
+
+```{r hazperc, echo=FALSE,message=FALSE,warning=FALSE}
+
+ploty<-tmp2<-do.call(rbind,lapply(hazzies,function(haz){
+  tmp%>%filter(grepl(haz,targ_hzAb,ignore.case = F))%>%
+    group_by(confidence)%>%
+    summarise(count = n()) %>%
+  mutate(percentage = count / sum(count),
+         Hazard=haz)%>%
+  filter(confidence==1)%>%dplyr::select(Hazard,percentage)
+}))%>%filter(Hazard%in%manyhaz)%>%
+  ggplot()+geom_bar(aes(Hazard,percentage),fill="forestgreen",stat="identity")+
+  xlab("Hazard")+ylab("Percentage of Confident Pairings")+
+  scale_y_continuous(labels = scales::label_number(accuracy = 0.01))
+  
+rm(tmp,tmp2)
+
+plotly::ggplotly(ploty)%>% plotly::layout(yaxis = list(hoverformat = '.4f'))
+```
+
+## Modelling
+
+```{r prep, include=FALSE,message=FALSE,warning=FALSE}
+# Make a binary confidence variable for the high-low values
+# pairies$confidence<-1; pairies$confidence[pairies$paired!=4 | pairies$paired!=0] <- 0
+# # First remove the no-confidence values and group the rest together
+# pairies$paired[pairies$paired==1]<-0
+# pairies$paired[pairies$paired==3 | pairies$paired==4]<-1
+# pairies%<>%filter(paired<=1 & paired>=0)
+# # Convert dates to days since earliest date, for start and end dates
+# mindate<-min(c(pairies$targ_evsdate,pairies$dest_evsdate),na.rm = T)
+# # Create the variables
+# pairies%<>%mutate(targ_sday=targ_evsdate-mindate,
+#                   targ_fday=targ_evfdate-targ_evsdate,
+#                   dest_sday=dest_evsdate-mindate,
+#                   dest_fday=dest_evfdate-dest_evsdate)
+# # Run the models here
+# minimods<-c("svmLinear","svmRadial","svmPoly","naive_bayes","rf","glmnet","ada")
+# # Number of cores
+# ncores<-8
+# # How many different databases are we working with?
+# ndbs<-length(unique(pairies$targ_db))
+# # Setup the cross-validation 
+# parallelML_balanced<-function(algo,ncores=4) {
+#   # Parallelise
+#   cl <- makePSOCKcluster(ncores)  # Create computing clusters
+#   registerDoParallel(cl)
+#   getDoParWorkers()
+#   # CV-split and model the damaged buildings
+#   out<-lapply(1:ndbs,function(i){
+#     datar<-rbind(BDs[indies[[i]],],permys)
+#     datar%<>%dplyr::select(-c("Event","grading","weighting","www"))
+#     # Run the model!
+#     modeler<-caret::train(Damage~., data = datar, method = algo, metric="ROC",
+#                           tuneLength = 12, trControl = train_control,
+#                           preProcess = c("center","scale"))
+#     # Let me know!
+#     print(paste0(signif(100*i/splitties,2),"% done"))
+#     
+#     if(retmod) return(as.data.frame(vip::vi(modeler,
+#                                             feature_names=covariates)))
+# 
+#     return(filter(modeler$results[-1],ROC==max(ROC)))
+# 
+#     # return(cbind(filter(modeler$results[-1],ROC==max(ROC)),
+#     #              t(as.data.frame((t(as.data.frame(varImp(modeler, scale=FALSE)$importance))[1,])))))
+#   })
+#   # Remember to close the computing cluster
+#   stopCluster(cl)
+#   registerDoSEQ()
+#   
+#   if(retmod) return(out)
+#   # Save out, then get out!
+#   saveRDS(out,paste0("./IIDIPUS_Results/SpatialPoints_ML-GLM/NoSpace_ML_models/ML-",algo,"_2.RData"))
+#   
+#   return(out)
+# }
+
+
+
+#@@@@@@@@@@@@@@@@@@@ REMEMBER TO GET RID OF DATE COLUMNS, LEAVING DAY COLUMNS
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
