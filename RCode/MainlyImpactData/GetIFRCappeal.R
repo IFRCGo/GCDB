@@ -125,7 +125,7 @@ CleanGO_app<-function(appeal){
                    # ev_sdate=as.character(as.Date(created_at)),ev_fdate=as.character(as.Date(created_at)),
                    imp_unitdate=as.character(as.Date(start_date)),
                    imp_credate=as.character(as.Date(created_at)),
-                   imp_moddate=as.character(as.Date(real_data_update)),
+                   imp_moddate=as.character(as.Date(modified_at)),
                    imp_src_URL="https://goadmin.ifrc.org/api/v2/appeal",
                    imp_src_orglab="International Federation of Red Cross and Red Crescent Societies (IFRC)",
                    imp_src_org="IFRC",
@@ -293,26 +293,13 @@ CleanGO_dref<-function(dref){
   colnames(tmp)
 }
 
-convGOApp_Monty<-function(taby=F, fromdate=NULL){
-  # Check the input date
-  if(!is.null(fromdate)) {
-    # Convert to date
-    fromdate%<>%as.Date(format="%Y-%m-%d")
-    # Checks
-    if(is.na(fromdate)) {
-      warning("date provided to EM-DAT to filter the recent data is not in the correct format of %Y-%m-%d")
-      fromdate<-NULL
-    }
-  }
+convGOApp_Monty<-function(taby=F){
   # Get the Emergency Appeal data from GO
   appeal<-ExtractGOdata(db = "GO-App", token = go_token)
   # Clean using the old GCDB structure
   appeal%<>%CleanGO_app()%>%filter(!is.na(haz_spec) & imp_value>0)
   # Get rid of repeated entries
   appeal%<>%distinct()%>%arrange(ev_sdate)
-  
-  if(!is.null(fromdate)) appeal%<>%filter(as.Date(imp_credate)>=fromdate)
-  if(nrow(EMDAT)==0) stop("no DREF-EA data for the dates provided, try setting fromdate further back in time")
   
   if(taby) return(appeal)
   

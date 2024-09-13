@@ -81,7 +81,8 @@ GetPackages<-function(packred){
                         "GADMTools","akima","adehabitatMA","flexsurv", "ExtDist", 
                         'EnvStats', 'posterior', 'doParallel', 'VGAM', 'abind',
                         'Rmpi', 'openxlsx', 'ecochange','googlesheets4', 'bookdown',
-                        "AzureStor", "plumber","ghql","wbstats","rmdformats")
+                        "AzureStor", "plumber","ghql","wbstats","rmdformats","plotly",
+                        "prettydoc")
   
   if(!packred) list.of.packages<-c(list.of.packages,
                                    "codetools","latex2exp","fixest",
