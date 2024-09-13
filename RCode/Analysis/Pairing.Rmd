@@ -292,7 +292,7 @@ parallelML_balanced<-function(algo,ncores=4) {
                           tuneLength = 12, trControl = train_control,
                           preProcess = c("center","scale"))
 
-    return(filter(modeler$results[-1],ROC==max(ROC)))
+    return(filter(modeler$results[-1],ROC==median(ROC)))
   })
   # Remember to close the computing cluster
   # stopCluster(cl)
