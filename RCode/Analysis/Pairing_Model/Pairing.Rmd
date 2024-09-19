@@ -102,7 +102,7 @@ pairies%>%
                     "Database","Start Date","End Date","Longitude","Latitude",
                     "Hazard Code","ISO3C","Distance","Pairing Decision"))%>%
   add_header_above(c("TARGET" = 7, "DESTINATION" = 7, "PAIRING" = 2))%>%
-  kable_styling(c("bordered", "condensed"), full_width = T)
+  kable_styling(c("bordered", "condensed"), full_width = F)
 ```
 
 <br><br>
