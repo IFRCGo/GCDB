@@ -45,7 +45,7 @@ knitr::opts_chunk$set(echo = TRUE)
 options(kableExtra.latex.load_packages = FALSE,
         knitr.kable.NA = '')
 # Read in the (modified) data
-pairies<-readRDS("../../Analysis_Results/Pairing/PairedData.RData")
+pairies<-readRDS("../../../Analysis_Results/Pairing/PairedData.RData")
 # Labels for the hazard codes
 haz_Ab_lab<-c("AV"="Avalanche",
               "CW"="Cold Wave",
@@ -179,7 +179,7 @@ Pairing allocation, per database
 nomies<-c("targ_db","targ_sday","targ_fday","targ_lon","targ_lat","targ_hzAb",
           "targ_evISOs","dist_km","paired","confpair","confidence")
 
-tmp2<-readxl::read_xlsx("../../Analysis_Results/Pairing/Monty_Paired_Validated.xlsx")
+tmp2<-readxl::read_xlsx("../../../Analysis_Results/Pairing/Monty_Paired_Validated.xlsx")
 # We see a few errors, let's correct this
 tmp2%<>%mutate(paired=case_when(paired=="9-" ~ "-9.0", 
                                    paired=="9.0" ~"-9.0",
@@ -267,7 +267,7 @@ Let's look at the feature importance (FIRM-ICE method):
 
 ```{r ftimport, echo=FALSE,message=FALSE,warning=FALSE}
 # Read it in
-ftimp<-readRDS("../../Analysis_Results/Pairing/FeatureImportance.RData")
+ftimp<-readRDS("../../../Analysis_Results/Pairing/FeatureImportance.RData")
 # Show a table of everything except the database variables
 ftimp[!grepl("`",ftimp$Variable),]%>%filter(!grepl("-",ftimp$Variable))%>%
   mutate(Directionality=case_when(Directionality==-1 ~ "Negative",
@@ -343,7 +343,7 @@ Let's check the performance of each of the models for the median AUC value acros
 
 ```{r modelperf, echo=FALSE,message=FALSE,warning=FALSE}
 # Read in the results
-ressies<-readRDS("../../Analysis_Results/Pairing/ModelPerformance3.RData")%>%
+ressies<-readRDS("../../../Analysis_Results/Pairing/ModelPerformance3.RData")%>%
   arrange(desc(ROC))
 # Now let's have a look at the results!
 ressies%>%filter(!Model%in%c("svmRadial","nnet"))%>%group_by(Model)%>%
@@ -381,7 +381,7 @@ We need to also know about the performance of the model with respect to the diff
 
 ```{r regperf, echo=FALSE,message=FALSE,warning=FALSE}
 # Extract the predictions data
-rfout<-readRDS("../../Analysis_Results/Pairing/RF_predictions2.RData")
+rfout<-readRDS("../../../Analysis_Results/Pairing/RF_predictions2.RData")
 # Let's first do per region
 rfout%>%group_by(targ_Region)%>%
     reframe(AUC=ROCit::rocit(score = Paired, class = paired=="Paired")$AUC*0.93,
@@ -412,7 +412,7 @@ First we need to decide what threshold to choose for the class probabilities. If
 
 ```{r cumpairs, echo=FALSE,message=FALSE,warning=FALSE}
 # Predicted paired dataframe
-redie<-readRDS("../../Analysis_Results/Pairing/PredictedPaired2.RData")
+redie<-readRDS("../../../Analysis_Results/Pairing/PredictedPaired2.RData")
 # Plot it!
 redie%>%arrange(desc(paired))%>%
   ggplot()+geom_line(aes((1-paired),nrow(redie):1))+
@@ -429,7 +429,7 @@ Let's look at the ROC curve to find a value that corresponds to the data
 
 ```{r roccurve, echo=FALSE,message=FALSE,warning=FALSE}
 # Read in the roc curve data
-rfroc<-readRDS("../../Analysis_Results/Pairing/RF_ROC2.RData")
+rfroc<-readRDS("../../../Analysis_Results/Pairing/RF_ROC2.RData")
 # Plot it!
 rfroc%>%ggplot()+geom_point(aes(1-FPR,TPR-FPR))+
   geom_vline(xintercept = 0.95,colour="red")+
@@ -444,7 +444,7 @@ rfroc%>%ggplot()+geom_point(aes(1-FPR,TPR-FPR))+
 
 <!-- ```{r corries} -->
 <!-- # Read in the paired data -->
-<!-- redie<-readRDS("../../Analysis_Results/Pairing/PredictedPaired2.RData") -->
+<!-- redie<-readRDS("../../../Analysis_Results/Pairing/PredictedPaired2.RData") -->
 <!-- # Let's focus on EM-DAT and GIDD -->
 <!-- corries<-redie[redie$paired_2sig & (redie$targ_db=="GIDD - IDMC" |  -->
 <!--         redie$dest_db=="GIDD - IDMC") & -->
@@ -485,7 +485,7 @@ rfroc%>%ggplot()+geom_point(aes(1-FPR,TPR-FPR))+
 
 <!-- ```{r predmatchtab, echo=FALSE,message=FALSE,warning=FALSE} -->
 <!-- # Get the data -->
-<!-- redie<-readRDS("../../Analysis_Results/Pairing/PredictedPaired2.RData") -->
+<!-- redie<-readRDS("../../../Analysis_Results/Pairing/PredictedPaired2.RData") -->
 <!-- # Which databases to track -->
 <!-- dbs<-unique(c(redie$targ_db,redie$dest_db)) -->
 <!-- # Create the confusion matrices -->
