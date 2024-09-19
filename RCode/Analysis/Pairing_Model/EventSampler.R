@@ -143,9 +143,11 @@ DistFilter<-function(x,y,maxlim=2500){
 PairedSample<-function(samply,aMonty,yeardiff=0.25){
   # Keep only the variables we need
   aMonty%<>%dplyr::select(m_id, event_ID, database, ev_sdate, ev_fdate, longitude, latitude, 
-                         haz_Ab, ev_ISO3s, URL, ext_ID)%>%distinct()
+                         haz_Ab, ev_ISO3s, URL, ext_ID)%>%distinct()%>%
+    mutate(ev_sdate=as.Date(ev_sdate),ev_fdate=as.Date(ev_fdate))
   samply%<>%dplyr::select(m_id, event_ID, database, ev_sdate, ev_fdate, longitude, latitude, 
-                         haz_Ab, ev_ISO3s, URL, ext_ID)%>%distinct()
+                         haz_Ab, ev_ISO3s, URL, ext_ID)%>%distinct()%>%
+    mutate(ev_sdate=as.Date(ev_sdate),ev_fdate=as.Date(ev_fdate))
   # Change the column names of both dataframes for ease later on in merging
   colnames(aMonty)<-c("dest_mid","dest_evID","dest_db","dest_evsdate","dest_evfdate",
                       "dest_lon","dest_lat","dest_hzAb","dest_evISOs", 
@@ -179,7 +181,7 @@ PairedSample<-function(samply,aMonty,yeardiff=0.25){
     y<-aMonty[aMonty$dest_evsdate>(x$targ_evsdate[1]-365*yeardiff) & 
                 aMonty$dest_evsdate<(x$targ_evsdate[1]+365*yeardiff) &
                 MatHazFilter(aMonty$dest_hzAb,x$targ_hzAb,hazmat) &
-                MatISOFilter(x$targ_evISOs[1], aMonty$dest_evISOs, isomat),]
+                MatISOFilter(unlist(x$targ_evISOs[1]), unlist(aMonty$dest_evISOs), isomat),]
     # Checks
     if(nrow(y)==0) return(data.frame())
     # Check for distance values: default is TRUE if geolocation data is missing
@@ -220,7 +222,7 @@ PairedSample<-function(samply,aMonty,yeardiff=0.25){
     y<-aMonty[aMonty$dest_evsdate>(x$targ_evsdate[1]-365*yeardiff) & 
                 aMonty$dest_evsdate<(x$targ_evsdate[1]+365*yeardiff) &
                 MatHazFilter(aMonty$dest_hzAb,x$targ_hzAb,hazmat) &
-                MatISOFilter(x$targ_evISOs[1], aMonty$dest_evISOs, isomat),]
+                MatISOFilter(unlist(x$targ_evISOs[1]), unlist(aMonty$dest_evISOs), isomat),]
     # Checks
     if(nrow(y)==0) return(data.frame())
     # Identify same country ISO data
@@ -267,7 +269,7 @@ PairedSample<-function(samply,aMonty,yeardiff=0.25){
     y<-aMonty[aMonty$dest_evsdate>(x$targ_evsdate[1]-365*yeardiff) & 
                 aMonty$dest_evsdate<(x$targ_evsdate[1]+365*yeardiff) &
                 MatHazFilter(aMonty$dest_hzAb,x$targ_hzAb,hazmat) &
-                MatISOFilter(x$targ_evISOs[1], aMonty$dest_evISOs, isomat),]
+                MatISOFilter(unlist(x$targ_evISOs[1]), unlist(aMonty$dest_evISOs), isomat),]
     # Checks
     if(nrow(y)==0) return(data.frame())
     # Check for distance values: default is TRUE if geolocation data is missing
@@ -577,23 +579,23 @@ EventSampler<-function(Monty,ssize_db=50){
 # # Save it out!
 # saveRDS(Monty,paste0("Analysis_Results/Pairing/Monty_sample_",dbs,"_",Sys.Date(),".RData"))
 
-
-Monty<-readRDS("Analysis_Results/Pairing/Monty_sample_ADAM-WFP_Atlas-USGS_DFO-UniColumbia_DisasterAWARE-PDC_EMDAT-CRED_GDACS-EC-JRC_GIDD-IDMC_GLIDE-ADRC_GO-DREF-IFRC_GO-EA-IFRC_GO-FBA-IFRC_IDU-IDMC_ReliefWeb-UNOCHA_2024-07-29.RData")
-# Sample the data!
-sam<-EventSampler(Monty,100)
-# Check out the pairing
-sapply(unique(c(sam$targ_db,sam$dest_db)),function(db){table(c(sam$dest_db[(sam$targ_db==db & sam$dest_db!=db)],sam$targ_db[(sam$targ_db!=db & sam$dest_db==db)]))})%>%View()
-# Add the pairing column
-sam%<>%mutate(paired="",description="")
-# Trim down the length of the numerical columns
-sam%<>%mutate_if(is.numeric,round,digits=3)
-# Remove NA database IDs
-sam$targ_ID<-str_replace_all(sam$targ_ID,"NA = NA-NA",""); sam$dest_ID<-str_replace_all(sam$dest_ID,"NA = NA-NA","")
-# Which databases were present for this sample?
-dbs<-paste0(str_replace_all(sort(unique(c(sam$targ_db,sam$dest_db)))," ",""),collapse="_")
-# Write it out
-openxlsx::write.xlsx(sam,paste0("./Analysis_Results/Pairing/Sampled_",nrow(sam),"N_",dbs,"_",Sys.Date(),".xlsx"))
-
+RunSampling<-function(){
+  Monty<-readRDS("Analysis_Results/Pairing/Monty_sample_ADAM-WFP_Atlas-USGS_DFO-UniColumbia_DisasterAWARE-PDC_EMDAT-CRED_GDACS-EC-JRC_GIDD-IDMC_GLIDE-ADRC_GO-DREF-IFRC_GO-EA-IFRC_GO-FBA-IFRC_IDU-IDMC_ReliefWeb-UNOCHA_2024-07-29.RData")
+  # Sample the data!
+  sam<-EventSampler(Monty,100)
+  # Check out the pairing
+  sapply(unique(c(sam$targ_db,sam$dest_db)),function(db){table(c(sam$dest_db[(sam$targ_db==db & sam$dest_db!=db)],sam$targ_db[(sam$targ_db!=db & sam$dest_db==db)]))})%>%View()
+  # Add the pairing column
+  sam%<>%mutate(paired="",description="")
+  # Trim down the length of the numerical columns
+  sam%<>%mutate_if(is.numeric,round,digits=3)
+  # Remove NA database IDs
+  sam$targ_ID<-str_replace_all(sam$targ_ID,"NA = NA-NA",""); sam$dest_ID<-str_replace_all(sam$dest_ID,"NA = NA-NA","")
+  # Which databases were present for this sample?
+  dbs<-paste0(str_replace_all(sort(unique(c(sam$targ_db,sam$dest_db)))," ",""),collapse="_")
+  # Write it out
+  openxlsx::write.xlsx(sam,paste0("./Analysis_Results/Pairing/Sampled_",nrow(sam),"N_",dbs,"_",Sys.Date(),".xlsx"))
+}
 
 
 

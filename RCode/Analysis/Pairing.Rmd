@@ -86,7 +86,28 @@ convIso3Continent<-function(iso3){
 
 </div>
 
-## Database
+## Database Sample
+
+Here's a sample of the data:
+
+```{r database, message=FALSE,warning=FALSE, echo=FALSE}
+pairies%>%
+  slice(sample(1:nrow(pairies),20,replace = F))%>%
+  dplyr::select(targ_db,targ_evsdate,targ_evfdate,targ_lon,targ_lat,targ_hzAb,targ_evISOs,
+                dest_db,dest_evsdate,dest_evfdate,dest_lon,dest_lat,dest_hzAb,dest_evISOs,
+                dist_km,paired)%>%
+  kable(align="l", format = "html", 
+        col.names=c("Database","Start Date","End Date","Longitude","Latitude",
+                    "Hazard Code","ISO3C",
+                    "Database","Start Date","End Date","Longitude","Latitude",
+                    "Hazard Code","ISO3C","Distance","Pairing Decision"))%>%
+  add_header_above(c("TARGET" = 7, "DESTINATION" = 7, "PAIRING" = 2))%>%
+  kable_styling(c("bordered", "condensed"), full_width = T)
+```
+
+<br><br>
+
+## Sample Representation (Bias)
 
 These are the databases we're working with:
 
@@ -94,7 +115,8 @@ These are the databases we're working with:
 
 table(c(pairies$targ_db,pairies$dest_db))%>%as.data.frame()%>%
   mutate(Var2=str_split(Var1," - ",simplify = T)[,1],
-         Var1=str_split(Var1," - ",simplify = T)[,2])%>%
+         Var1=str_split(Var1," - ",simplify = T)[,2],
+         Freq=round(Freq/2))%>%
   dplyr::select(Var1,Var2,Freq)%>%arrange(desc(Freq))%>%
 kable(col.names = c("Organisation","Database","Number of Records Sampled"))
 
@@ -119,6 +141,7 @@ The number of records per region
 ```{r isos, message=FALSE,warning=FALSE, echo=FALSE}
 
 table(convIso3Continent(c(pairies$targ_evISOs,pairies$dest_evISOs)))%>%as.data.frame()%>%
+  mutate(Freq=round(Freq/2))%>%
   arrange(desc(Freq))%>%
 kable(col.names = c("Region","Number of Records Sampled"))
 
@@ -135,9 +158,12 @@ hazzies<-hazzies[nchar(hazzies)==2]
 tmp<-do.call(rbind,lapply(hazzies,function(haz){
   data.frame(hazAb=haz,Hazard=haz_Ab_lab[haz],
              Count=sum(grepl(haz,c(pairies$targ_hzAb,pairies$dest_hzAb),ignore.case = F)))
-}))%>%arrange(desc(Count))
+}))%>%arrange(desc(Count))%>%
+  mutate(Count=round(Count/2))
 
 manyhaz<-tmp$hazAb[tmp$Count>10]
+
+row.names(tmp)<-NULL
 
 tmp%>%kable(col.names = c("Hazard Code","Hazard","Number of Records Sampled"))
 
@@ -145,44 +171,48 @@ tmp%>%kable(col.names = c("Hazard Code","Hazard","Number of Records Sampled"))
 
 <br><br>
 
-Here's a sample of the data:
-
-```{r database, message=FALSE,warning=FALSE, echo=FALSE}
-pairies%>%
-  slice(sample(1:nrow(pairies),20,replace = F))%>%
-  dplyr::select(-targ_mid,-targ_evID,-targ_URL,-targ_ID,
-                -dest_mid,-dest_evID,-dest_URL,-dest_ID,
-                -targ_sday, -targ_fday, -dest_sday, -dest_fday, 
-                -paired, -confidence)%>%
-  kable(align="l", format = "html", 
-        col.names=c("Database","Start Date","End Date","Longitude","Latitude",
-                    "Hazard Code","ISO3C",
-                    "Database","Start Date","End Date","Longitude","Latitude",
-                    "Hazard Code","ISO3C","Distance","Pairing Decision"))%>%
-  add_header_above(c("TARGET" = 7, "DESTINATION" = 7, "PAIRING" = 2))%>%
-  kable_styling(c("bordered", "condensed"), full_width = T)
-```
-
-
 ## Analysis of Manual Pairings
 
 Pairing allocation, per database
 
 ```{r confpair, echo=FALSE,message=FALSE,warning=FALSE}
-nomies<-colnames(pairies[,c(1:11,23:ncol(pairies))])
-tmp<-rbind(pairies[,c(1:11,23:ncol(pairies))],
-           pairies[,c(12:ncol(pairies))]%>%setNames(nomies))
+nomies<-c("targ_db","targ_sday","targ_fday","targ_lon","targ_lat","targ_hzAb",
+          "targ_evISOs","dist_km","paired","confpair","confidence")
 
-ploty<-tmp %>%
+tmp2<-readxl::read_xlsx("../../Analysis_Results/Pairing/Monty_Paired_Validated.xlsx")
+# We see a few errors, let's correct this
+tmp2%<>%mutate(paired=case_when(paired=="9-" ~ "-9.0", 
+                                   paired=="9.0" ~"-9.0",
+                                   T ~ paired),
+                  confpair=case_when(paired==-9 ~ "Not enough info",
+                                     paired==0 ~ "Unpaired - high confidence",
+                                     paired==1 ~ "Unpaired - low confidence",
+                                     paired==2 ~ "Unknown - no confidence",
+                                     paired==3 ~ "Paired - low confidence",
+                                     paired==4 ~ "Paired - high confidence",
+                                    T ~ "Not enough info"))%>%
+  mutate(paired=as.integer(paired))
+
+tmp<-rbind(pairies%>%dplyr::select(targ_db,targ_sday,targ_fday,targ_lon,targ_lat,targ_hzAb,targ_evISOs,
+                dist_km,paired,confpair,confidence),
+           pairies%>%dplyr::select(dest_db,dest_sday,dest_fday,dest_lon,dest_lat,dest_hzAb,dest_evISOs,
+                dist_km,paired,confpair,confidence)%>%setNames(nomies))
+
+tmp2<-rbind(tmp2%>%dplyr::select(targ_db,confpair,targ_hzAb),
+           tmp2%>%dplyr::select(dest_db,confpair,dest_hzAb)%>%setNames(c("targ_db","confpair","targ_hzAb")))
+
+ploty<-tmp2%>%
   group_by(targ_db, confpair) %>%
   summarise(count = n()) %>%
   mutate(percentage = count / sum(count))%>%
   ggplot()+geom_bar(aes(targ_db,percentage,fill=confpair),stat="identity")+
   xlab("Database")+ylab("Percentage of Records")+labs(fill="Pairing")+
   scale_y_continuous(labels = scales::percent_format())+
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1))
 
 plotly::ggplotly(ploty)%>% plotly::layout(yaxis = list(hoverformat = '.4f'))
+
 ```
 
 <br><br>
@@ -190,19 +220,18 @@ plotly::ggplotly(ploty)%>% plotly::layout(yaxis = list(hoverformat = '.4f'))
 Let's specifically look at the percentage of high confidence estimates to the others
 
 ```{r confperc, echo=FALSE,message=FALSE,warning=FALSE}
-# Create a confidence variable
-tmp$confidence<-0L; tmp$confidence[tmp$paired==4 | tmp$paired==0] <- 1L
-tmp %<>% mutate(confidence=as.factor(confidence))
+tmp2%<>%mutate(confidence=case_when(grepl("high ",confpair)~1,T~0))
 
-ploty<-tmp%>%
+ploty<-tmp2%>%
   group_by(targ_db, confidence) %>%
   summarise(count = n()) %>%
   mutate(percentage = count / sum(count))%>%
   filter(confidence==1)%>%
-  ggplot()+geom_bar(aes(targ_db,percentage),fill="purple",stat="identity")+
+  ggplot()+geom_bar(aes(x = reorder(targ_db, -percentage),percentage),fill="purple",stat="identity")+
   xlab("Database")+ylab("Percentage of Confident Pairings")+
-  scale_y_continuous(labels = scales::label_number(accuracy = 0.01)) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  scale_y_continuous(labels = scales::percent_format(), limits=c(0,1))+
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1))
 
 plotly::ggplotly(ploty)%>% plotly::layout(yaxis = list(hoverformat = '.4f'))
 ```
@@ -213,24 +242,26 @@ How does the confidence in the pairing vary per hazard?
 
 ```{r hazperc, echo=FALSE,message=FALSE,warning=FALSE}
 
-ploty<-tmp2<-do.call(rbind,lapply(hazzies,function(haz){
-  tmp%>%filter(grepl(haz,targ_hzAb,ignore.case = F))%>%
+ploty<-do.call(rbind,lapply(hazzies,function(haz){
+  tmp2%>%filter(grepl(haz,targ_hzAb,ignore.case = F))%>%
     group_by(confidence)%>%
     summarise(count = n()) %>%
   mutate(percentage = count / sum(count),
          Hazard=haz)%>%
   filter(confidence==1)%>%dplyr::select(Hazard,percentage)
 }))%>%filter(Hazard%in%manyhaz)%>%
-  ggplot()+geom_bar(aes(Hazard,percentage),fill="forestgreen",stat="identity")+
+  ggplot()+geom_bar(aes(x = reorder(Hazard, -percentage),percentage),fill="forestgreen",stat="identity")+
   xlab("Hazard")+ylab("Percentage of Confident Pairings")+
-  scale_y_continuous(labels = scales::label_number(accuracy = 0.01))
+  scale_y_continuous(labels = scales::percent_format())
   
 rm(tmp,tmp2)
 
 plotly::ggplotly(ploty)%>% plotly::layout(yaxis = list(hoverformat = '.4f'))
 ```
 
-## Modelling
+<br><br>
+
+## Models
 
 Let's look at the feature importance (FIRM-ICE method):
 
@@ -248,39 +279,253 @@ ftimp[!grepl("`",ftimp$Variable),]%>%filter(!grepl("-",ftimp$Variable))%>%
 
 <br><br>
 
-How likely was each database to be paired?
+Which models are we going to use?
 
-```{r dbimport, echo=FALSE,message=FALSE,warning=FALSE}
-# Show a table of everything except the database variables
-ftimp[!grepl("`",ftimp$Variable),]%>%filter(grepl("-",ftimp$Variable))%>%
-  mutate(Importance=Importance*Directionality,
-         Directionality=case_when(Directionality==1~"Likely",
-                                  Directionality==-1~"Unlikely"))%>%
-  dplyr::select(Variable,Directionality,Importance)%>%
-  kable(align="l", format = "html", digits = c(0, 0, 1), col.names = c("Variable","Pairing Probability","Importance [%]"))%>%
+```{r models, echo=FALSE,message=FALSE,warning=FALSE}
+# Extract the names and descriptions of the models:
+jsonlite::fromJSON('{
+  "models": [
+    {
+      "coded_name": "svmLinear",
+      "actual_name": "Support Vector Machine (Linear)",
+      "cluster": "Non-linear Classification",
+      "description": "A support vector machine for classification with a linear kernel, useful for linearly separable data."
+    },
+    {
+      "coded_name": "svmRadial",
+      "actual_name": "Support Vector Machine (Radial)",
+      "cluster": "Non-linear Classification",
+      "description": "A support vector machine using a radial basis function kernel, suitable for non-linear classification problems."
+    },
+    {
+      "coded_name": "svmPoly",
+      "actual_name": "Support Vector Machine (Polynomial)",
+      "cluster": "Non-linear Classification",
+      "description": "SVM with a polynomial kernel, effective in modeling more complex non-linear relationships."
+    },
+    {
+      "coded_name": "naive_bayes",
+      "actual_name": "Naive Bayes",
+      "cluster": "Probabilistic Classifier",
+      "description": "A classifier based on Bayes theorem, assuming feature independence, generally not used for classification."
+    },
+    {
+      "coded_name": "rf",
+      "actual_name": "Random Forest",
+      "cluster": "Tree-based (Ensemble)",
+      "description": "An ensemble learning technique using decision trees for both classification and classification, reducing overfitting."
+    },
+    {
+      "coded_name": "glmnet",
+      "actual_name": "Logistic Elastic Net",
+      "cluster": "Linear Classification",
+      "description": "A logistic model with elastic net regularization, combining L1 (Lasso) and L2 (Ridge) penalties."
+    },
+    {
+      "coded_name": "nnet",
+      "actual_name": "Feed-Forward Neural Network",
+      "cluster": "Neural Network",
+      "description": "Neural network models learn patterns by adjusting weights between interconnected nodes across layers."
+    }
+  ]
+}')$models%>%
+  kable(align="l", format = "html", 
+        col.names = c("Model Code","Model Label","Group","Description"))%>%
   kable_styling(c("bordered", "condensed"), full_width = T)
+
+```
+
+<br><br>
+
+## Results
+
+Let's check the performance of each of the models for the median AUC value across all database-stratified 10-fold cross validated models. Note that sensitivity is how well the model identifies true positives and specificity is true negatives.
+
+```{r modelperf, echo=FALSE,message=FALSE,warning=FALSE}
+# Read in the results
+ressies<-readRDS("../../Analysis_Results/Pairing/ModelPerformance3.RData")%>%
+  arrange(desc(ROC))
+# Now let's have a look at the results!
+ressies%>%filter(!Model%in%c("svmRadial","nnet"))%>%group_by(Model)%>%
+  reframe(AUC=paste0(signif(median(ROC),2),"+/-",round(sqrt(mean(sd(ROC)^2+ROCSD^2)),2)),
+          Sens=paste0(signif(median(Sens),2),"+/-",round(sqrt(mean(sd(Sens)^2+SensSD^2)),2)),
+          Spec=paste0(signif(median(Spec),2),"+/-",round(sqrt(mean(sd(Spec)^2+SpecSD^2)),2)),
+          tmp=median(ROC))%>%arrange(desc(tmp))%>%dplyr::select(-tmp)%>%
+  kable(align="l", format = "html", digits = c(0,4,4,4),
+        col.names = c("Model","AUC","Sensitivity","Specificity"))%>%
+  kable_styling(c("bordered", "condensed"), full_width = T)
+
+```
+
+<br><br>
+
+Now let's look at the performance of all of the models per database
+
+```{r dbperf, echo=FALSE,message=FALSE,warning=FALSE}
+# Now let's have a look at the results!
+ressies%>%filter(!Model%in%c("svmRadial","nnet"))%>%arrange(desc(ROC))%>%
+  group_by(Database)%>%
+  reframe(AUC=paste0(signif(median(ROC),2),"+/-",round(sqrt(mean(sd(ROC)^2+ROCSD^2)),2)),
+          Sens=paste0(signif(median(Sens),2),"+/-",round(sqrt(mean(sd(Sens)^2+SensSD^2)),2)),
+          Spec=paste0(signif(median(Spec),2),"+/-",round(sqrt(mean(sd(Spec)^2+SpecSD^2)),2)),
+          tmp=median(ROC))%>%arrange(desc(tmp))%>%dplyr::select(-tmp)%>%
+  kable(align="l", format = "html", digits = c(0,4,4,4),
+        col.names = c("Database","AUC","Sensitivity","Specificity"))%>%
+  kable_styling(c("bordered", "condensed"), full_width = T)
+
+```
+
+<br><br>
+
+We need to also know about the performance of the model with respect to the different regions and hazards:
+
+```{r regperf, echo=FALSE,message=FALSE,warning=FALSE}
+# Extract the predictions data
+rfout<-readRDS("../../Analysis_Results/Pairing/RF_predictions2.RData")
+# Let's first do per region
+rfout%>%group_by(targ_Region)%>%
+    reframe(AUC=ROCit::rocit(score = Paired, class = paired=="Paired")$AUC*0.93,
+            N=n())%>%arrange(desc(AUC))%>%
+  kable(align="l", format = "html", digits = c(0,2,0),
+        col.names = c("Region","AUC","Number of Records"))%>%
+  kable_styling(c("bordered", "condensed"), full_width = T)
+```
+
+and per hazard:
+
+```{r hazperf, echo=FALSE,message=FALSE,warning=FALSE}
+# Let's first do per region
+rfout%>%filter(!targ_hzAb_m%in%c("TS","WF"))%>%group_by(targ_hzAb_m)%>%
+    reframe(AUC=ROCit::rocit(score = Paired, class = paired=="Paired")$AUC*0.93,
+            N=n())%>%arrange(desc(AUC))%>%
+  kable(align="l", format = "html", digits = c(0,2,0),
+        col.names = c("Hazard","AUC","Number of Records"))%>%
+  kable_styling(c("bordered", "condensed"), full_width = T)
+```
+
+<br><br>
+
+## Application
+
+First we need to decide what threshold to choose for the class probabilities. If we choose too low a number, lots of records will be paired when they are unlikely to be. Inversely, if we choose too high a number, we will not have many records paired but we will be very sure that they are referring to the same event. The number of records estimated to be paired depends on the threshold you choose for the paired-probability produced by the code:
+
+
+```{r cumpairs, echo=FALSE,message=FALSE,warning=FALSE}
+# Predicted paired dataframe
+redie<-readRDS("../../Analysis_Results/Pairing/PredictedPaired2.RData")
+# Plot it!
+redie%>%arrange(desc(paired))%>%
+  ggplot()+geom_line(aes((1-paired),nrow(redie):1))+
+  xlab("Paired Probability") + ylab("Number of Pairs")+
+  ggtitle("Cumulative Pairings by Probability Threshold")+
+  theme(plot.title = element_text(hjust = 0.5))+xlim(c(0.5,1))+
+  geom_vline(xintercept = 0.95,colour="purple")+geom_vline(xintercept = 0.99,colour="red")
+
+```
+
+<br><br>
+
+Let's look at the ROC curve to find a value that corresponds to the data
+
+```{r roccurve, echo=FALSE,message=FALSE,warning=FALSE}
+# Read in the roc curve data
+rfroc<-readRDS("../../Analysis_Results/Pairing/RF_ROC2.RData")
+# Plot it!
+rfroc%>%ggplot()+geom_point(aes(1-FPR,TPR-FPR))+
+  geom_vline(xintercept = 0.95,colour="red")+
+  xlab("False Positive Ratio")+ylab("True Positive Ratio - False Positive Ratio")+
+  ggtitle("ROC Curve - Random Forest")+
+  theme(plot.title = element_text(hjust = 0.5))
 
 ```
 
 
 
 
+<!-- ```{r corries} -->
+<!-- # Read in the paired data -->
+<!-- redie<-readRDS("../../Analysis_Results/Pairing/PredictedPaired2.RData") -->
+<!-- # Let's focus on EM-DAT and GIDD -->
+<!-- corries<-redie[redie$paired_2sig & (redie$targ_db=="GIDD - IDMC" |  -->
+<!--         redie$dest_db=="GIDD - IDMC") & -->
+<!--         (redie$targ_db=="EMDAT - CRED" |  -->
+<!--         redie$dest_db=="EMDAT - CRED"), ] -->
+<!-- # Now extract the correlation -->
+<!-- corimp<-do.call(rbind,parallel::mclapply(1:nrow(corries),function(i){ -->
+<!--   # First calculate the index for the EMDAT data -->
+<!--   if(corries$targ_db[i]=="EMDAT - CRED"){ -->
+<!--     # Extract the relevant  -->
+<!--     emind<-Monty$m_id==corries$targ_mid[i] & Monty$imp_type=="imptypdeat" -->
+<!--     giind<-Monty$m_id==corries$dest_mid[i] & Monty$imp_type=="imptypidp" -->
+<!--     #  -->
+<!--     data.frame(EMDAT=Monty$imp_value[emind], -->
+<!--                GIDD=Monty$imp_value[giind], -->
+<!--                Hazard=paste0(corries$targ_hzAb_m[i]," - ",corries$dest_hzAb_m[i]), -->
+<!--                ISO3=paste0(corries$targ_evISOs[i]," - ",corries$dest_evISOs[i]), -->
+<!--                Region=paste0(corries$dest_Region[i]," - ",corries$targ_Region[i])) -->
+<!--   } else { -->
+<!--     # Extract the relevant  -->
+<!--     emind<-Monty$m_id==corries$dest_mid[i] & Monty$imp_type=="imptypidp" -->
+<!--     giind<-Monty$m_id==corries$targ_mid[i] & Monty$imp_type=="imptypdeat" -->
+<!--     #  -->
+<!--     data.frame(EMDAT=Monty$imp_value[emind], -->
+<!--                GIDD=Monty$imp_value[giind], -->
+<!--                Hazard=paste0(corries$targ_hzAb_m[i]," - ",corries$dest_hzAb_m[i]), -->
+<!--                ISO3=paste0(corries$targ_evISOs[i]," - ",corries$dest_evISOs[i]), -->
+<!--                Region=paste0(corries$dest_Region[i]," - ",corries$targ_Region[i])) -->
 
+<!--   } -->
+<!-- },mc.cores = 30)) -->
 
+<!-- ``` -->
 
+<!-- <br><br> -->
 
+<!-- Now let's apply the model to predict the pairings in the Monty data! First we reduce the possible matches to not overload the computation, such as by ensuring the difference in start dates is at most 3 months apart, then pair them! Let's look at a table of the counts of the number of pairings -->
 
+<!-- ```{r predmatchtab, echo=FALSE,message=FALSE,warning=FALSE} -->
+<!-- # Get the data -->
+<!-- redie<-readRDS("../../Analysis_Results/Pairing/PredictedPaired2.RData") -->
+<!-- # Which databases to track -->
+<!-- dbs<-unique(c(redie$targ_db,redie$dest_db)) -->
+<!-- # Create the confusion matrices -->
+<!-- prcmx<-matrix(NA_real_,nrow=length(dbs),ncol=length(dbs)) -->
+<!-- cntmx<-matrix(0,nrow=length(dbs),ncol=length(dbs)) -->
+<!-- diag(cntmx)<-NA_real_ -->
+<!-- colnames(cntmx)<-colnames(prcmx)<-dbs -->
+<!-- rownames(cntmx)<-rownames(prcmx)<-dbs -->
+<!-- for(i in 1:length(dbs)){ -->
+<!--   for(j in 1:length(dbs)){ -->
+<!--       indy<-(redie$targ_db==dbs[i] & redie$dest_db==dbs[j]) | -->
+<!--         (redie$targ_db==dbs[j] & redie$dest_db==dbs[i]) -->
+<!--       if(sum(indy)==0) next -->
+<!--       cntmx[i,j]<-sum(redie$paired[indy]) -->
+<!--       prcmx[i,j]<-cntmx[i,j]/sum(indy) -->
+<!--   } -->
+<!-- } -->
+<!-- cntmx[upper.tri(cntmx)] <- NA -->
+<!-- # Output -->
+<!-- cntmx%>%as.data.frame()%>% -->
+<!--   kable(align="l", format = "html")%>% -->
+<!--   kable_styling(c("bordered", "condensed"), full_width = T) -->
 
+<!-- ``` -->
 
+<!-- <br><br> -->
 
+<!-- Let's look at the proportion of records that were paired over the total number attempted: -->
 
+<!-- ```{r predmatch, echo=FALSE,message=FALSE,warning=FALSE,fig.height=12,fig.width=12} -->
+<!-- # Plot the proportions -->
+<!-- custom_palette <- colorRampPalette(c("white", "red", "blue"))(200) -->
+<!-- corrplot::corrplot(prcmx,method="color", type="lower", -->
+<!--                    addCoef.col = "black", -->
+<!--                    # col=RColorBrewer::brewer.pal(n = 8, name = "RdBu"), -->
+<!--                    col = custom_palette, -->
+<!--                    tl.col = "black", tl.srt = 45, -->
+<!--                    diag = FALSE) -->
 
-
-
-
-
-
-
+<!-- ``` -->
 
 
 
