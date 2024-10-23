@@ -453,7 +453,10 @@ CleanEMDAT_old<-function(EMDAT){
   EMDAT%>%AddEmptyColImp()
 }
 
-API_EMDAT<-function(){
+API_EMDAT<-function(yr=NULL){
+  # Set the upper limit for the year
+  if(is.null(yr)) yr<-AsYear(Sys.Date())
+  
   query_str = 
     'query monty {
       api_version
@@ -461,7 +464,7 @@ API_EMDAT<-function(){
         cursor: {limit: -1}
         filters: {
           from: 1900,
-          to: 2019,
+          to: ####,
           classif: ["nat-*"],
           include_hist: true
         }
@@ -521,6 +524,8 @@ API_EMDAT<-function(){
         }
       }
     }'
+  
+  query_str<-gsub("####",yr,query_str)
   # setup the connection with the GraphQL database
   client <- ghql::GraphqlClient$new(
     url = "https://api.emdat.be/v1",

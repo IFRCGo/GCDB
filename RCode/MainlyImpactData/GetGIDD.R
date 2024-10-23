@@ -90,14 +90,20 @@ GetGIDD_API<-function(){
                  "ev_name"="event_name",
                  "HazardCategory"="hazard_category_name",
                  "HazardType"="hazard_type_name",
-                 "HazardSubType"="hazard_sub_type_name",
-                 "GLIDE"="glide_numbers")
+                 "HazardSubType"="hazard_sub_type_name")
+  # Add GLIDE numbers
+  GIDD$GLIDE<-NA_character_
+  inds<-sapply(GIDD$event_codes,function(x) length(unlist(x)))!=0
+  GIDD$GLIDE[inds]<-lapply(which(inds),function(i){
+    j<-which(grepl("glide",unlist(GIDD$event_codes_type[i]),ignore.case = T))
+    return(unlist(GIDD$event_codes[i])[j])
+  })
   # Hazard taxonomy - HIPS
   GIDD%<>%GIDDHazards()
   # Patch over some of the GLIDE number issues
   GIDD$GLIDE<-lapply(1:nrow(GIDD),function(i){
     x<-GIDD$GLIDE[[i]]
-    if(length(x)==0) return(character(0))
+    if(length(x)==0 | all(is.na(x))) return(character(0))
     x%<>%str_replace(" ","")%>%str_replace("\t","")
     unique(unlist(sapply(x,function(xx){
       # Some of the GLIDE numbers are shorter than required: some are missing the ISO codes, some the hazard code and some both
