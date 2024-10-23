@@ -44,7 +44,7 @@ GetGDACS_API<-function(haz=NULL,syear=2016,fyear=NULL,alertlist=NULL){
     for (ev in haz){
       eGDACS<-data.frame()
       url<-paste0(loc,ev,"&fromdate=",syear,"-01-01+00:00&todate=",fdate,"&alertlevel=",alert)
-      tGDACS<-try(FROM_GeoJson(url_file_string = url),silent = T) 
+      tGDACS<-try(geojsonR::FROM_GeoJson(url_file_string = url),silent = T) 
       if(!typeof(tGDACS)=="list"){
         print(paste0("Warning: GetGDACSsummary data API GET for : ",url))
         next
@@ -60,6 +60,15 @@ GetGDACS_API<-function(haz=NULL,syear=2016,fyear=NULL,alertlist=NULL){
   return(list_GDACS)
   
 } 
+
+# GetGDACS_API<-function(){
+#   # GDACS API endpoint
+#   url<-"https://www.gdacs.org/gdacsapi/api/events/geteventlist/SEARCH"
+#   # Extract frmo it
+#   GDACS<-tryCatch(jsonlite::fromJSON(url)$features,silent = T,error=function(e) NULL)
+#   if(is.null(GDACS)) warning("Failed to extract from GDACS")
+#  return(GDACS) 
+# }
 
 ### Function to sort out expected country values used by GDACS ###
 SortGDACSiso<-function(country){
@@ -117,16 +126,16 @@ SortGDACSiso<-function(country){
     
     # no checks are possible if country string doesn't split up, rely on countrycode to find value.
     if(length(ct)==1){
-      ttt<-countrycode(ct, origin ='country.name', destination ='iso3c',warn = FALSE)
+      ttt<-countrycode::countrycode(ct, origin ='country.name', destination ='iso3c',warn = FALSE)
       return(rbind(tdf,data.frame(country=country,ISO3=ttt)))
     }
     
     # If it splits by ',' make checks
-    ttt<-countrycode(ct, origin ='country.name', destination ='iso3c',warn = FALSE)
+    ttt<-countrycode::countrycode(ct, origin ='country.name', destination ='iso3c',warn = FALSE)
     
     if (length(ttt[!is.na(ttt)])<=1){
       # Check that the comma wasn't for another country, e.g. Congo, Democratic Republic of
-      ttt2<-countrycode(country, origin ='country.name', destination ='iso3c',warn = FALSE)
+      ttt2<-countrycode::countrycode(country, origin ='country.name', destination ='iso3c',warn = FALSE)
       if(!is.na(ttt2)) {return(rbind(tdf,data.frame(country=country,ISO3=ttt2)))}
       
       # Checks are over
@@ -149,7 +158,7 @@ SortGDACSiso<-function(country){
   }
   
   # Country splits via '|'
-  ttt<-countrycode(ct, origin ='country.name', destination ='iso3c',warn = FALSE)
+  ttt<-countrycode::countrycode(ct, origin ='country.name', destination ='iso3c',warn = FALSE)
   ct<-ct[!duplicated(ttt)]
   ttt<-ttt[!duplicated(ttt)]
   if(anyNA(ttt)){
@@ -639,12 +648,12 @@ ShakeURL2Poly<-function(eventid,sid=1L,sil=T){
   fn_url<-"&shakeid="
   url<-paste0(st_url,eventid,fn_url,sid)
   
-  shake<-try(FROM_GeoJson(url_file_string = url),silent = sil)
+  shake<-try(geojsonR::FROM_GeoJson(url_file_string = url),silent = sil)
   
   if(class(shake) == "try-error") stop(paste0("Warning: no GDACS SHAKE data found for GDACS event - ",eventid))
   
   # url2<-paste0("https://www.gdacs.org/gdacsapi/api/events/geteventdata?eventtype=EQ&eventid=",eventid)
-  # info<-try(FROM_GeoJson(url_file_string = url2),silent = T)
+  # info<-try(geojsonR::FROM_GeoJson(url_file_string = url2),silent = T)
   # 
   # if(class(info) == "try-error") stop(paste0("Warning: no GDACS INFO data found for GDACS event - ",eventid))
   # 
@@ -1130,7 +1139,7 @@ PolyIntegrateData_old<-function(data,poly,Ldist=FALSE,av=FALSE){
 
 ExtractTC<-function(url){
   
-  tmp<-try(FROM_GeoJson(url_file_string = url),silent = T)
+  tmp<-try(geojsonR::FROM_GeoJson(url_file_string = url),silent = T)
   
   polydata<-data.frame()
   for (i in 1:length(tmp$features)){
@@ -1153,7 +1162,7 @@ ExtractTC<-function(url){
 
 # Shake2Poly<-function(murl){
 #   
-#   tmp<-try(FROM_GeoJson(url_file_string = murl),silent = T)
+#   tmp<-try(geojsonR::FROM_GeoJson(url_file_string = murl),silent = T)
 #   if(class(tmp) == "try-error") {
 #     print("Warning: no GDACS data found for ")
 #     print(murl)
@@ -1165,16 +1174,16 @@ ExtractTC<-function(url){
 #     url<-c()
 #     for (j in 1:length(tmp$properties$shakemap)) {
 #       url<-c(url,tmp$properties$shakemap[[j]]$url)
-#       tshake<-try(FROM_GeoJson(url_file_string = url),silent = T)
+#       tshake<-try(geojsonR::FROM_GeoJson(url_file_string = url),silent = T)
 #       url<-tshake$properties$geometrydetails
 #       if(!is.null(url)) {
-#         shake<-try(FROM_GeoJson(url_file_string = url),silent = T)
+#         shake<-try(geojsonR::FROM_GeoJson(url_file_string = url),silent = T)
 #         if(class(shake) != "try-error") break
 #       }
 #     }
 #   } else {
 #     url<-tmp$properties$geometrydetails
-#     shake<-try(FROM_GeoJson(url_file_string = tmp$properties$geometrydetails),silent = T)
+#     shake<-try(geojsonR::FROM_GeoJson(url_file_string = tmp$properties$geometrydetails),silent = T)
 #   }
 #   
 #   alertscore<-tmp$properties$alertscore

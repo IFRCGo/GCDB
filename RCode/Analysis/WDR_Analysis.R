@@ -381,12 +381,7 @@ openxlsx::write.xlsx(climprog,"./Analysis_Results/Kirsten/ClimateProgram.xlsx")
 openxlsx::write.xlsx(informy,"./Analysis_Results/Kirsten/Indices.xlsx")
 openxlsx::write.xlsx(informy%>%filter(ISO3%in%unique(WDR$ISO3)),"./Analysis_Results/Kirsten/RedIndices.xlsx")
 
-
-
-
-
-
-
+#%%%%%%%%%%%%%%%%%%%%%%%%% EXTRACT ALL DATA %%%%%%%%%%%%%%%%%%%%%%%%%%#
 
 Monty<-convGOApp_Monty(taby=T)
 # EM-DAT
@@ -397,7 +392,6 @@ Monty%<>%dplyr::bind_rows(convEMDAT_Monty(taby=T)%>%
 # IDMC GIDD
 Monty%<>%dplyr::bind_rows(convGIDD_Monty(taby=T)%>%
                             mutate_if(is.Date,as.character)%>%
-                            mutate(across(c(ext_ID,haz_maxvalue),as.character))%>%
                             dplyr::select(-any_of(c("all_ext_IDs","imp_spat_ID","haz_ext_IDs"))))
 # IDMC IDU
 Monty%<>%dplyr::bind_rows(convIDU_Monty(taby=T)%>%
@@ -426,147 +420,128 @@ Monty%<>%filter(imp_value!=0 & !is.na(haz_spec) & !is.na(imp_value))
 # saveRDS(Monty,"./CleanedData/Monty_2024-07-29_tab.RData")
 # Monty<-readRDS("./CleanedData/Monty_2024-07-29_tab.RData")
 
-Monty$year<-AsYear(Monty$imp_sdate)
+Monty$Year<-AsYear(Monty$imp_sdate)
 Monty%<>%filter(!is.na(year))
+Monty$ISO3<-Monty$ev_ISO3s
+Monty$imp_src_db[is.na(Monty$imp_src_db)]<-Monty$haz_src_db[is.na(Monty$imp_src_db)]
+Monty$imp_src_org[is.na(Monty$imp_src_db)]<-Monty$haz_src_org[is.na(Monty$imp_src_db)]
 
-Monty$haz_Ab_grp<-Monty$haz_Ab; 
-# Monty$haz_Ab_grp[Monty$haz_Ab_grp%in%c("HW","CW","HT")]<-"ET"
-Monty$haz_Ab_grp[Monty$haz_Ab_grp%in%c("HT")]<-"HW"
-Monty$haz_Ab_grp[Monty$haz_Ab_grp%in%c("FR")]<-"WF"
-Monty$haz_Ab_grp[Monty$haz_Ab_grp%in%c("WV","WA")]<-"SS"
-Monty$haz_Ab_grp[Monty$haz_Ab_grp%in%c("MM","MS","SL","AV","ER")]<-"LS"
-Monty$haz_Ab_grp[Monty$haz_Ab_grp%in%c("TC,FL","EC")]<-"TC"
+Monty$haz_Ab<-Monty$haz_Ab; 
+# Monty$haz_Ab[Monty$haz_Ab%in%c("HW","CW","HT")]<-"ET"
+Monty$haz_Ab[Monty$haz_Ab%in%c("HT")]<-"HW"
+Monty$haz_Ab[Monty$haz_Ab%in%c("FR")]<-"WF"
+Monty$haz_Ab[Monty$haz_Ab%in%c("WV","WA")]<-"SS"
+Monty$haz_Ab[Monty$haz_Ab%in%c("MM","MS","SL","AV","ER")]<-"LS"
+Monty$haz_Ab[Monty$haz_Ab%in%c("TC,FL","EC")]<-"TC"
 Monty%<>%filter(!haz_Ab%in%c("EP","IN","SN"))
+Monty$haz_Ab[Monty$haz_Ab=="LS" & Monty$haz_type=="haztypehydromet"]<-"LS-HM"
+Monty$haz_Ab[Monty$haz_Ab=="LS" & Monty$haz_type=="haztypegeohaz"]<-"LS-G"
 
+table(Monty$haz_Ab)
+table(Monty$imp_src_db[Monty$haz_Ab=="LS"])
+table(Monty$haz_type[Monty$haz_Ab=="LS"])
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+isoEQ<-unique(Monty$ISO3[Monty$haz_Ab=="EQ"])
 #%%%%%%%%%%%%%%%%%%%%%% REPORT FIGURES %%%%%%%%%%%%%%%%%%%%%%%%#
 
-impies%>%filter(Year>=2010 & imp_src_db=="EMDAT")%>%
-  group_by(Year)%>%
-  reframe(Percentage=100*sum(haz_type=="haztypehydromet")/(sum(haz_type=="haztypegeohaz")+sum(haz_type=="haztypehydromet")))%>%
-  ggplot()+geom_point(aes(Year,Percentage))
+# Top-5 impacts, per impact type and hazard
+top5<-Monty%>%filter(Year==AsYear(Sys.Date()) & 
+                     haz_type=="haztypehydromet" &
+                     imp_type!="imptypalert")%>%
+  arrange(desc(imp_value))%>%
+  group_by(exp_spec,imp_type)%>%
+  slice(1:5)%>%
+  left_join(taxies%>%filter(list_name=="exp_specs")%>%dplyr::select(2:3)%>%
+              setNames(c("exp_spec","exposure")),by="exp_spec")%>%
+  left_join(taxies%>%filter(list_name=="imp_type")%>%dplyr::select(2:3)%>%
+              setNames(c("imp_type","impact_type")),by="imp_type")%>%
+  ungroup()%>%
+  dplyr::select(ev_sdate,ev_fdate,ISO3,haz_Ab,exposure,impact_type,
+                imp_value,imp_units,imp_src_db,imp_src_org,ev_name)
 
-impies%>%filter(Year>=2010 & imp_src_db=="EMDAT" & 
-                  exp_spec=="expspec_allpeop" & imp_type=="imptypdeat" &
-                  AsMonth(ev_sdate)<10 & AsDay(ev_sdate)<11)%>%
-  group_by(Year,haz_type)%>%
-  reframe(Count=sum(imp_value))%>%
-  ggplot()+geom_point(aes(Year,Count,colour=haz_type))
-
-brks<-seq.int(2010,AsYear(Sys.Date()),by=2)
-# brks[length(brks)]<-AsYear(Sys.Date())
-
-impies%>%filter(Year>2010 & imp_src_db=="EMDAT" &
-                exp_spec=="expspec_allpeop" & imp_type%in%c("imptypidp","imptypdeat"))%>%
-  mutate(YearGroup = cut(Year,breaks = brks,
-                               include.lowest = T,right=F))%>%
-  filter(!is.na(YearGroup))%>%
-  group_by(YearGroup)%>%
-  reframe(Percentage=100*sum(haz_type=="haztypehydromet")/(sum(haz_type=="haztypegeohaz")+sum(haz_type=="haztypehydromet")))%>%
-  ggplot()+geom_point(aes(YearGroup,Percentage))
-
-impies%>%filter(Year>2010 & imp_src_db=="EMDAT" &
-                  exp_spec=="expspec_allpeop" & imp_type%in%c("imptypidp","imptypdeat"))%>%
-  group_by(Year)%>%
-  reframe(hm=sum(haz_type=="haztypehydromet"),
-          ge=sum(haz_type=="haztypegeohaz"),
-          Percentage=100*hm/(ge+hm))%>%
-  ggplot()+geom_point(aes(Year,Percentage))
-
-impies%>%filter(Year>2010 & imp_src_db=="EMDAT" & ISO3%in%isoEQ &
-                  exp_spec=="expspec_allpeop" & imp_type%in%c("imptypidp","imptypdeat"))%>%
-  # mutate(YearGroup = cut(Year,breaks = brks,
-  #                              include.lowest = T,right=F))%>%
-  # filter(!is.na(YearGroup))%>%
-  group_by(Year)%>%
-  reframe(Percentage=100*sum(haz_type=="haztypehydromet")/(sum(haz_type=="haztypegeohaz")+sum(haz_type=="haztypehydromet")))%>%
-  ggplot()+geom_point(aes(Year,Percentage))
+View(top5)
+openxlsx::write.xlsx(top5,"./Analysis_Results/Kirsten/Top5_2024.xlsx")
 
 
-impies%>%filter(Year>=2000 & ISO3%in%isoEQ &
-                  exp_spec=="expspec_allpeop" & imp_type%in%c("imptypidp","imptypdeat"))%>%
-  # mutate(YearGroup = cut(Year,breaks = brks,
-  #                              include.lowest = T,right=F))%>%
-  # filter(!is.na(YearGroup))%>%
-  group_by(Year)%>%
-  reframe(Percentage=100*sum(haz_type=="haztypehydromet")/(sum(haz_type=="haztypegeohaz")+sum(haz_type=="haztypehydromet")))%>%
-  ggplot()+geom_point(aes(Year,Percentage))
+ifrc<-Monty%>%filter(imp_src_org=="IFRC" & Year==2024)
+
+print(paste0("No. hydromet hazards with DREF = ",
+             ifrc%>%filter(imp_src_db=="GO-DREF" & haz_type=="haztypehydromet" & imp_type=="imptypcost")%>%nrow(),
+             ". As a percentage of total DREF = ",
+             round(100*ifrc%>%filter(imp_src_db=="GO-DREF" & haz_type=="haztypehydromet" & imp_type=="imptypcost")%>%nrow()/ifrc%>%filter(imp_src_db=="GO-DREF" & imp_type=="imptypcost")%>%nrow(),1),"%"))
+print(paste0("Total allocation to hydromet DREFs = ",
+             ifrc%>%filter(imp_src_db=="GO-DREF" & haz_type=="haztypehydromet" & imp_type=="imptypcost")%>%pull(imp_value)%>%sum," [CHF]. As a percentage of total DREF = ",
+             round(100*ifrc%>%filter(imp_src_db=="GO-DREF" & haz_type=="haztypehydromet" & imp_type=="imptypcost")%>%pull(imp_value)%>%sum/ifrc%>%filter(imp_src_db=="GO-DREF" & imp_type=="imptypcost")%>%pull(imp_value)%>%sum,1),"%"))
+print(paste0("Number of EAPs triggered = ",
+             ifrc%>%filter(imp_src_db=="GO-DREF" & haz_type=="haztypehydromet" &
+                             imp_type=="imptypcost" & grepl("EAP",ev_name,ignore.case = F))%>%nrow(),
+             ". As a percentage of total EAPs = ",
+             round(100*ifrc%>%filter(imp_src_db=="GO-DREF" & haz_type=="haztypehydromet" &
+                                       imp_type=="imptypcost" & grepl("EAP",ev_name,ignore.case = F))%>%nrow()/ifrc%>%filter(imp_src_db=="GO-DREF" & imp_type=="imptypcost" & grepl("EAP",ev_name,ignore.case = F))%>%nrow(),1),"%"))
+print(paste0("Total allocation to hydromet EAPs = ",
+             ifrc%>%filter(imp_src_db=="GO-DREF" & haz_type=="haztypehydromet" &
+                             imp_type=="imptypcost" & grepl("EAP",ev_name,ignore.case = F))%>%pull(imp_value)%>%sum," [CHF]. As a percentage of total DREF = ",
+             round(100*ifrc%>%filter(imp_src_db=="GO-DREF" & haz_type=="haztypehydromet" &
+                                       imp_type=="imptypcost" & grepl("EAP",ev_name,ignore.case = F))%>%pull(imp_value)%>%sum/ifrc%>%filter(imp_src_db=="GO-DREF" & imp_type=="imptypcost" & grepl("EAP",ev_name,ignore.case = F))%>%pull(imp_value)%>%sum,1),"%"))
 
 
+# Breakdown per fragility level:
+frag<-left_join(ifrc%>%filter(imp_src_db=="GO-DREF" &
+                                haz_type=="haztypehydromet" &
+                                imp_type=="imptypcost")%>%
+                  dplyr::select(ev_sdate,ev_fdate,ISO3,haz_Ab,exp_spec,imp_type,
+                                imp_value,imp_units,imp_src_db,imp_src_org,ev_name),informy,by="ISO3")
+p<-frag%>%filter(!is.na(FSI_class))%>%
+  mutate(FSI_class = factor(FSI_class, levels = c("Very High", "High", "Medium", "Low")))%>%
+  ggplot()+geom_bar(aes(FSI_class,fill=FSI_class)) +
+  xlab("Fragile States Index Classification")+ylab("Number of DREF Allocations")+
+  labs(fill="FSI Class")+
+  ggtitle("No. DREF Allocations per Fragility Class")+theme(plot.title = element_text(hjust = 0.5));p
+ggsave("./Analysis_Results/Kirsten/FSI_HM-2024.png",p,width=8,height = 5)
 
-impies%>%filter(Year>2010 & ISO3%in%isoEQ &
-                  exp_spec=="expspec_allpeop" & imp_type=="imptypidp")%>%
-  # mutate(YearGroup = cut(Year,breaks = brks,
-  #                              include.lowest = T,right=F))%>%
-  # filter(!is.na(YearGroup))%>%
-  group_by(Year)%>%
-  reframe(Percentage=100*sum(imp_value[haz_type=="haztypehydromet"])/(sum(imp_value[haz_type=="haztypegeohaz"])+sum(imp_value[haz_type=="haztypehydromet"])))%>%
-  ggplot()+geom_point(aes(as.factor(Year),Percentage))
-
-impies%>%filter(Year>=2000 & ISO3%in%isoEQ &
-                  exp_spec=="expspec_allpeop" & imp_type=="imptypdeat")%>%
-  # mutate(YearGroup = cut(Year,breaks = brks,
-  #                              include.lowest = T,right=F))%>%
-  # filter(!is.na(YearGroup))%>%
-  group_by(Year)%>%
-  reframe(Percentage=100*sum(imp_value[haz_type=="haztypehydromet"])/(sum(imp_value[haz_type=="haztypegeohaz"])+sum(imp_value[haz_type=="haztypehydromet"])))%>%
-  ggplot()+geom_point(aes(as.factor(Year),Percentage))
-
-impies%>%filter(Year>=2000 & ISO3%in%isoEQ &
-                  exp_spec=="expspec_allpeop" & imp_type=="imptypaffe")%>%
-  # mutate(YearGroup = cut(Year,breaks = brks,
-  #                              include.lowest = T,right=F))%>%
-  # filter(!is.na(YearGroup))%>%
-  group_by(Year)%>%
-  reframe(Percentage=100*sum(imp_value[haz_type=="haztypehydromet"])/(sum(imp_value[haz_type=="haztypegeohaz"])+sum(imp_value[haz_type=="haztypehydromet"])))%>%
-  ggplot()+geom_point(aes(as.factor(Year),Percentage))
-
-brks<-seq.int(2000,AsYear(Sys.Date()),by=5)
-
-impies%>%filter(ISO3%in%isoEQ &
-                  exp_spec=="expspec_allpeop" & imp_type=="imptypdeat")%>%
-  mutate(YearGroup = cut(Year,breaks = brks,
-                               include.lowest = T,right=F))%>%
-  filter(!is.na(YearGroup))%>%
-  group_by(YearGroup)%>%
-  reframe(Percentage=100*sum(imp_value[haz_type=="haztypehydromet"])/(sum(imp_value[haz_type=="haztypegeohaz"])+sum(imp_value[haz_type=="haztypehydromet"])))%>%
-  ggplot()+geom_point(aes(YearGroup,Percentage))
+RegIncFull%>%filter(Year==2024)
 
 
 
-p<-impies%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & ISO3%in%isoEQ & 
-                     !(imp_src_db=="IDU" & Year<2015) &
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+p<-Monty%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & #ISO3%in%isoEQ & 
+                     !(imp_src_db=="GIDD" & Year<2015) &
                   # exp_spec=="expspec_allpeop" & imp_type=="imptypdeat" &
-                  !imp_src_db%in%c("GO-FR","GO-App"))%>%
+                  !imp_src_db%in%c("GO-FR","GO-EA","GO-FBA","GDACS"))%>%
   # mutate(YearGroup = cut(Year,breaks = brks,
   #                              include.lowest = T,right=F))%>%
   # filter(!is.na(YearGroup))%>%
   group_by(imp_src_db,Year)%>%
   # reframe(Percentage=sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)/(sum(imp_value[haz_type=="haztypegeohaz"],na.rm = T)+sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)))%>%
   reframe(Percentage=sum(haz_type=="haztypehydromet",na.rm = T)/(sum(haz_type=="haztypegeohaz",na.rm = T)+sum(haz_type=="haztypehydromet",na.rm = T)))%>%
-  ggplot(aes(group=imp_src_db))+geom_point(aes(Year,Percentage,colour=imp_src_db),alpha=0.5)+
+  ggplot(aes(group=imp_src_db))+geom_point(aes(Year,Percentage,colour=imp_src_db),alpha=0.2)+
   geom_smooth(aes(Year,Percentage,colour=imp_src_db),alpha=0.1,method = "glm", method.args = list(family = "binomial"),se = FALSE)+
-  ylab("Proportion")+ylim(c(0.75,0.97))+labs(colour="Database")+
+  ylab("Proportion")+labs(colour="Database")+ylim(c(0.75,0.97))+
   ggtitle("Proportion of Climate & Weather Events")+theme(plot.title = element_text(hjust = 0.5));p
   # facet_wrap(~imp_src_db,scales = "fixed");p
 ggsave("./Analysis_Results/Kirsten/Percentage_HM-G_Year.png",p,width=8,height = 5)
 
-p<-impies%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & #ISO3%in%isoEQ & 
+p<-Monty%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & #ISO3%in%isoEQ & 
                      # exp_spec=="expspec_allpeop" & imp_type=="imptypdeat" &
-                     !(imp_src_db=="IDU" & Year<2015) &
+                     !(imp_src_db=="GIDD" & Year<2015) &
                      !imp_src_db%in%c("GDACS","GO-FR"))%>%
   # mutate(YearGroup = cut(Year,breaks = brks,
   #                              include.lowest = T,right=F))%>%
@@ -584,7 +559,7 @@ ggsave("./Analysis_Results/Kirsten/Percentage_HM-G_Year_noGIDD.png",p,width=8,he
 
 
 
-p<-impies%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & #ISO3%in%isoEQ & 
+p<-Monty%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & #ISO3%in%isoEQ & 
                      exp_spec=="expspec_allpeop" & imp_type=="imptypdeat" &
                      imp_src_db!="GO-FR")%>%
   # mutate(YearGroup = cut(Year,breaks = brks,
@@ -601,7 +576,7 @@ p<-impies%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & #ISO3%in%isoEQ &
 
 
 
-p<-impies%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & #ISO3%in%isoEQ & 
+p<-Monty%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & #ISO3%in%isoEQ & 
                      exp_spec=="expspec_allpeop" & imp_type%in%c("imptypaffe","imptypdiraffe") &
                      imp_src_db!="GO-FR")%>%
   # mutate(YearGroup = cut(Year,breaks = brks,
@@ -617,7 +592,7 @@ p<-impies%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & #ISO3%in%isoEQ &
   facet_wrap(~imp_src_db,scales = "fixed");p
 
 
-p<-impies%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & #ISO3%in%isoEQ & 
+p<-Monty%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & #ISO3%in%isoEQ & 
                      exp_spec=="expspec_allpeop" & imp_type%in%c("imptypaffe","imptypindaffe") &
                      imp_src_db!="GO-FR")%>%
   # mutate(YearGroup = cut(Year,breaks = brks,
@@ -632,7 +607,7 @@ p<-impies%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & #ISO3%in%isoEQ &
   ggtitle("Proportion Hydro-Met to Geological Hazards")+theme(plot.title = element_text(hjust = 0.5))+
   facet_wrap(~imp_src_db,scales = "fixed");p
 
-p<-impies%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & !is.na(haz_Ab) & haz_Ab!="GL" & #ISO3%in%isoEQ & 
+p<-Monty%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & !is.na(haz_Ab) & haz_Ab!="GL" & #ISO3%in%isoEQ & 
                      # exp_spec=="expspec_allpeop" & imp_type=="imptypdeat" &
                      imp_src_db!="GO-FR" & haz_Ab%in%lhaz)%>%
   # mutate(YearGroup = cut(Year,breaks = brks,
@@ -648,7 +623,7 @@ p<-impies%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & !is.na(haz_Ab) & haz_A
   facet_wrap(~haz_Ab,scales = "free_y");p
 
 
-p<-impies%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & !is.na(haz_Ab) & haz_Ab!="GL" & #ISO3%in%isoEQ & 
+p<-Monty%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & !is.na(haz_Ab) & haz_Ab!="GL" & #ISO3%in%isoEQ & 
                   exp_spec=="expspec_allpeop" & imp_type=="imptypdeat" &
                   imp_src_db!="GO-FR" & haz_Ab%in%lhaz)%>%
   # mutate(YearGroup = cut(Year,breaks = brks,
@@ -665,7 +640,7 @@ p<-impies%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & !is.na(haz_Ab) & haz_A
 ggsave("./Analysis_Results/Kirsten/Log-No-Fatalities_haz_db.png",p)
 
 
-p<-impies%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & !is.na(haz_Ab) & haz_Ab!="GL" & #ISO3%in%isoEQ & 
+p<-Monty%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & !is.na(haz_Ab) & haz_Ab!="GL" & #ISO3%in%isoEQ & 
                   exp_spec=="expspec_allpeop" & imp_type=="imptypdeat" &
                   imp_src_db=="EMDAT")%>%
   # mutate(YearGroup = cut(Year,breaks = seq.int(1990,2020,10),
@@ -682,7 +657,7 @@ p<-impies%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & !is.na(haz_Ab) & haz_A
 ggsave("./Analysis_Results/Kirsten/No-Fatalities_haz_db.png",p)
 
 
-p<-impies%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & !is.na(haz_Ab) & haz_Ab!="GL" & #ISO3%in%isoEQ & 
+p<-Monty%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & !is.na(haz_Ab) & haz_Ab!="GL" & #ISO3%in%isoEQ & 
                   exp_spec=="expspec_allpeop" & imp_type=="imptypdeat" &
                   imp_src_db!="GO-FR")%>%
   mutate(YearGroup = cut(Year,breaks = seq.int(1990,2020,3),
@@ -698,7 +673,7 @@ p<-impies%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & !is.na(haz_Ab) & haz_A
   ggtitle("Fatalities per Hazard")+theme(plot.title = element_text(hjust = 0.5))+
   facet_wrap(~haz_Ab,scales = "free_y");p
 
-p<-impies%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & !is.na(haz_Ab) & haz_Ab!="GL" & #ISO3%in%isoEQ & 
+p<-Monty%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & !is.na(haz_Ab) & haz_Ab!="GL" & #ISO3%in%isoEQ & 
                   imp_src_db!="GO-FR" & haz_Ab%in%lhaz)%>%
   # mutate(YearGroup = cut(Year,breaks = seq.int(1990,2020,3),
   #                        include.lowest = T,right=F))%>%
@@ -718,7 +693,7 @@ ggsave("./Analysis_Results/Kirsten/Log_No-Events_haz_db.png",p)
 
 
 
-p<-impies%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & !is.na(haz_Ab) & haz_Ab!="GL" & #ISO3%in%isoEQ & 
+p<-Monty%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & !is.na(haz_Ab) & haz_Ab!="GL" & #ISO3%in%isoEQ & 
                   exp_spec=="expspec_allpeop" & imp_type=="imptypdeat" &
                   imp_src_db!="GO-FR" & haz_Ab%in%lhaz)%>%
   # reframe(Percentage=sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)/(sum(imp_value[haz_type=="haztypegeohaz"],na.rm = T)+sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)))%>%
@@ -739,8 +714,8 @@ ggsave("./Analysis_Results/Kirsten/Log-ObsFatalities_haz_db.png",p)
 #%%%%%%%%%%%%%%%%%%%%% FOR CLIMATE CHANGE %%%%%%%%%%%%%%%%%%%%%%%#
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 
-propy<-impies%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & ISO3%in%isoEQ &
-                         !(imp_src_db=="IDU" & Year<2015) &
+propy<-Monty%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & ISO3%in%isoEQ &
+                         !(imp_src_db=="GIDD" & Year<2015) &
                          !duplicated(imp_sub_ID) &
                          !imp_src_db%in%c("GO-FR","GDACS"))%>%
   group_by(imp_src_db,Year)%>%
@@ -766,9 +741,9 @@ propy%>%ggplot()+geom_point(aes(Year,Percentage,colour=imp_src_db,size=Weights))
 # Now let's predict some values with the analysis
 modelly<-fixest::feglm(Percentage ~ Year | imp_src_db,family = "binomial",data = propy, weights = propy$Weights)
 # Prediction for 2022
-predict(modelly,data.frame(imp_src_db="IDU",Year=2022))
+predict(modelly,data.frame(imp_src_db="GIDD",Year=2022))
 # Prediction for 1990
-predict(modelly,data.frame(imp_src_db="IDU",Year=1990))
+predict(modelly,data.frame(imp_src_db="GIDD",Year=1990))
 # How about for the appeals dataset?
 predict(modelly,data.frame(imp_src_db="GO-App",Year=2022))
 
@@ -917,14 +892,14 @@ outer%>%openxlsx::write.xlsx("./Analysis_Results/Kirsten/Perc_AllocFund_ClimWeat
 
 
 
-daterange <- impies%>%mutate(ev_sdate=as.Date(ev_sdate))%>%
+daterange <- Monty%>%mutate(ev_sdate=as.Date(ev_sdate))%>%
   filter(imp_src_db!="GDACS")%>%
   group_by(imp_src_db)%>%
   reframe(ev_sdate=seq(min(ev_sdate,na.rm = T),max(ev_sdate,na.rm = T), by = "1 day"))
 
-tmp <- impies %>% mutate(ev_sdate=as.Date(ev_sdate,format="%Y-%m-%d"), Year=AsYear(ev_sdate)) %>% arrange(ev_sdate)%>%
+tmp <- Monty %>% mutate(ev_sdate=as.Date(ev_sdate,format="%Y-%m-%d"), Year=AsYear(ev_sdate)) %>% arrange(ev_sdate)%>%
   filter(Year>1990 & Year<=AsYear(Sys.Date()) & 
-           !(imp_src_db=="IDU" & Year<2015) &
+           !(imp_src_db=="GIDD" & Year<2015) &
            !imp_src_db%in%c("GO-FR","GDACS") &
            exp_spec%in%c("expspec_allpeop","expspec_aidunkinf") & 
            imp_type%in%c("imptypdeat","imptypcost","imptypdama","imptypdest",
@@ -948,7 +923,7 @@ tmp%>%
 
 propy<-appeal%>%mutate(ev_sdate=as.Date(ev_sdate), Year=AsYear(ev_sdate))%>%
   filter(Year>1990 & Year<=AsYear(Sys.Date()) & 
-                         # !(imp_src_db=="IDU" & AsYear(ev_sdate)<2015) &
+                         # !(imp_src_db=="GIDD" & AsYear(ev_sdate)<2015) &
                          !duplicated(imp_sub_ID) &
                          !imp_src_db%in%c("GO-FR","GDACS"))%>%
   group_by(imp_src_db,Year)%>%
@@ -969,10 +944,10 @@ ggsave("./Plots/Counts_db_w-LOESS.png",p,width=10,height=6)
 
 
 
-impies%<>%mutate(Region=left_join(impies,readxl::read_xlsx(filer)%>%
+Monty%<>%mutate(Region=left_join(Monty,readxl::read_xlsx(filer)%>%
                                     transmute(ISO3=`ISO Code`,continent=`UN Region`),
                                   by="ISO3")$continent,
-                 Subregion=left_join(impies,readxl::read_xlsx(filer)%>%
+                 Subregion=left_join(Monty,readxl::read_xlsx(filer)%>%
                                        transmute(ISO3=`ISO Code`,continent=`World Bank Regions`),
                                      by="ISO3")$continent)
 # So that the months are plotted in english
@@ -982,7 +957,7 @@ month_labs<-c("January","February","March","April",
               "May","June","July","August",
               "September","October","November","December")
 # 
-p<-impies%>%filter(!is.na(Subregion) & Subregion!="Not Classified" & 
+p<-Monty%>%filter(!is.na(Subregion) & Subregion!="Not Classified" & 
                      (haz_type=="haztypehydromet" | haz_Ab=="WF") & imp_src_db=="EMDAT")%>%
   distinct(GCDB_ID,.keep_all = T)%>%group_by(Subregion)%>%
   mutate(difftime=as.numeric((as.Date(ev_sdate)-as.Date(paste0(AsYear(ev_sdate),"-01-01")))/365))%>%
@@ -999,7 +974,7 @@ p<-impies%>%filter(!is.na(Subregion) & Subregion!="Not Classified" &
   ggtitle("Proportion of Climate- & Weather-Related Events");p
 ggsave("./Plots/PercEvents_Month_Subregion.png",p,height = 8,width=12) 
 # 
-p<-impies%>%filter(!is.na(Subregion) & Subregion!="Not Classified" & 
+p<-Monty%>%filter(!is.na(Subregion) & Subregion!="Not Classified" & 
                      imp_src_db=="EMDAT" & haz_Ab%in%c("FL"))%>%
   distinct(GCDB_ID,.keep_all = T)%>%group_by(Subregion)%>%
   mutate(difftime=as.numeric((as.Date(ev_sdate)-as.Date(paste0(AsYear(ev_sdate),"-01-01")))/365))%>%
@@ -1016,7 +991,7 @@ p<-impies%>%filter(!is.na(Subregion) & Subregion!="Not Classified" &
   ggtitle("Proportion of Flood Events");p
 ggsave("./Plots/PercFloods_Month_Subregion.png",p,height = 8,width=12) 
 # 
-p<-impies%>%filter(!is.na(Subregion) & Subregion!="Not Classified" & 
+p<-Monty%>%filter(!is.na(Subregion) & Subregion!="Not Classified" & 
                      (haz_type=="haztypehydromet" | haz_Ab=="WF") & 
                      exp_spec=="expspec_allpeop" & imp_type=="imptypdeat")%>%
   distinct(GCDB_ID,.keep_all = T)%>%group_by(Subregion)%>%
@@ -1035,7 +1010,7 @@ p<-impies%>%filter(!is.na(Subregion) & Subregion!="Not Classified" &
   ggtitle("Proportion of Climate- & Weather-Related Deaths");p
 ggsave("./Plots/PercDeaths_Month_Subregion.png",p,height = 8,width=12) 
 # 
-p<-impies%>%filter(!is.na(Subregion) & Subregion!="Not Classified" & 
+p<-Monty%>%filter(!is.na(Subregion) & Subregion!="Not Classified" & 
                      (haz_type=="haztypehydromet" | haz_Ab=="WF") & 
                      exp_spec=="expspec_allpeop" & imp_type=="imptypdeat")%>%
   distinct(GCDB_ID,.keep_all = T)%>%group_by(Subregion)%>%
@@ -1055,7 +1030,7 @@ p<-impies%>%filter(!is.na(Subregion) & Subregion!="Not Classified" &
 ggsave("./Plots/PercFloodDeaths_Month_Subregion.png",p,height = 8,width=12) 
 
 
-p<-impies%>%filter(!is.na(Subregion) & Subregion!="Not Classified" & 
+p<-Monty%>%filter(!is.na(Subregion) & Subregion!="Not Classified" & 
                      (haz_type=="haztypehydromet" | haz_Ab=="WF") & 
                      exp_spec%in%c("expspec_ecodirtotinf","expspec_ecodirtotnoninf") & imp_type=="imptypcost")%>%
   distinct(GCDB_ID,.keep_all = T)%>%group_by(Subregion)%>%
@@ -1076,7 +1051,7 @@ p<-impies%>%filter(!is.na(Subregion) & Subregion!="Not Classified" &
   ggtitle("Proportion of Cost");p
 ggsave("./Plots/PercCost_Month_Subregion_perDB.png",p,height = 8,width=12) 
 
-p<-impies%>%filter(!is.na(Subregion) & Subregion!="Not Classified" & 
+p<-Monty%>%filter(!is.na(Subregion) & Subregion!="Not Classified" & 
                      (haz_type=="haztypehydromet" | haz_Ab=="WF") & 
                      exp_spec=="expspec_ecodirtotinf" & imp_type=="imptypcost")%>%
   distinct(GCDB_ID,.keep_all = T)%>%group_by(Subregion)%>%
@@ -1098,7 +1073,7 @@ p<-impies%>%filter(!is.na(Subregion) & Subregion!="Not Classified" &
 ggsave("./Plots/PercCost_Month_Subregion_EMDAT.png",p,height = 8,width=12) 
 
 
-tmp<-impies%>%mutate(Year=AsYear(ev_sdate), Date=as.Date(ev_sdate))%>%
+tmp<-Monty%>%mutate(Year=AsYear(ev_sdate), Date=as.Date(ev_sdate))%>%
   filter(haz_Ab=="EQ" & imp_src_db=="EMDAT" &
          exp_spec=="expspec_allpeop" & imp_type=="imptypdeat" &
          Year<2005)%>%distinct(GCDB_ID,.keep_all = T)%>%
