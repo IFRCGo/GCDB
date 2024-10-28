@@ -417,9 +417,6 @@ Monty%<>%dplyr::bind_rows(GDACS%>%
 
 Monty%<>%filter(imp_value!=0 & !is.na(haz_spec) & !is.na(imp_value))
 
-# saveRDS(Monty,"./CleanedData/Monty_2024-07-29_tab.RData")
-# Monty<-readRDS("./CleanedData/Monty_2024-07-29_tab.RData")
-
 Monty$Year<-AsYear(Monty$imp_sdate)
 Monty%<>%filter(!is.na(year))
 Monty$ISO3<-Monty$ev_ISO3s
@@ -442,13 +439,18 @@ table(Monty$imp_src_db[Monty$haz_Ab=="LS"])
 table(Monty$haz_type[Monty$haz_Ab=="LS"])
 
 isoEQ<-unique(Monty$ISO3[Monty$haz_Ab=="EQ"])
+
+saveRDS(Monty,"./CleanedData/Monty_2024-10-24_tab.RData")
+Monty<-readRDS("./CleanedData/Monty_2024-10-24_tab.RData")
 #%%%%%%%%%%%%%%%%%%%%%% REPORT FIGURES %%%%%%%%%%%%%%%%%%%%%%%%#
 
 # Top-5 impacts, per impact type and hazard
 top5<-Monty%>%filter(Year==AsYear(Sys.Date()) & 
                      haz_type=="haztypehydromet" &
                      imp_type!="imptypalert")%>%
-  arrange(desc(imp_value))%>%
+  dplyr::select(ev_sdate,ev_fdate,ISO3,haz_Ab,exp_spec,imp_type,
+                imp_value,imp_units,imp_src_db,imp_src_org,ev_name)%>%
+  arrange(desc(imp_value))%>%distinct()%>%
   group_by(exp_spec,imp_type)%>%
   slice(1:5)%>%
   left_join(taxies%>%filter(list_name=="exp_specs")%>%dplyr::select(2:3)%>%
@@ -502,25 +504,7 @@ ggsave("./Analysis_Results/Kirsten/FSI_HM-2024.png",p,width=8,height = 5)
 RegIncFull%>%filter(Year==2024)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#%%%%%%%%%%%%%%%%%%%%%% MAKE FIGURES %%%%%%%%%%%%%%%%%%%%%%%%#
 
 p<-Monty%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & #ISO3%in%isoEQ & 
                      !(imp_src_db=="GIDD" & Year<2015) &
@@ -539,182 +523,12 @@ p<-Monty%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & #ISO3%in%isoEQ &
   # facet_wrap(~imp_src_db,scales = "fixed");p
 ggsave("./Analysis_Results/Kirsten/Percentage_HM-G_Year.png",p,width=8,height = 5)
 
-p<-Monty%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & #ISO3%in%isoEQ & 
-                     # exp_spec=="expspec_allpeop" & imp_type=="imptypdeat" &
-                     !(imp_src_db=="GIDD" & Year<2015) &
-                     !imp_src_db%in%c("GDACS","GO-FR"))%>%
-  # mutate(YearGroup = cut(Year,breaks = brks,
-  #                              include.lowest = T,right=F))%>%
-  # filter(!is.na(YearGroup))%>%
-  group_by(imp_src_db,Year)%>%
-  # reframe(Percentage=sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)/(sum(imp_value[haz_type=="haztypegeohaz"],na.rm = T)+sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)))%>%
-  reframe(Percentage=sum(haz_type=="haztypehydromet",na.rm = T)/(sum(haz_type=="haztypegeohaz",na.rm = T)+sum(haz_type=="haztypehydromet",na.rm = T)))%>%
-  ggplot(aes(group=imp_src_db))+geom_point(aes(Year,Percentage,colour=imp_src_db),alpha=0.5)+
-  geom_smooth(aes(Year,Percentage,colour=imp_src_db),alpha=0.1,method = "glm", method.args = list(family = "binomial"),se = FALSE)+
-  ylab("Proportion")+ylim(c(0.75,0.97))+labs(colour="Database")+
-  ggtitle("Proportion of Climate & Weather Events")+theme(plot.title = element_text(hjust = 0.5));p
-# facet_wrap(~imp_src_db,scales = "fixed");p
-ggsave("./Analysis_Results/Kirsten/Percentage_HM-G_Year_noGIDD.png",p,width=8,height = 5)
-
-
-
-
-p<-Monty%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & #ISO3%in%isoEQ & 
-                     exp_spec=="expspec_allpeop" & imp_type=="imptypdeat" &
-                     imp_src_db!="GO-FR")%>%
-  # mutate(YearGroup = cut(Year,breaks = brks,
-  #                              include.lowest = T,right=F))%>%
-  # filter(!is.na(YearGroup))%>%
-  group_by(imp_src_db,Year)%>%
-  reframe(Percentage=sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)/(sum(imp_value[haz_type=="haztypegeohaz"],na.rm = T)+sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)))%>%
-  # reframe(Percentage=sum(haz_type=="haztypehydromet",na.rm = T)/(sum(haz_type=="haztypegeohaz",na.rm = T)+sum(haz_type=="haztypehydromet",na.rm = T)))%>%
-  ggplot(aes(group=imp_src_db))+geom_point(aes(Year,Percentage,colour=imp_src_db))+
-  geom_smooth(aes(Year,Percentage,colour=imp_src_db),alpha=0.1,method = "glm", method.args = list(family = "binomial"),se = FALSE)+
-  ylab("Proportion")+ylim(c(0.75,0.97))+labs(colour="Database")+
-  ggtitle("Proportion Hydro-Met to Geological Hazards")+theme(plot.title = element_text(hjust = 0.5))+
-  facet_wrap(~imp_src_db,scales = "fixed");p
-
-
-
-p<-Monty%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & #ISO3%in%isoEQ & 
-                     exp_spec=="expspec_allpeop" & imp_type%in%c("imptypaffe","imptypdiraffe") &
-                     imp_src_db!="GO-FR")%>%
-  # mutate(YearGroup = cut(Year,breaks = brks,
-  #                              include.lowest = T,right=F))%>%
-  # filter(!is.na(YearGroup))%>%
-  group_by(imp_src_db,Year)%>%
-  reframe(Percentage=sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)/(sum(imp_value[haz_type=="haztypegeohaz"],na.rm = T)+sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)))%>%
-  # reframe(Percentage=sum(haz_type=="haztypehydromet",na.rm = T)/(sum(haz_type=="haztypegeohaz",na.rm = T)+sum(haz_type=="haztypehydromet",na.rm = T)))%>%
-  ggplot(aes(group=imp_src_db))+geom_point(aes(Year,Percentage,colour=imp_src_db))+
-  # geom_smooth(aes(Year,Percentage,colour=imp_src_db),alpha=0.1,method = "glm", method.args = list(family = "binomial"),se = T)+
-  ylab("Proportion")+labs(colour="Database")+
-  ggtitle("Proportion Hydro-Met to Geological Hazards")+theme(plot.title = element_text(hjust = 0.5))+
-  facet_wrap(~imp_src_db,scales = "fixed");p
-
-
-p<-Monty%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & #ISO3%in%isoEQ & 
-                     exp_spec=="expspec_allpeop" & imp_type%in%c("imptypaffe","imptypindaffe") &
-                     imp_src_db!="GO-FR")%>%
-  # mutate(YearGroup = cut(Year,breaks = brks,
-  #                              include.lowest = T,right=F))%>%
-  # filter(!is.na(YearGroup))%>%
-  group_by(imp_src_db,Year)%>%
-  reframe(Percentage=sum(haz_type=="haztypegeohaz",na.rm = T))%>%
-  # reframe(Percentage=sum(haz_type=="haztypehydromet",na.rm = T)/(sum(haz_type=="haztypegeohaz",na.rm = T)+sum(haz_type=="haztypehydromet",na.rm = T)))%>%
-  ggplot(aes(group=imp_src_db))+geom_point(aes(Year,Percentage,colour=imp_src_db))+
-  geom_smooth(aes(Year,Percentage,colour=imp_src_db),alpha=0.1,method = "lm",se = FALSE)+
-  ylab("Proportion")+labs(colour="Database")+
-  ggtitle("Proportion Hydro-Met to Geological Hazards")+theme(plot.title = element_text(hjust = 0.5))+
-  facet_wrap(~imp_src_db,scales = "fixed");p
-
-p<-Monty%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & !is.na(haz_Ab) & haz_Ab!="GL" & #ISO3%in%isoEQ & 
-                     # exp_spec=="expspec_allpeop" & imp_type=="imptypdeat" &
-                     imp_src_db!="GO-FR" & haz_Ab%in%lhaz)%>%
-  # mutate(YearGroup = cut(Year,breaks = brks,
-  #                              include.lowest = T,right=F))%>%
-  # filter(!is.na(YearGroup))%>%
-  group_by(haz_Ab,imp_src_db,Year)%>%
-  # reframe(Percentage=sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)/(sum(imp_value[haz_type=="haztypegeohaz"],na.rm = T)+sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)))%>%
-  reframe(Count=length(haz_type))%>%
-  ggplot()+geom_point(aes(Year,Count,colour=imp_src_db))+
-  geom_smooth(aes(Year,Count,colour=imp_src_db),alpha=0.1,se = FALSE)+
-  ylab("No. Events")+labs(colour="Hazard")+scale_y_log10()+
-  ggtitle("Number Hazard Events")+theme(plot.title = element_text(hjust = 0.5))+
-  facet_wrap(~haz_Ab,scales = "free_y");p
-
-
-p<-Monty%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & !is.na(haz_Ab) & haz_Ab!="GL" & #ISO3%in%isoEQ & 
-                  exp_spec=="expspec_allpeop" & imp_type=="imptypdeat" &
-                  imp_src_db!="GO-FR" & haz_Ab%in%lhaz)%>%
-  # mutate(YearGroup = cut(Year,breaks = brks,
-  #                              include.lowest = T,right=F))%>%
-  # filter(!is.na(YearGroup))%>%
-  group_by(haz_Ab,imp_src_db,Year)%>%
-  # reframe(Percentage=sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)/(sum(imp_value[haz_type=="haztypegeohaz"],na.rm = T)+sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)))%>%
-  reframe(Count=sum(imp_value,na.rm = T))%>%
-  ggplot()+geom_point(aes(Year,Count,colour=imp_src_db))+
-  geom_smooth(aes(Year,Count,colour=imp_src_db),alpha=0.1,se = FALSE)+
-  ylab("Number of Deaths")+labs(colour="Database")+scale_y_log10()+
-  ggtitle("Fatalities per Hazard")+theme(plot.title = element_text(hjust = 0.5))+
-  facet_wrap(~haz_Ab,scales = "free_y");p
-ggsave("./Analysis_Results/Kirsten/Log-No-Fatalities_haz_db.png",p)
-
-
-p<-Monty%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & !is.na(haz_Ab) & haz_Ab!="GL" & #ISO3%in%isoEQ & 
-                  exp_spec=="expspec_allpeop" & imp_type=="imptypdeat" &
-                  imp_src_db=="EMDAT")%>%
-  # mutate(YearGroup = cut(Year,breaks = seq.int(1990,2020,10),
-  #                              include.lowest = T,right=F))%>%
-  # filter(!is.na(YearGroup))%>%
-  group_by(haz_Ab,Year)%>%
-  # reframe(Percentage=sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)/(sum(imp_value[haz_type=="haztypegeohaz"],na.rm = T)+sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)))%>%
-  reframe(Count=sum(imp_value,na.rm = T))%>%
-  ggplot()+geom_point(aes(Year,Count,colour=haz_Ab))+
-  geom_smooth(aes(Year,Count,colour=haz_Ab),alpha=0.1,se = FALSE)+
-  ylab("Number of Deaths")+labs(colour="Hazard")+
-  ggtitle("EM-DAT - Fatalities per Hazard")+theme(plot.title = element_text(hjust = 0.5))+
-  facet_wrap(~haz_Ab,scales = "free_y");p
-ggsave("./Analysis_Results/Kirsten/No-Fatalities_haz_db.png",p)
-
-
-p<-Monty%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & !is.na(haz_Ab) & haz_Ab!="GL" & #ISO3%in%isoEQ & 
-                  exp_spec=="expspec_allpeop" & imp_type=="imptypdeat" &
-                  imp_src_db!="GO-FR")%>%
-  mutate(YearGroup = cut(Year,breaks = seq.int(1990,2020,3),
-                         include.lowest = T,right=F))%>%
-  filter(!is.na(YearGroup))%>%
-  group_by(imp_src_db,haz_Ab,YearGroup)%>%
-  # reframe(Percentage=sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)/(sum(imp_value[haz_type=="haztypegeohaz"],na.rm = T)+sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)))%>%
-  reframe(Count=sum(imp_value,na.rm = T))%>%
-  ggplot(group=imp_src_db)+geom_point(aes(YearGroup,Count,colour=imp_src_db))+
-  # geom_line(aes(YearGroup,Count,colour=imp_src_db))+
-  # geom_smooth(aes(YearGroup,Count,colour=imp_src_db),alpha=0.1,se = FALSE)+
-  ylab("Number of Deaths")+labs(colour="Hazard")+scale_y_log10()+
-  ggtitle("Fatalities per Hazard")+theme(plot.title = element_text(hjust = 0.5))+
-  facet_wrap(~haz_Ab,scales = "free_y");p
-
-p<-Monty%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & !is.na(haz_Ab) & haz_Ab!="GL" & #ISO3%in%isoEQ & 
-                  imp_src_db!="GO-FR" & haz_Ab%in%lhaz)%>%
-  # mutate(YearGroup = cut(Year,breaks = seq.int(1990,2020,3),
-  #                        include.lowest = T,right=F))%>%
-  # filter(!is.na(YearGroup))%>%
-  group_by(imp_src_db,haz_Ab,Year)%>%
-  # reframe(Percentage=sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)/(sum(imp_value[haz_type=="haztypegeohaz"],na.rm = T)+sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)))%>%
-  reframe(Count=length(imp_value))%>%
-  ggplot(group=imp_src_db)+geom_point(aes(Year,Count,colour=imp_src_db))+
-  # geom_line(aes(Year,Count,colour=imp_src_db))+
-  geom_smooth(aes(Year,Count,colour=imp_src_db),alpha=0.1,se = FALSE)+
-  ylab("Number of Events")+labs(colour="Hazard")+scale_y_log10()+
-  ggtitle("Recorded Events per Hazard")+theme(plot.title = element_text(hjust = 0.5))+
-  facet_wrap(~haz_Ab,scales = "free_y");p
-ggsave("./Analysis_Results/Kirsten/Log_No-Events_haz_db.png",p)
-
-
-
-
-
-p<-Monty%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & !is.na(haz_Ab) & haz_Ab!="GL" & #ISO3%in%isoEQ & 
-                  exp_spec=="expspec_allpeop" & imp_type=="imptypdeat" &
-                  imp_src_db!="GO-FR" & haz_Ab%in%lhaz)%>%
-  # reframe(Percentage=sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)/(sum(imp_value[haz_type=="haztypegeohaz"],na.rm = T)+sum(imp_value[haz_type=="haztypehydromet"],na.rm = T)))%>%
-  ggplot()+geom_point(aes(as.Date(ev_sdate),imp_value,colour=imp_src_db),alpha=0.2)+
-  geom_smooth(aes(as.Date(ev_sdate),imp_value,colour=imp_src_db),alpha=0.1,se = FALSE,size=2)+
-  ylab("Number of Deaths")+labs(colour="Database")+scale_y_log10()+
-  ggtitle("Fatalities per Hazard")+theme(plot.title = element_text(hjust = 0.5))+
-  facet_wrap(~haz_Ab,scales = "free_y");p
-ggsave("./Analysis_Results/Kirsten/Log-ObsFatalities_haz_db.png",p)
-
-
-
-
-
-
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 #%%%%%%%%%%%%%%%%%% STATISTICAL SIGNIFICANCE %%%%%%%%%%%%%%%%%%%%#
 #%%%%%%%%%%%%%%%%%%%%% FOR CLIMATE CHANGE %%%%%%%%%%%%%%%%%%%%%%%#
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 
-propy<-Monty%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & ISO3%in%isoEQ &
+propy<-Monty%>%filter(Year>2000 & Year<=AsYear(Sys.Date()) & ISO3%in%isoEQ &
                          !(imp_src_db=="GIDD" & Year<2015) &
                          !duplicated(imp_sub_ID) &
                          !imp_src_db%in%c("GO-FR","GDACS"))%>%
@@ -722,16 +536,34 @@ propy<-Monty%>%filter(Year>1990 & Year<=AsYear(Sys.Date()) & ISO3%in%isoEQ &
   reframe(Percentage=sum(haz_type=="haztypehydromet",na.rm = T)/
             (sum(haz_type=="haztypegeohaz",na.rm = T)+sum(haz_type=="haztypehydromet",na.rm = T)),
           Counts=length(haz_type))%>%ungroup()%>%group_by(imp_src_db)%>%
-  mutate(Weights=Counts/max(Counts))
+  mutate(Weights=Counts/max(Counts),Date=as.Date(Date))
 
-propy$LogWeights<-log10(propy$Counts)/log10(max(propy$Counts))
+burnin<-0.3
+
+propy<-Monty%>%filter(Year>1990 & ISO3%in%isoEQ &
+                        !(imp_src_db=="GIDD" & Year<2015) &
+                        !duplicated(imp_sub_ID) &
+                        !imp_src_db%in%c("GO-FR","GDACS","GO-DREF","GO-EA","GO-FBA"))%>%
+  arrange(Year)%>%
+  group_by(imp_src_db)%>%
+  reframe(Percentage=(cumsum(haz_type=="haztypehydromet")/
+            (cumsum(haz_type=="haztypegeohaz" | haz_type=="haztypehydromet")))[round(burnin*n()):n()],
+          Date=ev_sdate[round(burnin*n()):n()], 
+          Day=(as.numeric(as.Date(Date)-min(as.Date(Date)))/365)[round(burnin*n()):n()])%>%
+  ungroup()%>%distinct()%>%group_by(imp_src_db)%>%mutate(Day=Day/max(Day),Date=as.Date(Date))
+View(propy)
+
+propy%>%ggplot()+geom_point(aes(Day,Percentage))
+propy%>%ggplot()+geom_point(aes(as.Date(Date),Percentage,colour=imp_src_db))
+
+# propy$LogWeights<-log10(propy$Counts)/log10(max(propy$Counts))
 
 # Unweighted
-fixest::feglm(Percentage ~ Year | imp_src_db,family = "binomial",data = propy)%>%summary()
+# fixest::feglm(Percentage ~ Year | imp_src_db,family = "binomial",data = propy)%>%summary()
 # Weighted by log-count values
-fixest::feglm(Percentage ~ Year | imp_src_db,family = "binomial",data = propy, weights = propy$LogWeights)%>%summary()
+# fixest::feglm(Percentage ~ Year | imp_src_db,family = "binomial",data = propy, weights = propy$LogWeights)%>%summary()
 # Weighted by database-normalised count values (not log)
-fixest::feglm(Percentage ~ Year | imp_src_db,family = "binomial",data = propy, weights = propy$Weights)%>%summary()
+# fixest::feglm(Percentage ~ Year | imp_src_db,family = "binomial",data = propy, weights = propy$Weights)%>%summary()
 
 # Check the plot to see the count numbers
 propy%>%ggplot()+geom_point(aes(Year,Counts,colour=imp_src_db,size=Weights)) + scale_y_log10()
@@ -739,14 +571,19 @@ propy%>%ggplot()+geom_point(aes(Year,Counts,colour=imp_src_db,size=Weights)) + s
 propy%>%ggplot()+geom_point(aes(Year,Percentage,colour=imp_src_db,size=Weights))
 
 # Now let's predict some values with the analysis
-modelly<-fixest::feglm(Percentage ~ Year | imp_src_db,family = "binomial",data = propy, weights = propy$Weights)
+modelly<-fixest::feglm(Percentage ~ Date | imp_src_db,family = "binomial",data = propy)%>%summary()
+  # fixest::feglm(Percentage ~ Year | imp_src_db,family = "binomial",data = propy, weights = propy$Weights)
 # Prediction for 2022
-predict(modelly,data.frame(imp_src_db="GIDD",Year=2022))
+predict(modelly,data.frame(imp_src_db="GIDD",Date=Sys.Date()))
 # Prediction for 1990
-predict(modelly,data.frame(imp_src_db="GIDD",Year=1990))
+predict(modelly,data.frame(imp_src_db="GIDD",Date=as.Date("2010-01-01")))
 # How about for the appeals dataset?
-predict(modelly,data.frame(imp_src_db="GO-App",Year=2022))
+predict(modelly,data.frame(imp_src_db="GO-DREF",Date=Sys.Date()))
+predict(modelly,data.frame(imp_src_db="GO-DREF",Date=as.Date("2010-01-01")))
 
+predict(modelly,data.frame(imp_src_db="EMDAT",Date=Sys.Date()))
+predict(modelly,data.frame(imp_src_db="EMDAT",Date=as.Date("2010-01-01")))
+# 
 
 
 
