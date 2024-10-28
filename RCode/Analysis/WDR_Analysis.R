@@ -585,11 +585,23 @@ predict(modelly,data.frame(imp_src_db="EMDAT",Date=Sys.Date()))
 predict(modelly,data.frame(imp_src_db="EMDAT",Date=as.Date("2010-01-01")))
 # 
 
-
-
-
-
-
+propy<-data.frame()
+for (haz in unique(Monty$haz_Ab)) {
+  
+  propy%<>%rbind(Monty%>%filter(Year>1990 &# ISO3%in%isoEQ &
+                          !(imp_src_db=="GIDD" & Year<2015) &
+                          !duplicated(imp_sub_ID) &
+                          !imp_src_db%in%c("GO-FR","GDACS","GO-EA","GO-FBA"))%>%
+    arrange(Year)%>%
+    group_by(imp_src_db)%>%
+    reframe(haz=haz,
+            Percentage=(cumsum(haz_Ab==haz)/
+                          (cumsum(haz_type=="haztypegeohaz" | haz_type=="haztypehydromet")))[round(burnin*n()):n()],
+            Date=ev_sdate[round(burnin*n()):n()], 
+            Day=(as.numeric(as.Date(Date)-min(as.Date(Date)))/365)[round(burnin*n()):n()])%>%
+    ungroup()%>%distinct()%>%group_by(imp_src_db)%>%mutate(Day=Day/max(Day),Date=as.Date(Date)))
+  
+}
 
 
 
