@@ -457,12 +457,16 @@ top5<-Monty%>%filter(Year==AsYear(Sys.Date()) &
               setNames(c("exp_spec","exposure")),by="exp_spec")%>%
   left_join(taxies%>%filter(list_name=="imp_type")%>%dplyr::select(2:3)%>%
               setNames(c("imp_type","impact_type")),by="imp_type")%>%
+  left_join(taxies%>%filter(list_name=="measunits")%>%dplyr::select(2:3)%>%distinct()%>%
+              setNames(c("imp_units","impact_units")),by="imp_units")%>%
   ungroup()%>%
-  dplyr::select(ev_sdate,ev_fdate,ISO3,haz_Ab,exposure,impact_type,
-                imp_value,imp_units,imp_src_db,imp_src_org,ev_name)
+  mutate(impact=paste0(impact_type," - ",exposure))%>%
+  dplyr::select(ev_sdate,ev_fdate,ISO3,haz_Ab,impact,
+                imp_value,impact_units,imp_src_db,imp_src_org,ev_name)
 
 View(top5)
-openxlsx::write.xlsx(top5,"./Analysis_Results/Kirsten/Top5_2024.xlsx")
+top5%>%setNames(c("Start Date","End Date","Country ISO3","Hazard","Impact Type","Impact Figure","Impact Unit","Database","Organisation","Event Name"))%>%
+  openxlsx::write.xlsx("./Analysis_Results/Kirsten/Top5_2024.xlsx")
 
 
 ifrc<-Monty%>%filter(imp_src_org=="IFRC" & Year==2024)
